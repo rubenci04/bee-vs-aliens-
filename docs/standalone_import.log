@@ -1,0 +1,112 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] first_scan_filesystem | Started Inicialización del proyecto (5 steps)
+[   0% ] first_scan_filesystem | Escaneando la estructura del archivo...
+[  16% ] first_scan_filesystem | Cargando nombres de clases globales...
+[  33% ] first_scan_filesystem | Verificando GDExtensions...
+[  50% ] first_scan_filesystem | Creando scripts de carga automática...
+[  66% ] first_scan_filesystem | Inicializando plugins...
+[  83% ] first_scan_filesystem | Iniciando escaneo de archivos...
+[ DONE ] first_scan_filesystem
+
+[   0% ] update_scripts_classes | Started Registrando clases globales... (33 steps)
+[   0% ] update_scripts_classes | AlienEnemyProjectile
+[   2% ] update_scripts_classes | AlienProbeEnemy
+[   5% ] update_scripts_classes | AlienProbeRanged
+[   8% ] update_scripts_classes | 
+[  11% ] update_scripts_classes | 
+[  14% ] update_scripts_classes | BeeArcadeCamera
+[  17% ] update_scripts_classes | 
+[  20% ] update_scripts_classes | BeeEnergyProjectile
+[  23% ] update_scripts_classes | 
+[  26% ] update_scripts_classes | 
+[  29% ] update_scripts_classes | 
+[  32% ] update_scripts_classes | BeePlayer
+[  35% ] update_scripts_classes | 
+[  38% ] update_scripts_classes | 
+[  41% ] update_scripts_classes | BeePollenPickup
+[  44% ] update_scripts_classes | WaspEnemy
+[  47% ] update_scripts_classes | 
+[  50% ] update_scripts_classes | 
+[  52% ] update_scripts_classes | HealthComponent
+[  55% ] update_scripts_classes | DamageHitbox3D
+[  58% ] update_scripts_classes | HitFlash3D
+[  61% ] update_scripts_classes | DamageHurtbox3D
+[  64% ] update_scripts_classes | 
+[  67% ] update_scripts_classes | 
+[  70% ] update_scripts_classes | 
+[  73% ] update_scripts_classes | 
+[  76% ] update_scripts_classes | 
+[  79% ] update_scripts_classes | 
+[  82% ] update_scripts_classes | 
+[  85% ] update_scripts_classes | 
+[  88% ] update_scripts_classes | 
+[  91% ] update_scripts_classes | 
+[  94% ] update_scripts_classes | 
+[ DONE ] update_scripts_classes
+
+[   0% ] _update_scan_actions | Started Escaneando acciones... (10 steps)
+[   0% ] _update_scan_actions | alien_probe_visual.glb
+[   9% ] _update_scan_actions | bee_alien_visual.glb
+[  18% ] _update_scan_actions | wasp_enemy_visual.glb
+[  27% ] _update_scan_actions | alien_probe_comparison.png
+[  36% ] _update_scan_actions | bee_visual_facings.png
+[  45% ] _update_scan_actions | garden_flowers.png
+[  54% ] _update_scan_actions | garden_orchard.png
+[  63% ] _update_scan_actions | mission_complete.png
+[  72% ] _update_scan_actions | wasp_combat_windup.png
+[  81% ] _update_scan_actions | wasp_visual_comparison.png
+[ DONE ] _update_scan_actions
+
+[   0% ] reimport | Started (Re)Importación de Assets (10 steps)
+[   0% ] reimport | Preparando archivos para reimportarlos...
+[   9% ] reimport | Preparando archivos para reimportarlos...
+[  18% ] reimport | Preparando archivos para reimportarlos...
+[  27% ] reimport | Preparando archivos para reimportarlos...
+[  36% ] reimport | Preparando archivos para reimportarlos...
+[  45% ] reimport | Preparando archivos para reimportarlos...
+[  54% ] reimport | Preparando archivos para reimportarlos...
+[  63% ] reimport | Preparando archivos para reimportarlos...
+[  72% ] reimport | Preparando archivos para reimportarlos...
+[  81% ] reimport | Preparando archivos para reimportarlos...
+[   0% ] reimport | Ejecutando operaciones de pre-reimportación...
+[   0% ] reimport | alien_probe_comparison.png
+[   9% ] reimport | bee_visual_facings.png
+[  18% ] reimport | garden_flowers.png
+[  27% ] reimport | garden_orchard.png
+[  36% ] reimport | mission_complete.png
+[  45% ] reimport | wasp_combat_windup.png
+[  54% ] reimport | wasp_visual_comparison.png
+[  63% ] reimport | alien_probe_visual.glb
+[   0% ] import | Started Importar Escena (104 steps)
+[   0% ] import | Importando Escena...
+[   1% ] import | Ejecutando Script Personalizado...
+[  99% ] import | Guardando...
+[ DONE ] import
+
+[  72% ] reimport | bee_alien_visual.glb
+[   0% ] import | Started Importar Escena (104 steps)
+[   0% ] import | Importando Escena...
+[   1% ] import | Ejecutando Script Personalizado...
+[  99% ] import | Guardando...
+[ DONE ] import
+
+[  81% ] reimport | wasp_enemy_visual.glb
+[   0% ] import | Started Importar Escena (104 steps)
+[   0% ] import | Importando Escena...
+[   1% ] import | Ejecutando Script Personalizado...
+[  99% ] import | Guardando...
+[ DONE ] import
+
+[  90% ] reimport | Finalizando la importación de recursos...
+[ DONE ] reimport
+
+[   0% ] reimport | Started (Re)Importación de Assets (10 steps)
+[   0% ] reimport | Ejecutando operaciones post-reimportación...
+[ DONE ] reimport
+
+[   0% ] loading_editor_layout | Started Cargando editor (5 steps)
+[   0% ] loading_editor_layout | Cargando diseño del editor...
+[  16% ] loading_editor_layout | Cargando docks...
+[ DONE ] loading_editor_layout
+

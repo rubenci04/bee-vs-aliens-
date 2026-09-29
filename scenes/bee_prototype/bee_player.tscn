@@ -1,0 +1,63 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_player.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/components/hurtbox_3d.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_energy_projectile.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="6"]
+
+[ext_resource type="PackedScene" path="res://assets/models/bee_prototype/bee_alien_visual.glb" id="7"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_visual.gd" id="8"]
+[sub_resource type="BoxShape3D" id="melee_shape"]
+size = Vector3(0.75, 0.5, 0.5)
+
+[sub_resource type="SphereShape3D" id="body_shape"]
+radius = 0.28
+
+[node name="BeePlayer" type="CharacterBody3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1")
+projectile_scene = ExtResource("5")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("body_shape")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+
+[node name="BeeVisual" parent="VisualRoot" instance=ExtResource("7")]
+script = ExtResource("8")
+
+[node name="HealthComponent" parent="." instance=ExtResource("2")]
+max_health = 100
+
+[node name="HitFlash3D" parent="." instance=ExtResource("4")]
+
+[node name="Hurtbox3D" parent="." instance=ExtResource("3")]
+team_id = &"bee"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+shape = SubResource("body_shape")
+
+
+[node name="MeleeHitbox" parent="." instance=ExtResource("6")]
+team_id = &"bee"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeHitbox"]
+shape = SubResource("melee_shape")
+
+[node name="TargetIndicator" type="Node3D" parent="."]
+visible = false
+top_level = true
+
+[node name="Marker" type="Label3D" parent="TargetIndicator"]
+billboard = 1
+no_depth_test = true
+fixed_size = true
+modulate = Color(0.35, 1, 0.95, 0.92)
+outline_modulate = Color(0.02, 0.12, 0.16, 1)
+text = "◇"
+font_size = 58
+outline_size = 8
+pixel_size = 0.004

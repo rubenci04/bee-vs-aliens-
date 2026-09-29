@@ -1,0 +1,272 @@
+[
+  {
+    "from": "scenes/bee_prototype/alien_enemy_projectile.tscn",
+    "dependency": "scenes/components/hitbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "dependency": "scenes/components/health_component.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "dependency": "scenes/components/hurtbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "dependency": "scenes/components/hit_flash_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "dependency": "scenes/components/health_component.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "dependency": "scenes/components/hurtbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "dependency": "scenes/components/hit_flash_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_energy_projectile.tscn",
+    "dependency": "scenes/components/hitbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scenes/components/health_component.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scenes/components/hurtbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scenes/components/hit_flash_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scenes/components/hitbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/bee_player.tscn",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scenes/components/health_component.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scenes/components/hurtbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scenes/components/hit_flash_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scenes/components/hitbox_3d.tscn",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/bee_prototype/wasp_enemy.tscn",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_enemy_projectile.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_enemy_projectile.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_probe_enemy.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_probe_enemy.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_probe_ranged.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/alien_probe_ranged.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/bee_energy_projectile.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/bee_energy_projectile.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/bee_player.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/bee_player.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/bee_player.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/pollen_pickup.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/wasp_enemy.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/wasp_enemy.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/bee_prototype/wasp_enemy.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "tests/bee_prototype/validate_alien_probe_visual.gd",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "tests/bee_prototype/validate_bee_visual.gd",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "tests/bee_prototype/validate_wasp_visual.gd",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/components/hitbox_3d.tscn",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/components/health_component.tscn",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/components/hurtbox_3d.tscn",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scenes/components/hit_flash_3d.tscn",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hit_flash_3d.gd",
+    "dependency": "scripts/components/hit_flash_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hit_flash_3d.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/health_component.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hurtbox_3d.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hurtbox_3d.gd",
+    "dependency": "scripts/components/health_component.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hurtbox_3d.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hitbox_3d.gd",
+    "dependency": "scripts/components/hurtbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  },
+  {
+    "from": "scripts/components/hitbox_3d.gd",
+    "dependency": "scripts/components/hitbox_3d.gd",
+    "reason": "resource reference or class symbol"
+  }
+]

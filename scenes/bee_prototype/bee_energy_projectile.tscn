@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_energy_projectile.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="2"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_color = Color(0.25, 0.95, 1, 1)
+emission_enabled = true
+emission = Color(0.1, 0.8, 1, 1)
+emission_energy_multiplier = 2.0
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="mesh"]
+material = SubResource("mat")
+radius = 0.11
+height = 0.22
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 0.12
+
+[node name="BeeEnergyProjectile" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh")
+
+[node name="Hitbox3D" parent="." instance=ExtResource("2")]
+team_id = &"bee"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hitbox3D"]
+shape = SubResource("shape")

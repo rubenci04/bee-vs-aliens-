@@ -1,0 +1,8 @@
+validate_alien_probe_visual.gd PASS=True EXIT=0
+validate_bee_combat_poc.gd PASS=True EXIT=0
+validate_bee_flight_poc.gd PASS=True EXIT=0
+validate_bee_garden_poc.gd PASS=True EXIT=0
+validate_bee_mission_01.gd PASS=True EXIT=0
+validate_bee_visual.gd PASS=True EXIT=0
+validate_wasp_visual.gd PASS=True EXIT=0
+RESULT 7/7

@@ -1,0 +1,4 @@
+.godot/
+*.tmp
+*.blend1
+docs/bee_prototype/*.log
