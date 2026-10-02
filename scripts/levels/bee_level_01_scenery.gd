@@ -54,21 +54,19 @@ func _ready() -> void:
 			place(FERN, "PocketFern%d_%d" % [p, j], Vector3(pockets[p] + float(j) * 1.7 - 1.6, 0, -5.2 - float(j) * 0.6), 1.6 + float((p + j) % 4) * 0.22, float(p + j) * 0.63)
 		place(TREE, "PocketTree%d" % p, Vector3(pockets[p] + 2.0, 0, -13.0 - float(p % 3)), 0.8 + float(p % 4) * 0.11, float(p) * 0.71)
 
+## Boulders rest on the ground: the visible rock fills the (unchanged) collider box and its base
+## is buried a few centimetres. Solid rocks keep their original collider.
 func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool) -> void:
-	var mesh := SphereMesh.new()
-	mesh.radial_segments = 8
-	mesh.rings = 4
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.39 + float(int(x) % 3) * 0.035, 0.41, 0.36)
-	material.roughness = 1.0
-	mesh.material = material
+	var half := Vector3(radius.x * 0.85, radius.y * 0.95 + 0.05, radius.z * 0.85)
+	var mesh := GardenProps.boulder(half, int(x))
+	mesh.surface_set_material(0, GardenProps.flat(Color(0.39 + float(int(x) % 3) * 0.035, 0.41, 0.36)))
 	var rock := MeshInstance3D.new()
 	rock.name = label + "Mesh"
 	rock.mesh = mesh
-	rock.scale = radius
+	BeeToonStyle.apply(rock, true)
 	if not solid:
 		add_child(rock)
-		rock.position = Vector3(x, radius.y, z)
+		rock.position = Vector3(x, 0.0, z)
 		return
 	var body := StaticBody3D.new()
 	body.name = label
@@ -77,6 +75,7 @@ func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool
 	add_child(body)
 	body.position = Vector3(x, radius.y, z)
 	body.add_child(rock)
+	rock.position = Vector3(0.0, -radius.y, 0.0)
 	var shape := BoxShape3D.new()
 	shape.size = radius * 1.7
 	var collider := CollisionShape3D.new()

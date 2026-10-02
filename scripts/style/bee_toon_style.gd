@@ -19,7 +19,10 @@ static var _cache: Dictionary = {}
 
 ## outline = false keeps toon + rim only (cheaper: no second draw of every surface).
 static func apply(model: Node, outline: bool) -> void:
-	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
+	if model is MeshInstance3D:
+		meshes.append(model)
+	for mesh: MeshInstance3D in meshes:
 		if mesh.mesh == null:
 			continue
 		for surface in mesh.mesh.get_surface_count():

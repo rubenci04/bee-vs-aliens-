@@ -1,33 +1,9 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/destructible_obstacle_3d.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/components/hurtbox_3d.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="4"]
-
-[sub_resource type="StandardMaterial3D" id="wood"]
-albedo_color = Color(0.48, 0.31, 0.18, 1)
-roughness = 0.95
-
-[sub_resource type="StandardMaterial3D" id="wood_edges"]
-albedo_color = Color(0.29, 0.20, 0.13, 1)
-roughness = 0.95
-
-[sub_resource type="BoxMesh" id="crate_mesh"]
-size = Vector3(1.4, 2.4, 1.1)
-material = SubResource("wood")
-
-[sub_resource type="BoxMesh" id="edge_mesh"]
-size = Vector3(1.5, 0.16, 1.2)
-material = SubResource("wood_edges")
-
-[sub_resource type="BoxMesh" id="front_bar_mesh"]
-size = Vector3(1.38, 0.15, 0.09)
-material = SubResource("wood_edges")
-
-[sub_resource type="BoxMesh" id="side_bar_mesh"]
-size = Vector3(0.13, 2.22, 0.09)
-material = SubResource("wood_edges")
 
 [sub_resource type="BoxShape3D" id="crate_shape"]
 size = Vector3(1.5, 2.5, 1.2)
@@ -36,30 +12,6 @@ size = Vector3(1.5, 2.5, 1.2)
 script = ExtResource("1")
 
 [node name="VisualRoot" type="Node3D" parent="."]
-
-[node name="WoodenCrate" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(0, 1.2, 0)
-mesh = SubResource("crate_mesh")
-
-[node name="TopEdge" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(0, 2.32, 0)
-mesh = SubResource("edge_mesh")
-
-[node name="BottomEdge" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(0, 0.08, 0)
-mesh = SubResource("edge_mesh")
-
-[node name="FrontBar" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(0, 1.2, 0.585)
-mesh = SubResource("front_bar_mesh")
-
-[node name="FrontLeftSlat" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(-0.61, 1.2, 0.585)
-mesh = SubResource("side_bar_mesh")
-
-[node name="FrontRightSlat" type="MeshInstance3D" parent="VisualRoot"]
-position = Vector3(0.61, 1.2, 0.585)
-mesh = SubResource("side_bar_mesh")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 collision_layer = 1

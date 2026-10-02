@@ -176,30 +176,38 @@ mesh = SubResource("ground_extension")
 [node name="Destructibles" type="Node3D" parent="."]
 
 [node name="GardenCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 0
 position = Vector3(18, 0, 0)
 
 [node name="LogApproachCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 1
 position = Vector3(43, 0, 0)
 scale = Vector3(0.9, 1, 1)
 
 [node name="FirstContactCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 2
 position = Vector3(120, 0, 0)
 
 [node name="HumanAreaCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 0
 position = Vector3(153, 0, 0)
 scale = Vector3(0.85, 1.1, 1)
 
 [node name="DefenseCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 1
 position = Vector3(198, 0, 0)
 
 [node name="OrganicCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 2
 position = Vector3(242, 0, 0)
 scale = Vector3(1, 0.9, 1)
 
 [node name="WalkerApproachCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 0
 position = Vector3(282, 0, 0)
 
 [node name="FinalCrate" parent="Destructibles" instance=ExtResource("7")]
+item_kind = 1
 position = Vector3(343, 0, 0)
 
 [node name="GiantHuman" parent="." instance=ExtResource("5")]
