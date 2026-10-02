@@ -40,6 +40,7 @@ const EVENTS = [
 	{"at": 340.0, "label": "ÚLTIMA DEFENSA · TRES AMENAZAS", "units": ["Walker", "Probe", "Turret"], "hard": true},
 ]
 
+@export var show_debug_labels := false # Internal event names ("JARDÍN · AVISPA"...) only for development.
 @export var group_delay := 0.8
 @export var soft_pressure_seconds := 6.0
 @export var retreat_speed := 10.0
@@ -53,6 +54,7 @@ var max_active_seen := 0
 var spawned_by_family: Dictionary = {}
 var active_units: Array[Node3D] = []
 var encounter_label := "JARDÍN · APRENDÉ A VOLAR"
+var player_label := "" # What the HUD shows: only important messages unless show_debug_labels.
 var escaped_count := 0
 var spawn_history: Array[Dictionary] = []
 var _pending: Array[Dictionary] = []
@@ -93,6 +95,7 @@ func _physics_process(delta: float) -> void:
 		stage.scroll_speed = 0.0
 		return
 	encounter_label = str(event["label"])
+	player_label = encounter_label if show_debug_labels or bool(event.get("human", false)) else ""
 	var launched_index := event_index
 	event_index += 1
 	if bool(event.get("human", false)):
@@ -196,6 +199,7 @@ func _on_human_exited() -> void:
 	warning.hide()
 	stage.scroll_speed = 2.0
 	encounter_label = "RUTA DESPEJADA · AVANZÁ →"
+	player_label = encounter_label
 
 func is_complete() -> bool:
 	return _complete
@@ -206,6 +210,7 @@ func resume_after_checkpoint(progress: float) -> void:
 	while event_index < EVENTS.size() and float(EVENTS[event_index]["at"]) < progress:
 		event_index += 1
 	encounter_label = "CHECKPOINT · SEGUNDA MITAD"
+	player_label = encounter_label if show_debug_labels else "CHECKPOINT"
 	if progress > 140.0:
 		human.freeze()
 		human.current_phase = GiantHumanCrossingHazard.Phase.EXITED

@@ -137,7 +137,7 @@ light_color = Color(1, 0.95, 0.79, 1)
 light_energy = 1.2
 
 [node name="Status" parent="CanvasLayer" index="0"]
-text = "HP 100/100 · POLEN 0/17 · WASD/FLECHAS VOLAR · X DISPARO · Z MELEE"
+text = "HP 100/100 · POLEN 0/17"
 
 [node name="Debug" parent="CanvasLayer" index="1"]
 visible = false

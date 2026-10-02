@@ -21,7 +21,7 @@ func setup(value: BeeShmupStage) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	notice = label("CheckpointNotice", "", Vector2(430, 180), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
-	controls_hint = label("ControlsHint", "X FIRE   Z STING   C BOMB · ESC PAUSE · SHIFT+R FULL RESTART", Vector2(18, 165), 18)
+	controls_hint = label("ControlsHint", "X DISPARO · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 165), 18)
 	create_beacon()
 	controls_hint.show()
 	if get_tree().has_meta(HANDOFF):

@@ -47,8 +47,8 @@ func _physics_process(delta: float) -> void:
 		_secure_victory()
 		return
 	if not wave_clear_announced:
-		status.text = "HP %d/%d · POLEN %d/17 · WASD/FLECHAS VOLAR · X DISPARO · Z MELEE" % [bee.health.current_health, bee.health.max_health, pollen_count]
-	section_label.text = level_wave.encounter_label
+		status.text = "HP %d/%d · POLEN %d/17" % [bee.health.current_health, bee.health.max_health, pollen_count]
+	section_label.text = level_wave.player_label
 
 func _secure_victory() -> void:
 	# Terminal state: Bee takes no damage and no enemy shot stays in flight.
