@@ -1,4 +1,23 @@
+# Godot 4
 .godot/
+.import/
+docs/**/*.translation
+export_presets.cfg
 *.tmp
 *.blend1
-docs/bee_prototype/*.log
+*.blend1.*
+
+# Logs y salidas de review
+*.log
+dev/**/*.log
+dev/**/*.png
+dev/**/git_status_*.txt
+docs/**/*.log
+dev/asset_review/external/
+dev/extras_scifi_review/source/
+
+# SO / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
