@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://baxisnjvc4ors"
+
+[deps]
+
+files=["res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.full.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.pack.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.provider.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.format.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.file.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.category.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.bee.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.candidate.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.visual.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.technical.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.mesh.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.material.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.approx.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.animation.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.rig.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.approx.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.texture.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.recommended.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.duplicate.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.notes.translation"]
+
+source_file="res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.csv"
+dest_files=["res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.full.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.pack.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.provider.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.format.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.file.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.license.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.category.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.bee.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.candidate.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.visual.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.technical.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.mesh.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.material.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.approx.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.animation.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.rig.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.approx.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.texture.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.recommended.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.duplicate.translation", "res://docs/EXTRAS_ASSET_LIBRARY_INVENTORY.notes.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
