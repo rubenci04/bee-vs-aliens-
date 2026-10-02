@@ -13,6 +13,7 @@ const BODY_LIFT := 0.9
 func _ready() -> void:
 	BeeToonStyle.apply(self, true)
 	_own_rim_materials()
+	_setup_buzz()
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := find_child(wing_name, true, false) as Node3D
 		assert(wing != null, "Bee visual requires independent wings")
@@ -22,6 +23,7 @@ func _ready() -> void:
 	get_parent().rotation.y = -actor.facing_x * PI * 0.5
 
 func _process(delta: float) -> void:
+	_update_buzz(delta, actor.is_defeated)
 	if actor.is_defeated:
 		return
 	elapsed += delta
@@ -63,3 +65,32 @@ func _lift_body(boost: float) -> void:
 		if albedo.a > 0.0:
 			material.set_shader_parameter("emission", albedo.lightened(0.1))
 			material.set_shader_parameter("emission_energy", BODY_LIFT * boost)
+
+# --- wing buzz -------------------------------------------------------------------------------
+# Very soft, filtered hum on the SFX bus. Peak level stays ~12 dB under a base shot.
+const BUZZ_STREAM := "res://audio/sfx/real/wing_buzz.wav"
+const BUZZ_DB := -36.0
+var buzz_player: AudioStreamPlayer
+
+func _setup_buzz() -> void:
+	var source := load(BUZZ_STREAM) as AudioStreamWAV
+	if source == null:
+		return
+	var stream := source.duplicate() as AudioStreamWAV
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = stream.data.size() / 2
+	buzz_player = AudioStreamPlayer.new()
+	buzz_player.name = "WingBuzz"
+	buzz_player.stream = stream
+	buzz_player.bus = &"SFX"
+	buzz_player.volume_db = BUZZ_DB
+	add_child(buzz_player)
+	if DisplayServer.get_name() != "headless":
+		buzz_player.play()
+
+func _update_buzz(delta: float, defeated: bool) -> void:
+	if buzz_player == null:
+		return
+	buzz_player.volume_db = move_toward(buzz_player.volume_db, -80.0 if defeated else BUZZ_DB, 90.0 * delta)
+	buzz_player.stream_paused = buzz_player.volume_db <= -79.0

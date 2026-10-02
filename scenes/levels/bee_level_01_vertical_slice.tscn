@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_vertical_slice.gd" id="2"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_light_progression.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/levels/giant_human_hitbox_debug.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_ground_life.gd" id="14"]
+[ext_resource type="Script" path="res://scripts/audio/bee_ambience.gd" id="15"]
 
 [sub_resource type="StandardMaterial3D" id="ground_material"]
 albedo_color = Color(0.30, 0.39, 0.21, 1)
@@ -263,3 +264,6 @@ script = ExtResource("13")
 
 [node name="GroundLife01" type="Node3D" parent="."]
 script = ExtResource("14")
+
+[node name="GardenAmbience" type="Node" parent="."]
+script = ExtResource("15")

@@ -115,3 +115,35 @@ Las rutas Source siguientes son relativas a `D:\proyectos\V_Asset_Library\01_Ext
 - Bee: `res://audio/sfx/real/tech_hit.wav` (0.280s)
 - SHA256 Bee: `442752dce1c37089a94c70a327382c6c17eb4f5fa69da706c9400dd93026699f`
 - Cambios: OGG decoded to mono PCM16 WAV; shortened; normalized to peak 0.40; 2ms/35ms fades; pitch baked 1.0.
+
+## POLISH-02 AUDIO (generado con `tools/integrate_audio_polish02.gd`)
+
+Los originales de la biblioteca no se tocan. Rutas Source relativas a `D:\proyectos\V_Asset_Library\01_Extracted\audio`.
+
+### garden_loop (ambiente de jardín, bus Ambience)
+- Original: `Sonniss.com-GDC2026-GameAudioBundle/Just Sound Effects - Highlands of Norway/AMBSwmp_Meadow Pipits calling many Insects humming Wind blowing through Grass_JSE_HoN_Stereo.wav`
+- Autor/pack: Just Sound Effects, "Highlands of Norway", dentro de Sonniss.com GDC 2026 Game Audio Bundle (Part 9).
+- Licencia: Sonniss GDC Royalty-Free (`License - GDC Game Audio.pdf`): uso comercial en el juego, sin atribución. Restricciones: no revender ni redistribuir los sonidos tal cual y **prohibido entrenar IA con ellos**.
+- SHA256 original: `b47ac8ae869b52760bfd41e195e37a319c822ad04a734aec0c869bc4a5eee280`
+- Bee: `res://audio/ambience/garden_loop.wav` (21.5 s, loop)
+- SHA256 Bee: `a3c762f65a1d0691bfda78be9b0a41d4652449a13127b2bd69a5240b55de183e`
+- Cambios: ventana más estable de 24 s desde 5.0 s, crossfade de loop 2.5 s, remuestreo, pico 0.30, PCM16 estéreo.
+
+### wing_buzz (zumbido de aleteo de Bee, bus SFX)
+- Original: `Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Toy Quadcopter/AERORadio_Quadcopter, Toy, Flying Sustained Close to Mic_KSL_KS013.wav`
+- Autor/pack: Sonik Sound Library, "Toy Quadcopter", dentro de Sonniss.com GDC 2026 Game Audio Bundle. Licencia: igual que arriba (Sonniss GDC Royalty-Free, sin IA).
+- SHA256 original: `ae90f7d2cf44d9cd4c8badb21a138109fbbf36b89ac008aa6681332553c8a077`
+- Bee: `res://audio/sfx/real/wing_buzz.wav` (3.6 s, loop)
+- SHA256 Bee: `78a207811feca597e03b8fc210d09c1c58d06523bf34740b6120b18c9d8362b8`
+- Cambios: mono, ventana estable de 4 s desde 13.0 s, 2 pasa-bajos de un polo a 900 Hz, pasa-altos 110 Hz, crossfade de loop 0.4 s, pico 0.50, PCM16 mono.
+
+### human_step_b / human_step_c (variaciones de pasos del humano gigante)
+- Autor: Kenney (Impact Sounds 1.0). Licencia: CC0.
+- human_step_b: original `kenney_impact-sounds/Audio/footstep_grass_001.ogg`, SHA256 original `fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04`, Bee `res://audio/sfx/real/human_step_b.wav`, SHA256 Bee `7904f3da67d7ca2c22d17e00ebfb035aa1f74900d95094d061dcb2d3a3d7b864`.
+- human_step_c: original `kenney_impact-sounds/Audio/footstep_grass_002.ogg`, SHA256 original `73a520139f5be716a403bfe9c80e0e94d1e61d8e9de04a354b336392164b53dc`, Bee `res://audio/sfx/real/human_step_c.wav`, SHA256 Bee `146953230e43661c02802c8060d3306b9ff19cdea957c88cf35c673c083d5c98`.
+- Cambios (ambos): OGG decoded to mono PCM16 WAV; shortened; normalized to peak 0.40; 2ms/35ms fades; pitch baked 0.70.
+
+### Niveles (referencia: pico de un disparo base = 0.40 -20 dB cue -3 dB bus SFX = -31 dBFS)
+- Ambiente: pico 0.30, jugador -24 dB, bus Ambience -6 dB: pico ~ -40 dBFS (RMS ~ -54 dBFS).
+- Zumbido: pico 0.50, jugador -36 dB, bus SFX -3 dB: pico ~ -45 dBFS.
+- Pasos del humano: cue -21 dB (antes -16): ~ -32 dBFS, al nivel de un disparo y por debajo de bomba (-8 dB) y explosiones (-15 dB).
