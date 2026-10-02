@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_vertical_slice.gd" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_powerup_pickup.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_weapons_hud.tscn" id="9"]
 [ext_resource type="Script" path="res://scripts/levels/bee_checkpoint_qol.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_visual_target.gd" id="11"]
 
 [sub_resource type="StandardMaterial3D" id="ground_material"]
 albedo_color = Color(0.30, 0.39, 0.21, 1)
@@ -29,7 +30,7 @@ size = Vector3(3.8, 1.05, 0.26)
 
 [sub_resource type="ProceduralSkyMaterial" id="garden_sky_material"]
 sky_top_color = Color(0.24, 0.55, 0.82, 1)
-sky_horizon_color = Color(0.74, 0.86, 0.86, 1)
+sky_horizon_color = Color(0.86, 0.88, 0.8, 1)
 ground_bottom_color = Color(0.24, 0.31, 0.22, 1)
 ground_horizon_color = Color(0.63, 0.72, 0.53, 1)
 
@@ -40,8 +41,16 @@ sky_material = SubResource("garden_sky_material")
 background_mode = 2
 sky = SubResource("garden_sky")
 ambient_light_source = 3
-ambient_light_color = Color(0.95, 0.94, 0.84, 1)
-ambient_light_energy = 0.75
+ambient_light_color = Color(1, 0.91, 0.76, 1)
+ambient_light_energy = 0.7
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.86, 0.87, 0.78, 1)
+fog_density = 0.8
+fog_sky_affect = 0.35
+fog_depth_curve = 1.4
+fog_depth_begin = 14.0
+fog_depth_end = 55.0
 
 [node name="BeeLevel01VerticalSlice" instance=ExtResource("1")]
 script = ExtResource("2")
@@ -133,8 +142,11 @@ position = Vector3(271, 1.7, 0)
 environment = SubResource("garden_environment")
 
 [node name="Sun" parent="." index="9"]
-light_color = Color(1, 0.95, 0.79, 1)
-light_energy = 1.2
+light_color = Color(1, 0.9, 0.72, 1)
+light_energy = 1.25
+shadow_enabled = true
+shadow_blur = 1.6
+directional_shadow_max_distance = 45.0
 
 [node name="Status" parent="CanvasLayer" index="0"]
 text = "HP 100/100 · POLEN 0/17"
@@ -217,3 +229,6 @@ kind = 1
 
 [node name="CheckpointQoL" type="Node" parent="."]
 script = ExtResource("10")
+
+[node name="VisualTarget01" type="Node3D" parent="."]
+script = ExtResource("11")
