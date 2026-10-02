@@ -1,5 +1,5 @@
 extends Node3D
-## Garden POC: shared primitive scenery, two proximity triggers, simple restart.
+## Garden POC: shared proxy and approved scenery, two proximity triggers, simple restart.
 @onready var bee: BeePlayer = $BeePlayer
 var materials: Dictionary = {}
 var meshes: Dictionary = {}
@@ -74,13 +74,10 @@ func flower(x: float, height: float, z: float, color: Color, key: String, lean: 
 func _build_garden() -> void:
 	# Background stays muted; negative Z is behind the flight plane.
 	piece("box","distantsoil",Color(0.38,0.44,0.28),Vector3(0,-0.55,-9),Vector3(55,1,8))
-	for x in [-19,-10,0,12,22]:
+	for x in [-10,12]:
 		piece("stem","fartrunk",Color(0.40,0.40,0.30),Vector3(x,5,-10),Vector3(1,10,1))
 		piece("leaf","farcanopy",Color(0.37,0.48,0.35),Vector3(x,10,-10),Vector3(8,6,4))
-	flower(-12,3.7,-1.3,Color(0.72,0.34,0.43),"rose",-0.08)
-	flower(-4,5.3,-1.6,Color(0.69,0.58,0.24),"gold",0.12)
-	flower(7,4.4,-1.7,Color(0.43,0.40,0.65),"violet",-0.1)
-	for x in [-10,-8,1,3]:
+	for x in [-10,-8,3]:
 		flower(x,2.0,-3.0,Color(0.72,0.34,0.43),"rose",0.16)
 	for i in 16:
 		var x := -15.0+i*2.0
@@ -90,12 +87,8 @@ func _build_garden() -> void:
 	# Sparse low foreground leaves, below the combat corridor.
 	for x in [-14,0,13]:
 		piece("leaf","foreground",Color(0.13,0.25,0.10),Vector3(x,0.4,2.5),Vector3(2.3,0.6,0.4),0.3)
-	# Fallen branch is the only solid obstacle above the ground.
-	piece("stem","bark",Color(0.30,0.19,0.09),Vector3(1,0.55,0),Vector3(0.9,5.0,0.9),PI/2)
-	# Giant terracotta pot: human scale cue, suggested with simple stacked forms.
-	piece("stem","terracotta",Color(0.48,0.25,0.15),Vector3(13,2,-2.7),Vector3(5,4,5))
-	piece("stem","rim",Color(0.58,0.32,0.19),Vector3(13,4,-2.7),Vector3(5.6,0.45,5.6))
-	piece("petal","soil",Color(0.20,0.14,0.08),Vector3(13,4.18,-2.7),Vector3(4.3,0.14,4.3))
+	# Fallen log presentation and its manual box collider are separate.
+	# Giant bottle replaces the pot; retain the proxy orange tree behind it.
 	piece("stem","bark",Color(0.30,0.19,0.09),Vector3(12.5,6.2,-4.7),Vector3(1.1,12.4,1.1),-0.05)
 	for side in [-1,1]:
 		piece("stem","bark",Color(0.30,0.19,0.09),Vector3(12.5+side*1.4,8.6,-4.7),Vector3(0.55,5,0.55),side*0.7)
@@ -103,3 +96,5 @@ func _build_garden() -> void:
 		piece("leaf","canopy",Color(0.22,0.36,0.15),Vector3(x,10,-4.7),Vector3(6,4.3,4))
 	for i in 7:
 		piece("fruit","orange",Color(0.86,0.39,0.06),Vector3(9.5+i*0.9,7.5+float(i%3)*0.5,-2.7),Vector3(0.85,0.85,0.85))
+
+

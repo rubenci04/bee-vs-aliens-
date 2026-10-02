@@ -1,0 +1,71 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="Script" path="res://scripts/bee_prototype/human_observer.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="2"]
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.58,0.85,0.36)
+[sub_resource type="SphereMesh" id="head"]
+radius = 0.22
+height = 0.44
+radial_segments = 10
+rings = 5
+[sub_resource type="BoxMesh" id="arm"]
+size = Vector3(0.16,0.72,0.2)
+[sub_resource type="BoxMesh" id="face"]
+size = Vector3(0.12,0.08,0.12)
+[sub_resource type="StandardMaterial3D" id="skin"]
+albedo_color = Color(0.71,0.48,0.32,1)
+[sub_resource type="StandardMaterial3D" id="dark"]
+albedo_color = Color(0.08,0.08,0.09,1)
+[sub_resource type="StandardMaterial3D" id="telegraph_mat"]
+transparency = 1
+albedo_color = Color(1,0.1,0.1,0.4)
+[sub_resource type="BoxShape3D" id="sweep_shape"]
+size = Vector3(1.5,1.4,0.9)
+[node name="HumanObserver" type="Node3D"]
+script = ExtResource("1")
+target_path = NodePath("../BeePlayer")
+[node name="Visual" type="Node3D" parent="."]
+[node name="Body" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0,0.95,0)
+mesh = SubResource("body")
+[node name="Head" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0,1.52,0)
+mesh = SubResource("head")
+material_override = SubResource("skin")
+[node name="Face" type="MeshInstance3D" parent="Visual"]
+position = Vector3(-0.28,1.52,0)
+mesh = SubResource("face")
+material_override = SubResource("dark")
+[node name="ArmL" type="MeshInstance3D" parent="Visual"]
+position = Vector3(-0.39,0.95,0)
+mesh = SubResource("arm")
+material_override = SubResource("skin")
+[node name="ArmR" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0.39,0.95,0)
+mesh = SubResource("arm")
+material_override = SubResource("skin")
+[node name="LegL" type="MeshInstance3D" parent="Visual"]
+position = Vector3(-0.16,0.28,0)
+scale = Vector3(0.30,0.65,0.75)
+mesh = SubResource("body")
+material_override = SubResource("dark")
+[node name="LegR" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0.16,0.28,0)
+scale = Vector3(0.30,0.65,0.75)
+mesh = SubResource("body")
+material_override = SubResource("dark")
+[node name="StateLabel" type="Label3D" parent="."]
+position = Vector3(0,2.1,0)
+font_size = 64
+pixel_size = 0.006
+billboard = 1
+[node name="VisionCone" type="MeshInstance3D" parent="."]
+[node name="AttackTelegraph" type="MeshInstance3D" parent="."]
+visible = false
+position = Vector3(-1.1,1.0,0)
+mesh = SubResource("body")
+material_override = SubResource("telegraph_mat")
+[node name="AttackHitbox" parent="." instance=ExtResource("2")]
+position = Vector3(-1.1,1.1,0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox"]
+shape = SubResource("sweep_shape")

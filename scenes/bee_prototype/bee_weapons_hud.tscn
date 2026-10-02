@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_weapons_hud.gd" id="1"]
+[node name="WeaponsHUD" type="Control"]
+mouse_filter = 2
+script = ExtResource("1")
+bee_path = NodePath("../../BeePlayer")
+[node name="State" type="Label" parent="."]
+offset_left = 18.0
+offset_top = 52.0
+offset_right = 880.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0.3, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
+text = "BASE · BOMB x1 · C BOMB"
+[node name="Hint" type="Label" parent="."]
+visible = false
+offset_left = 18.0
+offset_top = 125.0
+offset_right = 500.0
+offset_bottom = 157.0
+theme_override_colors/font_color = Color(0.3, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+[node name="HintTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true

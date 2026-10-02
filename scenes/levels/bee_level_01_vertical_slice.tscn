@@ -1,0 +1,219 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_vertical_slice.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_controller.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_scenery.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/levels/giant_human_hazard.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/levels/destructible_obstacle_3d.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_powerup_pickup.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_weapons_hud.tscn" id="9"]
+[ext_resource type="Script" path="res://scripts/levels/bee_checkpoint_qol.gd" id="10"]
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.30, 0.39, 0.21, 1)
+
+[sub_resource type="BoxMesh" id="ground_extension"]
+size = Vector3(410, 0.5, 10)
+material = SubResource("ground_material")
+
+[sub_resource type="BoxShape3D" id="log_top"]
+size = Vector3(3.8, 0.38, 1.6)
+
+[sub_resource type="BoxShape3D" id="log_bottom"]
+size = Vector3(3.8, 0.28, 1.6)
+
+[sub_resource type="BoxShape3D" id="log_side"]
+size = Vector3(3.8, 1.05, 0.26)
+
+[sub_resource type="ProceduralSkyMaterial" id="garden_sky_material"]
+sky_top_color = Color(0.24, 0.55, 0.82, 1)
+sky_horizon_color = Color(0.74, 0.86, 0.86, 1)
+ground_bottom_color = Color(0.24, 0.31, 0.22, 1)
+ground_horizon_color = Color(0.63, 0.72, 0.53, 1)
+
+[sub_resource type="Sky" id="garden_sky"]
+sky_material = SubResource("garden_sky_material")
+
+[sub_resource type="Environment" id="garden_environment"]
+background_mode = 2
+sky = SubResource("garden_sky")
+ambient_light_source = 3
+ambient_light_color = Color(0.95, 0.94, 0.84, 1)
+ambient_light_energy = 0.75
+
+[node name="BeeLevel01VerticalSlice" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 360.0
+
+[node name="Scenery" parent="." index="0"]
+script = ExtResource("4")
+
+[node name="CollisionShape3D" parent="LogObstacle" index="0"]
+disabled = true
+
+[node name="LogObstacle" parent="." index="2"]
+position = Vector3(55, 0.85, 0)
+
+[node name="LogTop" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, 0.67, 0)
+shape = SubResource("log_top")
+
+[node name="LogBottom" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.71, 0)
+shape = SubResource("log_bottom")
+
+[node name="LogNearSide" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.05, 0.67)
+shape = SubResource("log_side")
+
+[node name="LogFarSide" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.05, -0.67)
+shape = SubResource("log_side")
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+
+[node name="BeePlayer" parent="." index="4"]
+starting_bomb_charges = 1
+
+[node name="PollenA" parent="Pollen" index="0"]
+position = Vector3(12, 5.8, 0)
+
+[node name="PollenB" parent="Pollen" index="1"]
+position = Vector3(34, 2.3, 0)
+
+[node name="PollenC" parent="Pollen" index="2"]
+position = Vector3(55, 0.85, 0)
+
+[node name="PollenD" parent="Pollen" index="3"]
+position = Vector3(82, 5.8, 0)
+
+[node name="PollenE" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(111, 2.3, 0)
+
+[node name="PollenF" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(137, 1.35, 0)
+
+[node name="PollenG" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(166, 5.7, 0)
+
+[node name="PollenH" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(195, 2.2, 0)
+
+[node name="PollenI" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(223, 5.8, 0)
+
+[node name="PollenJ" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(251, 2.0, 0)
+
+[node name="PollenK" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(288, 5.8, 0)
+
+[node name="PollenL" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(326, 1.8, 0)
+
+[node name="PollenM" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(347, 5.7, 0)
+
+[node name="PollenN" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(20, 1.9, 0)
+
+[node name="PollenO" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(155, 4.6, 0)
+
+[node name="PollenP" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(208, 5.8, 0)
+
+[node name="PollenQ" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(271, 1.7, 0)
+
+[node name="WorldEnvironment" parent="." index="8"]
+environment = SubResource("garden_environment")
+
+[node name="Sun" parent="." index="9"]
+light_color = Color(1, 0.95, 0.79, 1)
+light_energy = 1.2
+
+[node name="Status" parent="CanvasLayer" index="0"]
+text = "HP 100/100 · POLEN 0/17 · WASD/FLECHAS VOLAR · X DISPARO · Z MELEE"
+
+[node name="Debug" parent="CanvasLayer" index="1"]
+visible = false
+
+[node name="GroundExtension" type="MeshInstance3D" parent="."]
+position = Vector3(175, -0.45, -1.5)
+mesh = SubResource("ground_extension")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Destructibles" type="Node3D" parent="."]
+
+[node name="GardenCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(18, 0, 0)
+
+[node name="LogApproachCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(43, 0, 0)
+scale = Vector3(0.9, 1, 1)
+
+[node name="FirstContactCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(120, 0, 0)
+
+[node name="HumanAreaCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(153, 0, 0)
+scale = Vector3(0.85, 1.1, 1)
+
+[node name="DefenseCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(198, 0, 0)
+
+[node name="OrganicCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(242, 0, 0)
+scale = Vector3(1, 0.9, 1)
+
+[node name="WalkerApproachCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(282, 0, 0)
+
+[node name="FinalCrate" parent="Destructibles" instance=ExtResource("7")]
+position = Vector3(343, 0, 0)
+
+[node name="GiantHuman" parent="." instance=ExtResource("5")]
+
+[node name="Section" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 87.0
+offset_right = 930.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 22
+text = "JARDÍN · APRENDÉ A VOLAR"
+
+[node name="HumanWarning" type="Label" parent="CanvasLayer"]
+visible = false
+offset_left = 310.0
+offset_top = 125.0
+offset_right = 1250.0
+offset_bottom = 171.0
+theme_override_colors/font_color = Color(1, 0.72, 0.22, 1)
+theme_override_font_sizes/font_size = 28
+text = "¡ALGO ENORME CRUZA DESDE LA DERECHA!"
+
+[node name="WeaponsHUD" parent="CanvasLayer" instance=ExtResource("9")]
+
+[node name="Powerups" type="Node3D" parent="."]
+
+[node name="SpreadFirst" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(22, 3.8, 0)
+
+[node name="BombFirst" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(166, 3, 0)
+kind = 1
+
+[node name="SpreadRecharge" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(222, 3.8, 0)
+
+[node name="BombRecharge" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(318, 3.8, 0)
+kind = 1
+
+[node name="CheckpointQoL" type="Node" parent="."]
+script = ExtResource("10")

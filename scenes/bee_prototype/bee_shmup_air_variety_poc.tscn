@@ -1,0 +1,38 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_air_variety_poc.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_air_wave_controller.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/alien_probe_ranged.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/eye_drone_enemy.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/speeder_enemy.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_scenery.gd" id="7"]
+[sub_resource type="StandardMaterial3D" id="ground_mat"]
+albedo_color = Color(0.30,0.39,0.21,1)
+[sub_resource type="BoxMesh" id="extension_mesh"]
+size = Vector3(31,0.5,10)
+material = SubResource("ground_mat")
+[node name="BeeShmupAirVarietyPOC" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 76.0
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+probe_scene = ExtResource("4")
+eye_scene = ExtResource("5")
+speeder_scene = ExtResource("6")
+[node name="PollenD" parent="Pollen" index="3"]
+position = Vector3(67,2.1,0)
+[node name="SceneryExtension" type="Node3D" parent="."]
+position = Vector3(55,0,-1.0)
+script = ExtResource("7")
+[node name="GroundExtension" type="MeshInstance3D" parent="."]
+position = Vector3(77,-0.45,-1.5)
+mesh = SubResource("extension_mesh")
+[node name="Wave" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 88.0
+offset_right = 220.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 23
+text = "WAVE 0/4"
+

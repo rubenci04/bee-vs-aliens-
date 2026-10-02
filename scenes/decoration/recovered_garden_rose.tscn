@@ -1,0 +1,97 @@
+[gd_scene load_steps=8 format=3]
+
+[sub_resource type="StandardMaterial3D" id="green"]
+albedo_color = Color(0.18, 0.32, 0.13, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="rose"]
+albedo_color = Color(0.72, 0.34, 0.43, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="ochre"]
+albedo_color = Color(0.64, 0.43, 0.09, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="stem"]
+material = SubResource("green")
+top_radius = 0.38
+bottom_radius = 0.5
+height = 1.0
+radial_segments = 7
+
+[sub_resource type="SphereMesh" id="leaf"]
+material = SubResource("green")
+radius = 0.5
+height = 1.0
+radial_segments = 8
+rings = 3
+
+[sub_resource type="SphereMesh" id="petal"]
+material = SubResource("rose")
+radius = 0.5
+height = 1.0
+radial_segments = 8
+rings = 3
+
+[sub_resource type="SphereMesh" id="center"]
+material = SubResource("ochre")
+radius = 0.5
+height = 1.0
+radial_segments = 8
+rings = 3
+
+[node name="RecoveredGardenRose" type="Node3D"]
+
+[node name="Stem" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1, 0)
+scale = Vector3(0.3, 2, 0.3)
+rotation = Vector3(0, 0, 0.16)
+mesh = SubResource("stem")
+
+[node name="LeafL" type="MeshInstance3D" parent="."]
+position = Vector3(-0.65, 0.96, 0)
+scale = Vector3(1.7, 0.55, 0.4)
+rotation = Vector3(0, 0, -0.45)
+mesh = SubResource("leaf")
+
+[node name="LeafR" type="MeshInstance3D" parent="."]
+position = Vector3(0.65, 0.96, 0)
+scale = Vector3(1.7, 0.55, 0.4)
+rotation = Vector3(0, 0, 0.45)
+mesh = SubResource("leaf")
+
+[node name="Petal0" type="MeshInstance3D" parent="."]
+position = Vector3(0.8193986452017703, 2.0876250136378354, 0)
+scale = Vector3(1.45, 1.1, 0.5)
+rotation = Vector3(0, 0, 0.16)
+mesh = SubResource("petal")
+
+[node name="Petal1" type="MeshInstance3D" parent="."]
+position = Vector3(0.127445993126258, 2.5434775358517414, 0)
+scale = Vector3(1.45, 1.1, 0.5)
+rotation = Vector3(0, 0, 1.4166370614359172)
+mesh = SubResource("petal")
+
+[node name="Petal2" type="MeshInstance3D" parent="."]
+position = Vector3(-0.7406326897197575, 2.2482625756405805, 0)
+scale = Vector3(1.45, 1.1, 0.5)
+rotation = Vector3(0, 0, 2.6732741228718346)
+mesh = SubResource("petal")
+
+[node name="Petal3" type="MeshInstance3D" parent="."]
+position = Vector3(-0.5851821685523229, 1.609957174028729, 0)
+scale = Vector3(1.45, 1.1, 0.5)
+rotation = Vector3(0, 0, 3.929911184307752)
+mesh = SubResource("petal")
+
+[node name="Petal4" type="MeshInstance3D" parent="."]
+position = Vector3(0.37897021994405206, 1.5106777008411139, 0)
+scale = Vector3(1.45, 1.1, 0.5)
+rotation = Vector3(0, 0, 5.186548245743669)
+mesh = SubResource("petal")
+
+[node name="Center" type="MeshInstance3D" parent="."]
+position = Vector3(0, 2, 0.27)
+scale = Vector3(0.85, 0.85, 0.45)
+rotation = Vector3(0, 0, 0)
+mesh = SubResource("center")

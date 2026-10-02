@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=3]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_ground_threat_poc.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_ground_wave_controller.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/ground_turret_enemy.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_ground_polish_scenery.gd" id="5"]
+[sub_resource type="BoxShape3D" id="log_top"]
+size = Vector3(3.8, 0.38, 1.6)
+[sub_resource type="BoxShape3D" id="log_bottom"]
+size = Vector3(3.8, 0.28, 1.6)
+[sub_resource type="BoxShape3D" id="log_side"]
+size = Vector3(3.8, 1.05, 0.26)
+[node name="BeeShmupGroundThreatPOC" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 62.0
+[node name="Scenery" parent="." index="0"]
+script = ExtResource("5")
+[node name="CollisionShape3D" parent="LogObstacle" index="0"]
+disabled = true
+[node name="LogTop" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, 0.67, 0)
+shape = SubResource("log_top")
+[node name="LogBottom" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.71, 0)
+shape = SubResource("log_bottom")
+[node name="LogNearSide" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.05, 0.67)
+shape = SubResource("log_side")
+[node name="LogFarSide" type="CollisionShape3D" parent="LogObstacle"]
+position = Vector3(0, -0.05, -0.67)
+shape = SubResource("log_side")
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+[node name="Turrets" type="Node3D" parent="."]
+[node name="TurretA" parent="Turrets" instance=ExtResource("4")]
+position = Vector3(13,-0.2,0)
+[node name="TurretB" parent="Turrets" instance=ExtResource("4")]
+position = Vector3(30,-0.2,0)
+[node name="TurretC" parent="Turrets" instance=ExtResource("4")]
+position = Vector3(47,-0.2,0)
+[node name="TurretD" parent="Turrets" instance=ExtResource("4")]
+position = Vector3(54,-0.2,0)
+[node name="Encounter" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 88.0
+offset_right = 240.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 23
+text = "GROUND 0/3"

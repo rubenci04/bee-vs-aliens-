@@ -15,6 +15,8 @@ func collect(body: Node) -> bool:
 	if was_collected or not body.is_in_group("bee_player"):
 		return false
 	was_collected = true
+	BeeAudio.play(get_parent(), &"pollen", global_position)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"pollen")
 	var restored := 0
 	var health := body.get_node_or_null("HealthComponent") as HealthComponent
 	if health != null:

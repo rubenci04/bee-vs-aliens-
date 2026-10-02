@@ -1,0 +1,83 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_world_scale_human_poc.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_world_scale_controller.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/giant_human_crossing_hazard.gd" id="4"]
+[ext_resource type="PackedScene" path="res://assets/models/human_reuse/hipster_poc.glb" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="7"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_world_scale_scenery.gd" id="8"]
+
+[sub_resource type="BoxShape3D" id="leg_shape"]
+size = Vector3(1.35, 3.0, 1.4)
+
+[sub_resource type="BoxShape3D" id="torso_shape"]
+size = Vector3(4.45, 4.8, 1.55)
+
+[sub_resource type="BoxMesh" id="ground_extension"]
+size = Vector3(35, 0.5, 10)
+
+[node name="BeeShmupWorldScaleHumanPOC" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 78.0
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+
+[node name="PollenA" parent="Pollen" index="0"]
+position = Vector3(8, 6.0, 0)
+
+[node name="PollenB" parent="Pollen" index="1"]
+position = Vector3(27, 1.4, 0)
+
+[node name="PollenC" parent="Pollen" index="2"]
+position = Vector3(45, 6.0, 0)
+
+[node name="PollenD" parent="Pollen" index="3"]
+position = Vector3(58, 1.5, 0)
+
+[node name="PollenE" parent="Pollen" instance=ExtResource("7")]
+position = Vector3(70, 5.8, 0)
+
+[node name="WorldScenery" type="Node3D" parent="."]
+script = ExtResource("8")
+
+[node name="GroundExtension" type="MeshInstance3D" parent="."]
+position = Vector3(76, -0.45, -1.5)
+mesh = SubResource("ground_extension")
+
+[node name="GiantHuman" type="Node3D" parent="."]
+script = ExtResource("4")
+
+[node name="VisualRoot" type="Node3D" parent="GiantHuman"]
+rotation = Vector3(0, 1.570796, 0)
+scale = Vector3(6, 6, 6)
+
+[node name="Hipster" parent="GiantHuman/VisualRoot" instance=ExtResource("5")]
+
+[node name="ContactHitbox" parent="GiantHuman" instance=ExtResource("6")]
+damage = 20
+team_id = &"human_hazard"
+
+[node name="LeftLeg" type="CollisionShape3D" parent="GiantHuman/ContactHitbox"]
+position = Vector3(-1.55, 1.5, 0)
+shape = SubResource("leg_shape")
+
+[node name="RightLeg" type="CollisionShape3D" parent="GiantHuman/ContactHitbox"]
+position = Vector3(1.55, 1.5, 0)
+shape = SubResource("leg_shape")
+
+[node name="Torso" type="CollisionShape3D" parent="GiantHuman/ContactHitbox"]
+position = Vector3(0, 5.2, 0)
+shape = SubResource("torso_shape")
+
+[node name="HumanWarning" type="Label" parent="CanvasLayer"]
+visible = false
+offset_left = 320.0
+offset_top = 91.0
+offset_right = 1120.0
+offset_bottom = 135.0
+theme_override_colors/font_color = Color(1, 0.72, 0.22, 1)
+theme_override_font_sizes/font_size = 28
+text = "¡ALGO ENORME CRUZA DESDE LA DERECHA!"

@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/bee_prototype/alien_probe_ranged.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/vfx/bee_enemy_feedback.gd" id="combat_feedback"]
 [ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/components/hurtbox_3d.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="4"]
@@ -51,3 +52,6 @@ shape = SubResource("shape")
 [node name="AttackTelegraph" type="MeshInstance3D" parent="."]
 visible = false
 mesh = SubResource("telegraph_mesh")
+
+[node name="CombatFeedback" type="Node" parent="."]
+script = ExtResource("combat_feedback")

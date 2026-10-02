@@ -7,6 +7,7 @@ signal died
 @export_range(1, 100000, 1) var max_health: int = 100
 var current_health: int
 var _death_emitted := false
+var damage_blocked := false # Temporary protection, off by default.
 
 
 func _ready() -> void:
@@ -14,7 +15,7 @@ func _ready() -> void:
 
 
 func take_damage(amount: int) -> int:
-	if amount <= 0 or current_health <= 0:
+	if damage_blocked or amount <= 0 or current_health <= 0:
 		return 0
 	var previous := current_health
 	current_health = maxi(0, current_health - amount)

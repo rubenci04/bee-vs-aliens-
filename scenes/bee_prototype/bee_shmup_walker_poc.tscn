@@ -1,0 +1,54 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_walker_poc.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_walker_wave_controller.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/ground_walker_enemy.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_ground_polish_scenery.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="6"]
+
+[sub_resource type="StandardMaterial3D" id="ground_mat"]
+albedo_color = Color(0.30, 0.39, 0.21, 1)
+
+[sub_resource type="BoxMesh" id="long_ground"]
+size = Vector3(96, 0.5, 10)
+material = SubResource("ground_mat")
+
+[node name="BeeShmupWalkerPOC" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 78.0
+
+[node name="Scenery" parent="." index="0"]
+script = ExtResource("5")
+
+[node name="Ground" parent="." index="1"]
+position = Vector3(39, -0.45, -1.5)
+mesh = SubResource("long_ground")
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+
+[node name="PollenE" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(70, 3.3, 0)
+
+[node name="Walkers" type="Node3D" parent="."]
+
+[node name="WalkerA" parent="Walkers" instance=ExtResource("4")]
+position = Vector3(14, -0.2, 0)
+
+[node name="WalkerB" parent="Walkers" instance=ExtResource("4")]
+position = Vector3(33, -0.2, 0)
+
+[node name="WalkerC" parent="Walkers" instance=ExtResource("4")]
+position = Vector3(52, -0.2, 0)
+
+[node name="WalkerD" parent="Walkers" instance=ExtResource("4")]
+position = Vector3(58, -0.2, 0)
+
+[node name="Encounter" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 88.0
+offset_right = 280.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 23
+text = "WALKER 0/3"

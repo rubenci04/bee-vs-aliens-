@@ -1,6 +1,19 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=10 format=3]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_garden_poc.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/bee_mission_01.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_mission_approved_scenery.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/wasp_enemy.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="5"]
+[sub_resource type="StandardMaterial3D" id="marker_pollen"]
+albedo_color = Color(1,0.8,0.05,1)
+emission_enabled = true
+emission = Color(1,0.6,0,1)
+[sub_resource type="StandardMaterial3D" id="marker_signal"]
+albedo_color = Color(0.05,0.9,0.85,1)
+emission_enabled = true
+emission = Color(0.05,0.8,0.7,1)
+[sub_resource type="BoxMesh" id="marker_mesh"]
+size = Vector3(0.36,0.36,0.36)
 [sub_resource type="StandardMaterial3D" id="cyan"]
 shading_mode = 0
 albedo_color = Color(0.05,0.72,0.68,1)
@@ -12,6 +25,22 @@ radial_segments = 6
 rings = 2
 [node name="BeeMission01" instance=ExtResource("1")]
 script = ExtResource("2")
+[node name="ApprovedScenery" parent="." index="0"]
+script = ExtResource("3")
+[node name="WaspFinal" parent="Enemies" instance=ExtResource("4")]
+position = Vector3(12,3.5,0)
+[node name="RecoveryPollen" parent="." instance=ExtResource("5")]
+position = Vector3(13,2.2,0)
+[node name="ObjectiveMarker" type="Node3D" parent="."]
+[node name="PollenVisual" type="MeshInstance3D" parent="ObjectiveMarker"]
+rotation = Vector3(0,0,0.785398)
+mesh = SubResource("marker_mesh")
+material_override = SubResource("marker_pollen")
+[node name="SignalVisual" type="MeshInstance3D" parent="ObjectiveMarker"]
+visible = false
+rotation = Vector3(0,0,0.785398)
+mesh = SubResource("marker_mesh")
+material_override = SubResource("marker_signal")
 [node name="Narrative" type="Label" parent="CanvasLayer"]
 offset_left = 190.0
 offset_top = 110.0
@@ -30,3 +59,5 @@ mesh = SubResource("light")
 [node name="LightC" type="MeshInstance3D" parent="Presence"]
 position = Vector3(1,0,0)
 mesh = SubResource("light")
+
+

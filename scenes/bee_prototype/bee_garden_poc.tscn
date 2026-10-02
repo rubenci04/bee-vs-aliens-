@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://scripts/bee_prototype/bee_garden_poc.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/wasp_enemy.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/alien_probe_ranged.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/bee_camera.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_garden_approved_scenery.gd" id="7"]
 [sub_resource type="Environment" id="environment"]
 background_mode = 1
 background_color = Color(0.52,0.68,0.71,1)
@@ -19,10 +20,12 @@ material = SubResource("soil")
 [sub_resource type="BoxShape3D" id="ground_shape"]
 size = Vector3(34,0.6,8)
 [sub_resource type="BoxShape3D" id="branch_shape"]
-size = Vector3(5,0.7,0.8)
+size = Vector3(4.799,2.0,2.636)
 [node name="BeeGardenPOC" type="Node3D"]
 script = ExtResource("1")
 [node name="Scenery" type="Node3D" parent="."]
+[node name="ApprovedScenery" type="Node3D" parent="."]
+script = ExtResource("7")
 [node name="Ground" type="StaticBody3D" parent="."]
 position = Vector3(0,-0.3,0)
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
@@ -30,7 +33,7 @@ mesh = SubResource("ground_mesh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
 shape = SubResource("ground_shape")
 [node name="Branch" type="StaticBody3D" parent="."]
-position = Vector3(1,0.55,0)
+position = Vector3(1,1.0,0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Branch"]
 shape = SubResource("branch_shape")
 [node name="BeePlayer" parent="." instance=ExtResource("2")]
@@ -63,3 +66,4 @@ rotation_degrees = Vector3(-40,-25,0)
 offset_left = 18.0
 offset_top = 18.0
 text = "JARDÍN"
+

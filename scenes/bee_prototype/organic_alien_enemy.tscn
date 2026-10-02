@@ -1,0 +1,70 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/bee_prototype/organic_alien_enemy.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/vfx/bee_enemy_feedback.gd" id="combat_feedback"]
+[ext_resource type="PackedScene" path="res://assets/external/approved/alien_ground/quaternius/Alien_sUTLXji0aL/Alien by Quaternius - sUTLXji0aL.glb" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/components/hurtbox_3d.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="6"]
+
+[sub_resource type="SphereShape3D" id="body_shape"]
+radius = 0.64
+
+[sub_resource type="SphereShape3D" id="bite_shape"]
+radius = 0.65
+
+[sub_resource type="StandardMaterial3D" id="windup_material"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.9, 0.13, 0.56, 0.7)
+emission_enabled = true
+emission = Color(0.75, 0.05, 0.38, 1)
+
+[sub_resource type="TorusMesh" id="windup_ring"]
+inner_radius = 0.78
+outer_radius = 0.88
+rings = 10
+ring_segments = 24
+material = SubResource("windup_material")
+
+[node name="OrganicAlienEnemy" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("body_shape")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+
+[node name="AlienModel" parent="VisualRoot" instance=ExtResource("2")]
+position = Vector3(0, -0.7, 0)
+scale = Vector3(0.42, 0.42, 0.42)
+
+[node name="HealthComponent" parent="." instance=ExtResource("3")]
+max_health = 35
+
+[node name="HitFlash3D" parent="." instance=ExtResource("5")]
+
+[node name="Hurtbox3D" parent="." instance=ExtResource("4")]
+team_id = &"alien"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+shape = SubResource("body_shape")
+
+[node name="BiteHitbox" parent="." instance=ExtResource("6")]
+team_id = &"alien"
+damage = 13
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BiteHitbox"]
+shape = SubResource("bite_shape")
+
+[node name="AttackTelegraph" type="MeshInstance3D" parent="."]
+visible = false
+rotation = Vector3(1.570796, 0, 0)
+mesh = SubResource("windup_ring")
+
+[node name="CombatFeedback" type="Node" parent="."]
+script = ExtResource("combat_feedback")
+organic = true

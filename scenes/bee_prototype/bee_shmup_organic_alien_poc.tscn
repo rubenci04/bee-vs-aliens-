@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_organic_alien_wave_controller.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/organic_alien_enemy.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_world_scale_scenery.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_organic_alien_poc.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_organic_polish_scenery.gd" id="6"]
+
+[sub_resource type="BoxMesh" id="ground_extension"]
+size = Vector3(30, 0.5, 10)
+
+[node name="BeeShmupOrganicAlienPOC" instance=ExtResource("1")]
+script = ExtResource("5")
+sector_length = 70.0
+scroll_speed = 2.0
+
+[node name="Scenery" parent="." index="0"]
+script = ExtResource("6")
+
+[node name="CollisionShape3D" parent="LogObstacle" index="0"]
+disabled = true
+
+[node name="CollisionShape3D" parent="BottleObstacle" index="0"]
+disabled = true
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("2")
+alien_scene = ExtResource("3")
+
+[node name="PollenA" parent="Pollen" index="0"]
+position = Vector3(9, 6.0, 0)
+
+[node name="PollenB" parent="Pollen" index="1"]
+position = Vector3(26, 1.5, 0)
+
+[node name="PollenC" parent="Pollen" index="2"]
+position = Vector3(43, 5.8, 0)
+
+[node name="PollenD" parent="Pollen" index="3"]
+position = Vector3(61, 2.0, 0)
+
+[node name="GroundExtension" type="MeshInstance3D" parent="."]
+position = Vector3(72, -0.45, -1.5)
+mesh = SubResource("ground_extension")
+
+[node name="Wave" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 88.0
+offset_right = 720.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 23
+text = "ORGANIC ALIEN · ENCUENTRO 0/3"

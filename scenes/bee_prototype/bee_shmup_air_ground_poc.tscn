@@ -1,0 +1,73 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_air_ground_poc.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_air_ground_wave_controller.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/alien_probe_ranged.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/eye_drone_enemy.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/speeder_enemy.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/ground_turret_enemy.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="8"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_scenery.gd" id="9"]
+
+[sub_resource type="StandardMaterial3D" id="ground_mat"]
+albedo_color = Color(0.3, 0.39, 0.21, 1)
+
+[sub_resource type="BoxMesh" id="extension_mesh"]
+size = Vector3(48, 0.5, 10)
+material = SubResource("ground_mat")
+
+[node name="BeeShmupAirGroundPOC" instance=ExtResource("1")]
+script = ExtResource("2")
+sector_length = 95.0
+
+[node name="WaveController" parent="." index="6"]
+script = ExtResource("3")
+probe_scene = ExtResource("4")
+eye_scene = ExtResource("5")
+speeder_scene = ExtResource("6")
+
+[node name="PollenA" parent="Pollen" index="0"]
+position = Vector3(10, 6.2, 0)
+
+[node name="PollenB" parent="Pollen" index="1"]
+position = Vector3(29, 1.5, 0)
+
+[node name="PollenC" parent="Pollen" index="2"]
+position = Vector3(48, 6.0, 0)
+
+[node name="PollenD" parent="Pollen" index="3"]
+position = Vector3(69, 1.9, 0)
+
+[node name="PollenE" parent="Pollen" instance=ExtResource("8")]
+position = Vector3(89, 5.7, 0)
+
+[node name="SceneryExtension" type="Node3D" parent="."]
+position = Vector3(55, 0, -1)
+script = ExtResource("9")
+
+[node name="GroundExtension" type="MeshInstance3D" parent="."]
+position = Vector3(82, -0.45, -1.5)
+mesh = SubResource("extension_mesh")
+
+[node name="Turrets" type="Node3D" parent="."]
+
+[node name="TurretA" parent="Turrets" instance=ExtResource("7")]
+position = Vector3(15, -0.2, 0)
+
+[node name="TurretB" parent="Turrets" instance=ExtResource("7")]
+position = Vector3(33, -0.2, 0)
+
+[node name="TurretC" parent="Turrets" instance=ExtResource("7")]
+position = Vector3(52, -0.2, 0)
+
+[node name="TurretD" parent="Turrets" instance=ExtResource("7")]
+position = Vector3(88, -0.2, 0)
+
+[node name="Wave" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 88.0
+offset_right = 220.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 23
+text = "WAVE 0/5"

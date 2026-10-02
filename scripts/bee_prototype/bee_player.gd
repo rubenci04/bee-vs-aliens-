@@ -5,6 +5,8 @@ signal health_changed(current: int, maximum: int)
 signal auto_aim_changed(target: Node3D)
 signal melee_started
 signal defeated
+signal weapon_state_changed
+signal powerup_collected(kind: StringName)
 
 @export_category("Flight")
 @export var horizontal_speed := 7.0
@@ -19,6 +21,16 @@ signal defeated
 @export var auto_aim_range := 12.0
 @export_range(1.0, 179.0, 1.0) var auto_aim_cone_degrees := 80.0
 @export var muzzle_offset := Vector3(0.48, 0.0, 0.0)
+
+@export_category("Temporary powerups")
+@export var spread_max_shots := 24
+@export var spread_angle_degrees := 14.0
+@export var spread_damage_ratio := 0.6
+@export var starting_bomb_charges := 0
+@export var max_bomb_charges := 3
+@export var bomb_radius := 3.0
+@export var bomb_damage := 32
+const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 
 @export_category("Melee")
 @export var melee_damage := 15
@@ -37,6 +49,8 @@ var current_auto_target: Node3D
 var shots_fired := 0
 var melee_count := 0
 var is_defeated := false
+var spread_ammo := 0
+var bomb_charges := 0
 var _melee_active_left := 0.0
 var _melee_cooldown_left := 0.0
 var _melee_tween: Tween
@@ -44,10 +58,12 @@ var _melee_tween: Tween
 
 func _ready() -> void:
 	add_to_group("bee_player")
+	bomb_charges = clampi(starting_bomb_charges, 0, max_bomb_charges)
 	target_indicator.set_as_top_level(true)
 	target_indicator.hide()
 	melee_hitbox.damage = melee_damage
 	melee_hitbox.set_enabled(false)
+	melee_hitbox.hit_confirmed.connect(_on_melee_impact)
 	_place_melee_hitbox()
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
@@ -77,6 +93,8 @@ func _physics_process(delta: float) -> void:
 		fire()
 	if Input.is_action_just_pressed("debug_attack"):
 		start_melee()
+	if Input.is_action_just_pressed("bee_bomb"):
+		use_bomb()
 
 
 func refresh_auto_aim() -> Node3D:
@@ -117,12 +135,60 @@ func fire() -> BeeEnergyProjectile:
 	var direction := Vector3(facing_x, 0.0, 0.0)
 	if current_auto_target != null:
 		direction = (_target_point(current_auto_target) - global_position).normalized()
+	var projectile := _spawn_projectile(direction)
+	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
+	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle_spread" if spread_ammo > 0 else &"muzzle", direction)
+	if spread_ammo > 0:
+		projectile.set_spread_visual()
+		var reduced_damage := maxi(1, roundi(projectile.damage * spread_damage_ratio))
+		projectile.damage = reduced_damage
+		projectile.hitbox.damage = reduced_damage
+		for angle in [-spread_angle_degrees, spread_angle_degrees]:
+			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), reduced_damage).set_spread_visual()
+		spread_ammo -= 1
+		weapon_state_changed.emit()
+	shots_fired += 1
+	return projectile
+
+
+func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyProjectile:
 	var projectile := projectile_scene.instantiate() as BeeEnergyProjectile
+	if damage_override >= 0:
+		projectile.damage = damage_override
 	get_parent().add_child(projectile)
 	projectile.global_position = global_position + Vector3(facing_x * absf(muzzle_offset.x), muzzle_offset.y, 0.0)
 	projectile.launch(direction, self)
-	shots_fired += 1
 	return projectile
+
+
+func collect_spread() -> bool:
+	if is_defeated:
+		return false
+	spread_ammo = spread_max_shots
+	weapon_state_changed.emit()
+	powerup_collected.emit(&"spread")
+	return true
+
+
+func collect_bomb() -> bool:
+	if is_defeated or bomb_charges >= max_bomb_charges:
+		return false
+	bomb_charges += 1
+	weapon_state_changed.emit()
+	powerup_collected.emit(&"bomb")
+	return true
+
+
+func use_bomb() -> BeeAlienBomb:
+	if is_defeated or bomb_charges <= 0:
+		return null
+	var bomb := BOMB_SCENE.instantiate() as BeeAlienBomb
+	get_parent().add_child(bomb)
+	bomb.global_position = global_position
+	bomb.activate(self, bomb_radius, bomb_damage)
+	bomb_charges -= 1
+	weapon_state_changed.emit()
+	return bomb
 
 
 func start_melee() -> bool:
@@ -150,6 +216,11 @@ func _update_melee(delta: float) -> void:
 	_melee_active_left = maxf(0.0, _melee_active_left - delta)
 	if _melee_active_left == 0.0:
 		melee_hitbox.set_enabled(false)
+
+
+func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
+	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
+	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"melee", Vector3(facing_x, 0, 0))
 
 
 func _place_melee_hitbox() -> void:
@@ -182,7 +253,9 @@ func _update_target_indicator() -> void:
 	target_indicator.show()
 
 
-func _on_health_changed(current: int, maximum: int, _change: int) -> void:
+func _on_health_changed(current: int, maximum: int, change: int) -> void:
+	if change < 0 and current > 0:
+		BeeAudio.play(get_parent(), &"bee_damage")
 	health_changed.emit(current, maximum)
 
 
@@ -190,6 +263,7 @@ func _on_died() -> void:
 	if is_defeated:
 		return
 	is_defeated = true
+	BeeAudio.play(get_parent(), &"bee_defeat")
 	velocity = Vector3.ZERO
 	current_auto_target = null
 	target_indicator.hide()

@@ -1,0 +1,108 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_core_poc.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_player.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_camera.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_wave_controller.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/alien_probe_ranged.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/bee_prototype/pollen_pickup.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/bee_prototype/bee_shmup_scenery.gd" id="7"]
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.53,0.70,0.76,1)
+ambient_light_source = 3
+ambient_light_color = Color(0.95,0.94,0.84,1)
+ambient_light_energy = 0.75
+
+[sub_resource type="StandardMaterial3D" id="ground_mat"]
+albedo_color = Color(0.30,0.39,0.21,1)
+
+[sub_resource type="BoxMesh" id="ground_mesh"]
+size = Vector3(78,0.5,10)
+material = SubResource("ground_mat")
+
+[sub_resource type="BoxShape3D" id="log_shape"]
+size = Vector3(3.8,1.7,1.6)
+
+[sub_resource type="BoxShape3D" id="bottle_shape"]
+size = Vector3(1.4,3.8,1.5)
+
+[node name="BeeShmupCorePOC" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Scenery" type="Node3D" parent="."]
+script = ExtResource("7")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+position = Vector3(29,-0.45,-1.5)
+mesh = SubResource("ground_mesh")
+
+[node name="LogObstacle" type="StaticBody3D" parent="."]
+position = Vector3(25,0.85,0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LogObstacle"]
+shape = SubResource("log_shape")
+
+[node name="BottleObstacle" type="StaticBody3D" parent="."]
+position = Vector3(41,2.0,0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BottleObstacle"]
+shape = SubResource("bottle_shape")
+
+[node name="BeePlayer" parent="." instance=ExtResource("2")]
+position = Vector3(-2,4,0)
+flight_min = Vector2(-5.2,0.7)
+flight_max = Vector2(5.2,7.2)
+
+[node name="ShmupCamera" type="Camera3D" parent="."]
+position = Vector3(0,4,13)
+current = true
+fov = 40.0
+script = ExtResource("3")
+
+[node name="WaveController" type="Node3D" parent="."]
+script = ExtResource("4")
+probe_scene = ExtResource("5")
+
+[node name="Pollen" type="Node3D" parent="."]
+
+[node name="PollenA" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(8,6.2,0)
+
+[node name="PollenB" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(20,1.5,0)
+
+[node name="PollenC" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(33,5.8,0)
+
+[node name="PollenD" parent="Pollen" instance=ExtResource("6")]
+position = Vector3(48,2.0,0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-40,-25,0)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 850.0
+offset_bottom = 54.0
+theme_override_font_sizes/font_size = 25
+text = "SHMUP CORE POC"
+
+[node name="Debug" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 55.0
+offset_right = 850.0
+offset_bottom = 82.0
+theme_override_font_sizes/font_size = 17
+text = "SCROLL SPEED 2.0 m/s"
