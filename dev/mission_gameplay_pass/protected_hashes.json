@@ -1,0 +1,34 @@
+[
+  {
+    "path": "project.godot",
+    "sha256": "E8943763E4BD38CBBFBC5B6809BE28CC7AD0DC467FC38F192C7888EFEF1AE349"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_garden_poc.tscn",
+    "sha256": "58040B4165A9941A6465A9989103A80D519DE07AB6528311C5631E1DE9B52025"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_garden_poc.gd",
+    "sha256": "CFE1E9FD86D7C35C31B927778D781FD648408542395441531C4DE7AEFAE837A3"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_combat_poc.tscn",
+    "sha256": "A1150CD8308766906F0308EF20630E9CD6030963400E37A50CAC79ADCADD3FC4"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_player.gd",
+    "sha256": "5DCA7FD5253B76FAD8150589896C54886193A6949B5C65FB984281DC3CDC0FC5"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_enemy.gd",
+    "sha256": "0ADBAFC5DE6799BA847296989E2A24B035461F552CBE3A88581EECDA0FEC0161"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_ranged.gd",
+    "sha256": "D63CFA1140C41731B0219F22B9883DEE612B7D8961EB52C523FF87DBBDEAA029"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_mission_approved_scenery.gd",
+    "sha256": "FC8199901B329D267F59FC47936289CD0939B583808B2B58AC5D2A90A92A6220"
+  }
+]

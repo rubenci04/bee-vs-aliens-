@@ -1,0 +1,326 @@
+[
+	{
+		"cue": "base",
+		"duration": 1.58934240362812,
+		"onset": 0.0117233560090703,
+		"peak": 0.930503398180008,
+		"rms": 0.0858366330279905,
+		"source": "Sci-Fi Weapon SFX by Lentikula/Laser Pistol 1.wav",
+		"tail": 0.383469387755102
+	},
+	{
+		"cue": "base",
+		"duration": 1.40619047619048,
+		"onset": 0.0157823129251701,
+		"peak": 0.925968289375305,
+		"rms": 0.0950469583884846,
+		"source": "Sci-Fi Weapon SFX by Lentikula/Laser Pistol 2.wav",
+		"tail": 0.683061224489796
+	},
+	{
+		"cue": "base",
+		"duration": 0.239115646258503,
+		"onset": 0.0000453514739229025,
+		"peak": 0.521567940711975,
+		"rms": 0.0829621301065422,
+		"source": "kenney_sci-fi-sounds/Audio/laserSmall_000.ogg",
+		"tail": 0.239092970521542
+	},
+	{
+		"cue": "base",
+		"duration": 0.247256235827664,
+		"onset": 0.0000453514739229025,
+		"peak": 0.746462523937225,
+		"rms": 0.08015966135267,
+		"source": "kenney_sci-fi-sounds/Audio/laserSmall_001.ogg",
+		"tail": 0.247233560090703
+	},
+	{
+		"cue": "spread",
+		"duration": 2.54934240362812,
+		"onset": 0.0315419501133787,
+		"peak": 0.880316108465195,
+		"rms": 0.142406480677598,
+		"source": "Sci-Fi Weapon SFX by Lentikula/Laser Rifle 1.wav",
+		"tail": 1.5337641723356
+	},
+	{
+		"cue": "spread",
+		"duration": 2.34369614512472,
+		"onset": 0.0121315192743764,
+		"peak": 0.945850372314453,
+		"rms": 0.111562885536976,
+		"source": "Sci-Fi Weapon SFX by Lentikula/Laser Rifle 2.wav",
+		"tail": 1.48519274376417
+	},
+	{
+		"cue": "spread",
+		"duration": 0.676553287981859,
+		"onset": 0.0000680272108843537,
+		"peak": 0.897562563419342,
+		"rms": 0.138307034300654,
+		"source": "kenney_sci-fi-sounds/Audio/laserLarge_000.ogg",
+		"tail": 0.543809523809524
+	},
+	{
+		"cue": "tech_hit",
+		"duration": 0.634807256235828,
+		"onset": 0.0000680272108843537,
+		"peak": 0.897219479084015,
+		"rms": 0.078770234579554,
+		"source": "kenney_sci-fi-sounds/Audio/impactMetal_000.ogg",
+		"tail": 0.366643990929705
+	},
+	{
+		"cue": "tech_hit",
+		"duration": 0.158616780045351,
+		"onset": 0.0000453514739229025,
+		"peak": 0.894938409328461,
+		"rms": 0.0898238558337124,
+		"source": "kenney_impact-sounds/Audio/impactTin_medium_000.ogg",
+		"tail": 0.15859410430839
+	},
+	{
+		"cue": "organic_hit",
+		"duration": 0.117913832199546,
+		"onset": 0.0000453514739229025,
+		"peak": 0.895248651504517,
+		"rms": 0.192062910417917,
+		"source": "kenney_impact-sounds/Audio/impactSoft_medium_000.ogg",
+		"tail": 0.117891156462585
+	},
+	{
+		"cue": "organic_hit",
+		"duration": 0.183197278911565,
+		"onset": 0.000249433106575964,
+		"peak": 0.898739337921143,
+		"rms": 0.179592446755598,
+		"source": "kenney_impact-sounds/Audio/impactSoft_medium_001.ogg",
+		"tail": 0.183174603174603
+	},
+	{
+		"cue": "melee",
+		"duration": 0.430453514739229,
+		"onset": 0.000136054421768707,
+		"peak": 0.880089938640594,
+		"rms": 0.138391360844941,
+		"source": "kenney_impact-sounds/Audio/impactPunch_medium_000.ogg",
+		"tail": 0.279455782312925
+	},
+	{
+		"cue": "melee",
+		"duration": 0.648934240362812,
+		"onset": 0.000702947845804989,
+		"peak": 0.894561648368835,
+		"rms": 0.12614644641889,
+		"source": "kenney_impact-sounds/Audio/impactPunch_heavy_000.ogg",
+		"tail": 0.441904761904762
+	},
+	{
+		"cue": "bomb",
+		"duration": 0.953922902494331,
+		"onset": 0.00163265306122449,
+		"peak": 0.902511715888977,
+		"rms": 0.265043295094061,
+		"source": "kenney_sci-fi-sounds/Audio/forceField_000.ogg",
+		"tail": 0.703265306122449
+	},
+	{
+		"cue": "bomb",
+		"duration": 1.99995464852608,
+		"onset": 0.00723356009070295,
+		"peak": 0.901881158351898,
+		"rms": 0.125987805990085,
+		"source": "kenney_sci-fi-sounds/Audio/lowFrequency_explosion_000.ogg",
+		"tail": 1.63773242630385
+	},
+	{
+		"cue": "bomb",
+		"duration": 0.777369614512472,
+		"onset": 0.000113378684807256,
+		"peak": 0.895797193050385,
+		"rms": 0.205055733073639,
+		"source": "kenney_sci-fi-sounds/Audio/explosionCrunch_000.ogg",
+		"tail": 0.759501133786848
+	},
+	{
+		"cue": "bee_damage",
+		"duration": 0.404512471655329,
+		"onset": 0.000453514739229025,
+		"peak": 0.877267241477966,
+		"rms": 0.142967128800024,
+		"source": "kenney_impact-sounds/Audio/impactPunch_medium_001.ogg",
+		"tail": 0.265827664399093
+	},
+	{
+		"cue": "bee_damage",
+		"duration": 0.571950113378685,
+		"onset": 0.000136054421768707,
+		"peak": 0.894404768943787,
+		"rms": 0.134072861661625,
+		"source": "kenney_impact-sounds/Audio/impactSoft_heavy_001.ogg",
+		"tail": 0.571927437641723
+	},
+	{
+		"cue": "bee_defeat",
+		"duration": 0.258321995464853,
+		"onset": 0.0000453514739229025,
+		"peak": 0.898379385471344,
+		"rms": 0.223735923764206,
+		"source": "kenney_interface-sounds/Audio/minimize_001.ogg",
+		"tail": 0.254943310657596
+	},
+	{
+		"cue": "bee_defeat",
+		"duration": 0.258185941043084,
+		"onset": 0.0000453514739229025,
+		"peak": 0.901691734790802,
+		"rms": 0.305429837926353,
+		"source": "kenney_interface-sounds/Audio/minimize_002.ogg",
+		"tail": 0.255192743764172
+	},
+	{
+		"cue": "tech_death",
+		"duration": 1.35668934240363,
+		"onset": 0.0000453514739229025,
+		"peak": 0.893905103206635,
+		"rms": 0.251367940700204,
+		"source": "kenney_sci-fi-sounds/Audio/explosionCrunch_001.ogg",
+		"tail": 1.35666666666667
+	},
+	{
+		"cue": "tech_death",
+		"duration": 1.25566893424036,
+		"onset": 0.000113378684807256,
+		"peak": 0.89600145816803,
+		"rms": 0.151757755971689,
+		"source": "kenney_sci-fi-sounds/Audio/explosionCrunch_002.ogg",
+		"tail": 1.23140589569161
+	},
+	{
+		"cue": "organic_death",
+		"duration": 0.499909297052154,
+		"onset": 0.0046031746031746,
+		"peak": 0.896021485328674,
+		"rms": 0.0480430349918163,
+		"source": "kenney_sci-fi-sounds/Audio/slime_000.ogg",
+		"tail": 0.499886621315193
+	},
+	{
+		"cue": "organic_death",
+		"duration": 4.70975056689342,
+		"onset": 0.000385487528344671,
+		"peak": 0.896257758140564,
+		"rms": 0.065341860349716,
+		"source": "kenney_sci-fi-sounds/Audio/slime_001.ogg",
+		"tail": 4.70591836734694
+	},
+	{
+		"cue": "crate",
+		"duration": 0.312947845804989,
+		"onset": 0.0000453514739229025,
+		"peak": 0.897378206253052,
+		"rms": 0.104241751859988,
+		"source": "kenney_impact-sounds/Audio/impactWood_heavy_000.ogg",
+		"tail": 0.312925170068027
+	},
+	{
+		"cue": "crate",
+		"duration": 0.77891156462585,
+		"onset": 0.0000453514739229025,
+		"peak": 0.86922025680542,
+		"rms": 0.0639933110775064,
+		"source": "kenney_impact-sounds/Audio/impactPlank_medium_000.ogg",
+		"tail": 0.186938775510204
+	},
+	{
+		"cue": "spread_pickup",
+		"duration": 0.289750566893424,
+		"onset": 0.000090702947845805,
+		"peak": 0.898484826087952,
+		"rms": 0.271913003581197,
+		"source": "kenney_interface-sounds/Audio/confirmation_001.ogg",
+		"tail": 0.286394557823129
+	},
+	{
+		"cue": "spread_pickup",
+		"duration": 0.53891156462585,
+		"onset": 0.000090702947845805,
+		"peak": 0.895788550376892,
+		"rms": 0.180243983656676,
+		"source": "kenney_interface-sounds/Audio/confirmation_002.ogg",
+		"tail": 0.520204081632653
+	},
+	{
+		"cue": "bomb_pickup",
+		"duration": 0.258321995464853,
+		"onset": 0.00351473922902494,
+		"peak": 0.894264101982117,
+		"rms": 0.223503422528728,
+		"source": "kenney_interface-sounds/Audio/maximize_001.ogg",
+		"tail": 0.258299319727891
+	},
+	{
+		"cue": "bomb_pickup",
+		"duration": 0.258185941043084,
+		"onset": 0.00315192743764172,
+		"peak": 0.899823486804962,
+		"rms": 0.30556594822549,
+		"source": "kenney_interface-sounds/Audio/maximize_002.ogg",
+		"tail": 0.258163265306122
+	},
+	{
+		"cue": "pollen",
+		"duration": 0.102335600907029,
+		"onset": 0.0000453514739229025,
+		"peak": 1.05022943019867,
+		"rms": 0.0938289608155348,
+		"source": "kenney_interface-sounds/Audio/pluck_001.ogg",
+		"tail": 0.0859410430839002
+	},
+	{
+		"cue": "pollen",
+		"duration": 0.164467120181406,
+		"onset": 0.0000453514739229025,
+		"peak": 0.948015451431274,
+		"rms": 0.0811128270913269,
+		"source": "kenney_interface-sounds/Audio/pluck_002.ogg",
+		"tail": 0.113514739229025
+	},
+	{
+		"cue": "human_warning",
+		"duration": 0.999954648526077,
+		"onset": 0.00698412698412698,
+		"peak": 0.908675789833069,
+		"rms": 0.165671260503042,
+		"source": "kenney_sci-fi-sounds/Audio/lowFrequency_explosion_001.ogg",
+		"tail": 0.869297052154195
+	},
+	{
+		"cue": "human_warning",
+		"duration": 0.953333333333333,
+		"onset": 0.00158730158730159,
+		"peak": 0.900794982910156,
+		"rms": 0.26331603093152,
+		"source": "kenney_sci-fi-sounds/Audio/forceField_001.ogg",
+		"tail": 0.702721088435374
+	},
+	{
+		"cue": "human_step",
+		"duration": 0.777482993197279,
+		"onset": 0.0000453514739229025,
+		"peak": 0.885343432426453,
+		"rms": 0.0320570106515787,
+		"source": "kenney_impact-sounds/Audio/footstep_grass_000.ogg",
+		"tail": 0.125283446712018
+	},
+	{
+		"cue": "human_step",
+		"duration": 0.105827664399093,
+		"onset": 0.0000453514739229025,
+		"peak": 0.898954153060913,
+		"rms": 0.0894724752325624,
+		"source": "kenney_impact-sounds/Audio/footstep_concrete_000.ogg",
+		"tail": 0.105804988662132
+	}
+]

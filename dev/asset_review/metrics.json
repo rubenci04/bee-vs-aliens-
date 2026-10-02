@@ -1,0 +1,102 @@
+[
+	{
+		"animations": [],
+		"asset": "CommonTree_1",
+		"colliders": 0,
+		"dimensions": [
+			4.31142282485962,
+			7.26478576660156,
+			4.57771396636963
+		],
+		"materials": 2,
+		"meshes": 1,
+		"scale_original": [
+			1,
+			1,
+			1
+		],
+		"scale_suggested": 0.963552157612291,
+		"textures": 3,
+		"triangles": 6265
+	},
+	{
+		"animations": [],
+		"asset": "Fern_1",
+		"colliders": 0,
+		"dimensions": [
+			2.82693386077881,
+			0.840243220329285,
+			2.65231990814209
+		],
+		"materials": 1,
+		"meshes": 1,
+		"scale_original": [
+			1,
+			1,
+			1
+		],
+		"scale_suggested": 2.38026318048269,
+		"textures": 1,
+		"triangles": 288
+	},
+	{
+		"animations": [],
+		"asset": "log_large",
+		"colliders": 0,
+		"dimensions": [
+			1.0,
+			0.416719436645508,
+			0.54932165145874
+		],
+		"materials": 2,
+		"meshes": 1,
+		"scale_original": [
+			1,
+			1,
+			1
+		],
+		"scale_suggested": 4.79939216682457,
+		"textures": 0,
+		"triangles": 96
+	},
+	{
+		"animations": [],
+		"asset": "flower_purpleA",
+		"colliders": 0,
+		"dimensions": [
+			0.159097522497177,
+			0.242499992251396,
+			0.181059062480927
+		],
+		"materials": 2,
+		"meshes": 1,
+		"scale_original": [
+			1,
+			1,
+			1
+		],
+		"scale_suggested": 16.4948458878846,
+		"textures": 0,
+		"triangles": 76
+	},
+	{
+		"animations": [],
+		"asset": "soda-bottle",
+		"colliders": 0,
+		"dimensions": [
+			0.180491998791695,
+			0.580412030220032,
+			0.15631066262722
+		],
+		"materials": 1,
+		"meshes": 1,
+		"scale_original": [
+			1,
+			1,
+			1
+		],
+		"scale_suggested": 10.3374838693909,
+		"textures": 1,
+		"triangles": 100
+	}
+]

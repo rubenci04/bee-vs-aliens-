@@ -1,0 +1,34 @@
+[
+  {
+    "path": "project.godot",
+    "hash": "E8943763E4BD38CBBFBC5B6809BE28CC7AD0DC467FC38F192C7888EFEF1AE349"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_mission_01.tscn",
+    "hash": "544F7BCA0084D4F8FE69F03617F195887176984387FB8525C863297671CFD311"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_mission_01.gd",
+    "hash": "954334261951498015413E355F9F85F61DB2B5425BBA2F57F31509FDE3CC3404"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_garden_poc.tscn",
+    "hash": "58040B4165A9941A6465A9989103A80D519DE07AB6528311C5631E1DE9B52025"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_garden_poc.gd",
+    "hash": "CFE1E9FD86D7C35C31B927778D781FD648408542395441531C4DE7AEFAE837A3"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_combat_poc.tscn",
+    "hash": "A1150CD8308766906F0308EF20630E9CD6030963400E37A50CAC79ADCADD3FC4"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_player.gd",
+    "hash": "5DCA7FD5253B76FAD8150589896C54886193A6949B5C65FB984281DC3CDC0FC5"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_ranged.gd",
+    "hash": "D63CFA1140C41731B0219F22B9883DEE612B7D8961EB52C523FF87DBBDEAA029"
+  }
+]

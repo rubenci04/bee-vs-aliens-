@@ -1,0 +1,14 @@
+[
+	{
+		"draw_calls": 132,
+		"mesh_instances": 169,
+		"triangles_frame": 19592,
+		"view": "flowers"
+	},
+	{
+		"draw_calls": 113,
+		"mesh_instances": 169,
+		"triangles_frame": 16868,
+		"view": "bottle"
+	}
+]

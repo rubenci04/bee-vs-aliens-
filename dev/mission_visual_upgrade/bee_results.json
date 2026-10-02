@@ -1,0 +1,30 @@
+[
+  {
+    "test": "validate_alien_probe_visual.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_bee_combat_poc.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_bee_flight_poc.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_bee_garden_poc.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_bee_mission_01.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_bee_visual.gd",
+    "exit": 0
+  },
+  {
+    "test": "validate_wasp_visual.gd",
+    "exit": 0
+  }
+]

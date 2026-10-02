@@ -1,0 +1,538 @@
+[
+  {
+    "path": ".gitignore",
+    "hash": "9924A9E13C25F0A7F91380B82C4F2E7BFC4E1539FAA98433A881AE0B7A24A80C"
+  },
+  {
+    "path": "AGENTS.md",
+    "hash": "BD56A620845B3383808BEAD70B9A411958C93E4900C848DD4AEBB20931B64CAE"
+  },
+  {
+    "path": "art_source/.gdignore",
+    "hash": "7EB70257593DA06F682A3DDDA54A9D260D4FC514F645237F5CA74B08F8DA61A6"
+  },
+  {
+    "path": "art_source/blender/bee_prototype/alien_probe_visual.blend",
+    "hash": "B0275779ED5C42B4727AF7238AB1A5F39C1CC8884164715772EDFA466C0A6E36"
+  },
+  {
+    "path": "art_source/blender/bee_prototype/bee_alien_visual.blend",
+    "hash": "D5B5304A620198B029326177F89A0FF19A3A7ACF8B600A7E736F93184C24BB2E"
+  },
+  {
+    "path": "art_source/blender/bee_prototype/wasp_enemy_visual.blend",
+    "hash": "172A492164A0D3444514745DF757731B3B9E00B6BC19811D8D417A1001722796"
+  },
+  {
+    "path": "assets/models/bee_prototype/alien_probe_visual.glb",
+    "hash": "09067C89B668512FCFECDEC8C62A1D85ACE05C3881147A235BC1117AE32EAA9A"
+  },
+  {
+    "path": "assets/models/bee_prototype/alien_probe_visual.glb.import",
+    "hash": "4A7C2EC658BEDE65C00323A41BC826CF7E56D0A7FD810B797F78320566DE5C7E"
+  },
+  {
+    "path": "assets/models/bee_prototype/bee_alien_visual.glb",
+    "hash": "E6AFDD2CBF9AF02EC3AD3C1C74FC51C85F90506E17B7D0D40332A5630C56B1B8"
+  },
+  {
+    "path": "assets/models/bee_prototype/bee_alien_visual.glb.import",
+    "hash": "B1174E5E491E8D7F338864457A62904B37D288EA2236B55F565E3908169756B1"
+  },
+  {
+    "path": "assets/models/bee_prototype/wasp_enemy_visual.glb",
+    "hash": "0C1AA189A588B62CF4E72C6DB98AC38EB4A1631A85898DEF46CFFB2FD40ADE40"
+  },
+  {
+    "path": "assets/models/bee_prototype/wasp_enemy_visual.glb.import",
+    "hash": "53B2D8562C294B37728C9F1898EE578380B195EF1A1F03A9D645C48AB32C7C28"
+  },
+  {
+    "path": "docs/PROJECT_MIGRATION.md",
+    "hash": "08340D385F20822F68E510387B2BACEEDEB55197E24D35EB8AA6FC03F5257DCE"
+  },
+  {
+    "path": "docs/bee_prototype/ALIEN_PROBE_VISUAL.md",
+    "hash": "3A85DEFAD37699F653D33A118461E9A496D66A51AB77FA2DFDF35E96C4C3E792"
+  },
+  {
+    "path": "docs/bee_prototype/BEE_COMBAT_POC.md",
+    "hash": "46408E6F4C0AF19B22A9C080F4BA01C9A698F74B7BA2B47B44C630074299BC34"
+  },
+  {
+    "path": "docs/bee_prototype/BEE_FLIGHT_POC.md",
+    "hash": "BB7263DD65801C88A8F99A052234A703D38C2F34144A989F081D6899755BDB11"
+  },
+  {
+    "path": "docs/bee_prototype/BEE_GARDEN_POC.md",
+    "hash": "3ACEEFA1740282EC55CEA266288ABEC57F822CED9B1CDB592557979FFCC719E9"
+  },
+  {
+    "path": "docs/bee_prototype/BEE_MISSION_01.md",
+    "hash": "07C78330B957279ADDF9E3C4A1B1159CB7C0A7555D1D6F3F4D2D89192F676FCD"
+  },
+  {
+    "path": "docs/bee_prototype/BEE_VISUAL.md",
+    "hash": "2DA0812B2FB4D0F0C411748DC49FBF74CDBE352265519DA774485082E9B4E923"
+  },
+  {
+    "path": "docs/bee_prototype/WASP_VISUAL.md",
+    "hash": "18AE5FD7E2A9319A1EEA9AFB99813018BDA36AE6E3B77C8270C4A47716DEF6D5"
+  },
+  {
+    "path": "docs/bee_prototype/alien_probe_comparison.png",
+    "hash": "B5B4F60F2A634D094320F0966BAF601EA7D6A091DD1D0A72D01ECD298A2CF5A8"
+  },
+  {
+    "path": "docs/bee_prototype/alien_probe_comparison.png.import",
+    "hash": "B386EB62A5AB1ECB502DAABD8ECDB137EEA46E01947E7489399396D805184D79"
+  },
+  {
+    "path": "docs/bee_prototype/bee_visual_facings.png",
+    "hash": "53E3116F3C7D4868B03AAC98BE62B86F3EE2BC52928B314BD4690A1D06533F7C"
+  },
+  {
+    "path": "docs/bee_prototype/bee_visual_facings.png.import",
+    "hash": "954FF263ED16E2604C9BCD30E0CBF6A22348EC246AB3B874F25FA79266A64EFA"
+  },
+  {
+    "path": "docs/bee_prototype/garden_flowers.png",
+    "hash": "12317D8E9C305CE6A7967AD5E4C768C24F6A2CE29FE79C1362747739B4DE8062"
+  },
+  {
+    "path": "docs/bee_prototype/garden_flowers.png.import",
+    "hash": "75D4C4849C0FD3D7F7964934F42CA82C2894E80354025B4E5C1667C5FA6DA921"
+  },
+  {
+    "path": "docs/bee_prototype/garden_orchard.png",
+    "hash": "057AF64F4DD7224009B2610FF4577115CB768AA1596CDE5D6D576DBF428D6BD8"
+  },
+  {
+    "path": "docs/bee_prototype/garden_orchard.png.import",
+    "hash": "CC29479685EB8242CE6DB15DB214F4267DDB57D16A2A1618530401B06B42C425"
+  },
+  {
+    "path": "docs/bee_prototype/mission_complete.png",
+    "hash": "0E233C84E417CE4A2A8C29B842B48C0CCFE397B36F1EF6E92B3771B8E7ED0BF0"
+  },
+  {
+    "path": "docs/bee_prototype/mission_complete.png.import",
+    "hash": "6433D5818E37E9356D6180DB7CB12EF6CBC329BAD83CE149EE472929C489C073"
+  },
+  {
+    "path": "docs/bee_prototype/wasp_combat_windup.png",
+    "hash": "4E577A7CB7E0426D13B09828ABABA108EA52F05683EAFDDAAEC1709C6C16D730"
+  },
+  {
+    "path": "docs/bee_prototype/wasp_combat_windup.png.import",
+    "hash": "B194BA5A6C089E0D819023A3A3D98544C752FF43E62ECC3589D5EE1C7FAA1396"
+  },
+  {
+    "path": "docs/bee_prototype/wasp_visual_comparison.png",
+    "hash": "512B5126D7AA20E50012705A9E2E2AED59145ACF81EF5706A8BBCD48DD3C58F4"
+  },
+  {
+    "path": "docs/bee_prototype/wasp_visual_comparison.png.import",
+    "hash": "64817C75866C2EBF0360FDCF862D8C71C509F8E03295AED634065E5955F19EE4"
+  },
+  {
+    "path": "docs/bee_test_summary.log",
+    "hash": "7D8EB800A5DBA883F30AEF38E1F3DDCDFBDD0362032CFD082FD4A79AEECB4973"
+  },
+  {
+    "path": "docs/dependency_map.json",
+    "hash": "038868A2A9452B02DC1A29E6189BBDF25C677DE8AE99CDA90CC9F388E040FB85"
+  },
+  {
+    "path": "docs/original_integrity_manifest.json",
+    "hash": "8F2BF4307C51C6100087A60456D331EE94EA3FA273801E0B04B695A748F83C93"
+  },
+  {
+    "path": "docs/standalone_import.log",
+    "hash": "A9AA53941659E5EC57BD086FD3928C363C6C7421467377121E7A6F4BA59C1478"
+  },
+  {
+    "path": "docs/standalone_main.log",
+    "hash": "40B8D4860090D78FC2188507E58F0B892D20310EEE4D177B5664CD76D3805F7C"
+  },
+  {
+    "path": "docs/validate_alien_probe_visual.log",
+    "hash": "00166ACD94F9CABFBB05A41AB442CF87DC6263F04CF91A93CAF137FF45BE0AD6"
+  },
+  {
+    "path": "docs/validate_bee_combat_poc.log",
+    "hash": "7A8D53419D7E0861FAFF1C6DB2794CD7F3EAE0991E0174ADFCBFB05C6B42C4B3"
+  },
+  {
+    "path": "docs/validate_bee_flight_poc.log",
+    "hash": "07C0C62314A2C1FEDEC8268F1251B6AA92B6D91F133228BFBD30A9CA54939593"
+  },
+  {
+    "path": "docs/validate_bee_garden_poc.log",
+    "hash": "CCD70006918E39C3A3AD391D80EBFF9FDF9D3983BA7A4751A9945A9B7177A02B"
+  },
+  {
+    "path": "docs/validate_bee_mission_01.log",
+    "hash": "A2807F7CF2737F82351AA8217323AD339FC07CDEA428E8F1FAC125DD4907FAD0"
+  },
+  {
+    "path": "docs/validate_bee_visual.log",
+    "hash": "258B3C4B1504D28AAB14C6C6D6B5583FADA836A9C572580DB883675BF72616B9"
+  },
+  {
+    "path": "docs/validate_wasp_visual.log",
+    "hash": "3C5236F2D1923E8B692F24F6AAD9850F4A1059A90C4FA9A595CA27408C104F67"
+  },
+  {
+    "path": "project.godot",
+    "hash": "E8943763E4BD38CBBFBC5B6809BE28CC7AD0DC467FC38F192C7888EFEF1AE349"
+  },
+  {
+    "path": "scenes/bee_prototype/alien_enemy_projectile.tscn",
+    "hash": "1DAE92F094CA4FBCF0BF5F4A39D909F9E05CA9F2F886C473B3D1046B5E05BDB4"
+  },
+  {
+    "path": "scenes/bee_prototype/alien_probe_enemy.tscn",
+    "hash": "080AFAD33AD3F34C1377ADAB87ABD43C260F84140275A8C0FF4246CDD98E3717"
+  },
+  {
+    "path": "scenes/bee_prototype/alien_probe_ranged.tscn",
+    "hash": "C0D663310CC6B5505FF9E87EA8253A1E901D323019152D2B0074D77FFC76383F"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_combat_poc.tscn",
+    "hash": "A1150CD8308766906F0308EF20630E9CD6030963400E37A50CAC79ADCADD3FC4"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_energy_projectile.tscn",
+    "hash": "4C0A8D55F70B343BC41A3BC8D08C0B138AF251F3CDCB0826286C2EBD59010000"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_flight_poc.tscn",
+    "hash": "B107ADA2AFC755130CB41AEC79A0A03BC4D89092D450295F53561B4F5B992929"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_mission_01.tscn",
+    "hash": "CCE0AF71353A0EF842667962C27A58AC340CBF35DF87A46769DA1F50ABC5F00F"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_player.tscn",
+    "hash": "6FD4BD83C712351C74353B7AB4947062DB12B2676E24217EF6AC1860DC805FD1"
+  },
+  {
+    "path": "scenes/bee_prototype/pollen_pickup.tscn",
+    "hash": "3AE8A79A8C4201375E7EB96C3D6BFCE6AF54525196B4CF98F36441AC9C9C4C7F"
+  },
+  {
+    "path": "scenes/bee_prototype/visuals/alien_probe_visual.tscn",
+    "hash": "0B052A17EE52F43D0D20EFDD787958F05009E8C28C8B0E0196D0C93D7C33DEB8"
+  },
+  {
+    "path": "scenes/bee_prototype/visuals/alien_probe_visual_lab.tscn",
+    "hash": "ACFB3BCAB310EF5D53A9FD68FFD3F74934B0A30D1508D514909223B682AED70A"
+  },
+  {
+    "path": "scenes/bee_prototype/visuals/bee_player_visual_lab.tscn",
+    "hash": "37509C60FA48129AD21C3B1B4F74EC25AD18DBC2BA770835CDC6B75EE762F1CC"
+  },
+  {
+    "path": "scenes/bee_prototype/visuals/wasp_enemy_visual.tscn",
+    "hash": "8850CF915164748EB3ED1524BA07DDA0EF226F9D24BDC16232E6B019E9CF90A0"
+  },
+  {
+    "path": "scenes/bee_prototype/visuals/wasp_enemy_visual_lab.tscn",
+    "hash": "578C15AEAF77D91D9CF844DBE9F0230346EFAE96641D8C6E2E0B532F4F1F39EF"
+  },
+  {
+    "path": "scenes/bee_prototype/wasp_enemy.tscn",
+    "hash": "7522CB493F5C9577680A074BB5FA6BD8FA5A6DB06321777569892C446816F7AF"
+  },
+  {
+    "path": "scenes/components/health_component.tscn",
+    "hash": "EFC2F179762CD392342A1ADA64833270E0CD306A5D735A007C98C3B46A1338F6"
+  },
+  {
+    "path": "scenes/components/hit_flash_3d.tscn",
+    "hash": "0ADCE2FD0E848F2BD7CC796A38AE739AD4A2C229028036E695A2705E4825BF66"
+  },
+  {
+    "path": "scenes/components/hitbox_3d.tscn",
+    "hash": "BCC01942236EA919B1DF31DA7E9A44775C61E505AB5B9B03BFFB78C6ACEB0F9A"
+  },
+  {
+    "path": "scenes/components/hurtbox_3d.tscn",
+    "hash": "642FA1F03027DBD93D10924804EEACD58D2321E1D8BBD2B4D399DD948977A33F"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_enemy_projectile.gd",
+    "hash": "7268EF711BC4B05EF79D5EDDAE9CBB30D8A23A0246EC24D2B0B0992441E1114D"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_enemy_projectile.gd.uid",
+    "hash": "3ECFCE420A09A3161A1BBC3F4EB0F1097597BA5B7230F9336321A40F3E1C4274"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_enemy.gd",
+    "hash": "BC6018053B1472C049CEF4661A443BE29D08566A48AB07DA20DE54402B9A38E7"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_enemy.gd.uid",
+    "hash": "0E6A4A89428AE1693AAD8CE6C212594007832C586122D5B9954BA5A39809E64D"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_ranged.gd",
+    "hash": "D63CFA1140C41731B0219F22B9883DEE612B7D8961EB52C523FF87DBBDEAA029"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_ranged.gd.uid",
+    "hash": "826E75F3F125880CEEA65326802E1C14A6147618194BE1C7A5B531B972950581"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_visual.gd",
+    "hash": "2A6F735CC4A293EBAFFBBA4C9959216BB1B8AAD453772674B020800B8BF19235"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_visual.gd.uid",
+    "hash": "A64FFAFF96CEEE2E8918E46852C617E1C0892DC3E801CA5749F7463E61AAC220"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_visual_lab.gd",
+    "hash": "DE09D6D4BFECC80EB8E269A8561595AAB8A9F0F33D6309832C51E85274DF2AFF"
+  },
+  {
+    "path": "scripts/bee_prototype/alien_probe_visual_lab.gd.uid",
+    "hash": "4F79135F90783CAA11FD87B831202D078DC7633BE103D8E77C87BA4F64D51138"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_camera.gd",
+    "hash": "F834C7C8C7D10F7B50C937A30CA0E69EE77E2019A6E2F2031AEBAC3A5B7F634D"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_camera.gd.uid",
+    "hash": "5333AD473D8416E1FB88B63329DEB9A738E35C877FA065D6BB419C39F999664C"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_combat_poc.gd",
+    "hash": "FC5AFE4822373DC221C5E5082600446D80A164DFB86EC6BEAA99A1574DD819FB"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_combat_poc.gd.uid",
+    "hash": "CBD5A7DC4A78AA143825E9781A07121F900480B24074F95D0512769C895DB282"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_energy_projectile.gd",
+    "hash": "DCFE7047F6E6FC6FCBF6FB34F990A005E6FD797597FF5B5A8A9130C999EEE45B"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_energy_projectile.gd.uid",
+    "hash": "3B548CD132BEE3A3B859A831E798E8D8F7718E9BC5B4722C8033ADA5C85B85A0"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_flight_poc.gd",
+    "hash": "EEA5302C0E3B33ED9CF3F3DD45A8B1E39BD40B6D0A65B6E88B34B1BBA0FECD53"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_flight_poc.gd.uid",
+    "hash": "B3BE3A290D9F5AE29618C3897296BC7F26D7F6BDB10811A749F8A11646D1263D"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_garden_poc.gd.uid",
+    "hash": "199C979615BD64508A43036D5007A7FDE9C062C2EB2EECECF852AF0AB4AB8BBD"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_mission_01.gd",
+    "hash": "D3E3050965DB3F8A38086158BB6A019857EA64C2F624B3E03B40D6B02E7DE2C8"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_mission_01.gd.uid",
+    "hash": "2A4480DBFACC4F7EDD5EA3C42CBA6F2C63695E774640CF3F834B64EEF916F94F"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_player.gd",
+    "hash": "5DCA7FD5253B76FAD8150589896C54886193A6949B5C65FB984281DC3CDC0FC5"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_player.gd.uid",
+    "hash": "A095FF94886C19484CFB9C0D342ED4F64DE59F378BD55B829E0DDF000AA11D7A"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_visual.gd",
+    "hash": "E2E79A3EE4CD2A251BE719020BD5F04B68E914710CB28567510CECE0F41D7077"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_visual.gd.uid",
+    "hash": "749629A64359BF0C8EFE02799A5D37B7A87C14997D1C5AB5D2A4C26134A76EDD"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_visual_lab.gd",
+    "hash": "E1191BA952260B14B3CD64E24CC72450220534D5601AD623E419164415DA0022"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_visual_lab.gd.uid",
+    "hash": "880ABB77FD456B1547A159CC77E368F35E75055C8682628FB4FE513A937D197A"
+  },
+  {
+    "path": "scripts/bee_prototype/pollen_pickup.gd",
+    "hash": "12E0C1461E808BF9A0B95CC897905D79821974CC5C8A0E75B03001C66661E18B"
+  },
+  {
+    "path": "scripts/bee_prototype/pollen_pickup.gd.uid",
+    "hash": "C8FBC4EC5B357CB1BB8D90418819262C96E55571BF35B3AE00DF954EC4800ADF"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_enemy.gd",
+    "hash": "0ADBAFC5DE6799BA847296989E2A24B035461F552CBE3A88581EECDA0FEC0161"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_enemy.gd.uid",
+    "hash": "C9841EA2C3B5A2FD261C1F37E1ED5D316492BB98D80F8914B9A490EF87814FDD"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_enemy_visual.gd",
+    "hash": "243F5BE85FC1E495AACE0927137FE536F6AC9D029C6F5F4EEF0F35E54F203A0F"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_enemy_visual.gd.uid",
+    "hash": "1BF414A692CA5679C51D5C5F6951651CFA9D1DBD0767D4DE8B0B2EC7D14265C5"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_visual_lab.gd",
+    "hash": "480296ECC668A8BCE3E3FACCE11CE6B6C0B35877FAB9120EA334B18EB8A07FAD"
+  },
+  {
+    "path": "scripts/bee_prototype/wasp_visual_lab.gd.uid",
+    "hash": "9B36D2778C0F5D8EB61AD5650B70CEB8C534D26C0199DE99961A4D38FDB61029"
+  },
+  {
+    "path": "scripts/components/health_component.gd",
+    "hash": "84BFE70CFA06D3945AE5A00F988A9E08D913029057D523F5272D53AD31019C3A"
+  },
+  {
+    "path": "scripts/components/health_component.gd.uid",
+    "hash": "3A54040B92A889FD55419C2447464C0198089DEFD517DAD4CB64F003F7C110ED"
+  },
+  {
+    "path": "scripts/components/hit_flash_3d.gd",
+    "hash": "63504B938C2AE044CFD548BEF89014C797913169F061F12EF30F9352BF8DD123"
+  },
+  {
+    "path": "scripts/components/hit_flash_3d.gd.uid",
+    "hash": "F9EE8CC7D6BB8BCBD0752038A007ABB376488F9D401B232A15C76E8823DC9AD7"
+  },
+  {
+    "path": "scripts/components/hitbox_3d.gd",
+    "hash": "6051C4FA6884203A4331EA20FEDF7E00FC4B679CD66DEE7AFC545E36B27EB3BF"
+  },
+  {
+    "path": "scripts/components/hitbox_3d.gd.uid",
+    "hash": "EABE1DF44CDE6AD06789CC72CA764640BA4C9FCA28E3C275B6223A7D2CAD7945"
+  },
+  {
+    "path": "scripts/components/hurtbox_3d.gd",
+    "hash": "D143CFC9A6455DD5F946E160A32E0C1A5820A422A7B0F7C5967B60925EF1A6FB"
+  },
+  {
+    "path": "scripts/components/hurtbox_3d.gd.uid",
+    "hash": "F001FDD3EFD870AE7050707188F7E686AF207F7D6C9C5390314616B5B4A67CF2"
+  },
+  {
+    "path": "tests/bee_prototype/validate_alien_probe_visual.gd",
+    "hash": "FF7A1486B4248197BA64E44D7138867E404B3060A4329BE3A65AAA0C629ED643"
+  },
+  {
+    "path": "tests/bee_prototype/validate_alien_probe_visual.gd.uid",
+    "hash": "14E19C312AD77ABE6915FF2E5EFCDCEABE2D678FC1A3324CB598069A2ACD05AA"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_combat_poc.gd",
+    "hash": "49BD9E4A4D8D3FBF1B67A180E1B25ED44D08B7C3CDF5AF008F063FB4C867A3D5"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_combat_poc.gd.uid",
+    "hash": "ECA425E5158320BB3840F745C523835CEF3D3CD4E112C3FF472C809ABB99A6F2"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_flight_poc.gd",
+    "hash": "6358B1BB90669DBDAF08693BABAFDA04858590DF37FD5102151A124FD5A1DC7D"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_flight_poc.gd.uid",
+    "hash": "0CA346E154B89CE9C3CC230B5C85704DDDAB8C424467A2B1D5957736CF0FFF1B"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_garden_poc.gd",
+    "hash": "ACB70CC00CC0BF5865F9CB32508B0C42D8EA43F40B65414E7B3FC72A34CEEECE"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_garden_poc.gd.uid",
+    "hash": "60081FE26ECC829EC252A5500317B187AA3D529BD96EC05366C4D216AD01D24F"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_mission_01.gd",
+    "hash": "10A1E74EA13CC8C791143C1B31FC7C37AC5E631114D91D7434606630B636C22E"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_mission_01.gd.uid",
+    "hash": "705B2448AEE75A801E1A2D688C4ED2ADC9969DA5B1214E2FFB278D50BD2F073F"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_visual.gd",
+    "hash": "569B8020238D1D6FE0214DC03F5D73830F5B32C133B3C9DC4D12C583B1BACC75"
+  },
+  {
+    "path": "tests/bee_prototype/validate_bee_visual.gd.uid",
+    "hash": "C2911788BAD7121F254C6DD2D4277875E7B7D87189062965C4945FB2BAE4C0B6"
+  },
+  {
+    "path": "tests/bee_prototype/validate_wasp_visual.gd",
+    "hash": "A9D169A96246D8743C071617CC1722F6A8366F7CFD7672D2EF4E0C9683CA7B4E"
+  },
+  {
+    "path": "tests/bee_prototype/validate_wasp_visual.gd.uid",
+    "hash": "A74278DFCF8ABF9472FD33762F0B0AFF07281837AE769F279E15DB60A7143429"
+  },
+  {
+    "path": "tools/bee_prototype/capture_alien_probe_visual.gd",
+    "hash": "9D3B5AEDCE3806EFDCD6F6001A35AE54EC1036A5D53721CB80C5ABBEE71A5425"
+  },
+  {
+    "path": "tools/bee_prototype/capture_alien_probe_visual.gd.uid",
+    "hash": "211E1B7E30DE46E5DB9FAEE55EB7E778A6339D5D41FE29A41F7298E661EDC22E"
+  },
+  {
+    "path": "tools/bee_prototype/capture_bee_garden.gd",
+    "hash": "1D1FA4D6BABEB748C66FDC227581DDB7ACBB0006EDA4C5DD2DB635C303749F70"
+  },
+  {
+    "path": "tools/bee_prototype/capture_bee_garden.gd.uid",
+    "hash": "8B263C7CE3A29E87A16F991E1620E95D59CB7135E66F57903610288C35A79761"
+  },
+  {
+    "path": "tools/bee_prototype/capture_bee_visual.gd",
+    "hash": "12C9651D7D97E4A554EF5D18062C6AE3BE4A41773C5196C33F725ED2E37B0171"
+  },
+  {
+    "path": "tools/bee_prototype/capture_bee_visual.gd.uid",
+    "hash": "49B5768D513EAE2F8EE0818B900D01C8682051A937A0F813D6F7586F1E125582"
+  },
+  {
+    "path": "tools/bee_prototype/capture_wasp_visual.gd",
+    "hash": "1084FD39F436817C5F89A431AF7D137319959930794D99238FFFEEEDB08E3F66"
+  },
+  {
+    "path": "tools/bee_prototype/capture_wasp_visual.gd.uid",
+    "hash": "7B11023DC9E5CD5FB0B9CD99679C07F4202784BBA30CE06646D62E1E864C7BD7"
+  },
+  {
+    "path": "tools/bee_prototype/create_alien_probe_visual.py",
+    "hash": "023068B3CE020AE60628348D3566D3A582CC36E4E563ACCB5847CC1794E68000"
+  },
+  {
+    "path": "tools/bee_prototype/create_bee_visual.py",
+    "hash": "53B3C449CFCC13271FE4065689F38423C4C1444823D8955486B29C7EF4584874"
+  },
+  {
+    "path": "tools/bee_prototype/create_wasp_visual.py",
+    "hash": "EA950CA9AA296BC0499C241B7CE36EF33555F194B8163050A571C8E871FC3211"
+  }
+]

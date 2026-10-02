@@ -1,0 +1,112 @@
+[
+  {
+    "test": "tests/bee_prototype/validate_alien_probe_visual.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_audio_assets_v02.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_audio_basic_v01.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_combat_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_combat_vfx_v01.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_flight_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_garden_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_mission_01.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_air_ground_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_air_variety_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_core_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_ground_threat_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_hollow_log.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_organic_alien_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_walker_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_shmup_world_scale_human_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_visual.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_bee_weapons_powerups_v01.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_human_detection_poc.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/bee_prototype/validate_wasp_visual.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/levels/validate_bee_checkpoint_qol_v01.gd",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "test": "tests/levels/validate_bee_level_01_vertical_slice.gd",
+    "exit": 0,
+    "pass": true
+  }
+]

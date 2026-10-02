@@ -1,0 +1,69 @@
+[
+  {
+    "asset": "CommonTree_1",
+    "provider": "quaternius",
+    "pack": "Stylized Nature MegaKit[Standard]",
+    "license": "CC0 1.0",
+    "source": "D:\\proyectos\\V_Asset_Library\\01_Extracted\\quaternius\\Stylized Nature MegaKit[Standard]\\glTF\\CommonTree_1.gltf",
+    "model": "res://dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.gltf",
+    "dependencies": [
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.gltf",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.bin",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Bark_NormalTree_Normal.png",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Bark_NormalTree.png",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Leaves_NormalTree_C.png",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/License_Standard.txt"
+    ]
+  },
+  {
+    "asset": "Fern_1",
+    "provider": "quaternius",
+    "pack": "Stylized Nature MegaKit[Standard]",
+    "license": "CC0 1.0",
+    "source": "D:\\proyectos\\V_Asset_Library\\01_Extracted\\quaternius\\Stylized Nature MegaKit[Standard]\\glTF\\Fern_1.gltf",
+    "model": "res://dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Fern_1.gltf",
+    "dependencies": [
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Fern_1.gltf",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Fern_1.bin",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/glTF/Leaves.png",
+      "dev/asset_review/external/quaternius/Stylized Nature MegaKit[Standard]/License_Standard.txt"
+    ]
+  },
+  {
+    "asset": "log_large",
+    "provider": "kenney",
+    "pack": "kenney_nature-kit",
+    "license": "CC0 1.0",
+    "source": "D:\\proyectos\\V_Asset_Library\\01_Extracted\\kenney\\kenney_nature-kit\\Models\\GLTF format\\log_large.glb",
+    "model": "res://dev/asset_review/external/kenney/kenney_nature-kit/Models/GLTF format/log_large.glb",
+    "dependencies": [
+      "dev/asset_review/external/kenney/kenney_nature-kit/Models/GLTF format/log_large.glb",
+      "dev/asset_review/external/kenney/kenney_nature-kit/License.txt"
+    ]
+  },
+  {
+    "asset": "flower_purpleA",
+    "provider": "kenney",
+    "pack": "kenney_nature-kit",
+    "license": "CC0 1.0",
+    "source": "D:\\proyectos\\V_Asset_Library\\01_Extracted\\kenney\\kenney_nature-kit\\Models\\GLTF format\\flower_purpleA.glb",
+    "model": "res://dev/asset_review/external/kenney/kenney_nature-kit/Models/GLTF format/flower_purpleA.glb",
+    "dependencies": [
+      "dev/asset_review/external/kenney/kenney_nature-kit/Models/GLTF format/flower_purpleA.glb",
+      "dev/asset_review/external/kenney/kenney_nature-kit/License.txt"
+    ]
+  },
+  {
+    "asset": "soda-bottle",
+    "provider": "kenney",
+    "pack": "kenney_food-kit",
+    "license": "CC0 1.0",
+    "source": "D:\\proyectos\\V_Asset_Library\\01_Extracted\\kenney\\kenney_food-kit\\Models\\GLB format\\soda-bottle.glb",
+    "model": "res://dev/asset_review/external/kenney/kenney_food-kit/Models/GLB format/soda-bottle.glb",
+    "dependencies": [
+      "dev/asset_review/external/kenney/kenney_food-kit/Models/GLB format/soda-bottle.glb",
+      "dev/asset_review/external/kenney/kenney_food-kit/License.txt",
+      "dev/asset_review/external/kenney/kenney_food-kit/Models/GLB format/Textures/colormap.png"
+    ]
+  }
+]

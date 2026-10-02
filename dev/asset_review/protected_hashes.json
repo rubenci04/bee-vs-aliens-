@@ -1,0 +1,22 @@
+[
+  {
+    "path": "project.godot",
+    "hash": "E8943763E4BD38CBBFBC5B6809BE28CC7AD0DC467FC38F192C7888EFEF1AE349"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_garden_poc.tscn",
+    "hash": "97F1068F607ABF95E4162B87FC9ACCB3D24034F40A20E8C8C28AFE0E32E97B25"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_garden_poc.gd",
+    "hash": "EDED686E24DE9E23B1FB72E158C771C114498CE27F977BE767982DC4DF4636D3"
+  },
+  {
+    "path": "scenes/bee_prototype/bee_mission_01.tscn",
+    "hash": "CCE0AF71353A0EF842667962C27A58AC340CBF35DF87A46769DA1F50ABC5F00F"
+  },
+  {
+    "path": "scripts/bee_prototype/bee_mission_01.gd",
+    "hash": "D3E3050965DB3F8A38086158BB6A019857EA64C2F624B3E03B40D6B02E7DE2C8"
+  }
+]
