@@ -9,10 +9,16 @@ signal destroyed(obstacle: DestructibleObstacle3D)
 @onready var collider: CollisionShape3D = $StaticBody3D/CollisionShape3D
 @onready var visual_root: Node3D = $VisualRoot
 
+## Garden litter that replaces the old wooden crate: 0 crushed can, 1 giant matchbox, 2 snack bag.
+## Purely visual: the collider, hurtbox and HP above are unchanged.
+@export_enum("Crushed can", "Matchbox", "Snack bag") var item_kind := 0
+
 var is_destroyed := false
 
 func _ready() -> void:
 	health.died.connect(_on_died)
+	GardenProps.build_item(item_kind, visual_root)
+	BeeToonStyle.apply(visual_root, true)
 
 func _on_died() -> void:
 	if is_destroyed:

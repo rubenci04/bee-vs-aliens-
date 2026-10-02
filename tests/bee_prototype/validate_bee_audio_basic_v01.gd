@@ -171,9 +171,11 @@ func run() -> void:
 	var human: GiantHumanCrossingHazard = stage.get_node("GiantHuman")
 	check(human.begin_crossing(stage.camera) and count(&"human_warning") == 1, "Human warning cue missing")
 	await frames(70)
-	check(human.current_phase == GiantHumanCrossingHazard.Phase.CROSSING and count(&"human_step") == 1, "Human crossing cue missing")
+	var human_audio := human.get_node("HumanAudio")
+	check(human.current_phase == GiantHumanCrossingHazard.Phase.CROSSING and human_audio.steps_played == 1, "Human crossing cue missing")
 	await create_timer(3.1, true, false, true).timeout
-	check(count(&"human_step") == 2, "Human crossing should play two restrained thumps")
+	# Footsteps are synced to the Run clip: one per foot contact (every 0.4 s of clip, 0.72x playback).
+	check(human_audio.steps_played >= 5 and human_audio.steps_played <= 8, "Human steps not synced to the Run clip (%d in 3.1 s)" % human_audio.steps_played)
 	human.freeze()
 	await clear_shots()
 	await measure()

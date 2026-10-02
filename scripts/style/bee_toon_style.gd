@@ -13,13 +13,18 @@ const WING := preload("res://assets/style/toon_wing.gdshader")
 const CYAN_MIN_ENERGY := 2.0
 const BRIGHT_ALBEDO_CAP := 0.8
 
+## 0..1, written by the level light progression: strengthens the rim light on Bee at sunset.
+static var bee_rim_boost := 0.0
 static var _outline_material: ShaderMaterial
 static var _cache: Dictionary = {}
 
 
 ## outline = false keeps toon + rim only (cheaper: no second draw of every surface).
 static func apply(model: Node, outline: bool) -> void:
-	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
+	if model is MeshInstance3D:
+		meshes.append(model)
+	for mesh: MeshInstance3D in meshes:
 		if mesh.mesh == null:
 			continue
 		for surface in mesh.mesh.get_surface_count():

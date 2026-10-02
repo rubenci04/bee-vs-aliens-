@@ -11,7 +11,7 @@ const MORNING := {
 	"fog_color": Color(0.86, 0.87, 0.78),
 	"sky_top": Color(0.24, 0.55, 0.82), "sky_horizon": Color(0.86, 0.88, 0.8),
 	"ground_horizon": Color(0.63, 0.72, 0.53), "ground_bottom": Color(0.24, 0.31, 0.22),
-	"glow_intensity": 0.6,
+	"glow_intensity": 0.6, "ground_tint": 0.0, "bee_rim": 0.0,
 }
 const MIDDAY := {
 	"sun_color": Color(1.0, 0.82, 0.5), "sun_energy": 1.4, "sun_rotation": Vector3(-58, -18, 0),
@@ -19,16 +19,16 @@ const MIDDAY := {
 	"fog_color": Color(0.9, 0.84, 0.66),
 	"sky_top": Color(0.3, 0.55, 0.8), "sky_horizon": Color(0.95, 0.88, 0.68),
 	"ground_horizon": Color(0.72, 0.7, 0.45), "ground_bottom": Color(0.3, 0.3, 0.2),
-	"glow_intensity": 0.6,
+	"glow_intensity": 0.6, "ground_tint": 0.0, "bee_rim": 0.0,
 }
 # Violet ambient and fog against an orange sun: warm decoration, cool shadows, cyan tech pops.
 const SUNSET := {
 	"sun_color": Color(1.0, 0.62, 0.4), "sun_energy": 1.05, "sun_rotation": Vector3(-22, -62, 0),
 	"ambient_color": Color(0.7, 0.58, 0.86), "ambient_energy": 0.66,
-	"fog_color": Color(0.82, 0.6, 0.68),
+	"fog_color": Color(0.64, 0.45, 0.55),
 	"sky_top": Color(0.34, 0.27, 0.56), "sky_horizon": Color(0.98, 0.66, 0.5),
 	"ground_horizon": Color(0.7, 0.45, 0.4), "ground_bottom": Color(0.25, 0.2, 0.28),
-	"glow_intensity": 0.95,
+	"glow_intensity": 0.95, "ground_tint": 1.0, "bee_rim": 1.0,
 }
 const MORNING_TO_MIDDAY := Vector2(100.0, 180.0)
 const MIDDAY_TO_SUNSET := Vector2(210.0, 290.0)
@@ -73,6 +73,10 @@ func _apply(x: float) -> void:
 	_environment.ambient_light_energy = s["ambient_energy"]
 	_environment.fog_light_color = s["fog_color"]
 	_environment.glow_intensity = s["glow_intensity"]
+	BeeToonStyle.bee_rim_boost = s["bee_rim"]
+	var decoration := _stage.get_node_or_null("VisualTarget01") as BeeLevel01VisualTarget
+	if decoration != null:
+		decoration.apply_ground_tint(s["ground_tint"])
 	var sky := _environment.sky.sky_material as ProceduralSkyMaterial
 	sky.sky_top_color = s["sky_top"]
 	sky.sky_horizon_color = s["sky_horizon"]

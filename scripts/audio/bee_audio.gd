@@ -18,10 +18,12 @@ const CUES := {
 	&"bomb_pickup": ["pickups/bomb", -19.0, 1, true],
 	&"pollen": ["pickups/pollen", -26.0, 0, true],
 	&"human_warning": ["environment/human_warning", -14.0, 4, true],
-	&"human_step": ["environment/human_step", -16.0, 2, true],
+	&"human_step": ["environment/human_step", -21.0, 2, true],
+	&"human_step_b": ["environment/human_step", -21.0, 2, true],
+	&"human_step_c": ["environment/human_step", -21.0, 2, true],
 }
 const MAX_VOICES := 16
-const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step"]
+const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c"]
 const REAL_GAIN_DB := {&"spread_pickup": -3.0, &"bomb_pickup": -3.0, &"pollen": -3.0}
 static var use_real_assets := true
 static var _streams: Dictionary = {}
@@ -84,7 +86,7 @@ static func play(parent: Node, cue: StringName, point := Vector3.ZERO, pitch := 
 		var world := player as AudioStreamPlayer3D
 		world.unit_size = 12.0
 		world.max_db = 0.0
-		world.max_distance = 32.0 if cue in [&"human_step", &"human_warning"] else 26.0
+		world.max_distance = 32.0 if cue in [&"human_step", &"human_step_b", &"human_step_c", &"human_warning"] else 26.0
 		world.panning_strength = 0.35
 		world.position = container.to_local(point)
 	container.add_child(player)
