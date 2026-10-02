@@ -1,4 +1,5 @@
 [gd_scene load_steps=12 format=3]
+[ext_resource type="Script" path="res://scripts/style/toon_styled_visual.gd" id="toon_style"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/speeder_enemy.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/vfx/bee_enemy_feedback.gd" id="combat_feedback"]
 [ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="2"]
@@ -51,3 +52,8 @@ pixel_size = 0.003
 
 [node name="CombatFeedback" type="Node" parent="."]
 script = ExtResource("combat_feedback")
+
+[node name="ToonStyle" type="Node" parent="."]
+script = ExtResource("toon_style")
+target = NodePath("../VisualRoot")
+outline = true

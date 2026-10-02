@@ -1,5 +1,7 @@
 extends Node3D
 ## Read-only observer of the actor. Only this subtree receives transforms.
+## Cost knob: false = toon + rim only.
+const PROBE_OUTLINE := true
 @export var preview_facing := 1.0
 @export var bob_amplitude := 0.015
 @export var bob_frequency := 1.4
@@ -10,6 +12,7 @@ var facing := 1.0
 var ring: Node3D
 
 func _ready() -> void:
+	BeeToonStyle.apply(self, PROBE_OUTLINE)
 	facing = preview_facing
 	ring = find_child("CoreRing", true, false) as Node3D
 	rotation.y = -facing * PI * 0.5
