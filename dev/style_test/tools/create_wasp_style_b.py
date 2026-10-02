@@ -6,7 +6,7 @@ from mathutils import Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from style_b_common import smooth, ring_surface, curved_wing
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / "dev/style_test/models"
+OUT = ROOT / "assets/style/models"
 SRC = ROOT / "dev/style_test/blend"
 OUT.mkdir(parents=True, exist_ok=True)
 SRC.mkdir(parents=True, exist_ok=True)
@@ -64,6 +64,6 @@ bpy.context.scene.unit_settings.system="METRIC"
 bpy.context.scene.unit_settings.scale_length=1.0
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.wm.save_as_mainfile(filepath=str(SRC/"wasp_style_b.blend"))
-bpy.ops.export_scene.gltf(filepath=str(OUT/"wasp_style_b.glb"),export_format="GLB",use_selection=True,export_yup=True,export_animations=False,export_apply=True)
+bpy.ops.export_scene.gltf(filepath=str(OUT/"wasp_mid_poly.glb"),export_format="GLB",use_selection=True,export_yup=True,export_animations=False,export_apply=True)
 objs=[o for o in bpy.context.scene.objects if o.type=="MESH"]
 print("WASP_STYLE_B_STATS",json.dumps({"triangles":sum(len(p.vertices)-2 for o in objs for p in o.data.polygons)}))

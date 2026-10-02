@@ -8,6 +8,7 @@ var rest_angles: Array[Vector3] = []
 var elapsed := 0.0
 
 func _ready() -> void:
+	BeeToonStyle.apply(self, true)
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := find_child(wing_name, true, false) as Node3D
 		assert(wing != null, "Bee visual requires independent wings")
