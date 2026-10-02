@@ -1750,67 +1750,49 @@ Existen assets externos descargados anteriormente.
 
 # 68. LOW POLY UFO SCENE
 
-Origen:
+**DUDOSO — sin evidencia local, ver `docs/ASSET_LIBRARY_AUDIT_01.md`.**
+
+Origen (no verificado):
 
 Sketchfab.
 
-Licencia:
+Licencia (declarada):
 
 CC BY.
-
-Usable comercialmente con atribución.
-
-Candidato.
 
 ---
 
 # 69. UFO GAME READY
 
-Origen:
+**DUDOSO — sin evidencia local, ver `docs/ASSET_LIBRARY_AUDIT_01.md`.**
+
+Origen (no verificado):
 
 CGTrader.
 
-Licencia:
+Licencia (declarada):
 
 Royalty Free.
-
-Uso comercial compatible en juego.
-
-Restricción:
-
-no redistribuir como asset independiente.
-
-Candidato prioritario.
 
 ---
 
 # 70. UFO BATTLESHIP
 
+**DUDOSO — sin evidencia local, ver `docs/ASSET_LIBRARY_AUDIT_01.md`.**
+
+Licencia (declarada):
+
 Royalty Free.
-
-Aproximadamente:
-
-9180 polígonos.
-
-Animado.
-
-Muy buen candidato futuro para:
-
-- miniboss;
-- boss;
-- nave importante.
-
-Prioridad alta.
 
 ---
 
 # 71. SPACE ROCKET
 
+**DUDOSO — sin evidencia local, ver `docs/ASSET_LIBRARY_AUDIT_01.md`.**
+
+Licencia (declarada):
+
 Royalty Free.
-
-Low poly.
-
-Puede utilizarse más adelante.
 
 ---
 

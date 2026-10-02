@@ -39,7 +39,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/levels/va
 godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_prototype/validate_<nombre>.gd
 ```
 - Sin `--headless` (con render) algunas suites guardan capturas PNG en `res://dev/<...>_review/`. Eso ESCRIBE archivos en `dev/`; avisar antes de correrlas así.
-- La suite completa son 23 validaciones (22 previas + `validate_bee_terminal_states_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
+- La suite completa son 26 validaciones (24 previas + `validate_bee_terminal_states_v01` + `validate_bee_visual_target_01` + `validate_bee_giant_human_corridor_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
 - Los tests no miden si es divertido: el playtest del usuario manda.
 - Logs en `docs/bee_prototype/*.log` y `.godot/` están ignorados por git.
 
@@ -49,7 +49,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_proto
 - "Gratis" ≠ uso comercial. No asumir CC0 por el nombre del archivo ("cc0" en el filename no basta). Modificar un asset no quita su licencia.
 - Registrar todo asset externo aprobado en `assets/external/ASSET_PROVENANCE.md`: fuente, autor, licencia, hash, archivo original, archivo en el juego. Créditos de audio: `docs/THIRD_PARTY_AUDIO_CREDITS.md`.
 - Kenney, Lentikula, Quaternius: CC0. FX Laser y Sonniss: comerciales con restricción de redistribución (no redistribuir como asset suelto).
-- Candidatos UFO (Low Poly UFO = CC BY, requiere atribución; UFO Game Ready / Battleship = royalty-free, no redistribuir).
+- Candidatos UFO (DUDOSO — sin evidencia local, ver `docs/ASSET_LIBRARY_AUDIT_01.md`).
 - No importar assets de la biblioteca externa sin una tarea explícita (AGENTS.md).
 
 ## Reglas de trabajo (obligatorias)
