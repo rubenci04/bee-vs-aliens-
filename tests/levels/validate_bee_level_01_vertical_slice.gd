@@ -156,19 +156,16 @@ func test_human_collision() -> void:
 				# Bring the camera to the subject for a review image, not gameplay.
 				stage.camera.set_stage_x(human.global_position.x)
 				var debug_boxes: Array[MeshInstance3D] = []
-				for part in ["LeftLeg", "RightLeg", "Torso"]:
+				for part in ["LeftThigh", "LeftLeg", "RightThigh", "RightLeg", "Torso"]:
 					var collider: CollisionShape3D = human.get_node("ContactHitbox/" + part)
 					if collider.disabled:
 						continue
 					var box := MeshInstance3D.new()
-					var mesh := BoxMesh.new()
-					mesh.size = (collider.shape as BoxShape3D).size
 					var material := StandardMaterial3D.new()
-					material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 					material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-					material.albedo_color = Color(1.0, 0.15, 0.15, 0.28)
-					mesh.material = material
-					box.mesh = mesh
+					material.albedo_color = Color(1.0, 0.15, 0.15)
+					box.mesh = collider.shape.get_debug_mesh()
+					box.material_override = material
 					collider.add_child(box)
 					debug_boxes.append(box)
 				await capture("human_safe_gap_debug.png")
