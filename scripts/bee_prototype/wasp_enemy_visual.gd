@@ -9,6 +9,7 @@ var elapsed := 0.0
 
 func _ready() -> void:
 	_apply_alien_palette()
+	BeeToonStyle.apply(self, WASP_OUTLINE)
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := find_child(wing_name, true, false) as Node3D
 		assert(wing != null, "Wasp visual requires independent wings")
@@ -32,6 +33,8 @@ const PALETTE := {
 	"Chitin": Color(0.13, 0.03, 0.03), # Thorax: near black red.
 	"Dark": Color(0.035, 0.02, 0.02), # Waist, legs, stinger: near black.
 }
+## Cost knob: false = toon + rim only, without the outline pass.
+const WASP_OUTLINE := true
 const EYE_CYAN := Color(0.1, 0.9, 0.85)
 
 func _apply_alien_palette() -> void:

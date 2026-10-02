@@ -5,12 +5,12 @@ extends Node3D
 
 const BEE_A := preload("res://assets/models/bee_prototype/bee_alien_visual.glb")
 const WASP_A := preload("res://scenes/bee_prototype/visuals/wasp_enemy_visual.tscn")
-const BEE_B := preload("res://dev/style_test/models/bee_style_b.glb")
-const WASP_B := preload("res://dev/style_test/models/wasp_style_b.glb")
+const BEE_B := preload("res://assets/style/models/bee_mid_poly.glb")
+const WASP_B := preload("res://assets/style/models/wasp_mid_poly.glb")
 const WASP_VISUAL_SCRIPT := preload("res://scripts/bee_prototype/wasp_enemy_visual.gd")
-const TOON := preload("res://dev/style_test/toon_body.gdshader")
-const OUTLINE := preload("res://dev/style_test/toon_outline.gdshader")
-const WING := preload("res://dev/style_test/toon_wing.gdshader")
+const TOON := preload("res://assets/style/toon_body.gdshader")
+const OUTLINE := preload("res://assets/style/toon_outline.gdshader")
+const WING := preload("res://assets/style/toon_wing.gdshader")
 
 const CAM_X := 30.0
 const BEE_POS := Vector3(28.6, 2.7, 0.0)

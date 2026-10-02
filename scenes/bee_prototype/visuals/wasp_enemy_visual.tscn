@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/models/bee_prototype/wasp_enemy_visual.glb" id="1"]
+[ext_resource type="PackedScene" path="res://assets/style/models/wasp_mid_poly.glb" id="1"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/wasp_enemy_visual.gd" id="2"]
 
 [node name="WaspEnemyVisual" type="Node3D"]
