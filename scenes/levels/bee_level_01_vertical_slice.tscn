@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_vertical_slice.gd" id="2"]
@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_weapons_hud.tscn" id="9"]
 [ext_resource type="Script" path="res://scripts/levels/bee_checkpoint_qol.gd" id="10"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_visual_target.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_light_progression.gd" id="12"]
+[ext_resource type="Script" path="res://scripts/levels/giant_human_hitbox_debug.gd" id="13"]
 
 [sub_resource type="StandardMaterial3D" id="ground_material"]
 albedo_color = Color(0.30, 0.39, 0.21, 1)
@@ -243,3 +245,9 @@ script = ExtResource("10")
 
 [node name="VisualTarget01" type="Node3D" parent="."]
 script = ExtResource("11")
+
+[node name="LightProgression" type="Node" parent="."]
+script = ExtResource("12")
+
+[node name="HumanHitboxDebug" type="Node" parent="."]
+script = ExtResource("13")

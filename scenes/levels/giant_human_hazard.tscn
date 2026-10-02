@@ -1,4 +1,5 @@
 [gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://scripts/style/toon_styled_visual.gd" id="toon_style"]
 
 [ext_resource type="Script" path="res://scripts/levels/giant_human_level_visual.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/models/human_reuse/hipster_poc.glb" id="2"]
@@ -38,3 +39,8 @@ shape = SubResource("torso_shape")
 
 [node name="HumanAudio" type="Node" parent="."]
 script = ExtResource("4")
+
+[node name="ToonStyle" type="Node" parent="."]
+script = ExtResource("toon_style")
+target = NodePath("../VisualRoot")
+outline = false
