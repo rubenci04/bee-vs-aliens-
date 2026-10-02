@@ -12,6 +12,7 @@ export_presets.cfg
 dev/**/*.log
 dev/**/*.png
 dev/**/*.png.import
+dev/**/*.glb.import
 dev/**/git_status_*.txt
 docs/**/*.log
 dev/asset_review/external/
