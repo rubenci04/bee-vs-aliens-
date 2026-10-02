@@ -12,8 +12,8 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 - Fase actual: Core Gameplay Closure Audit 01 → luego Art Direction / Visual Target. No inventar features para seguir programando.
 
 ## Rutas importantes
-- `project.godot` — main_scene actual: `res://scenes/bee_prototype/bee_garden_poc.tscn` (POC antiguo).
-- Level 01: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (abrir y jugar con F6, no F5).
+- `project.godot` — main_scene: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (Level 01).
+- Level 01: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (F5 y F6 lo abren; los POC viejos se juegan con F6 sobre su escena).
 - `scenes/bee_prototype/`, `scenes/levels/`, `scenes/decoration/`, `scenes/vfx/` — escenas.
 - `scripts/bee_prototype/` (player, enemigos, armas), `scripts/levels/` (controller, checkpoint QoL), `scripts/components/` (HealthComponent), `scripts/audio/`, `scripts/vfx/`.
 - `tests/bee_prototype/`, `tests/levels/` — suites `validate_*.gd`.
@@ -26,7 +26,7 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 
 ## Controles
 - Mover: WASD / flechas. Disparo: X. Melee (Sting): Z. Alien Bomb: C.
-- Pausa: Esc. Reiniciar tras derrota: R (en checkpoint = respawn). Reinicio total: Shift+R.
+- Pausa: Esc. Reiniciar tras derrota: R (en checkpoint = respawn); tras ganar, R = reinicio completo. Reinicio total: Shift+R.
 - Armas: Base (10 HP, auto-aim ~12 m, sin homing), Spread (3 disparos ±14°, 6 HP c/u, 24 ráfagas), Bomb (radio 3 m, 32 HP, máx. 3 cargas).
 - Checkpoint en X=190 m; respawn en (190, 5.4, 0) con 1.25 s de invulnerabilidad.
 
@@ -39,7 +39,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/levels/va
 godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_prototype/validate_<nombre>.gd
 ```
 - Sin `--headless` (con render) algunas suites guardan capturas PNG en `res://dev/<...>_review/`. Eso ESCRIBE archivos en `dev/`; avisar antes de correrlas así.
-- La suite completa son 22 validaciones (estado reportado: 22/22, ~100 FPS). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
+- La suite completa son 23 validaciones (22 previas + `validate_bee_terminal_states_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
 - Los tests no miden si es divertido: el playtest del usuario manda.
 - Logs en `docs/bee_prototype/*.log` y `.godot/` están ignorados por git.
 

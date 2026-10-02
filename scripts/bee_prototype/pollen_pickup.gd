@@ -14,6 +14,8 @@ func _ready() -> void:
 func collect(body: Node) -> bool:
 	if was_collected or not body.is_in_group("bee_player"):
 		return false
+	if "is_defeated" in body and bool(body.get("is_defeated")):
+		return false # A defeated Bee neither heals nor consumes pollen.
 	was_collected = true
 	BeeAudio.play(get_parent(), &"pollen", global_position)
 	BeeCombatVFX.spawn(get_parent(), global_position, &"pollen")

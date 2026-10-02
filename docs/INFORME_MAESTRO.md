@@ -602,7 +602,7 @@ Instrucciones para el usuario:
 
 # F6
 
-No F5.
+Desde el cambio "Fix terminal states and main scene", F5 también abre el Level 01 (es la escena principal de project.godot). F6 sobre la escena abierta sigue funcionando.
 
 ---
 
@@ -631,7 +631,7 @@ Pause:
 
 Restart después de derrota:
 
-- R.
+- R (también tras ganar: "R — JUGAR DE NUEVO" hace reinicio completo).
 
 Full Restart:
 

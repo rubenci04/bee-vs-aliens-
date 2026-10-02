@@ -406,6 +406,7 @@ func run() -> void:
 		await frames(4)
 	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == 24 and bee.bomb_charges == 3, "Level pickups cannot be collected")
 	bee.set_physics_process(true)
+	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)
 	await frames(2)
 	check(bee.is_defeated and stage.status.text == "PLAYER DOWN — PRESS R TO RESPAWN", "Defeat missing")
