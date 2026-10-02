@@ -56,6 +56,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_proto
 - Empezar cada tarea inspeccionando el estado real; leer los docs relevantes antes de tocar nada.
 - NO `git reset`, NO `git clean`, NO `git stash`, NO `git checkout --`/restore sobre cambios sin commit.
 - NO commit ni push salvo pedido explícito del usuario.
+- **Nunca hacer commit hasta que la suite de tests completa haya terminado y pasado. Si un prompt pide commit condicionado a los tests, esperar el resultado final.**
 - NO borrar assets, escenas, scripts, tests ni docs. No renombrar/mover sin pedido.
 - NO reconstruir sistemas que ya funcionan; cambios mínimos y localizados; preservar gameplay estable.
 - UNA tarea significativa por prompt. No mezclar arte, boss, Level 02, audio, menús, etc.
