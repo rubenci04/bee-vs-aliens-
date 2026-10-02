@@ -93,6 +93,33 @@ func run() -> void:
 	var bounds := slab.global_transform * slab.get_aabb()
 	check(bounds.position.x <= -15.0 and bounds.end.x >= 380.0, "Ground slab must cover the whole level")
 
+	# Ground life (POLISH-02): MultiMesh litter, no collision, nothing tall in the midground, never cyan.
+	var life := stage.get_node("GroundLife01") as BeeLevel01GroundLife
+	check(life != null and life.instance_total >= 300 and life.batches.size() >= 30, "Ground life missing (%d instances)" % (life.instance_total if life != null else 0))
+	check(life.find_children("*", "CollisionObject3D", true, false).is_empty() and life.find_children("*", "MeshInstance3D", true, false).is_empty(), "Ground life must be MultiMesh only, without collision")
+	var life_windows := {}
+	var life_cyan := 0
+	for record: Dictionary in life.records:
+		var batch := record["node"] as MultiMeshInstance3D
+		var box := (record["mesh"] as Mesh).get_aabb()
+		for k in (record["transforms"] as Array).size():
+			var transform: Transform3D = (record["transforms"] as Array)[k]
+			var colour: Color = (record["colors"] as Array)[k]
+			if colour.h > 0.42 and colour.h < 0.56 and colour.s > 0.35:
+				life_cyan += 1
+			transform = batch.global_transform * transform
+			life_windows[int(floorf(transform.origin.x / 40.0))] = true
+			for corner in 8:
+				var point := transform * (box.position + box.size * Vector3(corner & 1, (corner >> 1) & 1, (corner >> 2) & 1))
+				check(point.z <= -3.0 or point.z >= 0.6, "Ground life inside the flight band: " + str(batch.name))
+				if absf(point.z) < BeeLevel01VisualTarget.MIDGROUND_CLEAR_Z + 0.5:
+					check(point.y <= 0.35 or point.z <= -BeeLevel01VisualTarget.MIDGROUND_CLEAR_Z, "Ground life too tall near the midground: %s y=%.2f z=%.2f" % [batch.name, point.y, point.z])
+				if point.z > 0.0:
+					check(point.y <= 0.35, "Front litter too tall: %s y=%.2f" % [batch.name, point.y])
+	check(life_cyan == 0, "Cyan is reserved for alien tech (ground life)")
+	for window in range(0, 9):
+		check(life_windows.has(window), "No ground life around x=%d" % (window * 40))
+
 	# Fog and shadows still start behind the playfield.
 	var env := (stage.get_node("WorldEnvironment") as WorldEnvironment).environment
 	check(env.fog_enabled and env.fog_mode == Environment.FOG_MODE_DEPTH and env.fog_depth_begin > BeeLevel01Framing.CAMERA_DISTANCE + 2.5, "Depth fog must start behind the playfield")
@@ -122,5 +149,5 @@ func run() -> void:
 	await process_frame
 	var sun := stage.get_node("Sun") as DirectionalLight3D
 	check(color_distance(sun.light_color, BeeLevel01LightProgression.settings_at(300.0)["sun_color"]) < 0.001, "Sun not following the scroll position")
-	print("VISUAL_LEVEL_01_OK batches=", target.batches.size(), " flowers=", target.flower_head_count, " hidden=", target.hidden_scenery.size(), " foreground=", target.foreground_nodes.size(), " light_step=", snappedf(worst, 0.0001))
+	print("VISUAL_LEVEL_01_OK life=", life.instance_total, " batches=", target.batches.size(), " flowers=", target.flower_head_count, " hidden=", target.hidden_scenery.size(), " foreground=", target.foreground_nodes.size(), " light_step=", snappedf(worst, 0.0001))
 	quit(0)
