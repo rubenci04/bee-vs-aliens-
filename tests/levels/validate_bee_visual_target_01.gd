@@ -149,5 +149,19 @@ func run() -> void:
 	await process_frame
 	var sun := stage.get_node("Sun") as DirectionalLight3D
 	check(color_distance(sun.light_color, BeeLevel01LightProgression.settings_at(300.0)["sun_color"]) < 0.001, "Sun not following the scroll position")
+	# Sunset readability: darker, less saturated soil and a stronger rim on Bee, both gradual.
+	var soil := (target.get_node("MulchGround") as MeshInstance3D).material_override as StandardMaterial3D
+	stage.distance = 0.0
+	await process_frame
+	var morning_soil := soil.albedo_color
+	check(is_zero_approx(BeeToonStyle.bee_rim_boost), "Bee rim boost must be off in the morning")
+	stage.distance = 330.0
+	await process_frame
+	check(soil.albedo_color.v < morning_soil.v * 0.65 and soil.albedo_color.s < morning_soil.s * 0.6, "Sunset soil must be darker and less saturated")
+	check(BeeToonStyle.bee_rim_boost > 0.99, "Bee rim boost must be full at sunset")
+	stage.distance = 270.0
+	await process_frame
+	var mid := BeeToonStyle.bee_rim_boost
+	check(mid > 0.0 and mid < 1.0 and soil.albedo_color.v < morning_soil.v and soil.albedo_color.v > Color.from_hsv(morning_soil.h, 0.0, morning_soil.v * 0.58).v, "Sunset contrast aids must blend in gradually")
 	print("VISUAL_LEVEL_01_OK life=", life.instance_total, " batches=", target.batches.size(), " flowers=", target.flower_head_count, " hidden=", target.hidden_scenery.size(), " foreground=", target.foreground_nodes.size(), " light_step=", snappedf(worst, 0.0001))
 	quit(0)

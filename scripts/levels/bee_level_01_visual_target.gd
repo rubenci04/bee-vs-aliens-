@@ -47,6 +47,7 @@ const PALETTE := {
 	"far_petal": Color(0.8, 0.7, 0.38),
 	"foreground": Color(0.07, 0.11, 0.05),
 }
+const GROUND_TINT_KEYS := ["mulch", "mulch_dark", "mulch_light", "pebble", "pebble_warm", "leaf_fallen"]
 const FLOWER_PETALS := ["petal_pink", "petal_warm", "petal_violet"]
 
 var _materials: Dictionary = {}
@@ -440,3 +441,14 @@ static func frame_top_at(z: float) -> float:
 	var cam_z := BeeLevel01Framing.CAMERA_DISTANCE
 	var cam_y := BeeLevel01Framing.CAMERA_HEIGHT
 	return cam_y + (BeeLevel01Framing.top_y() - cam_y) * (cam_z - z) / cam_z
+
+
+## Sunset readability: the soil, pebbles and fallen leaves get darker and less saturated so Bee
+## (golden, then orange in the low sun) separates from the ground. strength 0 = approved palette.
+func apply_ground_tint(strength: float) -> void:
+	for cache_key: String in _materials:
+		var key := cache_key.trim_suffix("_2")
+		if not GROUND_TINT_KEYS.has(key):
+			continue
+		var base: Color = PALETTE[key]
+		(_materials[cache_key] as StandardMaterial3D).albedo_color = Color.from_hsv(base.h, base.s * (1.0 - 0.5 * strength), base.v * (1.0 - 0.42 * strength))

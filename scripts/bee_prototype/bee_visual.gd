@@ -6,9 +6,13 @@ extends Node3D
 var wings: Array[Node3D] = []
 var rest_angles: Array[Vector3] = []
 var elapsed := 0.0
+var _rim_materials: Array[ShaderMaterial] = []
+var _rim_applied := -1.0
+const BODY_LIFT := 0.9
 
 func _ready() -> void:
 	BeeToonStyle.apply(self, true)
+	_own_rim_materials()
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := find_child(wing_name, true, false) as Node3D
 		assert(wing != null, "Bee visual requires independent wings")
@@ -21,5 +25,41 @@ func _process(delta: float) -> void:
 	if actor.is_defeated:
 		return
 	elapsed += delta
+	_update_rim()
 	for i in wings.size():
 		wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
+
+## Bee keeps her own copies of the toon materials so the sunset rim boost never touches other actors.
+func _own_rim_materials() -> void:
+	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		for surface in mesh.mesh.get_surface_count():
+			var material := mesh.get_surface_override_material(surface) as ShaderMaterial
+			if material != null and (material.shader == BeeToonStyle.TOON or material.shader == BeeToonStyle.TOON_DOUBLE):
+				var own := material.duplicate() as ShaderMaterial
+				mesh.set_surface_override_material(surface, own)
+				_rim_materials.append(own)
+
+func _update_rim() -> void:
+	var boost := BeeToonStyle.bee_rim_boost
+	if absf(boost - _rim_applied) < 0.01:
+		return
+	_rim_applied = boost
+	_lift_body(boost)
+	for material in _rim_materials:
+		material.set_shader_parameter("rim_strength", lerpf(0.3, 1.25, boost))
+		material.set_shader_parameter("rim_power", lerpf(3.0, 1.7, boost))
+		material.set_shader_parameter("rim_color", Color(1.0, 0.93, 0.8).lerp(Color(1.0, 0.98, 0.9), boost))
+
+## Warm self-light so the golden body stays brighter than the dusk background (non-emissive materials only).
+func _lift_body(boost: float) -> void:
+	for material in _rim_materials:
+		if not material.has_meta("body_albedo"):
+			var energy: Variant = material.get_shader_parameter("emission_energy")
+			if energy != null and float(energy) > 0.0:
+				material.set_meta("body_albedo", Color.TRANSPARENT)
+			else:
+				material.set_meta("body_albedo", material.get_shader_parameter("albedo"))
+		var albedo: Color = material.get_meta("body_albedo")
+		if albedo.a > 0.0:
+			material.set_shader_parameter("emission", albedo.lightened(0.1))
+			material.set_shader_parameter("emission_energy", BODY_LIFT * boost)

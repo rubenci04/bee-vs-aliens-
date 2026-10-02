@@ -13,6 +13,8 @@ const WING := preload("res://assets/style/toon_wing.gdshader")
 const CYAN_MIN_ENERGY := 2.0
 const BRIGHT_ALBEDO_CAP := 0.8
 
+## 0..1, written by the level light progression: strengthens the rim light on Bee at sunset.
+static var bee_rim_boost := 0.0
 static var _outline_material: ShaderMaterial
 static var _cache: Dictionary = {}
 
