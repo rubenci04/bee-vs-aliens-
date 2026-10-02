@@ -17,6 +17,20 @@ func _process(_delta: float) -> void:
 			and Input.is_action_just_pressed("restart") and not Input.is_action_just_pressed("bee_full_restart"):
 		checkpoint.restart_level(true)
 
+func _update_camera_and_bounds() -> void:
+	# Flight window = visible area of the Level 01 camera minus a margin (the old fixed
+	# +-5.2 / 7.2 bounds are only the outer limit now). Set before the base class uses them.
+	var aspect := BeeLevel01Framing.view_aspect(get_viewport())
+	var half_width := BeeLevel01Framing.half_width_min(aspect) - BeeLevel01Framing.FLIGHT_MARGIN
+	screen_left = -half_width
+	screen_right = half_width
+	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
+	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
+	super._update_camera_and_bounds()
+	camera.global_position = Vector3(distance, BeeLevel01Framing.CAMERA_HEIGHT, BeeLevel01Framing.CAMERA_DISTANCE)
+	camera.rotation = Vector3(deg_to_rad(BeeLevel01Framing.CAMERA_PITCH_DEGREES), 0.0, 0.0)
+	camera.fov = BeeLevel01Framing.CAMERA_FOV
+
 func _on_bee_defeated() -> void:
 	super._on_bee_defeated()
 	checkpoint.defeat_hint()

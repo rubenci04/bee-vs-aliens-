@@ -141,7 +141,13 @@ func _spawn(request: Dictionary) -> void:
 	get_node("../Enemies").add_child(unit)
 	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien"]
 	var height: float = [4.6, 2.6, 6.0][int(request["slot"])] if air else -0.2
-	unit.global_position = Vector3(stage.camera.global_position.x + 4.0, height, 0)
+	if air:
+		height = minf(height, BeeLevel01Framing.max_entity_y()) # Never above the visible top edge - margin.
+	# Moving enemies are born just past the right visible edge; the static turret stays on screen
+	# (a hard gate must always be clearable).
+	var spawn_offset := BeeLevel01Framing.ONSCREEN_SPAWN_X if family == "Turret" \
+			else BeeLevel01Framing.spawn_offset_x(BeeLevel01Framing.view_aspect(get_viewport()))
+	unit.global_position = Vector3(stage.camera.global_position.x + spawn_offset, height, 0)
 	unit.set_meta("level_hard", bool(request["hard"]))
 	unit.set_meta("level_born", _clock)
 	unit.set_meta("level_retreat", false)
