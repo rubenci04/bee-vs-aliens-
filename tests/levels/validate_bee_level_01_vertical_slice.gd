@@ -373,6 +373,9 @@ func run() -> void:
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true
+		# UFO BOSS 01 closes the level; its fight is covered by validate_bee_ufo_boss_01.
+		if wave.boss != null and wave.boss.is_active():
+			wave.boss.health.take_damage(99999)
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0

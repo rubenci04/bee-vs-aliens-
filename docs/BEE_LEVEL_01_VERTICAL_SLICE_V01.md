@@ -85,3 +85,6 @@ Checkpoint único de sesión X=190, después del humano y antes de X=198. Cura h
 Esc pausa/reanuda; Shift+R reinicia todo. Hint inicial X FIRE / Z STING / C BOMB y mensajes CHECKPOINT / RESTART / RESPAWN. Baliza primitiva cian y cue positivo existente. Sin cambios a los 360 m, 24 eventos, 38 enemigos, HP/balance, flora ni arte. Detalle y limitaciones: `docs/BEE_CHECKPOINT_QOL_V01.md`; test específico y review en `dev/checkpoint_qol_review/`. El test integrado conserva final y verifica reset total usando Shift+R.
 
 Cierre Checkpoint/QoL: específico headless/render OK, cargas jugables directas headless/render código 0, suite **22/22**, sin regresiones ni errores/advertencias del motor. Muestra quieta render sin/con procesamiento QoL: 100,00/99,99 FPS; peor frame 10,625/10,340 ms. No sustituye playtest humano.
+
+## UFO BOSS 01 — final del nivel
+El final ya no es "último encuentro → SECTOR DESPEJADO". Ahora es: último encuentro → respiro de 1,6 s con arena bloqueada → aproximación del OVNI en profundidad (3,2 s, invulnerable) → combate de 3 fases (`ALIEN SCOUT`, 1300 HP, ~60 s) → muerte (2,3 s, borra sus proyectiles) → `SECTOR DESPEJADO`. Detalle en `docs/BEE_UFO_BOSS_01.md`. Los 360 m, los 24 eventos y los 38 enemigos no cambian.

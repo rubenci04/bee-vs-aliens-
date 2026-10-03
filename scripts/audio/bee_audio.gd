@@ -21,9 +21,10 @@ const CUES := {
 	&"human_step": ["environment/human_step", -21.0, 2, true],
 	&"human_step_b": ["environment/human_step", -21.0, 2, true],
 	&"human_step_c": ["environment/human_step", -21.0, 2, true],
+	&"ufo_charge": ["weapons/bomb", -19.0, 3, true],
 }
 const MAX_VOICES := 16
-const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c"]
+const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c", &"ufo_charge"]
 const REAL_GAIN_DB := {&"spread_pickup": -3.0, &"bomb_pickup": -3.0, &"pollen": -3.0}
 static var use_real_assets := true
 static var _streams: Dictionary = {}
