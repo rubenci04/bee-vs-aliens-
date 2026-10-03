@@ -105,3 +105,11 @@ Selección curada: `D:\proyectos\V_Asset_Library\02_Selected_For_Game\kenney\ken
 | flower_yellowB.glb | AAA8707779A5DE59F881F80185BC507B35EC3FD5F23A39D6447EF61141DCD4F5 |
 
 GLB autocontenidos, materiales planos, sin dependencias externas ni scripts/colisión. Sólo se copiaron estos cuatro archivos; fuentes preservadas, sin recolor ni Blender. La carpeta nueva `01_Extracted/flores` permanece íntegramente PENDIENTE DE VERIFICACIÓN y no se promovió. La flor rosada recuperada es geometría original de Godot del Garden POC, no asset externo.
+
+## Frog — FAUNA DE ESCALA (Arcade Content & Spectacle Rebuild 02)
+Proveedor/autor: Quaternius. Pack: Easy Animated Enemy Pack (Jan 2019). Licencia local: CC0 1.0 (`License.txt` del pack, copiado junto al modelo); uso comercial permitido, atribución no requerida.
+Original: `D:\proyectos\V_Asset_Library\01_Extracted\quaternius\Easy Animated Enemy Pack - Jan 2019-20260929T144515Z-1-001\Easy Animated Enemy Pack - Jan 2019\FBX\Frog.fbx` (la segunda copia del pack, `...T144531Z...`, tiene el mismo hash).
+Destino Bee: `res://assets/external/approved/fauna/quaternius/Easy Animated Enemy Pack - Jan 2019/FBX/Frog.fbx` + `License.txt`.
+SHA-256 idéntico en origen (ambas copias) y destino: `E7366C2ED4681AA353A832E2BFEE20865717B782F3D256DFEAC0060DABBDEBEE`.
+Clips: `FrogArmature|Frog_Jump` (0.88 s), `Frog_Idle`, `Frog_Attack`, `Frog_Death`. ~4.9 k tris. Dependencias: sólo FBX (colores de material, sin texturas).
+Uso: evento de escala "La rana" en Level 01 (decorativo, detrás del plano de vuelo, sin colisión ni daño). Auditoría: `docs/BEE_LOCAL_ASSET_OPPORTUNITY_AUDIT_01.md`.
