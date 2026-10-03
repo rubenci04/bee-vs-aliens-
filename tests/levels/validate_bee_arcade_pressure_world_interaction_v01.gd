@@ -413,8 +413,8 @@ func test_level() -> void:
 				if family in RANGED:
 					with_ranged += 1
 					break
-	check(events.size() == 24 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed")
-	check(total >= 62 and total <= 66, "Enemy total %d outside 62-66" % total)
+	check(events.size() == 31 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (EVENTS V2)")
+	check(total >= 60 and total <= 72, "Enemy total %d outside 60-72" % total)
 	check(biggest <= 4, "More than 4 units in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")

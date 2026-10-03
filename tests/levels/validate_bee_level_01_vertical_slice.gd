@@ -282,7 +282,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 24, "Event count wrong")
+	check(BeeLevel01Controller.EVENTS.size() == 31, "Event count wrong (EVENTS V2: 31 incl. 4 director moments)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 64 and max_gap <= 16, "Enemy count/pacing wrong")
+	check(total == 69 and max_gap <= 16, "Enemy count/pacing wrong")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -355,7 +355,7 @@ func run() -> void:
 			if family == "Walker" and not captured.has("walker"):
 				await capture("density02_08_walker.png")
 				captured["walker"] = true
-			if event_id == 23 and wave.active_units.size() == 3 and not captured.has("final"):
+			if event_id == BeeLevel01Controller.EVENTS.size() - 1 and wave.active_units.size() == 3 and not captured.has("final"):
 				await capture("density02_09_final_section.png")
 				captured["final"] = true
 				await sample_render_performance()
@@ -381,13 +381,13 @@ func run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level did not complete")
-	check(wave.event_index == 24 and wave.max_active_seen == 3, "Progression/max active wrong")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen == 3, "Progression/max active wrong")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 64, "Not all 64 enemies spawned")
+	check(spawned == 69, "Not all 69 enemies spawned")
 	for event_id in 24:
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -421,5 +421,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=24 enemies=64 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=31 enemies=69 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

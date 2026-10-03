@@ -2,6 +2,8 @@ class_name BeeLevel01Controller
 extends Node3D
 
 signal wave_completed
+## Enemy-free director set pieces ("opening_can", "human_aftermath", ...; "last_silence" before the UFO).
+signal director_moment(id: StringName)
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
 const PROBE = preload("res://scenes/bee_prototype/alien_probe_ranged.tscn")
@@ -34,33 +36,53 @@ const LEVEL_TUNING = {
 	"Turret": {"cooldown_time": 1.55, "fan_count": 3, "fan_step_degrees": 14.0},
 	"Walker": {"recovery_time": 0.9, "burst_shots": 3, "burst_gap": 0.35},
 }
-# Units may carry "delays" (seconds after the event starts, one per unit) for controlled waves; without it the
-# group enters 0.8 s apart. Distances/thresholds of the 24 events are unchanged.
+# LEVEL 01 TRANSFORMATION PASS 01 — EVENTS V2 (docs/BEE_LEVEL01_ARCADE_DIRECTOR_BLUEPRINT_01.md).
+# Five internal acts (never shown to the player). Cadence is no longer a 14 m metronome: thresholds are 4-16 m apart,
+# with popcorn micro events, formations, persistent groups, deliberate gates and enemy-free "moments".
+# Optional per-event keys (all plain data):
+#   "act"        1..5                      "formation"  readable name of the entry shape (dev/tests)
+#   "delays"     seconds per unit (asc.)   "y"          spawn height per unit (formations; ground units ignore it)
+#   "x"          extra spawn X per unit    "moment"     id emitted through `director_moment` (visual/interactive set piece)
+#   "hard"/"human" as before.
+const ACT_STARTS := [0.0, 68.0, 140.0, 198.0, 340.0] # ACT 1 AWAKENING, 2 CONTROLLED GARDEN, 3 HUMAN TERRITORY, 4 ALIEN ESCALATION, 5 FIRST CONTACT
+## EyeDrone fans are introduced from here on (before: aimed bursts only).
+const FAN_FROM_X := 96.0
 const EVENTS = [
-	{"at": 12.0, "label": "JARDÍN · AVISPA", "units": ["Wasp"]},
-	{"at": 26.0, "label": "JARDÍN · DOS AVISPAS DESFASADAS", "units": ["Wasp", "Wasp"], "delays": [0.0, 2.2]},
-	{"at": 40.0, "label": "FORMACIÓN A · SONDA Y AVISPA", "units": ["Probe", "Wasp"], "delays": [0.0, 1.5]},
-	{"at": 54.0, "label": "TRONCO · AVISPA, SONDA Y AVISPA", "units": ["Wasp", "Probe", "Wasp"], "delays": [0.0, 0.8, 4.5]},
-	{"at": 68.0, "label": "CONTACTO · DOS OJOS Y SONDA", "units": ["EyeDrone", "EyeDrone", "Probe"], "delays": [0.0, 1.5, 4.0]},
-	{"at": 82.0, "label": "FORMACIÓN D · SONDAS DESFASADAS", "units": ["Probe", "Wasp", "Probe"], "delays": [0.0, 1.0, 4.0]},
-	{"at": 96.0, "label": "ROCAS · OJO, AVISPA Y SONDA", "units": ["EyeDrone", "Wasp", "Probe"], "delays": [0.0, 0.8, 3.5]},
-	{"at": 110.0, "label": "CONTACTO · SPEEDER, SONDA Y AVISPA", "units": ["Speeder", "Probe", "Wasp"], "delays": [0.0, 0.8, 4.0]},
-	{"at": 124.0, "label": "JARDÍN · ÚLTIMA AVISPA", "units": ["Wasp"]},
-	{"at": 140.0, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
-	{"at": 156.0, "label": "DEFENSAS · TORRETA, AVISPA Y OJO", "units": ["Turret", "Wasp", "EyeDrone"], "delays": [0.0, 0.8, 4.0]},
-	{"at": 170.0, "label": "FORMACIÓN B · OJO, TORRETA, AVISPA Y SONDA", "units": ["EyeDrone", "Turret", "Wasp", "Probe"], "delays": [0.0, 0.8, 2.5, 5.0]},
-	{"at": 184.0, "label": "DEFENSAS · AVISPA", "units": ["Wasp"]},
-	{"at": 198.0, "label": "DEFENSAS · SONDA, SPEEDER Y OJO", "units": ["Probe", "Speeder", "EyeDrone"]},
-	{"at": 212.0, "label": "DEFENSAS · TORRETA, OJO Y SONDA", "units": ["Turret", "EyeDrone", "Probe"], "delays": [0.0, 0.8, 4.0]},
-	{"at": 226.0, "label": "CONTACTO · AVISPA, SONDA Y AVISPA", "units": ["Wasp", "Probe", "Wasp"], "delays": [0.0, 1.0, 2.5]},
-	{"at": 240.0, "label": "CONTACTO · OJO, SPEEDER Y AVISPA", "units": ["EyeDrone", "Speeder", "Wasp"]},
-	{"at": 254.0, "label": "ORGANISMO · AVISPA Y OJO", "units": ["OrganicAlien", "Wasp", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 3.0]},
-	{"at": 268.0, "label": "DEFENSAS · SONDA, OJO Y TORRETA", "units": ["Probe", "EyeDrone", "Turret"]},
-	{"at": 282.0, "label": "DEFENSAS · TORRETA, AVISPA Y SONDA", "units": ["Turret", "Wasp", "Probe"], "delays": [0.0, 0.8, 3.5]},
-	{"at": 296.0, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "hard": true, "delays": [0.0, 0.8, 3.0]},
-	{"at": 310.0, "label": "FINAL · AVISPA, SPEEDER, SONDA Y OJO", "units": ["Wasp", "Speeder", "Probe", "EyeDrone"], "delays": [0.0, 0.8, 1.6, 5.0]},
-	{"at": 324.0, "label": "FINAL · TRES AMENAZAS", "units": ["Probe", "EyeDrone", "Wasp"]},
-	{"at": 340.0, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 5.0]},
+	# ACT 1 — AWAKENING (intensity 1 -> 2)
+	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
+	{"at": 8.0, "act": 1, "label": "JARDÍN · PRIMERA AVISPA", "units": ["Wasp"]},
+	{"at": 20.0, "act": 1, "label": "JARDÍN · PAREJA DESFASADA", "units": ["Wasp", "Wasp"], "formation": "pair", "delays": [0.0, 2.0], "y": [4.8, 2.8]},
+	{"at": 36.0, "act": 1, "label": "FORMACIÓN A · SONDA Y AVISPA", "units": ["Probe", "Wasp"], "formation": "escort", "delays": [0.0, 1.5]},
+	{"at": 50.0, "act": 1, "label": "TRONCO · AVISPA, SONDA Y AVISPA", "units": ["Wasp", "Probe", "Wasp"], "formation": "staggered", "delays": [0.0, 0.8, 4.5], "y": [5.4, 3.6, 1.8]},
+	{"at": 62.0, "act": 1, "label": "POPCORN · SPEEDER", "units": ["Speeder"]},
+	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
+	{"at": 70.0, "act": 2, "label": "LÍNEA · DOS OJOS Y SONDA", "units": ["EyeDrone", "EyeDrone", "Probe"], "formation": "horizontal", "delays": [0.0, 0.5, 4.0], "y": [4.4, 4.4, 2.6], "x": [0.0, 1.6, 0.0]},
+	{"at": 84.0, "act": 2, "label": "FORMACIÓN D · SONDAS DESFASADAS", "units": ["Probe", "Wasp", "Probe"], "formation": "staggered", "delays": [0.0, 1.0, 4.0], "y": [5.6, 3.0, 2.4]},
+	{"at": 98.0, "act": 2, "label": "COLUMNA · DOS OJOS Y AVISPA", "units": ["EyeDrone", "EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 0.3, 3.5], "y": [2.0, 5.6, 3.8]},
+	{"at": 110.0, "act": 2, "label": "CONTACTO · SPEEDER, SONDA Y AVISPA", "units": ["Speeder", "Probe", "Wasp"], "delays": [0.0, 0.8, 4.0]},
+	{"at": 124.0, "act": 2, "label": "FAUNA · RESERVADO", "units": ["Wasp"], "fauna_slot": true},
+	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
+	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
+	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": [], "moment": "human_aftermath"},
+	{"at": 156.0, "act": 3, "label": "TENAZA · TORRETA, OJO Y AVISPA", "units": ["Turret", "EyeDrone", "Wasp"], "formation": "top_bottom", "delays": [0.0, 0.8, 4.0], "y": [-0.2, 6.0, 3.0]},
+	{"at": 166.0, "act": 3, "label": "POPCORN · DIAGONAL DE AVISPAS", "units": ["Wasp", "Wasp"], "formation": "diagonal", "delays": [0.0, 0.6], "y": [5.8, 2.2], "x": [0.0, 1.4]},
+	{"at": 174.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA, AVISPA Y SONDA", "units": ["EyeDrone", "Turret", "Wasp", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.8, 2.5, 5.0]},
+	{"at": 186.0, "act": 3, "label": "DEFENSAS · AVISPA", "units": ["Wasp"]},
+	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
+	{"at": 198.0, "act": 4, "label": "DEFENSAS · SONDA, SPEEDER Y OJO", "units": ["Probe", "Speeder", "EyeDrone"]},
+	{"at": 207.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret", "Probe"], "formation": "rock_turret", "delays": [0.0, 2.0], "y": [-0.2, 5.6]},
+	{"at": 218.0, "act": 4, "label": "DIAGONAL · DOS SONDAS Y OJO", "units": ["Probe", "Probe", "EyeDrone"], "formation": "diagonal", "delays": [0.0, 0.9, 3.0], "y": [6.0, 4.2, 2.4], "x": [0.0, 1.2, 0.0]},
+	{"at": 230.0, "act": 4, "label": "CONTACTO · AVISPA, SONDA Y AVISPA", "units": ["Wasp", "Probe", "Wasp"], "delays": [0.0, 1.0, 2.5]},
+	{"at": 242.0, "act": 4, "label": "CONTACTO · OJO, SPEEDER Y AVISPA", "units": ["EyeDrone", "Speeder", "Wasp"]},
+	{"at": 254.0, "act": 4, "label": "ORGANISMO · AVISPA Y OJO", "units": ["OrganicAlien", "Wasp", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 3.0]},
+	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO", "units": [], "moment": "contaminated_garden"},
+	{"at": 270.0, "act": 4, "label": "OLA · SONDA, OJO Y TORRETA", "units": ["Probe", "EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 1.5, 3.0]},
+	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA, AVISPA Y SONDA", "units": ["Turret", "Wasp", "Probe"], "delays": [0.0, 0.8, 3.5]},
+	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 0.8, 3.0]},
+	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": [], "moment": "bomb_reward"},
+	{"at": 312.0, "act": 4, "label": "OLA FINAL · AVISPA, SPEEDER, SONDA Y OJO", "units": ["Wasp", "Speeder", "Probe", "EyeDrone"], "formation": "wave", "delays": [0.0, 0.8, 1.6, 5.0]},
+	{"at": 326.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4]},
+	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 5.0]},
 ]
 
 @export var show_debug_labels := false # Internal event names ("JARDÍN · AVISPA"...) only for development.
@@ -89,6 +111,7 @@ var _frozen := false
 var boss: UfoBoss01
 var boss_defeated := false
 var _boss_breather_left := -1.0
+var current_act := 1 # Internal act (1-5) of the last launched event; 5 = FIRST CONTACT.
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -123,6 +146,9 @@ func _physics_process(delta: float) -> void:
 	player_label = encounter_label if show_debug_labels or bool(event.get("human", false)) else ""
 	var launched_index := event_index
 	event_index += 1
+	current_act = int(event.get("act", current_act))
+	if event.has("moment"):
+		director_moment.emit(StringName(event["moment"]))
 	if bool(event.get("human", false)):
 		stage.scroll_speed = 0.0
 		_waiting_for_human = true
@@ -137,8 +163,12 @@ func _physics_process(delta: float) -> void:
 	for i in units.size():
 		var delays: Array = event.get("delays", [])
 		var due: float = float(delays[i]) if i < delays.size() else float(i) * group_delay
-		_pending.append({"family": str(units[i]), "slot": i, "event": launched_index,
-			"due": _clock + due, "hard": _hard_gate})
+		var request := {"family": str(units[i]), "slot": i, "event": launched_index, "due": _clock + due, "hard": _hard_gate}
+		for key in ["y", "x"]: # Formation data, optional per unit.
+			var values: Array = event.get(key, [])
+			if i < values.size():
+				request[key] = float(values[i])
+		_pending.append(request)
 	_spawn_pending()
 
 func _spawn_pending() -> void:
@@ -171,13 +201,15 @@ func _spawn(request: Dictionary) -> void:
 	get_node("../Enemies").add_child(unit)
 	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien"]
 	var height: float = [4.6, 2.6, 6.0][int(request["slot"]) % 3] if air else -0.2
+	if air and request.has("y"):
+		height = float(request["y"]) # Formation height.
 	if air:
 		height = minf(height, BeeLevel01Framing.max_entity_y()) # Never above the visible top edge - margin.
 	# Moving enemies are born just past the right visible edge; the static turret stays on screen
 	# (a hard gate must always be clearable).
 	var spawn_offset := BeeLevel01Framing.ONSCREEN_SPAWN_X if family == "Turret" \
 			else BeeLevel01Framing.spawn_offset_x(BeeLevel01Framing.view_aspect(get_viewport()))
-	unit.global_position = Vector3(stage.camera.global_position.x + spawn_offset, height, 0)
+	unit.global_position = Vector3(stage.camera.global_position.x + spawn_offset + float(request.get("x", 0.0)), height, 0)
 	unit.set_meta("level_hard", bool(request["hard"]))
 	unit.set_meta("level_born", _clock)
 	unit.set_meta("level_retreat", false)
@@ -198,6 +230,8 @@ func _spawn(request: Dictionary) -> void:
 		unit.set("stalk_lane", [0.0, 1.1, -1.1][slot % 3])
 	elif family == "Probe" or family == "EyeDrone":
 		unit.set("initial_delay", 0.35 * float(slot % 3)) # Never the same first-shot frame as a neighbour.
+	if family == "EyeDrone" and stage.distance < FAN_FROM_X:
+		unit.set("fan_every", 0) # Projectile language: aimed bursts first, fans only from FAN_FROM_X.
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
 	max_active_seen = maxi(max_active_seen, active_units.size())
@@ -246,6 +280,10 @@ func resume_after_checkpoint(progress: float) -> void:
 	event_index = 0
 	while event_index < EVENTS.size() and float(EVENTS[event_index]["at"]) < progress:
 		event_index += 1
+	current_act = 1
+	for index in ACT_STARTS.size():
+		if progress >= float(ACT_STARTS[index]):
+			current_act = index + 1
 	encounter_label = "CHECKPOINT · SEGUNDA MITAD"
 	player_label = encounter_label if show_debug_labels else "CHECKPOINT"
 	if progress > 140.0:
@@ -272,6 +310,8 @@ func _advance_boss(delta: float) -> void:
 	if boss == null:
 		if _boss_breather_left < 0.0:
 			_boss_breather_left = BOSS_BREATHER
+			current_act = 5
+			director_moment.emit(&"last_silence")
 			stage.scroll_speed = 0.0 # Arena lock: no more scroll, no more encounters.
 			encounter_label = "FINAL · CONTACTO"
 			player_label = ""

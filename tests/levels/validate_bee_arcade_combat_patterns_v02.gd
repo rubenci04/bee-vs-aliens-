@@ -386,8 +386,8 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.size() >= 4:
 			check(float(delays.back()) >= 4.5, "The 4th unit of an encounter must arrive late (controlled wave): " + str(event["label"]))
-	check(events.size() == 24 and float(events[0]["at"]) == 12.0 and float(events.back()["at"]) == 340.0, "The 24 event distances changed")
-	check(total >= 62 and total <= 66 and total - OLD_TOTAL >= 9 and total - OLD_TOTAL <= 13, "Enemy total %d outside 62-66 (+9..+13 over 53)" % total)
+	check(events.size() == 31 and float(events.back()["at"]) == 340.0, "Event table changed (EVENTS V2: 31 events, last defence at X=340)")
+	check(total >= 60 and total <= 72, "Enemy total %d outside the 60-72 director budget" % total)
 	check(biggest <= 4, "More than 4 units in one encounter")
 	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0, "Concurrency cap changed")
 	check(BeeLevel01Controller.LEVEL_HP == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}, "HP changed")
@@ -459,7 +459,7 @@ func test_checkpoint_and_complete() -> void:
 	stage.checkpoint.restart_level(false)
 	await reloaded(old_stage)
 	bind(current_scene)
-	check(absf(stage.distance - 190.0) < 0.6 and wave.event_index == 13 and wave.active_units.is_empty(), "Checkpoint respawn did not restore the second half cleanly")
+	check(absf(stage.distance - 190.0) < 0.6 and wave.event_index == checkpoint_event() and wave.active_units.is_empty(), "Checkpoint respawn did not restore the second half cleanly")
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
 	stage.scroll_speed = 2.0
@@ -503,3 +503,10 @@ func run() -> void:
 		await test_checkpoint_and_complete()
 	print("BEE_ARCADE_COMBAT_PATTERNS_V02_OK")
 	quit(0)
+
+func checkpoint_event() -> int:
+	var index := 0
+	for event: Dictionary in BeeLevel01Controller.EVENTS:
+		if float(event["at"]) < 190.0:
+			index += 1
+	return index

@@ -243,10 +243,10 @@ func test_density() -> void:
 		biggest = maxi(biggest, count)
 		if count >= 3:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
-	check(events.size() == 24, "Encounter count / level length changed")
-	check(total >= 46 and total <= 66, "Enemy total %d outside 46-66" % total)
+	check(events.size() == 31, "Encounter count changed (EVENTS V2)")
+	check(total >= 46 and total <= 72, "Enemy total %d outside 46-72" % total)
 	check(biggest <= 4, "An encounter has more than 4 units")
-	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) == 12.0, "Timeline thresholds changed")
+	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 4.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:
 		var found := false
 		for event: Dictionary in events:

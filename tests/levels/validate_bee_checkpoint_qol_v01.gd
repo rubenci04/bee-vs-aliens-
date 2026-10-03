@@ -110,7 +110,7 @@ func run() -> void:
 	stage.wave.set_physics_process(false)
 	await frames(3)
 	check(qol.checkpoint_active and qol.activation_count == 1 and qol.notice.text == "CHECKPOINT" and qol.notice.visible, "Checkpoint trigger/message")
-	check(stage.wave.event_index == 13 and stage.wave.human.crossings_exited == 1, "Checkpoint must follow real earlier encounters/human")
+	check(stage.wave.event_index == checkpoint_event() and stage.wave.human.crossings_exited == 1, "Checkpoint must follow real earlier encounters/human")
 	check(qol.snapshot.hp == 60 and qol.snapshot.spread == 5 and qol.snapshot.bomb == 0 and qol.snapshot.pollen == 1, "Snapshot/heal/state incorrect")
 	stage._physics_process(0.0) # Refresh HUD after the fixture stopped stage physics.
 	await capture("02_checkpoint_message")
@@ -126,7 +126,7 @@ func run() -> void:
 	stage._update_camera_and_bounds()
 	stage.wave.set_physics_process(true)
 	await frames(60)
-	check(stage.wave.event_index > 13, "Future runtime events did not begin")
+	check(stage.wave.event_index > checkpoint_event(), "Future runtime events did not begin")
 	bee.fire()
 	bee.use_bomb()
 	BeeAudio.play(stage, &"human_warning")
@@ -140,7 +140,7 @@ func run() -> void:
 	check(stage.get_instance_id() != old_id and absf(stage.distance - 190) < 0.5 and absf(stage.camera.global_position.x - 190) < 0.5, "Camera/progress restore")
 	check(bee.global_position.is_equal_approx(Vector3(190, 5.4, 0)), "Safe spawn position")
 	check(bee.health.current_health == 60 and bee.spread_ammo == 5 and bee.bomb_charges == 0 and stage.pollen_count == 1, "Restore inventory/HP/pollen")
-	check(stage.wave.event_index == 13 and stage.wave.active_units.is_empty() and stage.wave._pending.is_empty(), "Old/future encounters not reset")
+	check(stage.wave.event_index == checkpoint_event() and stage.wave.active_units.is_empty() and stage.wave._pending.is_empty(), "Old/future encounters not reset")
 	check(stage.wave.human.current_phase == GiantHumanCrossingHazard.Phase.EXITED and not stage.wave._waiting_for_human, "Human repeated")
 	check(bee.current_auto_target == null and not bee.target_indicator.visible, "Old target survived")
 	check(get_nodes_in_group("bee_audio_voice").is_empty() and get_nodes_in_group("bee_combat_vfx").is_empty(), "Audio/VFX survived respawn")
@@ -201,7 +201,7 @@ func run() -> void:
 			break
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Completion after checkpoint respawn failed")
 	for entry in stage.wave.spawn_history:
-		check(entry.event >= 13, "Earlier encounter regenerated")
+		check(entry.event >= checkpoint_event(), "Earlier encounter regenerated")
 	await capture("08_final_unaffected")
 	await press("bee_full_restart")
 	check(stage.distance < 1 and not qol.checkpoint_active and bee.health.current_health == 100 and bee.bomb_charges == 1 and stage.pollen_count == 0, "Shift+R did not reset entire session")
@@ -209,3 +209,11 @@ func run() -> void:
 	if not failed:
 		print("BEE_CHECKPOINT_QOL_V01_OK x=190 hp_min=60 saved_inventory pollen encounters human colliders cleanup invulnerability=1.25 pause real_R full_restart completion")
 	quit(1 if failed else 0)
+
+## First event after the checkpoint (X=190) in the current event table (EVENTS V2 changed the count).
+func checkpoint_event() -> int:
+	var index := 0
+	for event: Dictionary in BeeLevel01Controller.EVENTS:
+		if float(event["at"]) < 190.0:
+			index += 1
+	return index

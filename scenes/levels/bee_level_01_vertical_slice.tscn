@@ -247,7 +247,7 @@ kind = 1
 position = Vector3(222, 3.8, 0)
 
 [node name="BombRecharge" parent="Powerups" instance=ExtResource("8")]
-position = Vector3(318, 3.8, 0)
+position = Vector3(302, 3.8, 0)
 kind = 1
 
 [node name="CheckpointQoL" type="Node" parent="."]
