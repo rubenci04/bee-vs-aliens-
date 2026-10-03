@@ -6,6 +6,8 @@ extends Node3D
 ##   opening_can      "La lata del despertar": a giant crushed soda can; it rocks and puffs dust as Bee wakes up.
 ##   human_aftermath  dust settling where the giant stepped + a harmless beetle crossing the ground.
 ##   bomb_reward      the Bomb recharge pulses right after the Walker gate (peak -> reward -> recovery).
+##   walker_showcase  (REBUILD 02) dust + low rumble at the right edge: something heavy walks in.
+##   preboss_power    (REBUILD 02) the S+ capsule pulses and rings, a charge rises, the HUD says it once.
 ## Foreground ferns sway when Bee flies low past them (tiny tweens).
 ## Impact surfaces: the hollow log shells (real solids) stop Bee's shots with the usual spark (never break);
 ## the structural rock already does it through BreakableRock.
@@ -13,6 +15,7 @@ extends Node3D
 const CAN_X := 6.0
 const CAN_Z := -3.6
 const BEETLE_SECONDS := 9.0
+const POWER_HINT := "¡PREPARATE! · SPREAD+"
 
 @export var stage_path: NodePath = ^".."
 
@@ -47,6 +50,10 @@ func play(id: StringName) -> void:
 			_human_aftermath()
 		&"bomb_reward":
 			_bomb_reward()
+		&"walker_showcase":
+			_walker_showcase()
+		&"preboss_power":
+			_preboss_power()
 
 
 # --- opening: the giant can ---------------------------------------------------------------------------
@@ -144,6 +151,46 @@ func _bomb_reward() -> void:
 	var pulse := capsule.create_tween().set_loops(3)
 	pulse.tween_property(capsule, "scale", Vector3.ONE * 1.35, 0.22)
 	pulse.tween_property(capsule, "scale", Vector3.ONE, 0.22)
+
+
+# --- ARCADE REBUILD 02: showcase cue and the pre-boss power moment ------------------------------------------
+
+## Something heavy walks in: ground dust at the right edge, a low rumble and the faintest shake.
+func _walker_showcase() -> void:
+	var edge := Vector3(stage.camera.global_position.x + BeeLevel01Framing.spawn_offset_x(BeeLevel01Framing.DESIGN_ASPECT) - 1.2, 0.25, 0.0)
+	BeeCombatVFX.spawn(self, edge, &"rock_break", Vector3.UP, 1.4)
+	BeeAudio.play(stage, &"human_step", edge, 0.72)
+	BeeCameraShake.kick(self, 0.03, 0.18)
+
+
+## "Get ready for something big": the oversized Spread capsule pulses and rings, a charge sound rises and the HUD
+## says it once. The capsule itself (Powerups/PrebossPower) is a normal pickup with `overcharge`.
+func _preboss_power() -> void:
+	var capsule := stage.get_node_or_null("Powerups/PrebossPower") as Node3D
+	if capsule == null or capsule.is_queued_for_deletion():
+		return
+	var base := capsule.scale
+	BeeAudio.play(stage, &"ufo_charge", capsule.global_position, 1.3)
+	for i in 3:
+		get_tree().create_timer(0.45 * i, false).timeout.connect(_power_ring.bind(capsule.get_instance_id()))
+	var pulse := capsule.create_tween().set_loops(4)
+	pulse.tween_property(capsule, "scale", base * 1.22, 0.25)
+	pulse.tween_property(capsule, "scale", base, 0.25)
+	var wave := stage.get_node("WaveController")
+	wave.set("player_label", POWER_HINT)
+	get_tree().create_timer(2.6, false).timeout.connect(_clear_power_hint)
+
+
+func _power_ring(id: int) -> void:
+	var capsule := instance_from_id(id) as Node3D
+	if capsule != null and is_instance_valid(capsule) and not capsule.is_queued_for_deletion():
+		BeeCombatVFX.spawn(self, capsule.global_position, &"pickup", Vector3.UP, 1.0)
+
+
+func _clear_power_hint() -> void:
+	var wave := stage.get_node("WaveController")
+	if str(wave.get("player_label")) == POWER_HINT:
+		wave.set("player_label", "")
 
 
 # --- impact surfaces ---------------------------------------------------------------------------------------

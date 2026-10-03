@@ -269,7 +269,7 @@ func run() -> void:
 	check(wave != null and is_equal_approx(stage.sector_length, 360.0), "Level contract invalid")
 	check(is_equal_approx(stage.scroll_speed, 2.0), "Authored speed changed")
 	check(stage.get_node("Pollen").get_child_count() == 17, "Pollen count changed")
-	check(stage.get_node("Powerups").get_child_count() == 4 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong")
+	check(stage.get_node("Powerups").get_child_count() == 5 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong") # REBUILD 02: + the pre-boss S+ capsule.
 	check(stage.get_node("Destructibles").get_child_count() == 8, "Eight crates missing")
 	check(stage.get_node("Scenery").get_child_count() == 350, "Expected 350 scenery placements")
 	for prop: Node3D in stage.get_node("Scenery").get_children():
@@ -407,7 +407,7 @@ func run() -> void:
 	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children():
 		bee.global_position = pickup.global_position
 		await frames(4)
-	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == 32 and bee.bomb_charges == 3, "Level pickups cannot be collected")
+	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == 3, "Level pickups cannot be collected") # REBUILD 02: the S+ capsule overcharges Spread.
 	bee.set_physics_process(true)
 	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)
@@ -422,6 +422,6 @@ func run() -> void:
 	check(not restarted.bee.is_defeated and restarted.bee.health.current_health == 100, "R did not restore Bee")
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
-	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
+	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
 	print("BEE_LEVEL_01_DENSITY_02_OK events=42 units=92 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

@@ -357,7 +357,7 @@ func test_checkpoint_and_restart() -> void:
 	await reloaded(snapshot_stage)
 	bind(current_scene)
 	check(stage != snapshot_stage and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Full restart did not restore the initial kit")
-	check(stage.get_node("Powerups").get_child_count() == 4, "Full restart did not restore the pickups")
+	check(stage.get_node("Powerups").get_child_count() == 5, "Full restart did not restore the pickups (REBUILD 02: incl. the S+ capsule)")
 	print("CHALLENGE_RESTORE checkpoint_spread=17 restart_spread=0")
 
 # --- UFO boss, large target -----------------------------------------------------------------------

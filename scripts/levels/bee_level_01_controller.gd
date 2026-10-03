@@ -56,6 +56,7 @@ const LEVEL_HP = {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speede
 #   Cadence   shorter rests between attacks: Probe recovery 0.8->0.55 / cooldown 2.0->1.6, Eye cooldown 2.0->1.5,
 #             Turret 1.55->1.3, Walker recovery 0.9->0.7 (telegraphs unchanged, so every attack stays readable)
 #   Bursts    Probe / EyeDrone / Walker aimed bursts 3 -> 4 shots (same gap; every shot re-aims and flies straight)
+#   Organic   alternates its stalk height above / below Bee after every lunge, recovery 0.75 -> 0.6 s (HP still 47)
 const LEVEL_TUNING = {
 	"Wasp": {"arcade_mode": true, "max_passes": 3, "arcade_recovery": 1.1, "restalk_time": 1.0, "drift_amplitude": 0.8},
 	"Probe": {"cooldown_time": 1.6, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.55, "bursts_per_cycle": 2,
@@ -63,6 +64,7 @@ const LEVEL_TUNING = {
 	"EyeDrone": {"cooldown_time": 1.5, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 2, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
 			"minimum_range": 3.0, "maximum_range": 5.0, "stay_on_screen": true},
 	"Turret": {"cooldown_time": 1.3, "fan_count": 3, "fan_step_degrees": 14.0},
+	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6},
 	"Walker": {"recovery_time": 0.7, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).

@@ -14,6 +14,9 @@ enum State { ENTER, HOVER, STALK, WINDUP, LUNGE, RECOVERY, DEAD }
 @export var lunge_time := 0.38
 @export var recovery_time := 0.75
 @export var bite_damage := 13
+## ARCADE REBUILD 02 (Level 01 only, off by default): after every lunge the creature stalks from the other height
+## (above / below Bee), so it keeps repositioning instead of hovering in one spot. Presence through movement, not HP.
+@export var vary_height := false
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
@@ -31,6 +34,7 @@ var last_clip := ""
 var _active := false
 var _state_left := 0.0
 var _stalk_side := 1.0
+var _stalk_height := 0.55
 var _animation_player: AnimationPlayer
 
 func _ready() -> void:
@@ -122,11 +126,12 @@ func _begin_stalk() -> void:
 	current_state = State.STALK
 	_state_left = 0.9
 	_stalk_side = 1.0 if global_position.x >= target.global_position.x else -1.0
+	_stalk_height = ([1.5, -0.8][attack_count % 2] if vary_height else 0.55)
 	visual_root.scale = Vector3.ONE
 	_play_clip("Walk")
 
 func _move_to_stalk_position(delta: float) -> void:
-	var desired := target.global_position + Vector3(_stalk_side * stalk_distance, 0.55, 0.0)
+	var desired := target.global_position + Vector3(_stalk_side * stalk_distance, _stalk_height, 0.0)
 	desired.y = clampf(desired.y, 1.5, 6.4)
 	var offset := desired - global_position
 	velocity = velocity.move_toward(offset.normalized() * stalk_speed if offset.length() > 0.3 else Vector3.ZERO, 12.0 * delta)

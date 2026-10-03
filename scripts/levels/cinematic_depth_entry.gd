@@ -27,7 +27,7 @@ static func begin(unit: Node3D, slot: Vector2, anchor: Vector2, on_arrive: Calla
 	for area: Area3D in unit.find_children("*", "Area3D", true, false):
 		if area is DamageHitbox3D:
 			(area as DamageHitbox3D).set_enabled(false)
-		area.set_deferred("monitorable", false)
+		area.monitorable = false # Immediately: not even one frame of collision while deep.
 	unit.show()
 	_place(0.0, unit, camera, start, Vector3(slot.x, slot.y, 0.0))
 	var tween := unit.create_tween() # Owned by the unit: a level reload frees both, nothing dangles.

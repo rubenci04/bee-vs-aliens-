@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_shmup_core_poc.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_vertical_slice.gd" id="2"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/audio/bee_ambience.gd" id="15"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_moments.gd" id="16"]
 [ext_resource type="Script" path="res://scripts/levels/bee_level_01_alien_escalation.gd" id="17"]
+[ext_resource type="Script" path="res://scripts/levels/bee_level_01_scale_event.gd" id="18"]
 
 [sub_resource type="StandardMaterial3D" id="ground_material"]
 albedo_color = Color(0.30, 0.39, 0.21, 1)
@@ -248,6 +249,10 @@ kind = 1
 [node name="SpreadRecharge" parent="Powerups" instance=ExtResource("8")]
 position = Vector3(222, 3.8, 0)
 
+[node name="PrebossPower" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(334, 3.8, 0)
+overcharge = true
+
 [node name="BombRecharge" parent="Powerups" instance=ExtResource("8")]
 position = Vector3(302, 3.8, 0)
 kind = 1
@@ -275,3 +280,6 @@ script = ExtResource("16")
 
 [node name="AlienEscalation" type="Node3D" parent="."]
 script = ExtResource("17")
+
+[node name="ScaleEvent" type="Node3D" parent="."]
+script = ExtResource("18")

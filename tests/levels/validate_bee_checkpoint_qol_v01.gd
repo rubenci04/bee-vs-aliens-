@@ -205,7 +205,7 @@ func run() -> void:
 	await capture("08_final_unaffected")
 	await press("bee_full_restart")
 	check(stage.distance < 1 and not qol.checkpoint_active and bee.health.current_health == 100 and bee.bomb_charges == 1 and stage.pollen_count == 0, "Shift+R did not reset entire session")
-	check(stage.get_node("Pollen").get_child_count() == 17 and stage.get_node("Powerups").get_child_count() == 4 and not has_meta(BeeCheckpointQoL.HANDOFF), "Full restart world/handoff not cleared")
+	check(stage.get_node("Pollen").get_child_count() == 17 and stage.get_node("Powerups").get_child_count() == 5 and not has_meta(BeeCheckpointQoL.HANDOFF), "Full restart world/handoff not cleared")
 	if not failed:
 		print("BEE_CHECKPOINT_QOL_V01_OK x=190 hp_min=60 saved_inventory pollen encounters human colliders cleanup invulnerability=1.25 pause real_R full_restart completion")
 	quit(1 if failed else 0)
