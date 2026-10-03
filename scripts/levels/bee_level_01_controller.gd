@@ -16,8 +16,9 @@ const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 ## One-off hint the first time controlled fauna appears: the animal is not the enemy, the implant is.
 const FAUNA_HINT := "DESTRUÍ EL IMPLANTE"
-## Breather between the last encounter and the UFO approach (arena already locked).
-const BOSS_BREATHER := 1.6
+## Breather between the last encounter and the UFO approach (arena already locked): "the last silence"
+## (light dips, a hum rises, the UFO shadow sweeps the garden), then the unchanged reveal. Was 1.6 s.
+const BOSS_BREATHER := 2.6
 ## Up to three threats at once from here on (was X=300): the second half of the route is where the pressure is.
 const THREE_AT_ONCE_FROM := 150.0
 

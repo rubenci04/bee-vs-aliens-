@@ -107,4 +107,45 @@ func run() -> void:
 		await shot("07b_dragonfly_natural")
 		await frames(60)
 		await shot("07c_dragonfly_exit")
+	if want("contamination"):
+		await at(262.0, Vector2(-3.0, 3.4))
+		wave.director_moment.emit(&"contaminated_garden")
+		await frames(30)
+		await shot("10_contaminated_garden")
+		var escalation := stage.get_node("AlienEscalation") as BeeLevel01AlienEscalation
+		escalation.device_health.take_damage(999)
+		await frames(50)
+		await shot("10b_garden_freed")
+	if want("sunset"):
+		await at(316.0, Vector2(-3.4, 3.4))
+		spawn("Probe", 0, 5.6)
+		spawn("EyeDrone", 1, 2.4)
+		spawn("Wasp", 2, 3.8)
+		await frames(170)
+		await shot("11_sunset_combat")
+		for unit in wave.active_units.duplicate():
+			wave.active_units.erase(unit)
+			unit.queue_free()
+		for s in get_nodes_in_group("alien_projectiles"):
+			s.queue_free()
+	if want("ufo"):
+		await at(340.0, Vector2(-3.4, 3.4))
+		wave.event_index = BeeLevel01Controller.EVENTS.size()
+		wave.set_physics_process(true)
+		for i in 300:
+			await physics_frame
+			var shadow := stage.get_node("AlienEscalation").get_node_or_null("UfoShadow") as Node3D
+			if shadow != null and absf(shadow.global_position.x - stage.camera.global_position.x) < 3.0:
+				break
+		await shot("12_ufo_shadow")
+		for i in 400:
+			await physics_frame
+			if wave.boss != null and wave.boss._state_time > 2.2:
+				break
+		await shot("13_ufo_reveal")
+		for i in 600:
+			await physics_frame
+			if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1 and wave.boss._state_time > 3.0:
+				break
+		await shot("14_boss")
 	quit(0)
