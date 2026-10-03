@@ -1,20 +1,22 @@
 extends GiantHumanCrossingHazard
 
-## GIANT HUMAN CORRIDOR FIX 01. Each damage shape is the convex hull of the skinned vertices of
-## one body part, projected from the camera onto Bee's plane (Z=0): what the player sees there is
-## what hurts. The hull is shrunk by PLAYER_MARGIN (contact is slightly forgiving) and legs never
-## reach into the central column (SAFE_HALF_WIDTH), independent of the Run stride.
-## Only the Torso hull (pelvis and up) and the legs/feet damage; arms and head stay harmless.
+## GIANT HUMAN CORRIDOR FIX 01 + CHALLENGE & BALANCE PASS 01 (SAFE CORRIDOR). Each damage shape is
+## the convex hull of the skinned vertices of one body part, projected from the camera onto Bee's
+## plane (Z=0), then shrunk so it is SMALLER than what the player sees (margin in the player's favour).
+## Only two things hurt (20 HP, once per crossing):
+##   * the shoes (foot bone), and
+##   * the torso (pelvis and up; flying up into the body / the visible crotch).
+## Thighs and calves do NOT damage: between and across the legs, above the shoes and below the pelvis,
+## there is always a continuous corridor. The central column (SAFE_HALF_WIDTH) is additionally never
+## hurt by the shoes, so a Bee that reaches the middle of the stride cannot be clipped by a passing foot.
+## Arms and head stay harmless below the torso hull.
 const SAFE_HALF_WIDTH := 1.2
-const PLAYER_MARGIN := 0.12
 const SLAB_HALF_DEPTH := 0.5 # Bee lives at Z=0; the projected silhouette is a thin slab around it.
 const MIN_AREA := 0.04
 const PARTS := {
-	"LeftThigh": {"bones": ["thigh_L"], "corridor": true},
-	"LeftLeg": {"bones": ["calf_L", "foot_L"], "corridor": true},
-	"RightThigh": {"bones": ["thigh_R"], "corridor": true},
-	"RightLeg": {"bones": ["calf_R", "foot_R"], "corridor": true},
-	"Torso": {"bones": ["pelvis", "spine", "chest", "neck", "head"], "corridor": false},
+	"LeftFoot": {"bones": ["foot_L"], "corridor": true, "margin": 0.25},
+	"RightFoot": {"bones": ["foot_R"], "corridor": true, "margin": 0.25},
+	"Torso": {"bones": ["pelvis", "spine", "chest", "neck", "head"], "corridor": false, "margin": 0.3},
 }
 @onready var skeleton: Skeleton3D = $VisualRoot/Hipster/Rig/Skeleton3D
 
@@ -114,7 +116,7 @@ func _envelope(part: String, palettes: Array, camera_position: Vector3) -> Packe
 	if hull.size() < 4:
 		return PackedVector2Array()
 	hull.remove_at(hull.size() - 1) # convex_hull repeats the first point.
-	var best := _largest(Geometry2D.offset_polygon(hull, -PLAYER_MARGIN, Geometry2D.JOIN_MITER))
+	var best := _largest(Geometry2D.offset_polygon(hull, -float(PARTS[part]["margin"]), Geometry2D.JOIN_MITER))
 	if not bool(PARTS[part]["corridor"]) or best.is_empty():
 		return best
 	var outside_left := PackedVector2Array([Vector2(-100, -10), Vector2(-SAFE_HALF_WIDTH, -10), Vector2(-SAFE_HALF_WIDTH, 20), Vector2(-100, 20)])

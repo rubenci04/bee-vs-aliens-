@@ -25,11 +25,11 @@ scale = Vector3(6, 6, 6)
 damage = 20
 team_id = &"human_hazard"
 
-[node name="LeftLeg" type="CollisionShape3D" parent="ContactHitbox"]
+[node name="LeftFoot" type="CollisionShape3D" parent="ContactHitbox"]
 position = Vector3(-1.8, 1.5, 0)
 shape = SubResource("leg_shape")
 
-[node name="RightLeg" type="CollisionShape3D" parent="ContactHitbox"]
+[node name="RightFoot" type="CollisionShape3D" parent="ContactHitbox"]
 position = Vector3(1.8, 1.5, 0)
 shape = SubResource("leg_shape")
 

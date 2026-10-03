@@ -85,3 +85,6 @@ Ajustados lo mínimo para el nuevo final: `validate_bee_level_01_vertical_slice`
 - La captura del OVNI lejano es un destello pequeño entre la niebla del atardecer.
 - No hay música ni cámara de jefe.
 - Probe invocado reservado para una versión futura.
+
+## Nota (Challenge & Balance Pass 01)
+La hurtbox del jefe pasó de la caja 2,5 × 0,85 × 1,4 a un polígono convexo de platillo contenido en la silueta visible (ver `BEE_LEVEL01_CHALLENGE_BALANCE_01.md`). HP, fases, patrones, approach y proyectiles no cambiaron. Spread ahora hace 8 por perdigón (antes 6).

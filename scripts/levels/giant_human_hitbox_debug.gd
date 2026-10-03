@@ -11,8 +11,7 @@ const LOG_DIR := "res://dev/logs"
 const LOG_FILE := "res://dev/logs/giant_human_damage.log"
 const DAMAGE_SECONDS := 2.0
 const SHAPE_COLORS := {
-	"LeftThigh": Color(1.0, 0.25, 0.25), "LeftLeg": Color(1.0, 0.6, 0.15),
-	"RightThigh": Color(0.95, 0.9, 0.2), "RightLeg": Color(0.4, 0.9, 0.3),
+	"LeftFoot": Color(1.0, 0.6, 0.15), "RightFoot": Color(0.4, 0.9, 0.3),
 	"Torso": Color(0.75, 0.3, 1.0),
 }
 const FALLBACK_COLOR := Color(1.0, 1.0, 1.0)

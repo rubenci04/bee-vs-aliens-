@@ -134,7 +134,7 @@ func run() -> void:
 
 	bee.collect_spread()
 	var spread := bee.fire()
-	check(effects(&"muzzle_spread").size() == 1 and spread.trail.amount == 14 and bee.spread_ammo == 23, "Spread visual/state wrong")
+	check(effects(&"muzzle_spread").size() == 1 and spread.trail.amount == 14 and bee.spread_ammo == 31, "Spread visual/state wrong")
 	await frames(4)
 	await capture("04_spread")
 	await clear_shots()
@@ -199,7 +199,7 @@ func run() -> void:
 	var pickup: BeePowerupPickup = stage.get_node("Powerups/SpreadFirst")
 	check(pickup.collect(bee) and not pickup.collect(bee), "Pickup duplication")
 	await frames(3)
-	check(effects(&"pickup").size() == 1 and bee.spread_ammo == 24, "Pickup feedback/state wrong")
+	check(effects(&"pickup").size() == 1 and bee.spread_ammo == 32, "Pickup feedback/state wrong")
 	await capture("10_pickup")
 	await clear_shots()
 	var pollen: BeePollenPickup = stage.get_node("Pollen/PollenA")
