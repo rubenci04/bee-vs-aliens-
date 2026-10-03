@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 46 and max_gap <= 16, "Enemy count/pacing wrong")
+	check(total == 53 and max_gap <= 16, "Enemy count/pacing wrong")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -329,7 +329,7 @@ func run() -> void:
 			frame_count += 1
 		peak_nodes = maxi(peak_nodes, int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		fps_min = minf(fps_min, Performance.get_monitor(Performance.TIME_FPS))
-		check(wave.active_units.size() <= (3 if stage.distance >= 300 else 2), "Concurrency cap exceeded")
+		check(wave.active_units.size() <= (3 if stage.distance >= BeeLevel01Controller.THREE_AT_ONCE_FROM else 2), "Concurrency cap exceeded")
 		check(not bee.is_defeated, "Progression harness Bee defeated")
 		# Keep test Bee away from attacks; combat itself remains covered by family tests.
 		bee.global_position.y = 0.9 if wave._waiting_for_human else 7.0
@@ -386,7 +386,7 @@ func run() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 46, "Not all 46 enemies spawned")
+	check(spawned == 53, "Not all 53 enemies spawned")
 	for event_id in 24:
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -420,5 +420,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=24 enemies=46 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=24 enemies=53 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

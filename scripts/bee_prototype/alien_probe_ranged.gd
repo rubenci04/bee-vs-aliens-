@@ -16,6 +16,12 @@ enum State { IDLE, POSITION, WINDUP, SHOOT, COOLDOWN, DEAD }
 @export var cooldown_time := 1.25
 @export var projectile_scene: PackedScene
 
+@export_category("Arcade mode (Level 01 only; defaults keep the single shot)")
+## HOLD at range, SLOW ADVANCE between attacks, FIRE a short burst (each shot re-aims, so it stays dodgeable).
+@export var burst_shots := 1
+@export var burst_gap := 0.3
+@export var advance_speed := 0.0
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
@@ -27,6 +33,7 @@ var projectile_fire_count := 0
 var suppressed_shot_count := 0 # Shots skipped by BeeShmupFairness (enemy outside the readable area).
 var _active := false
 var _state_left := 0.0
+var _burst_left := 0
 
 
 func _ready() -> void:
@@ -82,9 +89,19 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				_shoot()
 		State.SHOOT:
-			_begin_cooldown()
+			if _burst_left > 0:
+				_state_left -= delta
+				if _state_left <= 0.0:
+					_burst_left -= 1
+					_state_left = burst_gap
+					_fire_one()
+			else:
+				_begin_cooldown()
 		State.COOLDOWN:
-			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
+			var rest := Vector3.ZERO
+			if advance_speed > 0.0 and _distance_to_target() > minimum_range + 0.3:
+				rest = Vector3(signf(target.global_position.x - global_position.x) * advance_speed, 0.0, 0.0)
+			velocity = velocity.move_toward(rest, acceleration * delta)
 			_state_left -= delta
 			if _state_left <= 0.0:
 				current_state = State.POSITION
@@ -119,6 +136,12 @@ func _shoot() -> void:
 	current_state = State.SHOOT
 	telegraph.hide()
 	visual_root.scale = Vector3.ONE
+	_burst_left = burst_shots - 1
+	_state_left = burst_gap
+	_fire_one()
+
+
+func _fire_one() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
 		return

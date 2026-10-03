@@ -116,6 +116,9 @@ func activate_checkpoint() -> void:
 	for crate in stage.get_node("Destructibles").get_children():
 		if crate.position.x < checkpoint_x and crate.is_destroyed:
 			broken.append(str(crate.name))
+	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+		if stage.is_ancestor_of(rock) and rock.global_position.x < checkpoint_x and rock.is_destroyed:
+			broken.append(str(rock.name))
 	snapshot = {"distance": checkpoint_x, "bee_position": Vector3(checkpoint_x, 5.4, 0),
 		"hp": bee.health.current_health, "spread": bee.spread_ammo, "bomb": bee.bomb_charges,
 		"pollen": stage.pollen_count, "pollen_available": available_names("Pollen"),
@@ -157,6 +160,9 @@ func restore_snapshot() -> void:
 			crate.body.collision_layer = 0
 			crate.collider.set_deferred("disabled", true)
 			crate.hurtbox.set_deferred("monitorable", false)
+	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+		if stage.is_ancestor_of(rock) and str(rock.name) in snapshot["broken"]:
+			rock.restore_broken()
 	protection_left = protection_seconds
 	bee.health.damage_blocked = true
 	_hint_left = 0.0

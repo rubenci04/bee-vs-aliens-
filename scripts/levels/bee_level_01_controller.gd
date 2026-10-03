@@ -13,33 +13,45 @@ const WALKER = preload("res://scenes/bee_prototype/ground_walker_enemy.tscn")
 const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
 ## Breather between the last encounter and the UFO approach (arena already locked).
 const BOSS_BREATHER := 1.6
+## Up to three threats at once from here on (was X=300): the second half of the route is where the pressure is.
+const THREE_AT_ONCE_FROM := 150.0
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
 const LEVEL_HP = {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}
-# CHALLENGE & BALANCE PASS 01: level-only cadence tuning of the two weakest ranged families
-# (reusable scenes and the family POCs keep their values). Telegraph (windup), projectile speed and
-# damage are untouched. BEFORE -> AFTER: Probe cooldown 1.25 -> 1.10 s (-12 %), EyeDrone 1.40 -> 1.25 s (-11 %).
-const LEVEL_TUNING = {"Probe": {"cooldown_time": 1.10}, "EyeDrone": {"cooldown_time": 1.25}}
+# Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
+# (windup) are never touched. BEFORE -> AFTER (Challenge pass -> Arcade Pressure pass):
+#   Wasp      arcade_mode off -> on (stalk, telegraphed pass, second pass, exit)
+#   Probe     cooldown 1.10 -> 1.60 s, single shot -> burst of 2 (0.30 s apart), advance 0.5 m/s, hold range 7.0 -> 7.5 m
+#   EyeDrone  cooldown 1.25 -> 1.70 s, single shot -> burst of 2 (0.25 s apart): 0.61 -> 0.85 shots/s
+#   Turret    cooldown 1.60 -> 1.45 s (-9 %)
+#   Walker    recovery 1.00 -> 0.90 s (-10 %)
+const LEVEL_TUNING = {
+	"Wasp": {"arcade_mode": true},
+	"Probe": {"cooldown_time": 1.60, "burst_shots": 2, "burst_gap": 0.30, "advance_speed": 0.5, "maximum_range": 7.5},
+	"EyeDrone": {"cooldown_time": 1.70, "burst_shots": 2, "burst_gap": 0.25},
+	"Turret": {"cooldown_time": 1.45},
+	"Walker": {"recovery_time": 0.9},
+}
 const EVENTS = [
 	{"at": 12.0, "label": "JARDÍN · AVISPA", "units": ["Wasp"]},
 	{"at": 26.0, "label": "JARDÍN · DOS AVISPAS", "units": ["Wasp", "Wasp"]},
 	{"at": 40.0, "label": "JARDÍN · SONDA Y AVISPA", "units": ["Probe", "Wasp"]},
 	{"at": 54.0, "label": "TRONCO · AVISPA Y SONDA", "units": ["Wasp", "Probe"]},
-	{"at": 68.0, "label": "CONTACTO · DOS OJOS", "units": ["EyeDrone", "EyeDrone"]},
+	{"at": 68.0, "label": "CONTACTO · DOS OJOS Y SONDA", "units": ["EyeDrone", "EyeDrone", "Probe"]},
 	{"at": 82.0, "label": "CONTACTO · SONDA Y AVISPA", "units": ["Probe", "Wasp"]},
-	{"at": 96.0, "label": "ROCAS · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"]},
+	{"at": 96.0, "label": "ROCAS · OJO, AVISPA Y SONDA", "units": ["EyeDrone", "Wasp", "Probe"]},
 	{"at": 110.0, "label": "CONTACTO · SPEEDER Y SONDA", "units": ["Speeder", "Probe"]},
 	{"at": 124.0, "label": "JARDÍN · ÚLTIMA AVISPA", "units": ["Wasp"]},
 	{"at": 140.0, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	{"at": 156.0, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"]},
-	{"at": 170.0, "label": "DEFENSAS · OJO Y TORRETA", "units": ["EyeDrone", "Turret"]},
+	{"at": 170.0, "label": "DEFENSAS · OJO, TORRETA Y AVISPA", "units": ["EyeDrone", "Turret", "Wasp"]},
 	{"at": 184.0, "label": "DEFENSAS · AVISPA", "units": ["Wasp"]},
-	{"at": 198.0, "label": "DEFENSAS · SONDA Y SPEEDER", "units": ["Probe", "Speeder"]},
+	{"at": 198.0, "label": "DEFENSAS · SONDA, SPEEDER Y OJO", "units": ["Probe", "Speeder", "EyeDrone"]},
 	{"at": 212.0, "label": "DEFENSAS · TORRETA Y OJO", "units": ["Turret", "EyeDrone"]},
-	{"at": 226.0, "label": "CONTACTO · DOS AVISPAS", "units": ["Wasp", "Wasp"]},
-	{"at": 240.0, "label": "CONTACTO · OJO Y SPEEDER", "units": ["EyeDrone", "Speeder"]},
+	{"at": 226.0, "label": "CONTACTO · DOS AVISPAS Y SONDA", "units": ["Wasp", "Wasp", "Probe"]},
+	{"at": 240.0, "label": "CONTACTO · OJO, SPEEDER Y AVISPA", "units": ["EyeDrone", "Speeder", "Wasp"]},
 	{"at": 254.0, "label": "ORGANISMO · AVISPA", "units": ["OrganicAlien", "Wasp"], "hard": true},
-	{"at": 268.0, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"]},
+	{"at": 268.0, "label": "DEFENSAS · SONDA, OJO Y TORRETA", "units": ["Probe", "EyeDrone", "Turret"]},
 	{"at": 282.0, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"]},
 	{"at": 296.0, "label": "WALKER · OJO", "units": ["Walker", "EyeDrone"], "hard": true},
 	{"at": 310.0, "label": "FINAL · AVISPA, SPEEDER Y SONDA", "units": ["Wasp", "Speeder", "Probe"]},
@@ -49,7 +61,7 @@ const EVENTS = [
 
 @export var show_debug_labels := false # Internal event names ("JARDÍN · AVISPA"...) only for development.
 @export var group_delay := 0.8
-@export var soft_pressure_seconds := 6.0
+@export var soft_pressure_seconds := 8.5
 @export var retreat_speed := 10.0
 @onready var stage: BeeShmupStage = get_parent() as BeeShmupStage
 @onready var bee: BeePlayer = stage.get_node("BeePlayer")
@@ -124,7 +136,7 @@ func _physics_process(delta: float) -> void:
 	_spawn_pending()
 
 func _spawn_pending() -> void:
-	var cap := 3 if stage.distance >= 300.0 else 2
+	var cap := 3 if stage.distance >= THREE_AT_ONCE_FROM else 2
 	while not _pending.is_empty() and active_units.size() < cap:
 		if _clock < float(_pending[0]["due"]):
 			return
@@ -173,6 +185,8 @@ func _spawn(request: Dictionary) -> void:
 	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
 	for key in tuning:
 		unit.set(key, tuning[key])
+	if family == "Wasp":
+		unit.set("stalk_time", 1.8 + 0.6 * float(int(request["slot"]) % 3)) # 1.8 / 2.4 / 3.0 s of presence per Wasp
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
 	max_active_seen = maxi(max_active_seen, active_units.size())

@@ -33,8 +33,15 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				_shoot_at_bee()
 		State.SHOOT:
-			current_state = State.COOLDOWN
-			_state_left = cooldown_time
+			if _burst_left > 0:
+				_state_left -= delta
+				if _state_left <= 0.0:
+					_burst_left -= 1
+					_state_left = burst_gap
+					_fire_drone_shot()
+			else:
+				current_state = State.COOLDOWN
+				_state_left = cooldown_time
 		State.COOLDOWN:
 			var away := (global_position - target.global_position).normalized()
 			velocity = velocity.move_toward(Vector3(away.x, away.y, 0.0) * move_speed * 0.35, acceleration * delta)
@@ -66,6 +73,12 @@ func _shoot_at_bee() -> void:
 	current_state = State.SHOOT
 	telegraph.hide()
 	visual_root.scale = Vector3.ONE
+	_burst_left = burst_shots - 1
+	_state_left = burst_gap
+	_fire_drone_shot()
+
+
+func _fire_drone_shot() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
 		return
