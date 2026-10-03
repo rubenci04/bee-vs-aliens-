@@ -16,6 +16,8 @@ const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const WINDOW_BACK := 6.0
 const WINDOW_FRONT := 7.0
 const BLOCK := 12.0
+## How long each director moment stays on screen (seconds); only moments with a real visual are listed.
+const MOMENT_SECONDS := {"opening_can": 5.0, "human_aftermath": 9.0, "bomb_reward": 5.0}
 ## Designed visual moments (X, half width in metres of scroll where they count as on screen).
 const MOMENTS := {"GiantBottle": [41.0, 7.0], "FallenLog": [55.0, 7.0], "DistantBottle": [188.0, 7.0], "Checkpoint": [190.0, 8.0],
 		"MiddayLight": [140.0, 18.0], "SunsetLight": [250.0, 18.0], "BoulderRun": [96.0, 6.0]}
@@ -48,6 +50,10 @@ func run() -> void:
 	var fire_left := 0.0
 	var checkpoint_x := 190.0
 	var fam_seen := {}
+	# Director moments (Transformation Pass) are designed visual/interactive set pieces: they count for their duration.
+	var director := {"t": 0.0, "until": 0.0} # Lambdas capture locals by value: share state through a Dictionary.
+	if wave.has_signal("director_moment"):
+		wave.director_moment.connect(func(id: StringName): director["until"] = maxf(float(director["until"]), float(director["t"]) + float(MOMENT_SECONDS.get(str(id), 4.0))))
 	for i in 60 * 420:
 		await physics_frame
 		t += 1.0 / 60.0
@@ -79,6 +85,9 @@ func run() -> void:
 		for rock in get_nodes_in_group("breakable_rocks"):
 			if not rock.is_destroyed and rock.global_position.x > lo and rock.global_position.x < hi:
 				sec["world"] = true
+		director["t"] = t
+		if t < float(director["until"]):
+			sec["moment"] = true
 		for key in MOMENTS:
 			if absf(stage.distance - float(MOMENTS[key][0])) <= float(MOMENTS[key][1]):
 				sec["moment"] = true

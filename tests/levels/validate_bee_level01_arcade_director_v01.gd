@@ -8,7 +8,7 @@ extends SceneTree
 #   moments     enemy-free director moments are emitted in order exactly once
 #   run         whole level with a fast harness: threat cap, projectile ceiling, no off-screen fire, Bomb reward moved,
 #               checkpoint resume, UFO and Level Complete
-# Dev filter: -- only=static|fans|run|checkpoint
+# Dev filter: -- only=static|fans|checkpoint|moments|run
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const FORMATIONS := ["pair", "escort", "staggered", "horizontal", "vertical", "top_bottom", "diagonal", "rock_turret", "wave", "v"]
@@ -232,7 +232,71 @@ func run() -> void:
 			stage.checkpoint.restart_level(true)
 			await reloaded(old2)
 			bind(current_scene)
+	if wants("moments"):
+		await test_moments()
+		if only.is_empty():
+			var old3 := stage
+			stage.checkpoint.restart_level(true)
+			await reloaded(old3)
+			bind(current_scene)
 	if wants("run"):
 		await test_run()
 	print("BEE_LEVEL01_ARCADE_DIRECTOR_V01_OK")
 	quit(0)
+
+# --- phase B: miniature-world respites ----------------------------------------------------------------------
+
+func test_moments() -> void:
+	var moments := stage.get_node("DirectorMoments") as BeeLevel01Moments
+	check(moments != null and moments.giant_can != null, "Director moments / giant can missing")
+	# The can reads as enormous next to Bee and never blocks her (no collision, behind the flight plane).
+	var can_box := AABB()
+	var first := true
+	for mesh: MeshInstance3D in moments.giant_can.find_children("*", "MeshInstance3D", true, false):
+		var box: AABB = mesh.global_transform * mesh.get_aabb()
+		can_box = box if first else can_box.merge(box)
+		first = false
+	check(can_box.size.y >= 2.2 and can_box.size.x >= 3.0, "The giant can is not giant (%s)" % str(can_box.size))
+	check(can_box.end.z < -1.0 and moments.giant_can.find_children("*", "CollisionObject3D", true, false).is_empty(), "The can must stay behind the flight plane, without collision")
+	stage.scroll_speed = 0.0
+	wave.set_physics_process(false)
+	bee.set_physics_process(false)
+	bee.health.damage_blocked = true
+	wave.director_moment.emit(&"opening_can")
+	await frames(20)
+	check(absf(moments.giant_can.rotation.x) > 0.001, "The can did not react on the opening moment")
+	# After the human: dust and a harmless beetle crossing.
+	stage.distance = 147.0
+	stage._update_camera_and_bounds()
+	wave.director_moment.emit(&"human_aftermath")
+	await frames(30)
+	check(moments.beetle != null and is_instance_valid(moments.beetle), "No aftermath beetle")
+	var beetle_x := moments.beetle.global_position.x
+	await frames(60)
+	check(moments.beetle.global_position.x < beetle_x - 0.5 and moments.beetle.find_children("*", "Area3D", true, false).is_empty(), "The beetle must walk and be harmless")
+	# Bomb reward pulse right after the Walker gate.
+	stage.distance = 299.0
+	stage._update_camera_and_bounds()
+	var capsule := stage.get_node("Powerups/BombRecharge") as Node3D
+	wave.director_moment.emit(&"bomb_reward")
+	await frames(10)
+	check(capsule.scale.x > 1.05, "The Bomb reward did not pulse")
+	# The hollow log shells stop Bee's shots (spark + sound from the projectile) and never break.
+	check(moments.impact_surfaces.size() == 2, "Log shells without impact surfaces")
+	var shell := moments.impact_surfaces[0] as ImpactSurface
+	stage.distance = shell.global_position.x - 2.0
+	stage._update_camera_and_bounds()
+	bee.global_position = Vector3(shell.global_position.x - 2.5, shell.global_position.y, 0)
+	bee.facing_x = 1.0
+	await frames(3)
+	var shot := bee._spawn_projectile(Vector3.RIGHT)
+	await frames(20)
+	check(shell.hits >= 1 and not is_instance_valid(shot), "A shot on the log shell must stop with feedback")
+	# Foreground ferns sway when Bee flies low past them.
+	var fern := moments.foreground_plants[0]
+	stage.distance = fern.global_position.x
+	stage._update_camera_and_bounds()
+	bee.global_position = Vector3(fern.global_position.x, 1.2, 0)
+	await frames(4)
+	check(moments.sway_count >= 1, "Foreground vegetation did not react")
+	print("DIRECTOR_MOMENTS can=%.1fx%.1f m beetle=OK bomb_pulse=OK log_impact=OK fern_sway=%d" % [can_box.size.x, can_box.size.y, moments.sway_count])
