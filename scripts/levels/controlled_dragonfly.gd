@@ -28,9 +28,9 @@ enum State { IDLE, ENTER, HOVER, TELEGRAPH, PASS, RECOVERY, REPOSITION, EXIT, LI
 
 const NATURAL := {"thorax": Color(0.16, 0.52, 0.46), "head": Color(0.2, 0.56, 0.42), "eyes": Color(0.08, 0.26, 0.2), "abdomen": Color(0.16, 0.4, 0.74)}
 const CONTROLLED_TINT := Color(0.42, 0.36, 0.52) # Desaturated violet-grey while controlled.
-const IMPLANT_SHELL := Color(0.09, 0.09, 0.12)
-const IMPLANT_CORE := Color(0.25, 0.95, 1.0)
-const IMPLANT_VIOLET := Color(0.72, 0.32, 1.0)
+const IMPLANT_SHELL := BeeAlienPalette.SHELL
+const IMPLANT_CORE := BeeAlienPalette.CYAN
+const IMPLANT_VIOLET := BeeAlienPalette.VIOLET
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const HITBOX_SCENE := preload("res://scenes/components/hitbox_3d.tscn")
@@ -241,7 +241,7 @@ func _animate_wings(delta: float) -> void:
 
 func _set_core(multiplier: float) -> void:
 	if _core_material != null:
-		_core_material.set_shader_parameter("emission_energy", 2.2 * multiplier)
+		_core_material.set_shader_parameter("emission_energy", BeeAlienPalette.MAX_EMISSION * minf(multiplier, 1.4))
 
 
 func _on_body_hit(_current: int, _maximum: int, change: int) -> void:
@@ -356,7 +356,7 @@ func _build_visual() -> void:
 	core_source.albedo_color = IMPLANT_CORE
 	core_source.emission_enabled = true
 	core_source.emission = IMPLANT_CORE
-	core_source.emission_energy_multiplier = 2.2
+	core_source.emission_energy_multiplier = BeeAlienPalette.MAX_EMISSION
 	core_mesh.material = core_source
 	core.mesh = core_mesh
 	core.position.y = 0.08
@@ -386,7 +386,7 @@ func _build_visual() -> void:
 		tip.mesh = tip_mesh
 		tip.position = Vector3(0.0, 0.14, 0.0)
 		antenna.add_child(tip)
-	BeeToonStyle.apply(visual_root, true)
+	BeeToonStyle.apply(visual_root, true, BeeToonStyle.OUTLINE_ACTOR)
 	# Dragonfly membranes are larger and flatter than Bee's wings: a lighter, cooler, more transparent wing.
 	for pivot in _wings:
 		var wing_mesh := pivot.get_child(0) as MeshInstance3D

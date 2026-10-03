@@ -315,3 +315,29 @@ godot --headless --fixed-fps 60 --path . --script res://dev/arcade_pressure_revi
 godot --headless --fixed-fps 60 --path . --script res://dev/director_blueprint/gap_analysis.gd -- fire=0.6
 ```
 `gap_analysis.gd` solo mide: no modifica el runtime. Los *momentos visuales diseñados* que cuenta como decisión son una lista editable en el propio script (`MOMENTS`) y son un criterio de diseño, no una medición física. Limitación: el bot no esquiva ni recoge; los tiempos reales dependen del jugador.
+
+---
+
+## Estado de implementación (Level 01 Transformation Pass 01)
+
+El diseño de arriba se conserva como histórico. Detalle y cifras: `docs/BEE_LEVEL01_TRANSFORMATION_PASS_01.md`.
+
+| Propuesta del blueprint | Estado | Nota |
+|---|---|---|
+| Ritmo variable, microeventos, `y`/`x` por unidad (Pass A) | **IMPLEMENTED** | EVENTS V2: 31 eventos, 4–16 m, 10 formaciones, 5 actos internos |
+| Gating del fan del Eye por X | **IMPLEMENTED** | desde X=96 |
+| Bomb reubicada tras el Walker | **IMPLEMENTED** | X=318 → 302 + pulso de recompensa |
+| Lata gigante de apertura | **IMPLEMENTED** | código, Style C, detrás del plano |
+| Secuela del humano (polvo + escarabajo) | **IMPLEMENTED** | sin sacudida de cámara |
+| Sombra pre-boss / "el último silencio" | **IMPLEMENTED** | + caída de luz, zumbido aprobado, respiro 1,6 → 2,6 s |
+| Flor / jardín contaminado | **IMPLEMENTED** | con dispositivo disparable que libera la flor |
+| Primera libélula controlada (X≈124, sola) | **IMPLEMENTED** | implante 60 HP, 3 pasadas, liberación |
+| Segunda libélula con escolta (X≈262) | **CHANGED** | escolta de 1 Probe (no 2), nace en el jardín contaminado |
+| Tercera aparición (escarabajo, X≈330) | **DEFERRED** | Level 02 |
+| "Abrir carril" (roca + Turret) | **CHANGED** | la roca de X=205 es estructural: se resuelve subiendo, no rompiéndola |
+| "Entre las piernas" con Wasp | **DEFERRED** | descartado por fairness: la pasada empujaría a Bee fuera del corredor seguro |
+| Gota de agua | **DEFERRED** | opcional |
+| Feedback de impacto en sólidos | **IMPLEMENTED** | tronco hueco y roca estructural; la botella no es sólida |
+| Reacción de vegetación | **IMPLEMENTED (barata)** | solo helechos de primer plano, tween |
+| Escarabajo / polilla / mariposa / aves / colibrí | **DEFERRED** | Level 02 / futuro |
+| Pass F visual (contorno, coherencia, lenguaje alien) | **IMPLEMENTED** | contorno por categoría, `BeeAlienPalette` derivada del UFO |

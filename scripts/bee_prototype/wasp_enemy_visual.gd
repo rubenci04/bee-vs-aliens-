@@ -9,7 +9,7 @@ var elapsed := 0.0
 
 func _ready() -> void:
 	_apply_alien_palette()
-	BeeToonStyle.apply(self, WASP_OUTLINE)
+	BeeToonStyle.apply(self, WASP_OUTLINE, BeeToonStyle.OUTLINE_ACTOR)
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := find_child(wing_name, true, false) as Node3D
 		assert(wing != null, "Wasp visual requires independent wings")

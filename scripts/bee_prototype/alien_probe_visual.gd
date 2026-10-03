@@ -12,7 +12,7 @@ var facing := 1.0
 var ring: Node3D
 
 func _ready() -> void:
-	BeeToonStyle.apply(self, PROBE_OUTLINE)
+	BeeToonStyle.apply(self, PROBE_OUTLINE, BeeToonStyle.OUTLINE_ACTOR)
 	facing = preview_facing
 	ring = find_child("CoreRing", true, false) as Node3D
 	rotation.y = -facing * PI * 0.5

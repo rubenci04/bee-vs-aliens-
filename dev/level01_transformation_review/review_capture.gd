@@ -148,4 +148,76 @@ func run() -> void:
 			if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1 and wave.boss._state_time > 3.0:
 				break
 		await shot("14_boss")
+	if want("style"):
+		await at(100.0, Vector2(-3.6, 3.6))
+		var suffix := "after" if "after" in wanted else "before"
+		for unit in [spawn("Wasp", 0, 4.6), spawn("Probe", 1, 2.6), spawn("EyeDrone", 2, 5.6)]:
+			unit.set_physics_process(false)
+		var xs := [-0.6, 1.4, 3.2]
+		for i in wave.active_units.size():
+			wave.active_units[i].global_position.x = stage.camera.global_position.x + xs[i]
+		await frames(4)
+		await shot("style_compare_" + suffix)
+		for unit in wave.active_units.duplicate():
+			wave.active_units.erase(unit)
+			unit.queue_free()
+	if want("formation"):
+		await fresh()
+		await at(20.0, Vector2(-3.6, 3.6))
+		spawn("Wasp", 0, 4.8)
+		spawn("Wasp", 1, 2.8)
+		await frames(80)
+		await shot("02_early_formation")
+		for unit in wave.active_units.duplicate():
+			wave.active_units.erase(unit)
+			unit.queue_free()
+	if want("eye"):
+		await fresh()
+		await at(100.0, Vector2(-3.4, 3.6))
+		var eye := spawn("EyeDrone", 0) as EyeDroneEnemy
+		for i in 700:
+			await physics_frame
+			if eye.fan_shot_count >= 1:
+				break
+		await frames(22)
+		await shot("03_eye_pattern")
+		wave.active_units.erase(eye)
+		eye.queue_free()
+		for s in get_nodes_in_group("alien_projectiles"):
+			s.queue_free()
+	if want("wasp"):
+		await fresh()
+		await at(60.0, Vector2(-3.4, 3.6))
+		var wasp := spawn("Wasp", 0) as WaspEnemy
+		for i in 600:
+			await physics_frame
+			if wasp.current_state == WaspEnemy.State.DASH:
+				break
+		await frames(10)
+		await shot("04_wasp_pass")
+		wave.active_units.erase(wasp)
+		wasp.queue_free()
+	if want("human"):
+		await fresh()
+		await at(140.0, Vector2(-3.0, 3.4))
+		var human := stage.get_node("GiantHuman") as GiantHumanCrossingHazard
+		human.begin_crossing(stage.camera)
+		for i in 400:
+			await physics_frame
+			if human.current_phase == GiantHumanCrossingHazard.Phase.CROSSING and human.global_position.x - stage.camera.global_position.x < 1.0:
+				break
+		bee.global_position = Vector3(human.global_position.x - 2.4, 3.3, 0) # About to fly through the safe corridor.
+		await frames(2)
+		await shot("08_giant_human")
+		human.freeze()
+	if want("rock"):
+		await fresh()
+		await at(207.0, Vector2(-3.4, 4.6))
+		spawn("Turret", 0)
+		spawn("Probe", 1, 5.6)
+		await frames(150)
+		await shot("09_rock_turret")
+		for unit in wave.active_units.duplicate():
+			wave.active_units.erase(unit)
+			unit.queue_free()
 	quit(0)

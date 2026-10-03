@@ -10,9 +10,9 @@ extends Node3D
 ##     a huge UFO shadow sweeps the garden. Then the existing UFO reveal, unchanged.
 ## Visual alien language shared with the UFO and the dragonfly implant: dark shell, cyan core, violet accents.
 
-const ALIEN_SHELL := Color(0.09, 0.09, 0.12)
-const ALIEN_CYAN := Color(0.25, 0.95, 1.0)
-const ALIEN_VIOLET := Color(0.72, 0.32, 1.0)
+const ALIEN_SHELL := BeeAlienPalette.SHELL
+const ALIEN_CYAN := BeeAlienPalette.CYAN
+const ALIEN_VIOLET := BeeAlienPalette.VIOLET
 const FLOWER_X := 266.0
 const FLOWER_Z := -2.4
 const DEVICE_HP := 30
@@ -62,7 +62,7 @@ func _process(delta: float) -> void:
 	_clock += delta
 	var pulse := 1.0 + 0.4 * sin(_clock * 3.2)
 	for material in _glow:
-		material.set_shader_parameter("emission_energy", float(material.get_meta("base_energy")) * pulse)
+		material.set_shader_parameter("emission_energy", minf(float(material.get_meta("base_energy")) * pulse, BeeAlienPalette.MAX_EMISSION * 1.2))
 
 
 # --- alien dressing --------------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ func _build_contaminated_flower() -> void:
 		var node_mesh := SphereMesh.new()
 		node_mesh.radius = 0.09
 		node_mesh.height = 0.18
-		_mesh(flower, "Node%d" % i, node_mesh, _alien_material(ALIEN_CYAN if i % 2 == 0 else ALIEN_VIOLET, true, 2.2), Vector3(0.2, 0.86 + float(i) * 0.85, 0.12)).set_meta("glow", true)
+		_mesh(flower, "Node%d" % i, node_mesh, _alien_material(ALIEN_CYAN if i % 2 == 0 else ALIEN_VIOLET, true, BeeAlienPalette.MAX_EMISSION), Vector3(0.2, 0.86 + float(i) * 0.85, 0.12)).set_meta("glow", true)
 	for i in 3:
 		var tendril := CylinderMesh.new()
 		tendril.top_radius = 0.02
@@ -189,7 +189,7 @@ func _build_contaminated_flower() -> void:
 	var core := SphereMesh.new()
 	core.radius = 0.13
 	core.height = 0.26
-	_mesh(device, "Core", core, _alien_material(ALIEN_CYAN, true, 2.4), Vector3(0, 0.14, 0)).set_meta("glow", true)
+	_mesh(device, "Core", core, _alien_material(ALIEN_CYAN, true, BeeAlienPalette.MAX_EMISSION), Vector3(0, 0.14, 0)).set_meta("glow", true)
 	var cable := CylinderMesh.new()
 	cable.top_radius = 0.025
 	cable.bottom_radius = 0.025
@@ -197,7 +197,7 @@ func _build_contaminated_flower() -> void:
 	cable.radial_segments = 4
 	_mesh(device, "Cable", cable, _alien_material(ALIEN_VIOLET, true, 1.0), Vector3(0.8, -0.2, -1.1), Vector3(-0.9, 0.0, -1.0)).set_meta("glow", true)
 	BeeToonStyle.apply(flower, true)
-	BeeToonStyle.apply(device, true)
+	BeeToonStyle.apply(device, true, BeeToonStyle.OUTLINE_ACTOR) # A target: drawn like the actors.
 	_own_glow(flower)
 	_own_glow(device)
 	for node: MeshInstance3D in flower.find_children("*", "MeshInstance3D", true, false):

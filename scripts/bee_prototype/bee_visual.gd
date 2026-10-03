@@ -11,7 +11,7 @@ var _rim_applied := -1.0
 const BODY_LIFT := 0.9
 
 func _ready() -> void:
-	BeeToonStyle.apply(self, true)
+	BeeToonStyle.apply(self, true, BeeToonStyle.OUTLINE_BEE)
 	_own_rim_materials()
 	_setup_buzz()
 	for wing_name in ["Wing_L", "Wing_R"]:

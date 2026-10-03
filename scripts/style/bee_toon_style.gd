@@ -12,15 +12,23 @@ const WING := preload("res://assets/style/toon_wing.gdshader")
 ## Alien-tech cyan emission is raised to at least this energy so it clears the glow threshold.
 const CYAN_MIN_ENERGY := 2.0
 const BRIGHT_ALBEDO_CAP := 0.8
+## Outline weight in fractions of the screen height (same on-screen thickness at any distance or scale).
+## LEVEL 01 TRANSFORMATION PASS 01 (style): a slightly more drawn look on what the player reads, subtler on big props.
+##   BEFORE: 0.0025 for everything (~1.3 px at 1080p).
+##   AFTER:  Bee 0.0030 (+20 %), actors (enemies, dragonfly, UFO) 0.0029 (+16 %), props 0.0023 (-8 %).
+##   The Giant Human keeps no outline (its scale would turn it into a sticker).
+const OUTLINE_BEE := 0.0030
+const OUTLINE_ACTOR := 0.0029
+const OUTLINE_PROP := 0.0023
 
 ## 0..1, written by the level light progression: strengthens the rim light on Bee at sunset.
 static var bee_rim_boost := 0.0
-static var _outline_material: ShaderMaterial
+static var _outline_materials: Dictionary = {} # width -> ShaderMaterial
 static var _cache: Dictionary = {}
 
 
 ## outline = false keeps toon + rim only (cheaper: no second draw of every surface).
-static func apply(model: Node, outline: bool) -> void:
+static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP) -> void:
 	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
 	if model is MeshInstance3D:
 		meshes.append(model)
@@ -32,18 +40,18 @@ static func apply(model: Node, outline: bool) -> void:
 			if source == null:
 				source = mesh.mesh.surface_get_material(surface) as BaseMaterial3D
 			if source != null:
-				mesh.set_surface_override_material(surface, _material_for(source, outline))
+				mesh.set_surface_override_material(surface, _material_for(source, outline, outline_width))
 
 
 static func is_cyan(color: Color) -> bool:
 	return color.h > 0.42 and color.h < 0.56 and color.s > 0.35
 
 
-static func _material_for(source: BaseMaterial3D, outline: bool) -> ShaderMaterial:
+static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: float) -> ShaderMaterial:
 	var is_wing := source.resource_name == "Wing"
 	var texture := source.albedo_texture
 	var key := "%s|%s|%s|%s|%s|%s|%s|%s" % [is_wing, source.albedo_color.to_html(), source.emission_enabled, source.emission.to_html() if source.emission_enabled else "",
-			source.emission_energy_multiplier, source.cull_mode, texture.get_instance_id() if texture != null else 0, str(source.vertex_color_use_as_albedo) + str(outline)]
+			source.emission_energy_multiplier, source.cull_mode, texture.get_instance_id() if texture != null else 0, str(source.vertex_color_use_as_albedo) + str(outline) + str(outline_width)]
 	if _cache.has(key):
 		return _cache[key]
 	var material := ShaderMaterial.new()
@@ -69,13 +77,15 @@ static func _material_for(source: BaseMaterial3D, outline: bool) -> ShaderMateri
 			material.set_shader_parameter("emission", source.emission)
 			material.set_shader_parameter("emission_energy", energy)
 		if outline:
-			material.next_pass = _shared_outline()
+			material.next_pass = _shared_outline(outline_width)
 	_cache[key] = material
 	return material
 
 
-static func _shared_outline() -> ShaderMaterial:
-	if _outline_material == null:
-		_outline_material = ShaderMaterial.new()
-		_outline_material.shader = OUTLINE
-	return _outline_material
+static func _shared_outline(width: float) -> ShaderMaterial:
+	if not _outline_materials.has(width):
+		var material := ShaderMaterial.new()
+		material.shader = OUTLINE
+		material.set_shader_parameter("width", width)
+		_outline_materials[width] = material
+	return _outline_materials[width]

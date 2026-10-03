@@ -453,7 +453,7 @@ func _build_visual() -> void:
 		fin.size = Vector3(0.38, 0.09, 0.2)
 		var b := TAU * float(i) / 4.0
 		_part(fin, _material(COLORS["panel"]), "Fin%d" % i, Vector3(cos(b) * 1.62, 0.06, sin(b) * 1.62), Vector3(0, -b, 0))
-	BeeToonStyle.apply(visual_root, true)
+	BeeToonStyle.apply(visual_root, true, BeeToonStyle.OUTLINE_ACTOR)
 	# Own copies of the glowing materials so telegraphs never touch other actors.
 	var glowing: Array[MeshInstance3D] = [_core, visual_root.get_node("Dome") as MeshInstance3D]
 	glowing.append_array(_emitters)
