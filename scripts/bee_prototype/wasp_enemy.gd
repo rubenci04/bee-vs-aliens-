@@ -28,6 +28,8 @@ enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT }
 @export var dash_speed := 10.5
 @export var max_passes := 2
 @export var exit_speed := 6.5
+@export var arcade_recovery := 1.1 # Visible back-off after each pass (the original recovery_time is for the plain chase).
+@export var stalk_lane := 0.0 # Vertical offset of the stalk so two Wasps hover on different lines.
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
@@ -166,7 +168,7 @@ func _begin_attack() -> void:
 
 func _begin_recovery() -> void:
 	current_state = State.RECOVERY
-	_state_left = recovery_time
+	_state_left = arcade_recovery if arcade_mode else recovery_time
 	attack_hitbox.set_enabled(false)
 	telegraph.hide()
 	visual_root.scale = Vector3.ONE
@@ -199,6 +201,7 @@ func _on_died() -> void:
 # --- Arcade mode (Level 01) ----------------------------------------------------------------------
 
 func _begin_stalk(seconds: float) -> void:
+	add_to_group("arcade_wasps")
 	current_state = State.STALK
 	_state_left = seconds
 	_stalk_cap = seconds + 4.0
@@ -211,7 +214,7 @@ func _stalk(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	var camera_x := camera.global_position.x if camera != null else target.global_position.x
 	var want_x := minf(target.global_position.x + stalk_distance, camera_x + 5.6)
-	var want_y := clampf(target.global_position.y + sin(_clock * TAU / 2.4) * drift_amplitude, 1.2, 6.2)
+	var want_y := clampf(target.global_position.y + stalk_lane + sin(_clock * TAU / 2.4) * drift_amplitude, 1.2, 6.2)
 	var to_x := want_x - global_position.x
 	var to_y := want_y - global_position.y
 	velocity.x = move_toward(velocity.x, clampf(to_x * 2.0, -move_speed, move_speed), acceleration * delta)
@@ -219,7 +222,7 @@ func _stalk(delta: float) -> void:
 	_stalk_cap -= delta
 	if absf(to_x) < 2.0:
 		_state_left -= delta
-	if _state_left <= 0.0 or _stalk_cap <= 0.0:
+	if (_state_left <= 0.0 and not _another_wasp_attacking()) or _stalk_cap <= 0.0:
 		_begin_windup()
 
 
@@ -244,3 +247,11 @@ func _finish_recovery() -> void:
 		current_state = State.EXIT
 	else:
 		current_state = State.CHASE
+
+
+## Two Wasps never run the same telegraph or pass together: one stalks while the other attacks.
+func _another_wasp_attacking() -> bool:
+	for other in get_tree().get_nodes_in_group("arcade_wasps"):
+		if other != self and other is WaspEnemy and other.is_active() and (other.current_state == State.WINDUP or other.current_state == State.DASH):
+			return true
+	return false

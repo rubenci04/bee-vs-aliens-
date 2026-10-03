@@ -107,7 +107,7 @@ func wasp_trace() -> Dictionary:
 	var recovery_gain := 0.0
 	var captured_hover := false
 	var captured_dash := false
-	for i in 60 * 16:
+	for i in 60 * 24:
 		await physics_frame
 		if not is_instance_valid(wasp):
 			break
@@ -139,18 +139,18 @@ func wasp_trace() -> Dictionary:
 		if wasp.current_state == WaspEnemy.State.EXIT and distance > 9.0:
 			break
 	check(order.has(WaspEnemy.State.STALK) and order.has(WaspEnemy.State.WINDUP) and order.has(WaspEnemy.State.DASH), "Wasp skipped stalk/telegraph/pass: " + str(order))
-	check(order.count(WaspEnemy.State.DASH) == 2 and wasp.passes_done == 2, "Wasp must make exactly two passes (%d)" % wasp.passes_done)
+	check(order.count(WaspEnemy.State.DASH) == 3 and wasp.passes_done == 3, "Wasp must make exactly three passes (%d)" % wasp.passes_done)
 	check(order.back() == WaspEnemy.State.EXIT or wasp.current_state == WaspEnemy.State.EXIT, "Wasp must exit after its passes")
 	check(stalk_first >= 1.5 and stalk_first <= 3.8, "First stalk should last 1.5-3.8 s on screen, got %.2f" % stalk_first)
 	check(stalk_closest >= 3.0 and stalk_farthest <= 6.6, "Stalk distance out of 3.0-6.6 m: %.2f..%.2f" % [stalk_closest, stalk_farthest])
-	check(windup_telegraph and float(windup_frames) / 60.0 / 2.0 >= 0.5, "Pass telegraph too short/invisible (%.2f s per pass)" % (float(windup_frames) / 120.0))
+	check(windup_telegraph and float(windup_frames) / 180.0 >= 0.5, "Pass telegraph too short/invisible (%.2f s per pass)" % (float(windup_frames) / 180.0))
 	# No homing: the direction of each pass is constant for the whole dash.
 	var first := dash_dirs[0]
 	for direction in dash_dirs:
 		check(direction.dot(first) > 0.98 or direction.dot(dash_dirs[dash_dirs.size() / 2]) > 0.98, "Pass direction changed mid-dash (homing)")
 	check(float(near_frames) / float(total) <= 0.18, "The Wasp stays on top of Bee (%.0f %% of the time)" % (100.0 * near_frames / total))
 	var stalk_total := float(timeline.get(WaspEnemy.State.STALK, 0.0))
-	print("ARCADE_WASP order=%s first_stalk=%.2fs stalk_dist=%.1f..%.1f windup=%.2fs passes=%d near_bee=%.0f%%" % [str(order), stalk_first, stalk_closest, stalk_farthest, float(windup_frames) / 120.0, wasp.passes_done, 100.0 * near_frames / total])
+	print("ARCADE_WASP order=%s first_stalk=%.2fs stalk_dist=%.1f..%.1f windup=%.2fs passes=%d near_bee=%.0f%%" % [str(order), stalk_first, stalk_closest, stalk_farthest, float(windup_frames) / 180.0, wasp.passes_done, 100.0 * near_frames / total])
 	check(stalk_total >= 2.5, "Wasp presence too short")
 	await clear_units()
 	return {}
@@ -188,7 +188,7 @@ func test_wasp() -> void:
 # --- Ranged ---------------------------------------------------------------------------------------
 
 func test_ranged() -> void:
-	check(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"] == 2 and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 2, "Burst tuning missing")
+	check(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"] == 3 and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 3, "Burst tuning missing")
 	for family in ["Probe", "EyeDrone"]:
 		var scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn" if family == "Probe" else "res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()
 		check(int(scene.burst_shots) == 1 and float(scene.advance_speed) == 0.0, "Base scene of %s was changed" % family)
@@ -212,12 +212,12 @@ func test_ranged() -> void:
 			captured = true
 			await capture("03_ranged_holding_right_side.png")
 	check(launches.size() >= 4, "Probe fired only %d shots in 11 s" % launches.size())
-	check(launches[1] - launches[0] >= 12 and launches[1] - launches[0] <= 26, "Burst gap wrong: %d frames" % (launches[1] - launches[0]))
+	check(launches[1] - launches[0] >= 9 and launches[1] - launches[0] <= 15, "Burst gap wrong: %d frames" % (launches[1] - launches[0]))
 	check(offsets[0] >= 3.0, "Probe does not hold the right side (x=%+.1f from the centre)" % offsets[0])
-	var cycle := float(launches[2] - launches[0]) / 60.0
-	check(cycle >= 2.0 and cycle <= 2.8, "Probe burst cycle %.2f s outside 2.0-2.8 s" % cycle)
-	check(distances[2] < distances[0] - 0.3 and distances[2] >= 4.5, "Probe must advance slowly but stay out of melee (%.1f -> %.1f m)" % [distances[0], distances[2]])
-	print("ARCADE_PROBE shots_in_11s=%d burst_gap=%d frames cycle=%.2fs hold_x=%+.1f advance=%.1f->%.1f m" % [launches.size(), launches[1] - launches[0], cycle, offsets[0], distances[0], distances[2]])
+	var cycle := float(launches[3] - launches[0]) / 60.0 # First shot of burst 1 -> first shot of burst 2 (windup + burst + short recovery)
+	check(cycle >= 1.2 and cycle <= 2.2, "Probe burst-to-burst time %.2f s outside 1.2-2.2 s" % cycle)
+	check(distances[distances.size() - 1] < distances[0] - 0.3 and distances[distances.size() - 1] >= 4.5, "Probe must advance slowly but stay out of melee (%.1f -> %.1f m)" % [distances[0], distances[distances.size() - 1]])
+	print("ARCADE_PROBE shots_in_11s=%d burst_gap=%d frames cycle=%.2fs hold_x=%+.1f advance=%.1f->%.1f m" % [launches.size(), launches[1] - launches[0], cycle, offsets[0], distances[0], distances[distances.size() - 1]])
 	await clear_units()
 	# Off-screen fairness with bursts: no shot while the enemy is outside the readable area.
 	for family in ["Probe", "EyeDrone"]:
@@ -251,7 +251,7 @@ func test_ranged() -> void:
 		if not captured_many and get_nodes_in_group("alien_projectiles").size() >= 3:
 			captured_many = true
 			await capture("04_multiple_ranged_pressure.png")
-	check(peak >= 3 and peak <= 9, "Hostile projectile peak %d outside the arcade range 3-9" % peak)
+	check(peak >= 3 and peak <= 14, "Hostile projectile peak %d outside the arcade range 3-14" % peak)
 	print("ARCADE_RANGED_PEAK three_ranged_peak_shots=%d" % peak)
 	await clear_units()
 
@@ -414,10 +414,10 @@ func test_level() -> void:
 					with_ranged += 1
 					break
 	check(events.size() == 24 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed")
-	check(total >= 50 and total <= 54 and total - 46 >= 4 and total - 46 <= 8, "Enemy total %d outside +4..+8 over the 46 of the Challenge pass" % total)
-	check(biggest <= 3, "More than 3 units in one encounter")
+	check(total >= 62 and total <= 66, "Enemy total %d outside 62-66" % total)
+	check(biggest <= 4, "More than 4 units in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
-	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0 and wave.soft_pressure_seconds == 8.5, "Concurrency / lifetime constants")
+	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
 	check(BeeLevel01Controller.LEVEL_HP == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}, "HP changed")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.

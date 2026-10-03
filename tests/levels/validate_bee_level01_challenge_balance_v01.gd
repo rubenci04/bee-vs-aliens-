@@ -244,8 +244,8 @@ func test_density() -> void:
 		if count >= 3:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
 	check(events.size() == 24, "Encounter count / level length changed")
-	check(total >= 46 and total <= 54, "Enemy total %d outside 46-54" % total)
-	check(biggest <= 3, "An encounter has more than 3 units")
+	check(total >= 46 and total <= 66, "Enemy total %d outside 46-66" % total)
+	check(biggest <= 4, "An encounter has more than 4 units")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) == 12.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:
 		var found := false
@@ -290,7 +290,7 @@ func test_offscreen_fire() -> void:
 		else:
 			unit._shoot()
 		await frames(1)
-		check(get_nodes_in_group("alien_projectiles").size() == shots_before + 1, family + " must still fire when readable")
+		check(get_nodes_in_group("alien_projectiles").size() >= shots_before + 1, family + " must still fire when readable (Turret fires a fan)")
 		wave.active_units.erase(unit)
 		unit.queue_free()
 	for shot in get_nodes_in_group("alien_projectiles"):

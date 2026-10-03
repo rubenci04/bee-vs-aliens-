@@ -70,6 +70,8 @@ func run() -> void:
 	var max_shots := 0
 	var max_threat := 0
 	var shot_sum := 0.0
+	var shot_ids := {}
+	var wasp_life := {}
 	var stretches: Array[String] = []
 	var frames_n := 0
 	var ranged_time := 0.0
@@ -111,6 +113,14 @@ func run() -> void:
 		var shots := get_nodes_in_group("alien_projectiles").size()
 		max_shots = maxi(max_shots, shots)
 		shot_sum += shots
+		for shot in get_nodes_in_group("alien_projectiles"):
+			shot_ids[shot.get_instance_id()] = true
+		for unit in wave.active_units:
+			if str(unit.name).begins_with("Wasp"):
+				var wid := unit.get_instance_id()
+				if not wasp_life.has(wid):
+					wasp_life[wid] = [t, t]
+				wasp_life[wid][1] = t
 		frames_n += 1
 		shot_hist[shots] = int(shot_hist.get(shots, 0)) + 1
 		var ranged_here := false
@@ -171,6 +181,10 @@ func run() -> void:
 	print("SIM_TOTAL enemies=%d events=%d time_to_boss=%.1fs human_wait=%.1fs max_active_units=%d max_enemy_shots=%d max_threats=%d" % [total_units, events.size(), t, human_seconds, max_units, max_shots, max_threat])
 	print("SIM_FREE threat_free_total=%.1fs longest=%.1fs (%.1f m of scroll) at_distance=%.0f" % [free_total, longest_free, longest_free_m, longest_free_at])
 	print("SIM_FAMILY_DAMAGE ", damage_by_family, " hits=", hits_by_family)
+	var wasp_sum := 0.0
+	for life in wasp_life.values():
+		wasp_sum += float(life[1]) - float(life[0])
+	print("SIM_EXTRA wasps=%d wasp_presence_avg=%.1fs shots_total=%d shots_per_encounter=%.1f" % [wasp_life.size(), wasp_sum / maxf(wasp_life.size(), 1), shot_ids.size(), float(shot_ids.size()) / 23.0])
 	print("SIM_FIRE avg_enemy_shots=%.2f peak=%d ranged_threat_on_screen=%.1fs (%.0f%%) hist=%s" % [shot_sum / maxf(frames_n, 1), max_shots, ranged_time, 100.0 * ranged_time / maxf(t, 1.0), str(shot_hist)])
 	print("SIM_STRETCHES >=2.5s: ", ", ".join(stretches))
 	print("SIM_DAMAGE total=%d" % damage_by_event.values().reduce(func(a, b): return a + b, 0))
