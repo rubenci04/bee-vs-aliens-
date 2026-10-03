@@ -25,6 +25,8 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 @export var burst_gap := 0.35
 ## ARCADE REBUILD 02 (Level 01): only stop to aim once readable on screen (otherwise keep walking in). Off by default.
 @export var stay_on_screen := false
+## With `stay_on_screen` it walks this far inside the edge before stopping to aim (the whole body reads on screen).
+const SHOWCASE_INSET := 1.8
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -117,7 +119,7 @@ func _physics_process(delta: float) -> void:
 				current_state = State.ADVANCE
 		State.ADVANCE:
 			_face_target()
-			if _target_distance() <= detection_range and (not stay_on_screen or BeeShmupFairness.is_readable(self)):
+			if _target_distance() <= detection_range and (not stay_on_screen or BeeShmupFairness.is_inside_screen(self, SHOWCASE_INSET)):
 				current_state = State.AIM
 				_state_left = aim_time
 				_play(&"Idle")
@@ -177,6 +179,16 @@ func _target_distance() -> float:
 
 func _advance(delta: float) -> void:
 	_face_target()
+	if stay_on_screen and not BeeShmupFairness.is_inside_screen(self, SHOWCASE_INSET):
+		# Walk in towards the middle of the screen first (even under Bee's column), then the usual approach.
+		var camera := get_viewport().get_camera_3d()
+		if camera != null:
+			var inward := signf(camera.global_position.x - global_position.x)
+			visual_root.rotation.y = inward * deg_to_rad(60.0)
+			global_position.x += inward * walk_speed * delta
+			distance_walked += walk_speed * delta
+			_play(&"Walk")
+			return
 	var dx := target.global_position.x - global_position.x
 	if absf(dx) <= 2.2:
 		return

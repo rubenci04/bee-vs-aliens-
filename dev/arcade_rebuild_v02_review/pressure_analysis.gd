@@ -67,7 +67,7 @@ func run() -> void:
 		for unit in wave.active_units + wave.swarm_units:
 			if not is_instance_valid(unit):
 				continue
-			var uid := unit.get_instance_id()
+			var uid: int = unit.get_instance_id()
 			if not life.has(uid):
 				life[uid] = {"family": str(unit.name).split("_")[0], "born": t, "end": t, "shots": 0, "suppressed": 0, "onscreen": 0.0}
 			var rec: Dictionary = life[uid]

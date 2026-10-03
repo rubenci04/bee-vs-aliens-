@@ -1,7 +1,7 @@
 extends SceneTree
 
 # ARCADE CONTENT & SPECTACLE REBUILD 02 (structure, never "fun").
-#   static      unit budget 82-92, Walker x5 (clean presentation, showcase, escort, late gates), OrganicAlien x3
+#   static      living garden (no collision), unit budget 82-92, Walker x5 (clean presentation, showcase, escort, late gates), OrganicAlien x3
 #               (presentation, crossfire, late gate), popcorn swarms with shooters, depth entries, set pieces, caps
 #   popcorn     one Base shot kills a drone, shooters fire exactly one aimed shot, contact hurts, escapes are freed,
 #               popcorn never counts towards the threat cap
@@ -128,6 +128,9 @@ func test_static() -> void:
 			moments.append(str(event["moment"]))
 	for id in ["walker_showcase", "scale_event", "preboss_power"]:
 		check(id in moments, "Missing set piece moment " + id)
+	var garden := stage.get_node_or_null("LivingGarden") as BeeLevel01LivingGarden
+	check(garden != null and garden.find_children("*", "CollisionObject3D", true, false).is_empty() and garden.butterflies.size() >= 3 \
+			and garden.gnat_clouds.size() >= 3 and garden.leaves != null and garden.pollen != null, "Living garden missing or collidable")
 	var power: Dictionary = events.filter(func(e): return e.get("moment", "") == "preboss_power")[0]
 	check(float(power["at"]) >= 320.0 and float(power["at"]) < 340.0 and (power["units"] as Array).is_empty(), "Pre-boss power must be an enemy-free beat right before the last defence")
 	print("REBUILD_STATIC units=%d walkers=%s organics=%s swarm_groups=%d shooters=%d depth=%d(%d units) moments=%s" % [total, str(walkers), str(organics), swarm_groups, swarm_shooters, depth_events.size(), depth_units, str(moments)])

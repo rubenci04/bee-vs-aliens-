@@ -229,7 +229,7 @@ func test_eye() -> void:
 	for shot in fan:
 		if is_instance_valid(shot["node"]):
 			check(angle_deg((shot["node"] as AlienEnemyProjectile).travel_direction, shot["dir"]) < 0.01, "A fan shot changed direction")
-	print("PATTERN_EYE order=aimed3,fan5,aimed3,fan5 fan_step=%.1fdeg lane_gap=%.2fm at %.1fm telegraph_violet_on_fan=OK" % [steps[0], gap, distance])
+	print("PATTERN_EYE order=aimed4,fan5,aimed4,fan5 fan_step=%.1fdeg lane_gap=%.2fm at %.1fm telegraph_violet_on_fan=OK" % [steps[0], gap, distance])
 	await clear_units()
 
 # --- Turret ---------------------------------------------------------------------------------------------
@@ -290,11 +290,14 @@ func test_walker() -> void:
 	for k in 3:
 		var gap := int(g[k + 1]["frame"]) - int(g[k]["frame"])
 		check(gap >= 17 and gap <= 25, "Walker burst spacing %d frames (~0.35 s)" % gap)
-	check(angle_deg(g[0]["dir"], g[2]["dir"]) > 0.5, "Walker shots must re-aim inside the burst")
+	var reaim := 0.0 # Every shot re-aims: compare the first one with the rest of the burst (timing-independent).
+	for k in range(1, g.size()):
+		reaim = maxf(reaim, angle_deg(g[0]["dir"], g[k]["dir"]))
+	check(reaim > 0.5, "Walker shots must re-aim inside the burst (%.2f deg)" % reaim)
 	check(int(g[0]["damage"]) == 9, "Walker shot damage changed")
 	var cycle := float(int(groups[1][0]["frame"]) - int(g[0]["frame"])) / 60.0
 	check(cycle >= 2.5, "Walker is a machine gun (%.2f s between bursts)" % cycle)
-	print("PATTERN_WALKER burst=3 spacing=0.35s re-aim=OK between_bursts=%.2fs speed=1.9 hp=60" % cycle)
+	print("PATTERN_WALKER burst=4 spacing=0.35s re-aim=OK between_bursts=%.2fs speed=2.4 hp=72" % cycle)
 	await clear_units()
 
 # --- Wasp ------------------------------------------------------------------------------------------------

@@ -46,6 +46,11 @@ static func is_leaving_screen(node: Node3D, direction: Vector3, margin := 0.0) -
 	return outside and signf(lateral) == signf(direction.dot(camera.global_transform.basis.x))
 
 
+## True while `node` is at least `inset` metres inside both visible edges (at its own depth).
+static func is_inside_screen(node: Node3D, inset: float) -> bool:
+	return is_on_screen(node, -inset)
+
+
 ## True while `node` is inside the visible width at its own depth (`margin` metres past the edge still counts).
 static func is_on_screen(node: Node3D, margin := 0.0) -> bool:
 	var viewport := node.get_viewport()
