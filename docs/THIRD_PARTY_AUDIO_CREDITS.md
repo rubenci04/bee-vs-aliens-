@@ -13,3 +13,8 @@ Sonniss.com GDC 2026 Game Audio Bundle (Part 9), licencia Royalty-Free (sin atri
 - Sonik Sound Library — "Toy Quadcopter": zumbido de aleteo (`audio/sfx/real/wing_buzz.wav`).
 
 Kenney — Impact Sounds (CC0): variaciones de pasos del humano (`human_step_b`, `human_step_c`). Detalle y hashes en audio/sfx/PROVENANCE.md.
+
+## UFO BOSS 01
+
+- Sonniss.com GDC 2026 Game Audio Bundle — Epic Stock Media, "Halloween Game": sting de entrada del OVNI (`audio/sfx/real/ufo_sting.wav`). Royalty-Free, sin atribución obligatoria; no revender ni redistribuir tal cual; prohibido entrenar IA.
+- Kenney — Sci-Fi Sounds (CC0): `ufo_charge`, `ufo_hover`, `ufo_death`. Hashes y cambios en audio/sfx/PROVENANCE.md.

@@ -10,6 +10,9 @@ const TURRET = preload("res://scenes/bee_prototype/ground_turret_enemy.tscn")
 const SPEEDER = preload("res://scenes/bee_prototype/speeder_enemy.tscn")
 const ORGANIC = preload("res://scenes/bee_prototype/organic_alien_enemy.tscn")
 const WALKER = preload("res://scenes/bee_prototype/ground_walker_enemy.tscn")
+const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
+## Breather between the last encounter and the UFO approach (arena already locked).
+const BOSS_BREATHER := 1.6
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
 const LEVEL_HP = {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}
@@ -63,6 +66,9 @@ var _hard_gate := false
 var _waiting_for_human := false
 var _complete := false
 var _frozen := false
+var boss: UfoBoss01
+var boss_defeated := false
+var _boss_breather_left := -1.0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -84,8 +90,7 @@ func _physics_process(delta: float) -> void:
 	_spawn_pending()
 	if event_index >= EVENTS.size():
 		if active_units.is_empty() and _pending.is_empty():
-			_complete = true
-			wave_completed.emit()
+			_advance_boss(delta) # Level complete only after the UFO is destroyed.
 		return
 	var event: Dictionary = EVENTS[event_index]
 	if stage.distance < float(event["at"]) or not _pending.is_empty():
@@ -222,4 +227,46 @@ func freeze_enemies() -> void:
 	human.freeze()
 	for unit in active_units:
 		unit.set_physics_process(false)
+	if boss != null and is_instance_valid(boss):
+		boss.freeze()
 	stage.scroll_speed = 0.0
+
+# --- UFO BOSS 01 (FIRST CONTACT) -------------------------------------------------------------
+# last encounter -> breather (arena locked) -> UFO approach -> boss -> death -> wave_completed.
+
+func _advance_boss(delta: float) -> void:
+	if boss_defeated:
+		return
+	if boss == null:
+		if _boss_breather_left < 0.0:
+			_boss_breather_left = BOSS_BREATHER
+			stage.scroll_speed = 0.0 # Arena lock: no more scroll, no more encounters.
+			encounter_label = "FINAL · CONTACTO"
+			player_label = ""
+		_boss_breather_left -= delta
+		if _boss_breather_left <= 0.0:
+			_start_boss()
+
+func _start_boss() -> void:
+	boss = UFO_BOSS.instantiate() as UfoBoss01
+	boss.name = "UfoBoss01"
+	get_node("../Enemies").add_child(boss)
+	boss.defeated.connect(_on_boss_defeated)
+	boss.phase_changed.connect(_on_boss_phase)
+	encounter_label = "PRIMER CONTACTO · OVNI"
+	player_label = "¡PRIMER CONTACTO!"
+	boss.begin(stage.camera, bee)
+
+func _on_boss_phase(state: int) -> void:
+	if state == UfoBoss01.State.PHASE_1:
+		player_label = "" # The health bar takes over.
+
+func _on_boss_defeated(_boss: UfoBoss01) -> void:
+	boss_defeated = true
+	boss = null
+	_complete = true
+	stage.scroll_speed = 2.0 # Short roll to the sector end, then SECTOR DESPEJADO.
+	wave_completed.emit()
+
+func boss_active() -> bool:
+	return boss != null and is_instance_valid(boss) and boss.is_active()

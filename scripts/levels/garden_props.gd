@@ -75,7 +75,8 @@ static func _triangles_from(vertices: PackedVector3Array, indices: PackedInt32Ar
 # --- lofted bodies ----------------------------------------------------------------------------
 
 ## ring = [y, radius_x, radius_z, offset_x, offset_z]. Closed tube through the rings, with optional caps.
-static func loft(rings: Array, sides := 10, cap_bottom := true, cap_top := true, twist := 0.0) -> ArrayMesh:
+## smooth = true gives soft shading on the sides (style C mid-poly); caps stay flat.
+static func loft(rings: Array, sides := 10, cap_bottom := true, cap_top := true, twist := 0.0, smooth := false) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_smooth_group(-1)
@@ -86,6 +87,7 @@ static func loft(rings: Array, sides := 10, cap_bottom := true, cap_top := true,
 			var a := TAU * float(i) / float(sides) + twist
 			ring.append(Vector3(r[3] + cos(a) * r[1], r[0], r[4] + sin(a) * r[2]))
 		points.append(ring)
+	st.set_smooth_group(0 if smooth else -1)
 	for j in points.size() - 1:
 		var a: PackedVector3Array = points[j]
 		var b: PackedVector3Array = points[j + 1]
@@ -93,6 +95,7 @@ static func loft(rings: Array, sides := 10, cap_bottom := true, cap_top := true,
 			var n := (i + 1) % sides
 			st.add_vertex(a[i]); st.add_vertex(a[n]); st.add_vertex(b[i])
 			st.add_vertex(a[n]); st.add_vertex(b[n]); st.add_vertex(b[i])
+	st.set_smooth_group(-1)
 	if cap_bottom:
 		_cap(st, points[0], false)
 	if cap_top:

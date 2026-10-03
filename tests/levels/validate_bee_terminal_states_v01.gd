@@ -48,6 +48,14 @@ func run() -> void:
 	stage.distance = 359.0
 	stage.scroll_speed = 8.0
 	await frames(2)
+	# UFO BOSS 01: the level now completes only after the boss dies (covered in validate_bee_ufo_boss_01).
+	for i in 900:
+		await frames(1)
+		if wave.boss != null and wave.boss.is_active():
+			wave.boss.health.take_damage(99999)
+		if wave.boss_defeated:
+			break
+	check(wave.boss_defeated, "UFO boss did not finish")
 	var shot := ENEMY_SHOT.instantiate() as AlienEnemyProjectile
 	stage.add_child(shot)
 	shot.global_position = Vector3(stage.distance + 3.0, 5.0, 0)

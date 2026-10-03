@@ -67,6 +67,8 @@ func progress_to(destination: float) -> void:
 		bee.global_position = Vector3(stage.distance - 3.0, 7.0, 0)
 		for unit in stage.wave.active_units.duplicate():
 			unit.get_node("HealthComponent").take_damage(9999)
+		if stage.wave.boss != null and stage.wave.boss.is_active(): # UFO BOSS 01 locks the arena at the end.
+			stage.wave.boss.health.take_damage(9999)
 		await process_frame
 		if stage.distance >= destination or stage.sector_complete:
 			break
@@ -189,9 +191,11 @@ func run() -> void:
 	await press("bee_pause")
 	check(not paused and not qol.pause_label.visible, "Esc did not resume")
 	await progress_to(360)
-	for i in 300:
+	for i in 1500: # Includes the UFO boss (approach + fight + death) before completion.
 		for unit in stage.wave.active_units.duplicate():
 			unit.get_node("HealthComponent").take_damage(9999)
+		if stage.wave.boss != null and stage.wave.boss.is_active():
+			stage.wave.boss.health.take_damage(9999)
 		await process_frame
 		if stage.sector_complete:
 			break

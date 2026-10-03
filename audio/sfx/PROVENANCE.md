@@ -147,3 +147,32 @@ Los originales de la biblioteca no se tocan. Rutas Source relativas a `D:\proyec
 - Ambiente: pico 0.30, jugador -24 dB, bus Ambience -6 dB: pico ~ -40 dBFS (RMS ~ -54 dBFS).
 - Zumbido: pico 0.50, jugador -36 dB, bus SFX -3 dB: pico ~ -45 dBFS.
 - Pasos del humano: cue -21 dB (antes -16): ~ -32 dBFS, al nivel de un disparo y por debajo de bomba (-8 dB) y explosiones (-15 dB).
+
+## UFO BOSS 01 (generado con `tools/integrate_audio_ufo01.gd`)
+
+Rutas Source relativas a `D:\proyectos\V_Asset_Library\01_Extracted\audio`. Originales sin tocar.
+
+### ufo_sting (entrada del OVNI)
+- Original: `Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/UIAlert_Alert Designed Transition Swell Creature Strange Alien Layered 01_ESM_HALG.wav`
+- Autor/pack: Epic Stock Media, "Halloween Game", en Sonniss.com GDC 2026 Game Audio Bundle (Part 9). Licencia: Sonniss GDC Royalty-Free, sin atribución obligatoria; no revender ni redistribuir los sonidos tal cual; **prohibido entrenar IA con ellos**.
+- SHA256 original: `56f3499d2097f22856aa5c2007217de6f6adae4db5135544277b84b9e323cad6`
+- Bee: `res://audio/sfx/real/ufo_sting.wav` (3,4 s). SHA256 Bee: `9a112eebe1d8d1baa3a1fa0d322a61ae59467410c1ec20a0aea18d8c7fb83dca`
+- Cambios: mono PCM16, primeros 3,4 s, fade-in 4 ms, fade-out 0,8 s, pico 0,45.
+
+### ufo_charge (telegraph de ataque)
+- Original: `kenney_sci-fi-sounds/Audio/forceField_002.ogg`. Autor: Kenney (Sci-Fi Sounds 1.0). Licencia: CC0.
+- SHA256 original: `051b0eafc479695af4ca3607d41fd4be41bae7c21f4f9508d004722b09f1bd63`
+- Bee: `res://audio/sfx/real/ufo_charge.wav` (0,45 s). SHA256 Bee: `de81f3e143acc251756941ff63ba34af13ab731e935fd2aac6cd6a9004c5990c`
+- Cambios: mono PCM16, primeros 0,45 s, fade-in 4 ms, fade-out 0,12 s, pico 0,40. Pitch 1,2 (aimed) / 0,85 (abanico) / 0,6 (transición) en tiempo de ejecución.
+
+### ufo_hover (loop del platillo)
+- Original: `kenney_sci-fi-sounds/Audio/spaceEngineLow_000.ogg`. Autor: Kenney. Licencia: CC0.
+- SHA256 original: `d7deee8d7217ce63aab802ad7365a59cacfd243392dc1bd03b0a9d454aa494df`
+- Bee: `res://audio/sfx/real/ufo_hover.wav` (4,5 s, loop). SHA256 Bee: `4e82c91591f799e1bff5511b97130a84b4773174c2c3f41e278305ecbe98986c`
+- Cambios: mono PCM16, crossfade de loop 0,5 s, pico 0,35. Se reproduce con AudioStreamPlayer3D a −22 dB en el bus SFX.
+
+### ufo_death (explosión final)
+- Originales: `kenney_sci-fi-sounds/Audio/lowFrequency_explosion_000.ogg` y `kenney_sci-fi-sounds/Audio/explosionCrunch_004.ogg`. Autor: Kenney. Licencia: CC0.
+- SHA256 originales: `3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343` / `9c3a1c73cadf0de5d5a578b31a264f20b1ac7cb6ec9bbd34a203f58402ea5390`
+- Bee: `res://audio/sfx/real/ufo_death.wav` (2,2 s). SHA256 Bee: `4c6b209832a49968e41276175f1a916149bb635db52c82289816f6678b6109eb`
+- Cambios: dos capas mezcladas a mono (crunch con 30 ms de retardo), 2,2 s, fade-out 0,4 s, pico 0,45.
