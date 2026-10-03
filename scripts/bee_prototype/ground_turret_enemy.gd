@@ -15,6 +15,11 @@ enum State { IDLE, TRACK, WINDUP, SHOOT, COOLDOWN, DEAD }
 @export var muzzle_forward := 0.62
 @export var projectile_scene: PackedScene
 
+@export_category("Territory control (Level 01 only; 1 = the original single shot)")
+## PASS 02: a vertical/diagonal fan centred on Bee that forces a change of height. Warning (windup) unchanged.
+@export var fan_count := 1
+@export var fan_step_degrees := 14.0
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
@@ -100,14 +105,12 @@ func _shoot() -> void:
 		return
 	if projectile_scene == null or target == null:
 		return
-	var projectile := projectile_scene.instantiate() as AlienEnemyProjectile
-	projectile.damage = projectile_damage
-	projectile.speed = projectile_speed
-	get_parent().add_child(projectile)
-	projectile.global_position = global_position + Vector3(_facing_x * muzzle_forward, muzzle_height, 0.0)
-	projectile.launch((target.global_position - projectile.global_position).normalized(), self)
-	projectile_fire_count += 1
-	projectile_fired.emit(projectile)
+	var origin := global_position + Vector3(_facing_x * muzzle_forward, muzzle_height, 0.0)
+	var aim := target.global_position - origin
+	for direction in BeeEnemyPatterns.fan_directions(aim, maxi(fan_count, 1), fan_step_degrees if fan_count > 1 else 0.0):
+		var projectile := BeeEnemyPatterns.spawn_shot(get_parent(), projectile_scene, origin, direction, projectile_damage, projectile_speed, self)
+		projectile_fire_count += 1
+		projectile_fired.emit(projectile)
 
 func _on_died() -> void:
 	if current_state == State.DEAD:

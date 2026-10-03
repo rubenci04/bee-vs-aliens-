@@ -9,6 +9,13 @@ const FLOWER_VARIANTS = [FLOWER, PURPLE_B, RED_A, YELLOW_A, YELLOW_B, GARDEN_ROS
 var flower_counts: Dictionary = {}
 var _flower_index := 0
 
+## Breakable flight rocks (ARCADE PRESSURE PASS 01). HP from Base DPS (10 per hit, 3.3 Hz): small = 4 shots (~0.9 s),
+## medium = 7 shots (~1.8 s); both die to one Bomb (32) or two on the medium. The tall rock at X=205 stays structural.
+const SMALL_ROCK_HP := 32
+const MEDIUM_ROCK_HP := 64
+const STRUCTURAL_ROCK := -1
+const STRUCTURAL_ROCK_X := 205
+
 ## Approved garden props only. Z layers remain decorative outside the flight plane.
 func _ready() -> void:
 	var trees := [-8.0, 24.0, 72.0, 108.0, 158.0, 204.0, 247.0, 302.0, 346.0, 365.0]
@@ -42,7 +49,7 @@ func _ready() -> void:
 	for x in [72, 96, 155, 205, 241, 283, 307, 345]:
 		var tall: bool = x in [96, 205, 307]
 		var radius: float = 1.15 if tall else 0.72
-		_place_rock("FlightRock%d" % x, float(x), 0.0, Vector3(radius, radius, 0.65), true)
+		_place_rock("FlightRock%d" % x, float(x), 0.0, Vector3(radius, radius, 0.65), true, STRUCTURAL_ROCK if x == STRUCTURAL_ROCK_X else (MEDIUM_ROCK_HP if tall else SMALL_ROCK_HP))
 	# Uneven pockets rather than another evenly spaced row: 144 placements.
 	# All foliage stays behind the flight plane; no new imported assets.
 	var pockets := [9.0, 29.0, 46.0, 59.0, 87.0, 119.0, 150.0, 176.0, 203.0, 228.0, 250.0, 278.0, 302.0, 319.0, 338.0, 354.0]
@@ -56,7 +63,7 @@ func _ready() -> void:
 
 ## Boulders rest on the ground: the visible rock fills the (unchanged) collider box and its base
 ## is buried a few centimetres. Solid rocks keep their original collider.
-func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool) -> void:
+func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool, hp := 0) -> void:
 	var half := Vector3(radius.x * 0.85, radius.y * 0.95 + 0.05, radius.z * 0.85)
 	var mesh := GardenProps.boulder(half, int(x))
 	mesh.surface_set_material(0, GardenProps.flat(Color(0.39 + float(int(x) % 3) * 0.035, 0.41, 0.36)))
@@ -68,7 +75,7 @@ func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool
 		add_child(rock)
 		rock.position = Vector3(x, 0.0, z)
 		return
-	var body := StaticBody3D.new()
+	var body := BreakableRock.new()
 	body.name = label
 	body.collision_layer = 1
 	body.collision_mask = 0
@@ -79,9 +86,10 @@ func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool
 	var shape := BoxShape3D.new()
 	shape.size = radius * 1.7
 	var collider := CollisionShape3D.new()
-	collider.name = "CollisionShape3D"
 	collider.shape = shape
+	collider.name = "CollisionShape3D"
 	body.add_child(collider)
+	body.arm(maxi(hp, 1), hp == STRUCTURAL_ROCK)
 
 func place(asset: PackedScene, label: String, floor_position: Vector3, factor: float, yaw: float) -> void:
 	if asset == FLOWER:

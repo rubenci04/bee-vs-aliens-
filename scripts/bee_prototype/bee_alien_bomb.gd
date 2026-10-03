@@ -26,6 +26,8 @@ func can_damage(hurtbox: DamageHurtbox3D) -> bool:
 	var entity := hurtbox.owner_entity
 	if not is_instance_valid(entity):
 		return false
+	if entity is BreakableRock:
+		return not entity.is_destroyed
 	if entity is DestructibleObstacle3D:
 		return not entity.is_destroyed
 	return entity.is_in_group("bee_auto_aim_targets") and (not entity.has_method("is_active") or entity.call("is_active")) and (not entity.has_method("is_defeated") or not entity.call("is_defeated"))

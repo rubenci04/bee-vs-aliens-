@@ -19,6 +19,11 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 @export var muzzle_forward := 1.05
 @export var projectile_scene: PackedScene
 
+@export_category("Heavy pressure (Level 01 only; 1 = the original single shot)")
+## PASS 02: a slow burst; every shot re-aims at Bee when it leaves the barrel, then flies straight.
+@export var burst_shots := 1
+@export var burst_gap := 0.35
+
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
@@ -36,7 +41,7 @@ var _active := false
 var _facing_x := -1.0
 var _state_left := 0.0
 var _shoot_elapsed := 0.0
-var _shot_spawned := false
+var _shots_done := 0
 var _reposition_left := 0.0
 var _reposition_direction := -1.0
 var _aim_point := Vector3.ZERO
@@ -131,15 +136,18 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				current_state = State.SHOOT
 				_shoot_elapsed = 0.0
-				_shot_spawned = false
+				_shots_done = 0
 				aim_charge.hide()
 				_play(&"Shoot")
 		State.SHOOT:
 			_shoot_elapsed += delta
-			if not _shot_spawned and _shoot_elapsed >= shoot_delay:
-				_shot_spawned = true
+			while _shots_done < burst_shots and _shoot_elapsed >= shoot_delay + burst_gap * float(_shots_done):
+				if _shots_done > 0:
+					_aim_point = target.global_position # Later shots of the burst re-aim; each one then flies straight.
+				_shots_done += 1
 				_fire_projectile()
-			if _shoot_elapsed >= animation_player.get_animation(&"CharacterArmature|Shoot").length:
+			var burst_end := shoot_delay + burst_gap * float(burst_shots - 1) + 0.25
+			if _shoot_elapsed >= maxf(animation_player.get_animation(&"CharacterArmature|Shoot").length, burst_end):
 				current_state = State.RECOVERY
 				_state_left = recovery_time
 				_play(&"Idle")

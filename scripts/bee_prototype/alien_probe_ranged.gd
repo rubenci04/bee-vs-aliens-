@@ -16,6 +16,17 @@ enum State { IDLE, POSITION, WINDUP, SHOOT, COOLDOWN, DEAD }
 @export var cooldown_time := 1.25
 @export var projectile_scene: PackedScene
 
+@export_category("Arcade mode (Level 01 only; defaults keep the single shot)")
+## HOLD at range, SLOW ADVANCE between attacks, FIRE a short burst (each shot re-aims, so it stays dodgeable).
+@export var burst_shots := 1
+@export var burst_gap := 0.3
+@export var advance_speed := 0.0
+## PASS 02: AIMED BURST -> SHORT RECOVERY -> AIMED BURST -> LONG cooldown with ADVANCE + vertical reposition.
+@export var short_recovery := 0.0 # 0 = off (every burst is followed by `cooldown_time`).
+@export var bursts_per_cycle := 2
+@export var reposition_speed := 0.0 # Vertical m/s towards Bee's height during the long cooldown.
+@export var initial_delay := 0.0 # Extra first windup so two Probes never fire on the same frame.
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
@@ -27,6 +38,9 @@ var projectile_fire_count := 0
 var suppressed_shot_count := 0 # Shots skipped by BeeShmupFairness (enemy outside the readable area).
 var _active := false
 var _state_left := 0.0
+var _burst_left := 0
+var _cycle := 0
+var _long_cooldown := true
 
 
 func _ready() -> void:
@@ -82,9 +96,21 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				_shoot()
 		State.SHOOT:
-			_begin_cooldown()
+			if _burst_left > 0:
+				_state_left -= delta
+				if _state_left <= 0.0:
+					_burst_left -= 1
+					_state_left = burst_gap
+					_fire_one()
+			else:
+				_begin_cooldown()
 		State.COOLDOWN:
-			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
+			var rest := Vector3.ZERO
+			if _long_cooldown and advance_speed > 0.0 and _distance_to_target() > minimum_range + 0.3:
+				rest.x = signf(target.global_position.x - global_position.x) * advance_speed
+			if _long_cooldown and reposition_speed > 0.0:
+				rest.y = clampf((target.global_position.y - global_position.y) * 1.5, -reposition_speed, reposition_speed)
+			velocity = velocity.move_toward(rest, acceleration * delta)
 			_state_left -= delta
 			if _state_left <= 0.0:
 				current_state = State.POSITION
@@ -109,7 +135,7 @@ func _update_position(delta: float) -> void:
 
 func _begin_windup() -> void:
 	current_state = State.WINDUP
-	_state_left = windup_time
+	_state_left = windup_time + (initial_delay if _cycle == 0 else 0.0)
 	velocity = Vector3.ZERO
 	telegraph.show()
 	visual_root.scale = Vector3(1.12, 0.88, 1.12)
@@ -117,8 +143,15 @@ func _begin_windup() -> void:
 
 func _shoot() -> void:
 	current_state = State.SHOOT
+	_cycle += 1
 	telegraph.hide()
 	visual_root.scale = Vector3.ONE
+	_burst_left = burst_shots - 1
+	_state_left = burst_gap
+	_fire_one()
+
+
+func _fire_one() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
 		return
@@ -132,7 +165,8 @@ func _shoot() -> void:
 
 func _begin_cooldown() -> void:
 	current_state = State.COOLDOWN
-	_state_left = cooldown_time
+	_long_cooldown = short_recovery <= 0.0 or _cycle % maxi(bursts_per_cycle, 1) == 0
+	_state_left = cooldown_time if _long_cooldown else short_recovery
 
 
 func _distance_to_target() -> float:

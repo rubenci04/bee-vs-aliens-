@@ -81,6 +81,17 @@ func _ready() -> void:
 			color = Color(0.62, 0.43, 0.23)
 			amount = 12
 			reach = 0.8
+		&"rock_hit":
+			duration = 0.28
+			color = Color(0.72, 0.68, 0.6)
+			amount = 6
+			reach = 0.4
+		&"rock_break":
+			duration = 0.6
+			color = Color(0.62, 0.58, 0.5)
+			amount = 18
+			reach = maxf(extent, 1.0) * 0.9
+			_ring(Color(0.72, 0.68, 0.6, 0.45), maxf(extent, 1.0) * 0.55, 0.18, 0.3)
 		&"pickup", &"pickup_bomb":
 			duration = 0.3 if kind == &"pickup" else 0.4
 			amount = 8 if kind == &"pickup" else 14
@@ -159,13 +170,13 @@ func _burst(color: Color, amount: int, reach: float) -> void:
 	particles.randomness = 0.25
 	particles.direction = Vector3.RIGHT
 	particles.spread = 180.0
-	particles.gravity = Vector3.ZERO
+	particles.gravity = Vector3(0.0, -7.0, 0.0) if kind == &"rock_break" else Vector3.ZERO
 	particles.initial_velocity_min = reach / duration * 0.5
 	particles.initial_velocity_max = reach / duration
 	particles.scale_amount_min = 0.65
 	particles.scale_amount_max = 1.1
 	particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	particles.emission_sphere_radius = 0.3 if kind in [&"tech_death", &"organic_death", &"crate"] else 0.06
+	particles.emission_sphere_radius = 0.3 if kind in [&"tech_death", &"organic_death", &"crate", &"rock_break"] else 0.06
 	var mesh_key := str(kind) + color.to_html()
 	if not _particle_meshes.has(mesh_key):
 		var mesh: PrimitiveMesh
@@ -178,7 +189,7 @@ func _burst(color: Color, amount: int, reach: float) -> void:
 			mesh = sphere
 		else:
 			var shard := BoxMesh.new()
-			shard.size = Vector3(0.09, 0.035, 0.035) if kind != &"crate" else Vector3(0.14, 0.08, 0.06)
+			shard.size = Vector3(0.14, 0.08, 0.06) if kind in [&"crate", &"rock_break"] else Vector3(0.09, 0.035, 0.035)
 			mesh = shard
 		mesh.material = _material(color)
 		_particle_meshes[mesh_key] = mesh
