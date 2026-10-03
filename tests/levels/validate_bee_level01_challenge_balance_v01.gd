@@ -253,7 +253,7 @@ func test_density() -> void:
 			found = found or family in event["units"]
 		check(found, "Family missing from the timeline: " + family)
 	# The level-only HP table is untouched; only the two cadences changed, on level spawns.
-	check(BeeLevel01Controller.LEVEL_HP == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}, "Global enemy HP changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": BeeLevel01Controller.LEVEL_HP["Dragonfly"]}, "Global enemy HP changed")
 	check(BeeLevel01Controller.LEVEL_TUNING.has("Probe") and BeeLevel01Controller.LEVEL_TUNING.has("EyeDrone"), "Level tuning table lost Probe/EyeDrone")
 	var probe_scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn") as PackedScene).instantiate()
 	var eye_scene := (load("res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()

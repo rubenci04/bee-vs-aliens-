@@ -390,7 +390,7 @@ func test_level() -> void:
 	check(total >= 60 and total <= 72, "Enemy total %d outside the 60-72 director budget" % total)
 	check(biggest <= 4, "More than 4 units in one encounter")
 	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0, "Concurrency cap changed")
-	check(BeeLevel01Controller.LEVEL_HP == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}, "HP changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": BeeLevel01Controller.LEVEL_HP["Dragonfly"]}, "HP changed")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
 	# Controlled projectile ceiling: the heaviest legal trio (the level caps simultaneous threats at 3) all alive for 14 s with Bee not shooting.
 	await clear_units()

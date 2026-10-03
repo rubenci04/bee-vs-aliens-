@@ -81,6 +81,11 @@ func _ready() -> void:
 			color = Color(0.62, 0.43, 0.23)
 			amount = 12
 			reach = 0.8
+		&"neutral_hit":
+			duration = 0.2
+			color = Color(0.92, 0.94, 0.97, 0.8)
+			amount = 5
+			reach = 0.22
 		&"rock_hit":
 			duration = 0.28
 			color = Color(0.72, 0.68, 0.6)

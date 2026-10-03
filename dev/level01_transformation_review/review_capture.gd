@@ -76,4 +76,35 @@ func run() -> void:
 		wave.director_moment.emit(&"bomb_reward")
 		await frames(12)
 		await shot("bomb_reward")
+	if want("dragonfly"):
+		await at(120.0, Vector2(-3.4, 3.4))
+		var fly := spawn("Dragonfly") as ControlledDragonfly
+		for i in 400:
+			await physics_frame
+			if fly.state == ControlledDragonfly.State.HOVER:
+				break
+		await frames(30)
+		await shot("05_dragonfly_controlled")
+		bee.refresh_auto_aim()
+		await shot("06_dragonfly_implant_target")
+		for i in 400:
+			await physics_frame
+			if fly.state == ControlledDragonfly.State.PASS:
+				break
+		await frames(28)
+		await shot("05b_dragonfly_pass")
+		for i in 200:
+			await physics_frame
+			if fly.state == ControlledDragonfly.State.HOVER:
+				break
+		fly.health.take_damage(20)
+		await frames(2)
+		await shot("06b_dragonfly_implant_damage")
+		fly.health.take_damage(999)
+		await frames(8)
+		await shot("07_dragonfly_liberation")
+		await frames(40)
+		await shot("07b_dragonfly_natural")
+		await frames(60)
+		await shot("07c_dragonfly_exit")
 	quit(0)

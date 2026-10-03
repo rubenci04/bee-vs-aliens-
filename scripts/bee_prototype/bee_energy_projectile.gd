@@ -69,6 +69,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
+	if hurtbox.has_meta("neutral_hit"):
+		# Controlled fauna: the animal body absorbs the shot with a soft neutral puff (no damage, no hit sound).
+		BeeCombatVFX.spawn(get_parent(), global_position, &"neutral_hit", travel_direction)
+		hitbox.set_enabled(false)
+		queue_free()
+		return
 	var feedback := hurtbox.owner_entity.get_node_or_null("CombatFeedback")
 	var organic := feedback != null and bool(feedback.get("organic"))
 	BeeAudio.play(get_parent(), &"organic_hit" if organic else &"tech_hit", global_position)

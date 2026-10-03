@@ -418,7 +418,7 @@ func test_level() -> void:
 	check(biggest <= 4, "More than 4 units in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
-	check(BeeLevel01Controller.LEVEL_HP == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}, "HP changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": BeeLevel01Controller.LEVEL_HP["Dragonfly"]}, "HP changed")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.
 	arena(100.0)

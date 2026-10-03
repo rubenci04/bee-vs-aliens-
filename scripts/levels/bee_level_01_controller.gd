@@ -13,13 +13,17 @@ const SPEEDER = preload("res://scenes/bee_prototype/speeder_enemy.tscn")
 const ORGANIC = preload("res://scenes/bee_prototype/organic_alien_enemy.tscn")
 const WALKER = preload("res://scenes/bee_prototype/ground_walker_enemy.tscn")
 const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
+const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
+## One-off hint the first time controlled fauna appears: the animal is not the enemy, the implant is.
+const FAUNA_HINT := "DESTRUÍ EL IMPLANTE"
 ## Breather between the last encounter and the UFO approach (arena already locked).
 const BOSS_BREATHER := 1.6
 ## Up to three threats at once from here on (was X=300): the second half of the route is where the pressure is.
 const THREE_AT_ONCE_FROM := 150.0
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
-const LEVEL_HP = {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}
+const LEVEL_HP = {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": 60}
+# "Dragonfly" is the HP of its alien IMPLANT (the animal itself has no health): measured ~1.8-2.4 s of reasonable Base fire.
 # Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
 # (windup) are never touched; HP is global-unchanged. BEFORE (Arcade Pressure pass 01) -> AFTER (Combat Pattern pass 02):
 #   Wasp      2 passes, recovery 0.9 s            -> 3 passes, recovery 1.1 s, stalk 2.2/2.9/3.6 s on lanes (no simultaneous attacks)
@@ -60,7 +64,7 @@ const EVENTS = [
 	{"at": 84.0, "act": 2, "label": "FORMACIÓN D · SONDAS DESFASADAS", "units": ["Probe", "Wasp", "Probe"], "formation": "staggered", "delays": [0.0, 1.0, 4.0], "y": [5.6, 3.0, 2.4]},
 	{"at": 98.0, "act": 2, "label": "COLUMNA · DOS OJOS Y AVISPA", "units": ["EyeDrone", "EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 0.3, 3.5], "y": [2.0, 5.6, 3.8]},
 	{"at": 110.0, "act": 2, "label": "CONTACTO · SPEEDER, SONDA Y AVISPA", "units": ["Speeder", "Probe", "Wasp"], "delays": [0.0, 0.8, 4.0]},
-	{"at": 124.0, "act": 2, "label": "FAUNA · RESERVADO", "units": ["Wasp"], "fauna_slot": true},
+	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
 	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": [], "moment": "human_aftermath"},
@@ -75,7 +79,7 @@ const EVENTS = [
 	{"at": 230.0, "act": 4, "label": "CONTACTO · AVISPA, SONDA Y AVISPA", "units": ["Wasp", "Probe", "Wasp"], "delays": [0.0, 1.0, 2.5]},
 	{"at": 242.0, "act": 4, "label": "CONTACTO · OJO, SPEEDER Y AVISPA", "units": ["EyeDrone", "Speeder", "Wasp"]},
 	{"at": 254.0, "act": 4, "label": "ORGANISMO · AVISPA Y OJO", "units": ["OrganicAlien", "Wasp", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 3.0]},
-	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO", "units": [], "moment": "contaminated_garden"},
+	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA Y SONDA", "units": ["Dragonfly", "Probe"], "delays": [2.0, 4.5], "moment": "contaminated_garden"},
 	{"at": 270.0, "act": 4, "label": "OLA · SONDA, OJO Y TORRETA", "units": ["Probe", "EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 1.5, 3.0]},
 	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA, AVISPA Y SONDA", "units": ["Turret", "Wasp", "Probe"], "delays": [0.0, 0.8, 3.5]},
 	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 0.8, 3.0]},
@@ -112,6 +116,7 @@ var boss: UfoBoss01
 var boss_defeated := false
 var _boss_breather_left := -1.0
 var current_act := 1 # Internal act (1-5) of the last launched event; 5 = FIRST CONTACT.
+var fauna_hint_shown := false
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -195,11 +200,12 @@ func _spawn(request: Dictionary) -> void:
 		"Speeder": scene = SPEEDER
 		"OrganicAlien": scene = ORGANIC
 		"Walker": scene = WALKER
+		"Dragonfly": scene = DRAGONFLY
 		_: return
 	var unit := scene.instantiate() as Node3D
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
 	get_node("../Enemies").add_child(unit)
-	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien"]
+	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien", "Dragonfly"]
 	var height: float = [4.6, 2.6, 6.0][int(request["slot"]) % 3] if air else -0.2
 	if air and request.has("y"):
 		height = float(request["y"]) # Formation height.
@@ -214,6 +220,8 @@ func _spawn(request: Dictionary) -> void:
 	unit.set_meta("level_born", _clock)
 	unit.set_meta("level_retreat", false)
 	unit.connect("defeated", _on_unit_defeated)
+	if unit.has_signal("liberated_now"):
+		unit.connect("liberated_now", _on_unit_liberated) # A freed animal stops counting as a threat at once.
 	active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance})
@@ -232,6 +240,10 @@ func _spawn(request: Dictionary) -> void:
 		unit.set("initial_delay", 0.35 * float(slot % 3)) # Never the same first-shot frame as a neighbour.
 	if family == "EyeDrone" and stage.distance < FAN_FROM_X:
 		unit.set("fan_every", 0) # Projectile language: aimed bursts first, fans only from FAN_FROM_X.
+	if family == "Dragonfly" and not fauna_hint_shown:
+		fauna_hint_shown = true
+		player_label = FAUNA_HINT
+		get_tree().create_timer(3.5, false).timeout.connect(_clear_fauna_hint) # Bound method: dropped if the level reloads.
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
 	max_active_seen = maxi(max_active_seen, active_units.size())
@@ -259,9 +271,7 @@ func _retire_soft_units(delta: float) -> void:
 func _on_unit_defeated(unit: Node3D) -> void:
 	active_units.erase(unit)
 	# Keep the existing death feedback briefly, then release its subtree.
-	get_tree().create_timer(1.0).timeout.connect(func():
-		if is_instance_valid(unit):
-			unit.queue_free())
+	get_tree().create_timer(1.0).timeout.connect(_release_unit.bind(unit.get_instance_id())) # Bound method + id: safe across reloads.
 
 func _on_human_exited() -> void:
 	if not _waiting_for_human or _frozen:
@@ -284,6 +294,9 @@ func resume_after_checkpoint(progress: float) -> void:
 	for index in ACT_STARTS.size():
 		if progress >= float(ACT_STARTS[index]):
 			current_act = index + 1
+	for event: Dictionary in EVENTS:
+		if "Dragonfly" in event["units"] and float(event["at"]) < progress:
+			fauna_hint_shown = true # Already learnt before the checkpoint.
 	encounter_label = "CHECKPOINT · SEGUNDA MITAD"
 	player_label = encounter_label if show_debug_labels else "CHECKPOINT"
 	if progress > 140.0:
@@ -342,3 +355,15 @@ func _on_boss_defeated(_boss: UfoBoss01) -> void:
 
 func boss_active() -> bool:
 	return boss != null and is_instance_valid(boss) and boss.is_active()
+
+func _clear_fauna_hint() -> void:
+	if player_label == FAUNA_HINT:
+		player_label = ""
+
+func _on_unit_liberated(unit: Node3D) -> void:
+	active_units.erase(unit)
+
+func _release_unit(id: int) -> void:
+	var unit := instance_from_id(id) as Node
+	if unit != null and is_instance_valid(unit):
+		unit.queue_free()

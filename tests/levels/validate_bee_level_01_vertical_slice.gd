@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 69 and max_gap <= 16, "Enemy count/pacing wrong")
+	check(total == 71 and max_gap <= 16, "Enemy count/pacing wrong")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -387,7 +387,7 @@ func run() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 69, "Not all 69 enemies spawned")
+	check(spawned == 71, "Not all 71 enemies spawned (incl. 2 controlled dragonflies)")
 	for event_id in 24:
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -421,5 +421,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=31 enemies=69 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=31 enemies=71 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

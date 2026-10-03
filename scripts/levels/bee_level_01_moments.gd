@@ -111,11 +111,8 @@ func _opening_can() -> void:
 func _human_aftermath() -> void:
 	var camera_x := stage.camera.global_position.x
 	for i in 4:
-		var timer := get_tree().create_timer(0.35 * float(i), false)
 		var x := camera_x - 4.5 + float(i) * 2.6
-		timer.timeout.connect(func():
-			if is_inside_tree():
-				BeeCombatVFX.spawn(self, Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2)), &"crate", Vector3.UP, 2.2))
+		get_tree().create_timer(0.35 * float(i), false).timeout.connect(_dust.bind(Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2))))
 	if beetle != null and is_instance_valid(beetle):
 		beetle.queue_free()
 	beetle = Node3D.new()
@@ -181,3 +178,7 @@ func _physics_process(_delta: float) -> void:
 		sway.tween_property(plant, "rotation:z", base + 0.08, 0.3).set_trans(Tween.TRANS_SINE)
 		sway.tween_property(plant, "rotation:z", base, 0.35).set_trans(Tween.TRANS_SINE)
 		sway.tween_callback(func(): _swaying.erase(plant))
+
+
+func _dust(at: Vector3) -> void:
+	BeeCombatVFX.spawn(self, at, &"crate", Vector3.UP, 2.2)
