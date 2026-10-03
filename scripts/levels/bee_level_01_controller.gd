@@ -16,29 +16,33 @@ const BOSS_BREATHER := 1.6
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
 const LEVEL_HP = {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60}
+# CHALLENGE & BALANCE PASS 01: level-only cadence tuning of the two weakest ranged families
+# (reusable scenes and the family POCs keep their values). Telegraph (windup), projectile speed and
+# damage are untouched. BEFORE -> AFTER: Probe cooldown 1.25 -> 1.10 s (-12 %), EyeDrone 1.40 -> 1.25 s (-11 %).
+const LEVEL_TUNING = {"Probe": {"cooldown_time": 1.10}, "EyeDrone": {"cooldown_time": 1.25}}
 const EVENTS = [
 	{"at": 12.0, "label": "JARDÍN · AVISPA", "units": ["Wasp"]},
 	{"at": 26.0, "label": "JARDÍN · DOS AVISPAS", "units": ["Wasp", "Wasp"]},
 	{"at": 40.0, "label": "JARDÍN · SONDA Y AVISPA", "units": ["Probe", "Wasp"]},
-	{"at": 54.0, "label": "TRONCO · AVISPA", "units": ["Wasp"]},
+	{"at": 54.0, "label": "TRONCO · AVISPA Y SONDA", "units": ["Wasp", "Probe"]},
 	{"at": 68.0, "label": "CONTACTO · DOS OJOS", "units": ["EyeDrone", "EyeDrone"]},
-	{"at": 82.0, "label": "CONTACTO · SONDA", "units": ["Probe"]},
+	{"at": 82.0, "label": "CONTACTO · SONDA Y AVISPA", "units": ["Probe", "Wasp"]},
 	{"at": 96.0, "label": "ROCAS · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"]},
-	{"at": 110.0, "label": "CONTACTO · SPEEDER", "units": ["Speeder"]},
+	{"at": 110.0, "label": "CONTACTO · SPEEDER Y SONDA", "units": ["Speeder", "Probe"]},
 	{"at": 124.0, "label": "JARDÍN · ÚLTIMA AVISPA", "units": ["Wasp"]},
 	{"at": 140.0, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
-	{"at": 156.0, "label": "DEFENSAS · TORRETA", "units": ["Turret"]},
+	{"at": 156.0, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"]},
 	{"at": 170.0, "label": "DEFENSAS · OJO Y TORRETA", "units": ["EyeDrone", "Turret"]},
 	{"at": 184.0, "label": "DEFENSAS · AVISPA", "units": ["Wasp"]},
 	{"at": 198.0, "label": "DEFENSAS · SONDA Y SPEEDER", "units": ["Probe", "Speeder"]},
-	{"at": 212.0, "label": "DEFENSAS · TORRETA", "units": ["Turret"]},
+	{"at": 212.0, "label": "DEFENSAS · TORRETA Y OJO", "units": ["Turret", "EyeDrone"]},
 	{"at": 226.0, "label": "CONTACTO · DOS AVISPAS", "units": ["Wasp", "Wasp"]},
-	{"at": 240.0, "label": "CONTACTO · OJO", "units": ["EyeDrone"]},
+	{"at": 240.0, "label": "CONTACTO · OJO Y SPEEDER", "units": ["EyeDrone", "Speeder"]},
 	{"at": 254.0, "label": "ORGANISMO · AVISPA", "units": ["OrganicAlien", "Wasp"], "hard": true},
 	{"at": 268.0, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"]},
-	{"at": 282.0, "label": "DEFENSAS · TORRETA", "units": ["Turret"]},
+	{"at": 282.0, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"]},
 	{"at": 296.0, "label": "WALKER · OJO", "units": ["Walker", "EyeDrone"], "hard": true},
-	{"at": 310.0, "label": "FINAL · AVISPA Y SPEEDER", "units": ["Wasp", "Speeder"]},
+	{"at": 310.0, "label": "FINAL · AVISPA, SPEEDER Y SONDA", "units": ["Wasp", "Speeder", "Probe"]},
 	{"at": 324.0, "label": "FINAL · TRES AMENAZAS", "units": ["Probe", "EyeDrone", "Wasp"]},
 	{"at": 340.0, "label": "ÚLTIMA DEFENSA · TRES AMENAZAS", "units": ["Walker", "Probe", "Turret"], "hard": true},
 ]
@@ -166,6 +170,9 @@ func _spawn(request: Dictionary) -> void:
 	var health := unit.get_node("HealthComponent") as HealthComponent
 	health.max_health = int(LEVEL_HP[family])
 	health.current_health = health.max_health
+	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
+	for key in tuning:
+		unit.set(key, tuning[key])
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
 	max_active_seen = maxi(max_active_seen, active_units.size())

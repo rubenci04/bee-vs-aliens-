@@ -23,9 +23,9 @@ signal powerup_collected(kind: StringName)
 @export var muzzle_offset := Vector3(0.48, 0.0, 0.0)
 
 @export_category("Temporary powerups")
-@export var spread_max_shots := 24
+@export var spread_max_shots := 32 # CHALLENGE & BALANCE PASS 01: 24 -> 32 bursts (still 3 pellets, no stacking).
 @export var spread_angle_degrees := 14.0
-@export var spread_damage_ratio := 0.6
+@export var spread_damage_ratio := 0.8 # CHALLENGE & BALANCE PASS 01: 0.6 -> 0.8 (6 -> 8 per pellet); vs the UFO at >=5 m Spread was 0.68x Base.
 @export var starting_bomb_charges := 0
 @export var max_bomb_charges := 3
 @export var bomb_radius := 3.0

@@ -156,7 +156,7 @@ func test_human_collision() -> void:
 				# Bring the camera to the subject for a review image, not gameplay.
 				stage.camera.set_stage_x(human.global_position.x)
 				var debug_boxes: Array[MeshInstance3D] = []
-				for part in ["LeftThigh", "LeftLeg", "RightThigh", "RightLeg", "Torso"]:
+				for part in ["LeftFoot", "RightFoot", "Torso"]:
 					var collider: CollisionShape3D = human.get_node("ContactHitbox/" + part)
 					if collider.disabled:
 						continue
@@ -177,7 +177,7 @@ func test_human_collision() -> void:
 	stage.camera.set_stage_x(camera_x)
 	# Freeze a real wide-stride pose, keeping Area3D collision fully active.
 	# Each contact gets a new crossing, therefore one damage opportunity.
-	for part in ["LeftLeg", "RightLeg", "Torso"]:
+	for part in ["LeftFoot", "RightFoot", "Torso"]:
 		check(human.begin_crossing(stage.camera), "Human contact crossing rejected")
 		for i in 100:
 			if human.current_phase == GiantHumanCrossingHazard.Phase.CROSSING:
@@ -215,7 +215,7 @@ func test_human_collision() -> void:
 	stage._update_camera_and_bounds()
 	stage.set_physics_process(true)
 	wave.set_physics_process(true)
-	print("HUMAN_COLLISION_OK full_crossing_samples=", sampled, " gap=2.4m legs=20 torso=20 once_per_crossing=OK")
+	print("HUMAN_COLLISION_OK full_crossing_samples=", sampled, " gap=2.4m shoes=20 torso=20 once_per_crossing=OK")
 
 func test_log() -> void:
 	stage.set_physics_process(false)
@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 38 and max_gap <= 16, "Enemy count/pacing wrong")
+	check(total == 46 and max_gap <= 16, "Enemy count/pacing wrong")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -386,7 +386,7 @@ func run() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 38, "Not all 38 enemies spawned")
+	check(spawned == 46, "Not all 46 enemies spawned")
 	for event_id in 24:
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -404,7 +404,7 @@ func run() -> void:
 	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children():
 		bee.global_position = pickup.global_position
 		await frames(4)
-	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == 24 and bee.bomb_charges == 3, "Level pickups cannot be collected")
+	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == 32 and bee.bomb_charges == 3, "Level pickups cannot be collected")
 	bee.set_physics_process(true)
 	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)
@@ -420,5 +420,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=24 enemies=38 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=24 enemies=46 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

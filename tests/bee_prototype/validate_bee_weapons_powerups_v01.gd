@@ -105,7 +105,7 @@ func run() -> void:
 	await frames(3)
 	await capture("01_spread_pickup")
 	await touch_pickup("Powerups/SpreadFirst")
-	check(bee.spread_ammo == 24 and "SPREAD x24" in hud.get_node("State").text, "Spread pickup/HUD wrong")
+	check(bee.spread_ammo == 32 and "SPREAD x32" in hud.get_node("State").text, "Spread pickup/HUD wrong")
 	check(hud.get_node("Hint").visible and "X — FIRE" in hud.get_node("Hint").text, "Spread hint missing")
 	await capture("02_bee_spread")
 	await capture("08_hud_spread_bomb")
@@ -114,10 +114,10 @@ func run() -> void:
 	var direction := (aim_target.get_node("Hurtbox3D").global_position - bee.global_position).normalized() as Vector3
 	var central := bee.fire()
 	var burst := shots()
-	check(burst.size() == 3 and bee.spread_ammo == 23, "Spread count/ammo wrong")
+	check(burst.size() == 3 and bee.spread_ammo == 31, "Spread count/ammo wrong")
 	check(central.travel_direction.is_equal_approx(direction), "Central lost auto-aim")
 	for shot in burst:
-		check(shot.damage == 6 and shot.hitbox.damage == 6, "Spread damage is not 60 percent")
+		check(shot.damage == 8 and shot.hitbox.damage == 8, "Spread damage is not 80 percent")
 		if shot != central:
 			check(is_equal_approx(rad_to_deg(direction.angle_to(shot.travel_direction)), 14.0), "Spread angle wrong")
 	var fixed := central.travel_direction
@@ -130,11 +130,11 @@ func run() -> void:
 	var spread_hp: int = aim_target.get_node("HealthComponent").current_health
 	bee.fire()
 	await frames(25)
-	check(aim_target.get_node("HealthComponent").current_health == spread_hp - 6, "Spread central did not apply exactly 6 HP on real overlap")
+	check(aim_target.get_node("HealthComponent").current_health == spread_hp - 8, "Spread central did not apply exactly 8 HP on real overlap")
 	aim_target.queue_free()
 	await clear_shots()
-	check(bee.collect_spread() and bee.spread_ammo == 24, "Refill did not cap")
-	for i in 24:
+	check(bee.collect_spread() and bee.spread_ammo == 32, "Refill did not cap")
+	for i in 32:
 		bee.fire()
 		await clear_shots()
 	check(bee.spread_ammo == 0 and "BASE" in hud.get_node("State").text, "Ammo exhaustion failed")
@@ -261,5 +261,5 @@ func run() -> void:
 	check(restarted != stage and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "R did not restore kit")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
 	check("BASE" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text and "BOMB x1" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text, "R HUD wrong")
-	print("BEE_WEAPONS_POWERUPS_V01_OK base=10 spread=3x6 angle=14 ammo=24 bomb=32 radius=3 cap=3 families=7 dedup=OK exclusions=OK restart=OK")
+	print("BEE_WEAPONS_POWERUPS_V01_OK base=10 spread=3x8 angle=14 ammo=32 bomb=32 radius=3 cap=3 families=7 dedup=OK exclusions=OK restart=OK")
 	quit(0)

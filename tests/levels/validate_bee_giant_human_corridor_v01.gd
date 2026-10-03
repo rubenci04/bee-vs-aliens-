@@ -4,7 +4,7 @@ extends SceneTree
 # feet/torso still hurt (20 HP, once per crossing), and speed/targetability are unchanged.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const LEG_PARTS := ["LeftThigh", "LeftLeg", "RightThigh", "RightLeg"]
+const LEG_PARTS := ["LeftFoot", "RightFoot"] # Thighs and calves no longer damage (CHALLENGE & BALANCE PASS 01).
 
 var stage: BeeShmupStage
 var human: GiantHumanCrossingHazard
@@ -104,7 +104,7 @@ func run() -> void:
 		enabled_legs += 1
 		for point in world_points(part):
 			check(absf(point.x - human.global_position.x) >= safe_half_width() - 0.01, part + " reaches into the central corridor")
-	check(enabled_legs >= 2, "Wide-stride pose lost its leg envelopes")
+	check(enabled_legs >= 2, "Wide-stride pose lost its shoe envelopes")
 	var torso_bottom := 99.0
 	for point in world_points("Torso"):
 		torso_bottom = minf(torso_bottom, point.y)
@@ -116,7 +116,7 @@ func run() -> void:
 	end_pose()
 
 	# 4. Touching a foot / the torso still costs exactly 20 HP, once per crossing.
-	for part in ["LeftLeg", "RightLeg", "Torso"]:
+	for part in ["LeftFoot", "RightFoot", "Torso"]:
 		await freeze_pose(0.2)
 		var node := collider(part)
 		check(not node.disabled, "Contact envelope absent for " + part)

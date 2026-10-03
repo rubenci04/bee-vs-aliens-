@@ -27,7 +27,7 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 ## Controles
 - Mover: WASD / flechas. Disparo: X. Melee (Sting): Z. Alien Bomb: C.
 - Pausa: Esc. Reiniciar tras derrota: R (en checkpoint = respawn); tras ganar, R = reinicio completo. Reinicio total: Shift+R.
-- Armas: Base (10 HP, auto-aim ~12 m, sin homing), Spread (3 disparos ±14°, 6 HP c/u, 24 ráfagas), Bomb (radio 3 m, 32 HP, máx. 3 cargas).
+- Armas: Base (10 HP, auto-aim ~12 m, sin homing), Spread (3 disparos ±14°, 8 HP c/u, 32 ráfagas), Bomb (radio 3 m, 32 HP, máx. 3 cargas).
 - Checkpoint en X=190 m; respawn en (190, 5.4, 0) con 1.25 s de invulnerabilidad.
 
 ## Cómo correr los tests
@@ -39,7 +39,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/levels/va
 godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_prototype/validate_<nombre>.gd
 ```
 - Sin `--headless` (con render) algunas suites guardan capturas PNG en `res://dev/<...>_review/`. Eso ESCRIBE archivos en `dev/`; avisar antes de correrlas así.
-- La suite completa son 30 validaciones (29 previas + `validate_bee_ufo_boss_01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
+- La suite completa son 31 validaciones (30 previas + `validate_bee_level01_challenge_balance_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
 - Los tests no miden si es divertido: el playtest del usuario manda.
 - Logs en `docs/bee_prototype/*.log` y `.godot/` están ignorados por git.
 

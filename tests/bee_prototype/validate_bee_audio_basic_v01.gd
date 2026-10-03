@@ -124,7 +124,7 @@ func run() -> void:
 	await impact(BeeLevel01Controller.WASP, &"organic_hit")
 	bee.collect_spread()
 	bee.fire()
-	check(count(&"spread") == 1 and bee.spread_ammo == 23, "Spread did not play exactly once per burst")
+	check(count(&"spread") == 1 and bee.spread_ammo == 31, "Spread did not play exactly once per burst")
 	await clear_shots()
 	bee.spread_ammo = 0
 	bee.set_physics_process(true)

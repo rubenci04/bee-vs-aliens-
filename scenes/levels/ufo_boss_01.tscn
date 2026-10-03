@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="5"]
 
-[sub_resource type="BoxShape3D" id="hull_shape"]
-size = Vector3(2.5, 0.85, 1.4)
+[sub_resource type="ConvexPolygonShape3D" id="hull_shape"]
+points = PackedVector3Array(1.28, 0.06, -0.6, 1.28, 0.06, 0.6, 1.28, -0.06, -0.6, 1.28, -0.06, 0.6, 0.7, -0.28, -0.6, 0.7, -0.28, 0.6, 0.2, -0.48, -0.6, 0.2, -0.48, 0.6, -0.2, -0.48, -0.6, -0.2, -0.48, 0.6, -0.7, -0.28, -0.6, -0.7, -0.28, 0.6, -1.28, -0.06, -0.6, -1.28, -0.06, 0.6, -1.28, 0.06, -0.6, -1.28, 0.06, 0.6, -0.7, 0.30, -0.6, -0.7, 0.30, 0.6, -0.3, 0.58, -0.6, -0.3, 0.58, 0.6, 0.3, 0.58, -0.6, 0.3, 0.58, 0.6, 0.7, 0.30, -0.6, 0.7, 0.30, 0.6)
 
 [sub_resource type="BoxShape3D" id="contact_shape"]
 size = Vector3(2.0, 0.55, 1.0)

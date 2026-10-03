@@ -88,3 +88,6 @@ Cierre Checkpoint/QoL: específico headless/render OK, cargas jugables directas 
 
 ## UFO BOSS 01 — final del nivel
 El final ya no es "último encuentro → SECTOR DESPEJADO". Ahora es: último encuentro → respiro de 1,6 s con arena bloqueada → aproximación del OVNI en profundidad (3,2 s, invulnerable) → combate de 3 fases (`ALIEN SCOUT`, 1300 HP, ~60 s) → muerte (2,3 s, borra sus proyectiles) → `SECTOR DESPEJADO`. Detalle en `docs/BEE_UFO_BOSS_01.md`. Los 360 m, los 24 eventos y los 38 enemigos no cambian.
+
+## Challenge & Balance Pass 01
+46 enemigos en los mismos 24 eventos (antes 38), Giant Human con daño solo en zapatos y torso (corredor seguro), Probe/EyeDrone con cadencia −11/−12 % solo en el nivel, Spread de 32 ráfagas × 3 perdigones de 8. La tabla de encuentros de arriba refleja el estado previo; el detalle y las cifras antes/después están en `docs/BEE_LEVEL01_CHALLENGE_BALANCE_01.md`.
