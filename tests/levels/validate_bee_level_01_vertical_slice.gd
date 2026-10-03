@@ -282,7 +282,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 31, "Event count wrong (EVENTS V2: 31 incl. 4 director moments)")
+	check(BeeLevel01Controller.EVENTS.size() == 42, "Event count wrong (EVENTS V3: 42 incl. 7 director moments and the human)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 71 and max_gap <= 16, "Enemy count/pacing wrong")
+	check(total == 92 and max_gap <= 16, "Unit count/pacing wrong (REBUILD 02: 92 incl. 29 popcorn)")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -329,7 +329,8 @@ func run() -> void:
 			frame_count += 1
 		peak_nodes = maxi(peak_nodes, int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		fps_min = minf(fps_min, Performance.get_monitor(Performance.TIME_FPS))
-		check(wave.active_units.size() <= (3 if stage.distance >= BeeLevel01Controller.THREE_AT_ONCE_FROM else 2), "Concurrency cap exceeded")
+		check(wave.active_units.size() <= BeeLevel01Controller.threat_cap(stage.distance), "Concurrency cap exceeded")
+		check(wave.swarm_units.size() <= BeeLevel01Controller.MAX_SWARM_ALIVE, "Popcorn budget exceeded")
 		check(not bee.is_defeated, "Progression harness Bee defeated")
 		# Keep test Bee away from attacks; combat itself remains covered by family tests.
 		bee.global_position.y = 0.9 if wave._waiting_for_human else 7.0
@@ -360,7 +361,7 @@ func run() -> void:
 				captured["final"] = true
 				await sample_render_performance()
 			# Observe all staged entries before resolving each hard gate.
-			var slots_full: bool = wave.active_units.size() >= (3 if stage.distance >= BeeLevel01Controller.THREE_AT_ONCE_FROM else 2)
+			var slots_full: bool = wave.active_units.size() >= BeeLevel01Controller.threat_cap(stage.distance)
 			if event_id > 0 and (wave._pending.is_empty() or slots_full) and wave._clock - float(seen[id]) > 2.0: # A queued unit needs a free slot first.
 				health.take_damage(9999)
 		if wave._waiting_for_human:
@@ -381,23 +382,24 @@ func run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level did not complete")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen == 3, "Progression/max active wrong")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= 4, "Progression/max active wrong")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 71, "Not all 71 enemies spawned (incl. 2 controlled dragonflies)")
-	for event_id in 24:
+	check(spawned == 92, "Not all 92 units spawned (incl. 2 controlled dragonflies and 29 popcorn)")
+	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
 			if int(entry["event"]) == event_id:
 				times.append(float(entry["time"]))
 		for i in range(1, times.size()):
-			check(times[i] - times[i-1] >= 0.6, "Group spawned in the same frame")
+			check(times[i] - times[i-1] >= 0.19, "Group spawned in the same frame") # REBUILD 02: formations keep their authored spacing (>= 0.2 s).
 	check(captured.has("triple") and captured.has("organic") and captured.has("walker") and captured.has("final"), "Review encounter coverage incomplete")
 	var mean_ms := frame_sum / maxf(float(frame_count), 1.0)
 	var escaped := wave.escaped_count
+	var max_active := wave.max_active_seen
 	print("PERFORMANCE_SAMPLE mode=", DisplayServer.get_name(), " time_scale=3 peak_nodes=", peak_nodes, " fps_min=", fps_min, " mean_frame_ms=", mean_ms, " peak_frame_ms=", frame_peak_ms)
 	# Real Area3D collection after progression coverage, avoiding any change
 	# to the existing combat/geometry diagnostics above.
@@ -421,5 +423,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=31 enemies=71 max_active=3 escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=42 units=92 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

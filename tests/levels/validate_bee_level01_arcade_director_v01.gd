@@ -11,7 +11,8 @@ extends SceneTree
 # Dev filter: -- only=static|fans|checkpoint|moments|run
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const FORMATIONS := ["pair", "escort", "staggered", "horizontal", "vertical", "top_bottom", "diagonal", "rock_turret", "wave", "v"]
+const FORMATIONS := ["pair", "escort", "staggered", "horizontal", "vertical", "top_bottom", "diagonal", "rock_turret", "wave", "v",
+		"snake", "arc", "dive", "showcase", "crossfire"] # REBUILD 02: popcorn paths and showcase set pieces.
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -95,9 +96,9 @@ func test_static() -> void:
 	check(human_at == 140.0, "The Giant Human stays at X=140")
 	check(hard == [254.0, 296.0, 340.0], "Hard gates moved: " + str(hard))
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
-	check(total >= 60 and total <= 72, "Enemy budget %d outside 60-72" % total)
+	check(total >= 82 and total <= 92, "Unit budget %d outside 82-92 (REBUILD 02)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
-	check(moments == ["opening_can", "human_aftermath", "contaminated_garden", "bomb_reward"], "Director moments wrong: " + str(moments))
+	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.
 	var distinct := {}
 	var run := 1
@@ -163,7 +164,7 @@ func test_run() -> void:
 		bee.global_position.y = 7.0
 		bee.global_position.x = stage.distance - 4.8
 		acts_seen[wave.current_act] = true
-		var cap := 3 if stage.distance >= BeeLevel01Controller.THREE_AT_ONCE_FROM else 2
+		var cap := BeeLevel01Controller.threat_cap(stage.distance)
 		check(wave.active_units.size() <= cap, "Threat cap exceeded at X=%.0f" % stage.distance)
 		var shots := get_nodes_in_group("alien_projectiles").size()
 		peak = maxi(peak, shots)
@@ -183,7 +184,7 @@ func test_run() -> void:
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO" and wave.boss_defeated, "Level Complete missing")
 	check(wave.event_index == BeeLevel01Controller.EVENTS.size(), "Not every event ran")
-	check(moments_seen == ["opening_can", "human_aftermath", "contaminated_garden", "bomb_reward", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
+	check(moments_seen == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
 	check(acts_seen.has(1) and acts_seen.has(2) and acts_seen.has(3) and acts_seen.has(4) and acts_seen.has(5), "Acts not all reached: " + str(acts_seen.keys()))
 	check(peak <= 14, "Projectile ceiling exceeded during the level (%d)" % peak)
 	var spawned := 0

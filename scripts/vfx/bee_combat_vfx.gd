@@ -52,11 +52,28 @@ func _ready() -> void:
 			amount = 14
 			reach = 0.9
 			_ring(Color(0.6, 1, 1, 0.8), 0.45, 0.12, 0.2)
+			_fade(_sphere(Color(1, 1, 0.92, 0.85), Vector3.ONE * 0.42), 0.09) # REBUILD 02: a bright pop first, then shards.
 		&"organic_death":
 			duration = 0.5
 			color = Color(0.85, 0.75, 0.3)
 			amount = 12
 			reach = 0.65
+			_fade(_sphere(Color(1, 0.95, 0.7, 0.8), Vector3.ONE * 0.38), 0.09)
+			_ring(Color(0.95, 0.85, 0.45, 0.6), 0.4, 0.12, 0.18)
+		&"pop":
+			# REBUILD 02: popcorn drones - short, bright, satisfying; smaller than a real enemy death.
+			duration = 0.3
+			amount = 7
+			reach = 0.55
+			_fade(_sphere(Color(0.9, 1, 1, 0.9), Vector3.ONE * 0.3), 0.07)
+			_ring(Color(0.6, 1, 1, 0.7), 0.3, 0.08, 0.14)
+		&"heavy_death":
+			# REBUILD 02: heavy enemies (Walker) - a second, larger shockwave layered over tech_death.
+			duration = 0.7
+			amount = 18
+			reach = 1.4
+			_fade(_sphere(Color(1, 0.95, 0.8, 0.8), Vector3.ONE * 0.8), 0.12)
+			_ring(Color(1, 0.85, 0.5, 0.55), 1.3, 0.2, 0.3)
 		&"impact_organic":
 			color = Color(0.95, 0.9, 0.55)
 			reach = 0.3
@@ -181,7 +198,7 @@ func _burst(color: Color, amount: int, reach: float) -> void:
 	particles.scale_amount_min = 0.65
 	particles.scale_amount_max = 1.1
 	particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	particles.emission_sphere_radius = 0.3 if kind in [&"tech_death", &"organic_death", &"crate", &"rock_break"] else 0.06
+	particles.emission_sphere_radius = 0.3 if kind in [&"tech_death", &"organic_death", &"crate", &"rock_break", &"heavy_death"] else 0.06
 	var mesh_key := str(kind) + color.to_html()
 	if not _particle_meshes.has(mesh_key):
 		var mesh: PrimitiveMesh

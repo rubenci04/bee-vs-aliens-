@@ -16,6 +16,7 @@ func activate(source: BeePlayer, area_radius: float, amount: int) -> void:
 	BeeAudio.play(get_parent(), &"bomb")
 	$Pulse.hide() # Replaced by the reusable composite; damage remains here.
 	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, radius)
+	BeeCameraShake.kick(self, 0.07, 0.24) # ARCADE REBUILD 02: the one weapon that may shake the screen.
 	var tween := create_tween()
 	tween.tween_interval(0.4)
 	tween.tween_callback(queue_free)

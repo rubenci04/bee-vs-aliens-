@@ -78,6 +78,7 @@ func spawn(family: String, slot := 0) -> Node3D:
 func clear_units() -> void:
 	for unit in wave.active_units.duplicate():
 		wave.active_units.erase(unit)
+		unit.set_physics_process(false) # Never one last shot in this same physics step.
 		unit.queue_free()
 	for shot in get_nodes_in_group("alien_projectiles"):
 		shot.queue_free()
@@ -118,7 +119,8 @@ func test_probe() -> void:
 	await clear_units()
 	arena(100.0)
 	var probe := spawn("Probe") as AlienProbeRanged
-	check(probe.burst_shots == 3 and is_equal_approx(probe.burst_gap, 0.2) and probe.short_recovery > 0.0, "Probe tuning not applied")
+	var burst := int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) # ARCADE REBUILD 02: 3 -> 4.
+	check(burst == 4 and probe.burst_shots == burst and is_equal_approx(probe.burst_gap, 0.2) and probe.short_recovery > 0.0, "Probe tuning not applied")
 	listen(probe)
 	var captured := false
 	var tracked: Dictionary = {}
@@ -141,10 +143,10 @@ func test_probe() -> void:
 	var groups := bursts(18)
 	check(groups.size() >= 3, "Probe fired only %d bursts in 11 s" % groups.size())
 	for g in groups:
-		if g.size() < 3:
+		if g.size() < burst:
 			continue
-		check(g.size() == 3, "A Probe burst must be exactly 3 shots (got %d)" % g.size())
-		for k in 2:
+		check(g.size() == burst, "A Probe burst must be exactly %d shots (got %d)" % [burst, g.size()])
+		for k in burst - 1:
 			var gap := int(g[k + 1]["frame"]) - int(g[k]["frame"])
 			check(gap >= 9 and gap <= 15, "Probe burst spacing %d frames, expected ~12 (0.2 s)" % gap)
 	# Each shot aims at Bee where she stood when it was fired (re-aim), then keeps that line.
@@ -152,7 +154,7 @@ func test_probe() -> void:
 		var expected: Vector3 = (shot["bee"] - shot["origin"]).normalized()
 		check(angle_deg(shot["dir"], expected) < 2.5, "Probe shot not aimed at Bee at the moment of firing (%.1f deg)" % angle_deg(shot["dir"], expected))
 	var first: Array = groups[0]
-	check(angle_deg(first[0]["dir"], first[2]["dir"]) > 1.0, "Burst shots must re-aim (Bee moved between them)")
+	check(angle_deg(first[0]["dir"], first[burst - 1]["dir"]) > 1.0, "Burst shots must re-aim (Bee moved between them)")
 	# SHORT recovery between the two bursts of a cycle, LONG cooldown after the second one.
 	var starts: Array[int] = []
 	for g in groups:
@@ -161,7 +163,7 @@ func test_probe() -> void:
 	check(int(_shots[0]["damage"]) == int((load("res://scenes/bee_prototype/alien_probe_ranged.tscn") as PackedScene).instantiate().projectile_scene.instantiate().damage), "Probe shot damage changed")
 	var short_s := float(starts[1] - starts[0]) / 60.0
 	var long_s := float(starts[2] - starts[1]) / 60.0
-	print("PATTERN_PROBE bursts=%d shots_per_burst=3 spacing=12f re-aim=OK fixed_path=OK burst_to_burst=%.2fs then=%.2fs" % [groups.size(), short_s, long_s])
+	print("PATTERN_PROBE bursts=%d shots_per_burst=4 spacing=12f re-aim=OK fixed_path=OK burst_to_burst=%.2fs then=%.2fs" % [groups.size(), short_s, long_s])
 	await clear_units()
 	# Fairness: outside the readable area the whole burst is suppressed.
 	var far := spawn("Probe") as AlienProbeRanged
@@ -205,7 +207,7 @@ func test_eye() -> void:
 			break
 	var volleys := bursts(18)
 	check(volleys.size() >= 4, "Eye fired only %d attacks" % volleys.size())
-	check(volleys[0].size() == 3 and volleys[1].size() == 5 and volleys[2].size() == 3 and volleys[3].size() == 5, "Eye must alternate aimed burst (3) / fan (5): %s" % str(volleys.map(func(v): return v.size())))
+	check(volleys[0].size() == 4 and volleys[1].size() == 5 and volleys[2].size() == 4 and volleys[3].size() == 5, "Eye must alternate aimed burst (4, ARCADE REBUILD 02) / fan (5): %s" % str(volleys.map(func(v): return v.size())))
 	check(telegraph_by_attack[0] == false and telegraph_by_attack[1] == true, "Fan telegraph must differ (violet) from the aimed one: " + str(telegraph_by_attack))
 	var fan: Array = volleys[1]
 	for shot in fan:
@@ -270,7 +272,7 @@ func test_walker() -> void:
 	await clear_units()
 	arena(100.0)
 	var walker := spawn("Walker") as GroundWalkerEnemy
-	check(walker.burst_shots == 3 and walker.health.max_health == 60 and is_equal_approx(walker.walk_speed, 1.9), "Walker tuning not applied / HP or speed changed")
+	check(walker.burst_shots == 4 and walker.health.max_health == 72 and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (REBUILD 02: burst 4, HP 72, walk 2.4)")
 	listen(walker)
 	var captured := false
 	for i in 60 * 16:
@@ -283,9 +285,9 @@ func test_walker() -> void:
 		if bursts(60).size() >= 2 and _shots.size() >= 6:
 			break
 	var groups := bursts(60)
-	check(groups.size() >= 2 and groups[0].size() == 3, "Walker must fire a burst of 3 (%s)" % str(groups.map(func(g): return g.size())))
+	check(groups.size() >= 2 and groups[0].size() == 4, "Walker must fire a burst of 4 (%s)" % str(groups.map(func(g): return g.size())))
 	var g: Array = groups[0]
-	for k in 2:
+	for k in 3:
 		var gap := int(g[k + 1]["frame"]) - int(g[k]["frame"])
 		check(gap >= 17 and gap <= 25, "Walker burst spacing %d frames (~0.35 s)" % gap)
 	check(angle_deg(g[0]["dir"], g[2]["dir"]) > 0.5, "Walker shots must re-aim inside the burst")
@@ -377,25 +379,27 @@ func test_level() -> void:
 	for event: Dictionary in events:
 		var units: Array = event["units"]
 		total += units.size()
-		biggest = maxi(biggest, units.size())
+		var threats := units.filter(func(f): return f != "Swarm") # Popcorn sits outside the threat cap.
+		biggest = maxi(biggest, threats.size())
 		for family in units:
 			by_family[family] = int(by_family.get(family, 0)) + 1
 		var delays: Array = event.get("delays", [])
 		check(delays.is_empty() or delays.size() == units.size(), "Delays must match the units: " + str(event["label"]))
 		for i in range(1, delays.size()):
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
-		if units.size() >= 4:
-			check(float(delays.back()) >= 4.5, "The 4th unit of an encounter must arrive late (controlled wave): " + str(event["label"]))
-	check(events.size() == 31 and float(events.back()["at"]) == 340.0, "Event table changed (EVENTS V2: 31 events, last defence at X=340)")
-	check(total >= 60 and total <= 72, "Enemy total %d outside the 60-72 director budget" % total)
-	check(biggest <= 4, "More than 4 units in one encounter")
-	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0, "Concurrency cap changed")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": BeeLevel01Controller.LEVEL_HP["Dragonfly"]}, "HP changed")
+		if units.filter(func(f): return f != "Swarm").size() >= 4:
+			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
+	check(events.size() == 42 and float(events.back()["at"]) == 340.0, "Event table changed (EVENTS V3: 42 events, last defence at X=340)")
+	check(total >= 82 and total <= 92, "Unit total %d outside the 82-92 REBUILD 02 budget" % total)
+	check(biggest <= 4, "More than 4 threats in one encounter")
+	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(50.0) == 3 and BeeLevel01Controller.threat_cap(120.0) == 4, "Concurrency cap changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speeder": 30, "OrganicAlien": 47, "Walker": 72, "Dragonfly": 60, "Swarm": 10}, "HP changed")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
-	# Controlled projectile ceiling: the heaviest legal trio (the level caps simultaneous threats at 3) all alive for 14 s with Bee not shooting.
+	# Controlled projectile ceiling: the heaviest legal quartet (REBUILD 02 caps threats at 4) alive for 14 s, Bee not shooting.
+	# The live-shot ceiling (10 + one 5-shot fan) keeps the peak inside 14.
 	await clear_units()
 	arena(100.0)
-	for family in ["Probe", "EyeDrone", "Turret"]:
+	for family in ["Probe", "EyeDrone", "Turret", "Walker"]:
 		spawn(family, wave.active_units.size())
 	var peak := 0
 	var total_frames := 0

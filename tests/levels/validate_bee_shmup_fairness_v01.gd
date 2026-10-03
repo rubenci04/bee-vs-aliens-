@@ -102,6 +102,8 @@ func run() -> void:
 
 	# 4. Off-screen fire and rear ceasefire for every ranged family.
 	for spec in [["Probe", 3.0], ["EyeDrone", 3.0], ["Turret", 0.0], ["Walker", 0.0]]:
+		for shot in get_nodes_in_group("alien_projectiles"):
+			shot.free() # REBUILD 02: each family starts below the Level 01 live-shot ceiling (checked on its own below).
 		var unit := spawn(spec[0], camera_x + half - 1.0, spec[1])
 		unit.target = bee
 		var before: int = unit.projectile_fire_count
@@ -121,6 +123,37 @@ func run() -> void:
 		unit.global_position.x = camera_x + half - BeeShmupFairness.ENTRY_MARGIN + 0.1
 		fire(unit)
 		check(unit.suppressed_shot_count == 3, spec[0] + " fired while only half visible")
+
+	# 4b. ARCADE REBUILD 02: live-shot ceiling (Level 01 units only) and screen-bound combat.
+	for node in get_nodes_in_group("alien_projectiles"):
+		node.free()
+	check(BeeShmupFairness.live_shot_ceiling == BeeLevel01Controller.LIVE_SHOT_CEILING and BeeShmupFairness.screen_bound_combat, "Level 01 rules not set")
+	for i in BeeLevel01Controller.LIVE_SHOT_CEILING:
+		var filler := PROJECTILE.instantiate() as AlienEnemyProjectile
+		stage.add_child(filler)
+		filler.global_position = Vector3(camera_x, 9.0, 0)
+		filler.launch(Vector3.LEFT, null)
+	var capped := spawn("Probe", camera_x + 2.0, 3.0)
+	capped.target = bee
+	capped._fire_one()
+	check(capped.projectile_fire_count == 0 and capped.suppressed_shot_count == 1, "A Level 01 unit fired past the live-shot ceiling")
+	for node in get_nodes_in_group("alien_projectiles"):
+		node.free()
+	capped._fire_one()
+	check(capped.projectile_fire_count == 1, "Below the ceiling the unit must fire again")
+	var outside := spawn("Probe", camera_x + half + 1.5, 3.0) # Not entered yet: never an auto-aim lock.
+	outside.target = bee
+	outside.activate(bee)
+	bee.facing_x = 1.0
+	check(not bee._is_valid_target(outside) and bee._is_valid_target(capped), "Auto-aim locked onto an enemy outside the screen")
+	var bee_shot := bee._spawn_projectile(Vector3.RIGHT)
+	bee_shot.global_position = Vector3(camera_x + half + 0.6, 3.0, 0)
+	await frames(2)
+	check(not is_instance_valid(bee_shot), "Bee's shot must vanish once it leaves the screen")
+	for node in [capped, outside]:
+		wave.active_units.erase(node)
+		node.queue_free()
+	print("FAIRNESS_REBUILD02 ceiling=%d screen_bound=OK" % BeeLevel01Controller.LIVE_SHOT_CEILING)
 
 	# 5. Bomb stays offensive only: a nearby enemy projectile survives the discharge.
 	for node in get_nodes_in_group("alien_projectiles"):

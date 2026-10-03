@@ -188,7 +188,8 @@ func test_wasp() -> void:
 # --- Ranged ---------------------------------------------------------------------------------------
 
 func test_ranged() -> void:
-	check(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"] == 3 and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 3, "Burst tuning missing")
+	var burst := int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"])
+	check(burst == 4 and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 4, "Burst tuning missing (REBUILD 02: 4)")
 	for family in ["Probe", "EyeDrone"]:
 		var scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn" if family == "Probe" else "res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()
 		check(int(scene.burst_shots) == 1 and float(scene.advance_speed) == 0.0, "Base scene of %s was changed" % family)
@@ -211,10 +212,10 @@ func test_ranged() -> void:
 		if not captured and launches.size() >= 1:
 			captured = true
 			await capture("03_ranged_holding_right_side.png")
-	check(launches.size() >= 4, "Probe fired only %d shots in 11 s" % launches.size())
+	check(launches.size() >= burst + 1, "Probe fired only %d shots in 11 s" % launches.size())
 	check(launches[1] - launches[0] >= 9 and launches[1] - launches[0] <= 15, "Burst gap wrong: %d frames" % (launches[1] - launches[0]))
 	check(offsets[0] >= 3.0, "Probe does not hold the right side (x=%+.1f from the centre)" % offsets[0])
-	var cycle := float(launches[3] - launches[0]) / 60.0 # First shot of burst 1 -> first shot of burst 2 (windup + burst + short recovery)
+	var cycle := float(launches[burst] - launches[0]) / 60.0 # First shot of burst 1 -> first shot of burst 2 (windup + burst + short recovery)
 	check(cycle >= 1.2 and cycle <= 2.2, "Probe burst-to-burst time %.2f s outside 1.2-2.2 s" % cycle)
 	check(distances[distances.size() - 1] < distances[0] - 0.3 and distances[distances.size() - 1] >= 4.5, "Probe must advance slowly but stay out of melee (%.1f -> %.1f m)" % [distances[0], distances[distances.size() - 1]])
 	print("ARCADE_PROBE shots_in_11s=%d burst_gap=%d frames cycle=%.2fs hold_x=%+.1f advance=%.1f->%.1f m" % [launches.size(), launches[1] - launches[0], cycle, offsets[0], distances[0], distances[distances.size() - 1]])
@@ -406,19 +407,19 @@ func test_level() -> void:
 	for event: Dictionary in events:
 		var units: Array = event["units"]
 		total += units.size()
-		biggest = maxi(biggest, units.size())
+		biggest = maxi(biggest, units.filter(func(f): return f != "Swarm").size()) # Popcorn is outside the threat cap.
 		if not units.is_empty():
 			combat_events += 1
 			for family in units:
-				if family in RANGED:
+				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 31 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (EVENTS V2)")
-	check(total >= 60 and total <= 72, "Enemy total %d outside 60-72" % total)
-	check(biggest <= 4, "More than 4 units in one encounter")
+	check(events.size() == 42 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (EVENTS V3)")
+	check(total >= 82 and total <= 92, "Unit total %d outside 82-92 (REBUILD 02)" % total)
+	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
-	check(BeeLevel01Controller.THREE_AT_ONCE_FROM == 150.0 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 32, "EyeDrone": 24, "Turret": 40, "Speeder": 30, "OrganicAlien": 47, "Walker": 60, "Dragonfly": BeeLevel01Controller.LEVEL_HP["Dragonfly"]}, "HP changed")
+	check(BeeLevel01Controller.threat_cap(120.0) == 4 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speeder": 30, "OrganicAlien": 47, "Walker": 72, "Dragonfly": 60, "Swarm": 10}, "HP changed")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.
 	arena(100.0)

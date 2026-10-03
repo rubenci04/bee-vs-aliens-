@@ -23,6 +23,8 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 ## PASS 02: a slow burst; every shot re-aims at Bee when it leaves the barrel, then flies straight.
 @export var burst_shots := 1
 @export var burst_gap := 0.35
+## ARCADE REBUILD 02 (Level 01): only stop to aim once readable on screen (otherwise keep walking in). Off by default.
+@export var stay_on_screen := false
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -115,7 +117,7 @@ func _physics_process(delta: float) -> void:
 				current_state = State.ADVANCE
 		State.ADVANCE:
 			_face_target()
-			if _target_distance() <= detection_range:
+			if _target_distance() <= detection_range and (not stay_on_screen or BeeShmupFairness.is_readable(self)):
 				current_state = State.AIM
 				_state_left = aim_time
 				_play(&"Idle")

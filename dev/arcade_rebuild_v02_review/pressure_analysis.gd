@@ -53,7 +53,9 @@ func run() -> void:
 	# Attack cycles per unit: projectile bursts seen while it lived (a burst = shots within 0.5 s).
 	var cycles := {}
 	var last_shot := {}
+	var seen_shots := {}
 	var names := {}
+	var life := {} # per unit: family, alive seconds, seconds on screen, shots fired / suppressed
 	for i in 60 * 480:
 		await physics_frame
 		t += 1.0 / 60.0
@@ -62,6 +64,18 @@ func run() -> void:
 		row["frames"] += 1
 		row["dist"] = stage.distance
 		var on_screen_threats := 0
+		for unit in wave.active_units + wave.swarm_units:
+			if not is_instance_valid(unit):
+				continue
+			var uid := unit.get_instance_id()
+			if not life.has(uid):
+				life[uid] = {"family": str(unit.name).split("_")[0], "born": t, "end": t, "shots": 0, "suppressed": 0, "onscreen": 0.0}
+			var rec: Dictionary = life[uid]
+			rec["end"] = t
+			rec["shots"] = int(unit.get("projectile_fire_count")) if "projectile_fire_count" in unit else 0
+			rec["suppressed"] = int(unit.get("suppressed_shot_count")) if "suppressed_shot_count" in unit else 0
+			if absf(unit.global_position.x - cam_x) <= half:
+				rec["onscreen"] = float(rec["onscreen"]) + 1.0 / 60.0
 		for unit in wave.active_units:
 			if not is_instance_valid(unit) or bool(unit.get_meta("level_retreat", false)):
 				continue
@@ -77,7 +91,9 @@ func run() -> void:
 				shots += 1
 			var hitbox = s.get_node_or_null("Hitbox3D")
 			var owner_node = hitbox.attacker if hitbox != null else null
-			if owner_node != null and is_instance_valid(owner_node):
+			var sid := s.get_instance_id()
+			if owner_node != null and is_instance_valid(owner_node) and not seen_shots.has(sid):
+				seen_shots[sid] = true # Only the birth of each shot counts (not every frame it is alive).
 				var oid: int = owner_node.get_instance_id()
 				names[oid] = str(owner_node.name)
 				if t - float(last_shot.get(oid, -9.0)) > 0.5:
@@ -207,6 +223,23 @@ func run() -> void:
 		detail.append("%s:%d" % [label, cycles[oid]])
 	print("ATTACK_CYCLES ranged_units=%d single_cycle=%d multi_cycle=%d" % [single + multi, single, multi])
 	print("CYCLE_DETAIL ", " ".join(detail))
+	var families := {}
+	for uid in life:
+		var rec: Dictionary = life[uid]
+		var f := str(rec["family"])
+		if not families.has(f):
+			families[f] = {"n": 0, "alive": 0.0, "onscreen": 0.0, "shots": 0, "suppressed": 0, "silent": 0}
+		var agg: Dictionary = families[f]
+		agg["n"] += 1
+		agg["alive"] += float(rec["end"]) - float(rec["born"])
+		agg["onscreen"] += float(rec["onscreen"])
+		agg["shots"] += int(rec["shots"])
+		agg["suppressed"] += int(rec["suppressed"])
+		agg["silent"] += 1 if int(rec["shots"]) == 0 else 0
+	for f in families:
+		var agg: Dictionary = families[f]
+		var count := float(agg["n"])
+		print("FAMILY %-12s n=%2d alive=%.1fs onscreen=%.1fs shots=%.1f suppressed=%.1f never_fired=%d" % [f, agg["n"], agg["alive"] / count, agg["onscreen"] / count, agg["shots"] / count, agg["suppressed"] / count, agg["silent"]])
 	print("SPAWNED ", wave.spawned_by_family, " total=", wave.spawn_history.size(), " events=", BeeLevel01Controller.EVENTS.size())
 	var pickups: Array[String] = []
 	for item in stage.get_node("Powerups").get_children():

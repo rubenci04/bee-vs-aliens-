@@ -64,8 +64,8 @@ func launch(direction: Vector3, attacker: Node) -> void:
 func _physics_process(delta: float) -> void:
 	position += travel_direction * speed * delta
 	_time_left -= delta
-	if _time_left <= 0.0:
-		queue_free()
+	if _time_left <= 0.0 or (BeeShmupFairness.screen_bound_combat and BeeShmupFairness.is_leaving_screen(self, travel_direction, 0.3)):
+		queue_free() # REBUILD 02 (Level 01): a shot that leaves the screen is gone; it never kills what is not there yet.
 
 
 func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:

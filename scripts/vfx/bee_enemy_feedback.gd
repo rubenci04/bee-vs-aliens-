@@ -2,6 +2,8 @@ extends Node
 
 @export var organic := false
 @export var heavy := false
+## ARCADE REBUILD 02: popcorn units - a short higher-pitched pop instead of a full enemy death.
+@export var light := false
 var death_emitted := false
 
 func _ready() -> void:
@@ -13,5 +15,12 @@ func _on_death() -> void:
 	death_emitted = true
 	var enemy := get_parent() as Node3D
 	var hurtbox := enemy.get_node("Hurtbox3D") as Node3D
+	if light:
+		BeeAudio.play(enemy.get_parent(), &"tech_death", hurtbox.global_position, 1.45)
+		BeeCombatVFX.spawn(enemy.get_parent(), hurtbox.global_position, &"pop")
+		return
 	BeeAudio.play(enemy.get_parent(), &"organic_death" if organic else &"tech_death", hurtbox.global_position, 0.82 if heavy else 1.0)
 	BeeCombatVFX.spawn(enemy.get_parent(), hurtbox.global_position, &"organic_death" if organic else &"tech_death")
+	if heavy:
+		BeeCombatVFX.spawn(enemy.get_parent(), hurtbox.global_position, &"heavy_death") # REBUILD 02: layered explosion.
+		BeeCameraShake.kick(enemy, 0.06, 0.22)

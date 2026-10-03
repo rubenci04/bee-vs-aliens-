@@ -237,6 +237,8 @@ func _is_valid_target(candidate: Node3D) -> bool:
 		return false
 	if candidate.has_method("is_defeated") and bool(candidate.call("is_defeated")):
 		return false
+	if BeeShmupFairness.screen_bound_combat and not BeeShmupFairness.is_on_screen(candidate, -0.2):
+		return false # REBUILD 02 (Level 01): never lock onto an enemy that has not entered the screen.
 	return true
 
 

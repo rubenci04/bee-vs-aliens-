@@ -26,6 +26,10 @@ enum State { IDLE, POSITION, WINDUP, SHOOT, COOLDOWN, DEAD }
 @export var bursts_per_cycle := 2
 @export var reposition_speed := 0.0 # Vertical m/s towards Bee's height during the long cooldown.
 @export var initial_delay := 0.0 # Extra first windup so two Probes never fire on the same frame.
+## ARCADE REBUILD 02 (Level 01): never hold position or wind up outside the readable screen area; step back in
+## first. Off by default (POCs keep their behaviour). Before, a Probe could park past the right edge and lose
+## whole bursts to the off-screen fairness rule.
+@export var stay_on_screen := false
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
@@ -122,7 +126,10 @@ func _update_position(delta: float) -> void:
 	var difference := target.global_position - global_position
 	var distance := Vector2(difference.x, difference.y).length()
 	var desired := Vector2.ZERO
-	if distance > maximum_range:
+	var back_in := _back_on_screen_direction()
+	if back_in != 0.0:
+		desired = Vector2(back_in, 0.0)
+	elif distance > maximum_range:
 		desired = Vector2(difference.x, difference.y).normalized()
 	elif distance < minimum_range:
 		desired = -Vector2(difference.x, difference.y).normalized()
@@ -167,6 +174,14 @@ func _begin_cooldown() -> void:
 	current_state = State.COOLDOWN
 	_long_cooldown = short_recovery <= 0.0 or _cycle % maxi(bursts_per_cycle, 1) == 0
 	_state_left = cooldown_time if _long_cooldown else short_recovery
+
+
+## 0 when on screen (or the rule is off); otherwise -1/+1: the way back into the readable area.
+func _back_on_screen_direction() -> float:
+	if not stay_on_screen or BeeShmupFairness.is_readable(self):
+		return 0.0
+	var camera := get_viewport().get_camera_3d()
+	return signf(camera.global_position.x - global_position.x) if camera != null else 0.0
 
 
 func _distance_to_target() -> float:

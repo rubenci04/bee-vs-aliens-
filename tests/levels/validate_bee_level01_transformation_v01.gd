@@ -107,7 +107,7 @@ func test_run() -> void:
 		await physics_frame
 		bee.global_position = Vector3(stage.distance - 4.8, 7.0, 0)
 		acts[wave.current_act] = true
-		var cap := 3 if stage.distance >= BeeLevel01Controller.THREE_AT_ONCE_FROM else 2
+		var cap := BeeLevel01Controller.threat_cap(stage.distance)
 		check(wave.active_units.size() <= cap, "Threat cap exceeded")
 		var camera_x := stage.camera.global_position.x
 		for shot in get_nodes_in_group("alien_projectiles"):
@@ -143,7 +143,7 @@ func test_run() -> void:
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level Complete missing")
 	check(acts.size() == 5, "Not every act was reached: " + str(acts.keys()))
-	check(moments == ["opening_can", "human_aftermath", "contaminated_garden", "bomb_reward", "last_silence"], "Director moments out of order: " + str(moments))
+	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Director moments out of order: " + str(moments))
 	check(heights_checked >= 10 and heights_ok == heights_checked, "Formation heights not applied (%d/%d)" % [heights_ok, heights_checked])
 	check(liberated[0] == 2, "Both dragonflies must be liberated, never killed (%d)" % liberated[0])
 	check(offscreen_births == 0, "%d hostile shots were born off screen" % offscreen_births)

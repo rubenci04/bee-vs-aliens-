@@ -71,7 +71,10 @@ func _chase(delta: float) -> void:
 	var to_bee := target.global_position - global_position
 	var distance := Vector2(to_bee.x, to_bee.y).length()
 	var direction := Vector2.ZERO
-	if distance > maximum_range:
+	var back_in := _back_on_screen_direction()
+	if back_in != 0.0:
+		direction = Vector2(back_in, 0.0) # REBUILD 02 (Level 01): never attack from outside the screen.
+	elif distance > maximum_range:
 		direction = Vector2(to_bee.x, to_bee.y).normalized()
 	elif distance < minimum_range:
 		direction = -Vector2(to_bee.x, to_bee.y).normalized()
