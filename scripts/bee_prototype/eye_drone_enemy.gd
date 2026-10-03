@@ -66,6 +66,9 @@ func _shoot_at_bee() -> void:
 	current_state = State.SHOOT
 	telegraph.hide()
 	visual_root.scale = Vector3.ONE
+	if not BeeShmupFairness.can_fire(self):
+		suppressed_shot_count += 1
+		return
 	var projectile := projectile_scene.instantiate() as AlienEnemyProjectile
 	projectile.damage = shot_damage
 	get_parent().add_child(projectile)

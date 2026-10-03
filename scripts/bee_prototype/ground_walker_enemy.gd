@@ -28,6 +28,7 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 var target: BeePlayer
 var current_state := State.INACTIVE
 var projectile_fire_count := 0
+var suppressed_shot_count := 0 # Shots skipped by BeeShmupFairness (enemy outside the readable area).
 var distance_walked := 0.0
 var reposition_count := 0
 var animation_player: AnimationPlayer
@@ -183,6 +184,9 @@ func _face_target() -> void:
 	aim_charge.position.x = _facing_x * muzzle_forward
 
 func _fire_projectile() -> void:
+	if not BeeShmupFairness.can_fire(self):
+		suppressed_shot_count += 1
+		return
 	if projectile_scene == null:
 		return
 	var projectile := projectile_scene.instantiate() as AlienEnemyProjectile

@@ -9,6 +9,8 @@ emission_enabled = true
 emission = Color(1, 0.04, 0.4, 1)
 emission_energy_multiplier = 2.2
 shading_mode = 0
+transparency = 1
+render_priority = 50
 
 [sub_resource type="SphereMesh" id="mesh"]
 material = SubResource("mat")
@@ -18,7 +20,7 @@ radial_segments = 8
 rings = 4
 
 [sub_resource type="SphereShape3D" id="shape"]
-radius = 0.17
+radius = 0.11
 
 [node name="AlienEnemyProjectile" type="Node3D"]
 script = ExtResource("1")
