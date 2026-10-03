@@ -339,7 +339,7 @@ func run() -> void:
 			var id: int = unit.get_instance_id()
 			var family := str(unit.name).get_slice("_", 0)
 			var health := unit.get_node("HealthComponent") as HealthComponent
-			check(unit.call("is_active") and unit.visible, "Spawn not active/visible")
+			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit)) and unit.visible, "Spawn not active/visible") # REBUILD 02: depth entries activate on arrival.
 			check(health.max_health == int(BeeLevel01Controller.LEVEL_HP[family]), "HP changed for " + family)
 			if not seen.has(id):
 				seen[id] = wave._clock
@@ -371,7 +371,7 @@ func run() -> void:
 			bee.global_position.y = 7.0
 			bee.global_position.x = stage.distance - 5.1
 		elif not wave._hard_gate:
-			check(is_equal_approx(stage.scroll_speed, 2.0) or stage.scroll_speed == 0.0, "Soft scroll changed speed")
+			check(is_equal_approx(stage.scroll_speed, 2.0) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or stage.scroll_speed == 0.0, "Soft scroll changed speed") # HOLD_SCROLL: showcase Walker (REBUILD 02).
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true

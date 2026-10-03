@@ -117,6 +117,8 @@ func test_run() -> void:
 				if absf((shot as Node3D).global_position.x - camera_x) > 7.0:
 					offscreen_births += 1
 		for unit in wave.active_units.duplicate():
+			if CinematicDepthEntry.is_in_depth(unit):
+				continue # REBUILD 02: formation heights are checked once the unit reaches the flight plane.
 			var id: int = unit.get_instance_id()
 			if not seen.has(id):
 				seen[id] = wave._clock

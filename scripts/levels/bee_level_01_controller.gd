@@ -30,6 +30,10 @@ const MAX_SWARM_ALIVE := 6
 const LIVE_SHOT_CEILING := 10
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
 const MIN_FORMATION_GAP := 0.2
+## Camera-relative X where a cinematic depth entry reaches the flight plane (inside the right half of the screen).
+const DEPTH_TARGET_X := 3.4
+## Scroll speed while a showcase Walker ("hold") is alive: it walks with Bee instead of being left behind.
+const HOLD_SCROLL := 1.0
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
 ## ARCADE REBUILD 02: medium threats +15-20 % (Probe 32->38, EyeDrone 24->28, Turret 40->46, Walker 60->72) so a
@@ -85,13 +89,13 @@ const EVENTS = [
 	{"at": 29.0, "act": 1, "label": "FORMACIÓN A · SONDA Y AVISPA", "units": ["Probe", "Wasp"], "formation": "escort", "delays": [0.0, 0.8]},
 	{"at": 38.0, "act": 1, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 2]},
 	{"at": 46.0, "act": 1, "label": "TRONCO · AVISPA, SONDA Y OJO", "units": ["Wasp", "Probe", "EyeDrone"], "formation": "staggered", "delays": [0.0, 0.6, 1.6], "y": [5.4, 3.6, 1.8]},
-	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · PRIMERA SONDA", "units": ["Probe"], "y": [4.6]},
+	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · PRIMERA SONDA", "units": ["Probe"], "y": [4.6], "depth": true},
 	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
-	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0]},
-	{"at": 80.0, "act": 2, "label": "ORGANISMO · PRESENTACIÓN", "units": ["OrganicAlien"], "y": [4.0]},
+	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0], "depth": true},
+	{"at": 80.0, "act": 2, "label": "ORGANISMO · PRESENTACIÓN", "units": ["OrganicAlien"], "y": [4.0], "depth": true},
 	{"at": 87.0, "act": 2, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.2, 2.2, 2.2], "shooters": [0, 2]},
 	{"at": 96.0, "act": 2, "label": "COLUMNA · DOS OJOS Y AVISPA", "units": ["EyeDrone", "EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 0.3, 1.4], "y": [2.0, 5.6, 3.8]},
-	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"]},
+	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"], "hold": true},
 	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6]},
 	{"at": 118.0, "act": 2, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 2]},
 	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
@@ -101,14 +105,14 @@ const EVENTS = [
 	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": [], "moment": "human_aftermath"},
 	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA, OJO Y AVISPA", "units": ["Turret", "EyeDrone", "Wasp"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.6], "y": [-0.2, 6.0, 3.0]},
 	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4]},
-	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase"},
+	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
 	{"at": 198.0, "act": 4, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.6], "y": [5.6, 2.6]},
 	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret", "Probe"], "formation": "rock_turret", "delays": [0.0, 1.0], "y": [-0.2, 5.6]},
 	{"at": 214.0, "act": 4, "label": "SET PIECE B · ORGANISMO EN FUEGO CRUZADO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.6, 1.2], "y": [3.6, 5.8, 2.2]},
 	{"at": 222.0, "act": 4, "label": "POPCORN · FILA ALTA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.2, 5.2, 5.2], "shooters": [0, 2]},
-	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2]},
+	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2], "depth": true},
 	{"at": 238.0, "act": 4, "label": "WALKER · ESCOLTA", "units": ["Walker", "Probe"], "formation": "escort", "delays": [0.0, 0.8], "y": [0.0, 5.6]},
 	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 2]},
 	{"at": 254.0, "act": 4, "label": "ORGANISMO · SONDA Y OJO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 1.8]},
@@ -120,7 +124,7 @@ const EVENTS = [
 	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": [], "moment": "bomb_reward"},
 	{"at": 308.0, "act": 4, "label": "OLA FINAL · SPEEDER Y SONDA", "units": ["Speeder", "Probe"], "formation": "wave", "delays": [0.0, 0.8]},
 	{"at": 316.0, "act": 4, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.6, 2.6, 2.6], "shooters": [0, 2]},
-	{"at": 324.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4]},
+	{"at": 324.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4], "depth": true},
 	{"at": 330.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
 	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 3.0]},
 ]
@@ -154,6 +158,8 @@ var boss: UfoBoss01
 var boss_defeated := false
 var _boss_breather_left := -1.0
 var current_act := 1 # Internal act (1-5) of the last launched event; 5 = FIRST CONTACT.
+var depth_entries := 0 # Cinematic depth entries started (dev/tests).
+var _holding := false
 var fauna_hint_shown := false
 
 func _ready() -> void:
@@ -170,6 +176,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_clock += delta
 	_retire_soft_units(delta)
+	_update_hold()
 	if _waiting_for_human:
 		return
 	if _hard_gate:
@@ -209,6 +216,9 @@ func _physics_process(delta: float) -> void:
 	if _hard_gate:
 		stage.scroll_speed = 0.0
 	var units: Array = event["units"]
+	var depth := bool(event.get("depth", false))
+	var hold := bool(event.get("hold", false))
+	var anchor := _depth_anchor(event) if depth else Vector2.ZERO
 	for i in units.size():
 		var delays: Array = event.get("delays", [])
 		var due: float = float(delays[i]) if i < delays.size() else float(i) * group_delay
@@ -217,6 +227,11 @@ func _physics_process(delta: float) -> void:
 			var values: Array = event.get(key, [])
 			if i < values.size():
 				request[key] = float(values[i])
+		if depth:
+			request["depth"] = true # Cinematic 2.5D entry from the background (formations open up on arrival).
+			request["anchor"] = anchor
+		if hold:
+			request["hold"] = true
 		if str(units[i]) == "Swarm":
 			request["path"] = str(event.get("path", "sine"))
 			request["shooter"] = i in event.get("shooters", [])
@@ -321,9 +336,36 @@ func _spawn(request: Dictionary) -> void:
 		fauna_hint_shown = true
 		player_label = FAUNA_HINT
 		get_tree().create_timer(3.5, false).timeout.connect(_clear_fauna_hint) # Bound method: dropped if the level reloads.
+	if bool(request.get("hold", false)) and family == "Walker":
+		unit.set_meta("level_hold", true) # Showcase: the scroll slows while it lives, so it stays on screen.
+	max_active_seen = maxi(max_active_seen, active_units.size())
+	if bool(request.get("depth", false)):
+		var slot_point := Vector2(DEPTH_TARGET_X + float(request.get("x", 0.0)), height)
+		CinematicDepthEntry.begin(unit, slot_point, request.get("anchor", slot_point), _on_depth_arrived.bind(unit.get_instance_id()))
+		depth_entries += 1
+		return # Activated on arrival at the flight plane (no AI, shots, collision or auto-aim before).
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
-	max_active_seen = maxi(max_active_seen, active_units.size())
+
+## Shared start point of a depth formation: the middle of its slots (camera-relative X, absolute Y).
+func _depth_anchor(event: Dictionary) -> Vector2:
+	var xs: Array = event.get("x", [])
+	var ys: Array = event.get("y", [])
+	var mean_x := 0.0
+	var mean_y := 4.4
+	if not xs.is_empty():
+		mean_x = xs.reduce(func(a, b): return float(a) + float(b), 0.0) / float(xs.size())
+	if not ys.is_empty():
+		mean_y = ys.reduce(func(a, b): return float(a) + float(b), 0.0) / float(ys.size())
+	return Vector2(DEPTH_TARGET_X + mean_x, mean_y)
+
+func _on_depth_arrived(id: int) -> void:
+	var unit := instance_from_id(id) as Node3D
+	if unit == null or not is_instance_valid(unit) or _frozen or not active_units.has(unit):
+		return
+	unit.set_meta("level_born", _clock) # Its soft lifetime starts on the flight plane.
+	if not unit.call("activate", bee):
+		push_error("Level 01 failed to activate %s after its depth entry" % unit.name)
 
 func _retire_soft_units(delta: float) -> void:
 	for unit in active_units.duplicate():
@@ -449,3 +491,19 @@ func _release_unit(id: int) -> void:
 	var unit := instance_from_id(id) as Node
 	if unit != null and is_instance_valid(unit):
 		unit.queue_free()
+
+## Showcase hold: while a "hold" unit (showcase Walker) is alive and in play, the scroll slows to HOLD_SCROLL so the
+## set piece stays on screen; it never overrides gates, the human or the boss arena (they stop the scroll anyway).
+func _update_hold() -> void:
+	var hold := false
+	for unit in active_units:
+		if bool(unit.get_meta("level_hold", false)) and not bool(unit.get_meta("level_retreat", false)):
+			hold = true
+			break
+	if hold and not _holding and is_equal_approx(stage.scroll_speed, 2.0):
+		stage.scroll_speed = HOLD_SCROLL
+		_holding = true
+	elif not hold and _holding:
+		_holding = false
+		if is_equal_approx(stage.scroll_speed, HOLD_SCROLL):
+			stage.scroll_speed = 2.0
