@@ -12,6 +12,7 @@ var _time_left := 0.0
 
 func _ready() -> void:
 	_time_left = lifetime
+	add_to_group("alien_projectiles")
 	hitbox.damage = damage
 	hitbox.hit_confirmed.connect(_on_hit_confirmed)
 

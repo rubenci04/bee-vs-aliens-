@@ -24,6 +24,7 @@ enum State { IDLE, TRACK, WINDUP, SHOOT, COOLDOWN, DEAD }
 var target: BeePlayer
 var current_state := State.IDLE
 var projectile_fire_count := 0
+var suppressed_shot_count := 0 # Shots skipped by BeeShmupFairness (enemy outside the readable area).
 var _active := false
 var _state_left := 0.0
 var _facing_x := -1.0
@@ -94,6 +95,9 @@ func _update_facing() -> void:
 func _shoot() -> void:
 	current_state = State.SHOOT
 	telegraph.hide()
+	if not BeeShmupFairness.can_fire(self):
+		suppressed_shot_count += 1
+		return
 	if projectile_scene == null or target == null:
 		return
 	var projectile := projectile_scene.instantiate() as AlienEnemyProjectile
