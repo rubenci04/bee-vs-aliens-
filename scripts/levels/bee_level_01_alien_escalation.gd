@@ -23,6 +23,8 @@ const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const FLASH_SCENE := preload("res://scenes/components/hit_flash_3d.tscn")
 const HOVER_STREAM := "res://audio/sfx/real/ufo_hover.wav" # Approved (Kenney spaceEngineLow), already used by the UFO.
+const APPROACH_STREAM := "res://audio/sfx/real/ufo_approach.wav" # GARDEN IDENTITY 04 (Sonniss, see audio/sfx/PROVENANCE.md).
+const APPROACH_DB := -15.0
 
 @export var stage_path: NodePath = ^".."
 
@@ -36,6 +38,7 @@ var flower_freed := false
 var silence_played := false
 var ufo_shadow: MeshInstance3D
 var hum: AudioStreamPlayer
+var approach: AudioStreamPlayer
 var _glow: Array[ShaderMaterial] = []
 var _petals: Array[ShaderMaterial] = []
 var _clock := 0.0
@@ -310,3 +313,22 @@ func _last_silence() -> void:
 	swell.tween_property(hum, "volume_db", -20.0, 1.8)
 	swell.tween_property(hum, "volume_db", -40.0, 1.0)
 	swell.tween_callback(hum.queue_free)
+	# GARDEN IDENTITY 04 — UFO anticipation: a designed "unidentified encounter" swell under the hum (one shot, ~5 s,
+	# already faded in/out in the file), so the reveal arrives on a rising wave instead of a single loop.
+	approach = AudioStreamPlayer.new()
+	approach.name = "UfoApproach"
+	approach.stream = load(APPROACH_STREAM)
+	approach.bus = &"SFX"
+	approach.volume_db = APPROACH_DB
+	add_child(approach)
+	if DisplayServer.get_name() != "headless":
+		approach.play()
+	approach.finished.connect(approach.queue_free)
+	get_tree().create_timer(6.0, false).timeout.connect(_release_approach)
+
+
+## Headless runs never start the player, so `finished` never fires: free it after its length either way.
+func _release_approach() -> void:
+	if approach != null and is_instance_valid(approach):
+		approach.queue_free()
+	approach = null

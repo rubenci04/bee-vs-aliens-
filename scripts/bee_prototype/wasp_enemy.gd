@@ -379,7 +379,7 @@ func _begin_overload() -> void:
 	visual_root.scale = Vector3(1.12, 1.12, 1.12)
 	if implant != null:
 		implant.set_mode(&"overload")
-	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 1.7) # Rising whine from the implant.
+	BeeAudio.play(get_parent(), &"wasp_overload", global_position) # GARDEN IDENTITY 04: an insect tremble from the implant (was ufo_charge x1.7).
 
 
 ## The dash line locks a moment before the dash: aimed at where Bee is heading (a short lead), then fixed.

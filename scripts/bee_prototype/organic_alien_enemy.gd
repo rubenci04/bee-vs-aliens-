@@ -245,6 +245,7 @@ func _on_died() -> void:
 func _begin_ranged() -> void:
 	current_state = State.RANGED
 	_state_left = ranged_windup
+	BeeAudio.play(get_parent(), &"organic_charge", global_position) # GARDEN IDENTITY 04: a wobbling bio charge.
 	velocity = Vector3.ZERO
 	telegraph.material_override = _bio_glow()
 	telegraph.scale = Vector3.ONE * 0.6

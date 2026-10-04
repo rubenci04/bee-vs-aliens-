@@ -150,6 +150,8 @@ func _physics_process(delta: float) -> void:
 						and BeeAttackTokens.try_claim(self, sweep_windup + sweep_gap * float(sweep_shots) + 0.4)
 				_state_left = sweep_windup if _sweeping else windup_time
 				aim_charge.material_override = _sweep_charge_material() if _sweeping else null
+				if _sweeping:
+					BeeAudio.play(get_parent(), &"walker_charge", global_position) # GARDEN IDENTITY 04: servo whine of the violet sweep.
 				aim_charge.show()
 		State.WINDUP:
 			_state_left -= delta

@@ -11,8 +11,10 @@ const CUES := {
 	&"bomb": ["weapons/bomb", -8.0, 6, false],
 	&"bee_damage": ["player/damage", -11.0, 5, false],
 	&"bee_defeat": ["player/defeat", -9.0, 7, false],
-	&"tech_death": ["enemies/tech_death", -15.0, 3, true],
-	&"organic_death": ["enemies/organic_death", -16.0, 3, true],
+	# GARDEN IDENTITY 04: deaths are brighter and longer now -> 2 dB under the hostile telegraphs (mix hierarchy:
+	# player danger > hostile telegraph > impact > ambience). BEFORE: tech -15, organic -16.
+	&"tech_death": ["enemies/tech_death", -17.0, 3, true],
+	&"organic_death": ["enemies/organic_death", -17.0, 3, true],
 	&"crate": ["environment/crate", -16.0, 3, true],
 	&"spread_pickup": ["pickups/spread", -21.0, 1, true],
 	&"bomb_pickup": ["pickups/bomb", -19.0, 1, true],
@@ -22,10 +24,22 @@ const CUES := {
 	&"human_step_b": ["environment/human_step", -21.0, 2, true],
 	&"human_step_c": ["environment/human_step", -21.0, 2, true],
 	&"ufo_charge": ["weapons/bomb", -19.0, 3, true],
+	# GARDEN IDENTITY 04 — hostile telegraphs (priority 4: never stolen by deaths/hits in a full voice pool).
+	&"wasp_overload": ["weapons/bomb", -15.0, 4, true],
+	&"walker_charge": ["enemies/tech_hit", -16.0, 4, true],
+	&"organic_charge": ["enemies/organic_hit", -16.0, 4, true],
+	&"spider_telegraph": ["enemies/tech_hit", -16.0, 4, true],
+	&"spider_drop": ["weapons/melee", -17.0, 3, true],
+	&"spider_retract": ["pickups/pollen", -23.0, 1, true],
 }
 const MAX_VOICES := 16
-const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c", &"ufo_charge"]
+const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c", &"ufo_charge",
+		&"organic_death", &"wasp_overload", &"walker_charge", &"organic_charge", &"spider_telegraph", &"spider_drop", &"spider_retract"]
 const REAL_GAIN_DB := {&"spread_pickup": -3.0, &"bomb_pickup": -3.0, &"pollen": -3.0}
+## GARDEN IDENTITY 04: small per-play variation so repeated cues (30 deaths in a level) never sound identical.
+## cue -> [pitch spread (+-), volume spread in dB (+-)]. Base/spread keep their own +-2.5 % pitch.
+const VARIATION := {&"tech_death": [0.05, 1.5], &"organic_death": [0.06, 1.5], &"tech_hit": [0.04, 1.0], &"organic_hit": [0.04, 1.0],
+		&"crate": [0.05, 1.0], &"spider_drop": [0.04, 0.5], &"spider_retract": [0.05, 1.0], &"melee": [0.03, 0.5]}
 static var use_real_assets := true
 static var _streams: Dictionary = {}
 
@@ -82,6 +96,10 @@ static func play(parent: Node, cue: StringName, point := Vector3.ZERO, pitch := 
 	if stream.resource_path.begins_with("res://audio/sfx/real/"):
 		player.set("volume_db", player.get("volume_db") + float(REAL_GAIN_DB.get(cue, 0.0)))
 	var variation := randf_range(0.975, 1.025) if cue in [&"base", &"spread"] else 1.0
+	if VARIATION.has(cue):
+		var spread: Array = VARIATION[cue]
+		variation = randf_range(1.0 - float(spread[0]), 1.0 + float(spread[0]))
+		player.set("volume_db", player.get("volume_db") + randf_range(-float(spread[1]), float(spread[1])))
 	player.set("pitch_scale", pitch * variation)
 	if spatial:
 		var world := player as AudioStreamPlayer3D

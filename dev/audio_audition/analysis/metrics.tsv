@@ -1,0 +1,70 @@
+category	row	label	license	length_s	analysed_s	peak_dbfs	rms_dbfs	onset_ms	attack_ms	useful_s	centroid_hz	low_pct	lowmid_pct	mid_pct	high_pct	flatness	path
+enemy_death_tech	0	ACTUAL tech_death	P	0.60	0.60	-8.0	-22.9	3	31	0.58	770	67	15	12	6	0.27	res://audio/sfx/real/tech_death.wav
+enemy_death_tech	1	Epic Anime explosion enemy death	S	1.48	1.48	-2.7	-21.4	20	31	1.04	832	65	14	15	6	0.30	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/EXPLDsgn_Explosion Small Blast Enemy Death Crunchy Boom Cartoon Noisy Crash Impact Delay 03_ESM_AG.wav
+enemy_death_tech	2	Kenney explosionCrunch_000	K	0.78	0.78	-1.0	-13.8	0	1	0.75	267	81	15	3	1	0.34	kenney_sci-fi-sounds/Audio/explosionCrunch_000.ogg
+enemy_death_tech	3	Kenney explosionCrunch_003	K	1.55	1.55	-1.0	-13.9	0	1	1.55	338	86	9	3	2	0.46	kenney_sci-fi-sounds/Audio/explosionCrunch_003.ogg
+enemy_death_tech	4	Kenney explosionCrunch_004	K	1.98	1.98	-1.0	-14.7	0	48	1.93	137	93	6	1	0	0.31	kenney_sci-fi-sounds/Audio/explosionCrunch_004.ogg
+enemy_death_organic	0	ACTUAL organic_death (placeholder procedural)	P	0.21	0.21	-12.3	-24.9	0	6	0.20	435	83	9	6	2	0.14	res://audio/sfx/enemies/organic_death.wav
+enemy_death_organic	1	Kenney slime_000	K	0.50	0.50	-1.0	-26.4	4	406	0.50	3190	0	0	83	17	0.20	kenney_sci-fi-sounds/Audio/slime_000.ogg
+enemy_death_organic	2	Tower Defense blood splat wood thump	S	0.33	0.33	-1.3	-17.6	0	1	0.30	1970	48	12	22	18	0.47	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/WOODImpt_Hit Blood Spill Splat Wood Impact Light Hit Squelch Small Thump 03_ESM_TDG.wav
+enemy_death_organic	3	Cartoon Bubbles Short	S	0.88	0.87	-5.7	-22.0	11	276	0.47	373	13	87	0	0	0.07	Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon & Animation Vol 2/Cartoon Bubbles Short.wav
+enemy_death_organic	4	Ethereal Entity Grim Pain	S	1.73	1.73	-3.0	-11.9	1	60	1.71	521	0	98	2	0	0.05	Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAEthr_Ethereal Entity Grim Pain Long 4_SNDBTS_VB-SE.wav
+wasp_warning	0	ACTUAL overload whine (ufo_charge x1.7)	P	0.45	0.45	-8.0	-15.4	3	100	0.44	272	54	46	0	0	0.03	res://audio/sfx/real/ufo_charge.wav
+wasp_warning	1	Insectoid Tremble Attack	S	2.47	2.47	-3.1	-19.6	8	103	2.29	1007	76	9	4	10	0.26	Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAInsc_Insectoid Creature Tremble Attack Long 1_SNDBTS_VB-SE.wav
+wasp_warning	2	Interface Sci-Fi Ping Down	S	0.75	0.75	-3.4	-15.9	6	109	0.54	415	0	97	3	0	0.04	Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - System & UI Feedback Elements/Interface Sci-Fi Ping Down.wav
+wasp_warning	3	Arc design 15	S	1.04	1.04	-4.3	-22.8	0	318	0.97	5073	6	24	30	40	0.74	Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Arc/ELECArc_ArcDesign15_InMotionAudio_Arc.wav
+insect_buzz	0	ACTUAL wing_buzz (Toy Quadcopter)	P	3.60	3.60	-6.0	-21.2	0	294	3.60	1243	34	18	46	2	0.13	res://audio/sfx/real/wing_buzz.wav
+insect_buzz	1	Wahl trimmer on-idle-off	S	44.68	8.00	-27.8	-41.7	25	667	7.97	2890	12	10	50	29	0.46	Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 2/OBJMisc_Wahl Sterling Trimmer, On, Idle, Off_344 Audio_Barbershop Vol 2.wav
+insect_buzz	2	Arc Buzz 27	S	9.80	8.00	0.2	-26.8	1	1050	8.00	8721	5	7	15	73	0.82	Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Arc/ELECBuzz_Buzz27_InMotionAudio_Arc.wav
+insect_buzz	3	Hair dryer on-idle-off	S	12.32	8.00	-24.3	-38.1	44	4023	7.96	1338	1	64	31	4	0.29	Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 1/OBJMisc_Hair Dryer, On, Idle, Off 4_344 Audio_Barbershop Vol 1.wav
+organic_identity	0	ACTUAL organic_hit	P	0.12	0.12	-8.0	-21.4	0	2	0.10	103	100	0	0	0	0.01	res://audio/sfx/real/organic_hit.wav
+organic_identity	1	Monster tentacle wobble	S	2.04	2.04	-1.6	-13.7	30	677	1.86	139	95	3	2	0	0.12	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/DSGNMisc_Misc Monster Tentacle Modulated Creature Shadow Abstract Swept Wobble Lfo 02_ESM_AG.wav
+organic_identity	2	Kenney slime_001	K	4.71	4.71	-1.0	-23.7	4	1326	4.70	1664	0	10	89	1	0.02	kenney_sci-fi-sounds/Audio/slime_001.ogg
+organic_identity	3	Aquatic creature gurgling	S	4.17	4.17	-3.2	-22.5	9	1406	3.94	1484	4	76	10	11	0.26	Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAAqua_Aquatic Creature Gurgling 2_SNDBTS_VB-SE.wav
+walker_mechanical	0	ACTUAL (none: generic tech cues)	P	0.28	0.28	-8.0	-26.5	0	1	0.24	197	70	30	0	0	0.01	res://audio/sfx/real/tech_hit.wav
+walker_mechanical	1	Tower Deploy robot servo whine	S	1.04	1.04	-1.1	-14.7	47	53	0.79	742	68	16	10	6	0.13	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/ROBTMvmt_Tower Deploy Hitech Robot Motor Dark Thump Servo Whine 04_ESM_TDG.wav
+walker_mechanical	2	Moaning Metal hit thud	S	5.17	5.17	-4.7	-23.9	3	64	4.81	57	99	1	0	0	0.03	Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Moaning Metal/DSGNImpt_Metal Hit Thud Thump Low Ring Geofon 1_The Noisery_Moaning Metal.wav
+walker_mechanical	3	Lentikula Laser Rifle 1	L	2.55	2.55	-1.1	-16.9	35	688	1.43	142	90	8	1	0	0.11	Sci-Fi Weapon SFX by Lentikula/Laser Rifle 1.wav
+walker_mechanical	4	Electric tonal impact glitch	S	3.69	3.69	-2.3	-19.0	31	45	3.17	2798	68	4	2	26	0.34	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Elemental Mutation Whooshes and Impacts/ELECMisc_Impact Electric Tonal Deep Movement Motion Hiss Glitch 01_ESM_EMWI.wav
+enemy_shot	0	ACTUAL (enemy shots are silent; Bee base)	P	0.20	0.20	-11.6	-23.6	0	1	0.20	526	36	52	11	1	0.01	res://audio/sfx/real/base.wav
+enemy_shot	1	Lentikula Laser Pistol 1	L	1.59	1.59	-0.6	-21.3	15	76	0.37	918	75	6	11	7	0.28	Sci-Fi Weapon SFX by Lentikula/Laser Pistol 1.wav
+enemy_shot	2	Lentikula Laser Pistol 3	L	1.30	1.30	-0.7	-18.3	12	229	0.63	1181	61	16	14	9	0.39	Sci-Fi Weapon SFX by Lentikula/Laser Pistol 3.wav
+enemy_shot	3	Kenney laserLarge_000	K	0.68	0.68	-0.9	-17.2	0	2	0.43	972	82	2	5	11	0.43	kenney_sci-fi-sounds/Audio/laserLarge_000.ogg
+player_fire_hit	0	ACTUAL base	P	0.20	0.20	-11.6	-23.6	0	1	0.20	526	36	52	11	1	0.01	res://audio/sfx/real/base.wav
+player_fire_hit	1	FX Laser_Shot_01	FX	0.21	0.21	-12.3	-24.3	11	17	0.19	5279	0	57	10	33	0.59	(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Shot_01.wav
+player_fire_hit	2	Kenney laserRetro_002	K	0.26	0.25	-0.9	-13.6	0	0	0.25	2485	0	52	30	18	0.46	kenney_sci-fi-sounds/Audio/laserRetro_002.ogg
+player_fire_hit	3	ACTUAL bee_damage	P	0.29	0.29	-8.0	-22.3	1	27	0.21	204	52	48	0	0	0.05	res://audio/sfx/real/bee_damage.wav
+player_fire_hit	4	Kenney impactPunch_heavy_001	K	0.54	0.54	-1.2	-17.5	1	18	0.33	122	87	13	0	0	0.01	kenney_impact-sounds/Audio/impactPunch_heavy_001.ogg
+ufo_entry	0	ACTUAL ufo_sting	P	3.40	3.40	-6.9	-19.6	41	153	3.30	319	70	24	5	1	0.08	res://audio/sfx/real/ufo_sting.wav
+ufo_entry	1	344 AEROJet Unidentified Encounter	S	58.04	8.00	-6.8	-21.0	0	6152	8.00	252	62	36	1	0	0.04	Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Air Designed/AEROJet_Unidentified Encounter_344 Audio_Air Designed.wav
+ufo_entry	2	Horn Braam 67	S	13.69	8.00	-4.4	-19.2	82	5883	7.92	317	30	70	0	0	0.00	Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Cinematic Horn Braams/DSGNBram____Cinematic Horn Braam, Epic, Cinematic, Dark, Instrument, Huge-67.wav
+ufo_entry	3	Ship reactor synth loop	S	59.97	8.00	-6.7	-18.3	0	3459	8.00	218	66	34	0	0	0.01	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Strange Game Ambient Loops 3/DSGNSynth_Scifi Loop Ship Reactor Synth Layer Layered Saw Buzz_ESM_SGA3.wav
+boss_laser	0	ACTUAL ufo_charge	P	0.45	0.45	-8.0	-15.4	3	100	0.44	272	54	46	0	0	0.03	res://audio/sfx/real/ufo_charge.wav
+boss_laser	1	Lentikula Laser Beam 1	L	4.06	4.06	-1.2	-16.8	0	442	3.33	1069	62	16	14	8	0.44	Sci-Fi Weapon SFX by Lentikula/Laser Beam 1.wav
+boss_laser	2	Lentikula Laser Beam 2	L	7.06	7.06	-0.5	-20.4	3	706	5.89	383	72	23	3	2	0.36	Sci-Fi Weapon SFX by Lentikula/Laser Beam 2.wav
+human_step	0	ACTUAL human_step	P	0.60	0.60	-8.7	-22.0	0	1	0.45	55	100	0	0	0	0.14	res://audio/sfx/real/human_step.wav
+human_step	1	Flip Flops FFG002	S	39.18	8.00	-1.2	-29.9	37	1186	7.96	5740	3	8	29	60	0.39	Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Flip Flops/FFG002.wav
+human_step	2	Flip Flops FFW003	S	31.47	8.00	-1.1	-23.6	113	519	7.89	1864	40	20	23	17	0.26	Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Flip Flops/FFW003.wav
+human_step	3	Colossal Impact Cut Sweep	S	2.79	2.79	-1.6	-19.2	80	973	1.59	102	96	2	1	0	0.21	Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Colossal Impacts/Impact Cut Sweep.wav
+human_step	4	Kenney impactSoft_heavy_002	K	0.57	0.57	-0.9	-17.2	0	3	0.43	88	100	0	0	0	0.00	kenney_impact-sounds/Audio/impactSoft_heavy_002.ogg
+ambient_insects	0	ACTUAL garden_loop (Highlands meadow)	P	21.50	8.00	-15.6	-29.4	0	3451	8.00	528	26	66	7	1	0.21	res://audio/ambience/garden_loop.wav
+ambient_insects	1	Forest crickets birds Connecticut	S	52.30	8.00	-29.6	-48.2	8	2367	7.99	6368	0	6	1	92	0.35	Sonniss.com-GDC2026-GameAudioBundle/344 Audio - East Coast America Vol. 1/AMBSubn_Ambience, Forest Crickets, Birds, Connecticut 02_344 Audio_East Coast America.wav
+ambient_insects	2	Jungle night humid birds bugs	S	41.57	8.00	-2.4	-20.5	0	3913	8.00	7647	0	0	2	98	0.33	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/AMBTrop_Loop Ambience Jungle Night Humid Birds Bug Chirps 01_ESM_SNLS.wav
+garden_wind	0	Wind whipping loop	S	7.52	7.52	-1.6	-15.7	0	2121	7.52	389	17	83	0	0	0.00	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/WINDInt_Loop Weather Wind Whipping Constricted Flow Turbulent 01_ESM_SNLS.wav
+garden_wind	1	Wind rush whoosh x5	S	1.05	1.05	-15.9	-32.3	24	69	1.00	2742	33	12	26	29	0.54	Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Elemental Palette Designed Vol. 1/WINDDsgn_Wind, Rush, Whoosh, Long x5 01_344 Audio_Elemental Palette Designed Vol 1.wav
+garden_wind	2	Berlin park strong wind on trees	S	149.96	8.00	-9.4	-23.0	0	5992	8.00	493	45	40	15	0	0.07	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Storms Lakes Parks and Rural Nature Exteriors/AMBPark_Berlin City Humboldthain Park Strong Wind On Trees Foliage Traffic Wash 03_ESM_CPS.wav
+integrated_v04	0	tech_death v04	S	0.60	0.60	-8.0	-22.9	3	31	0.58	770	67	15	12	6	0.27	res://audio/sfx/real/tech_death.wav
+integrated_v04	1	organic_death v04	S	0.60	0.60	-8.0	-25.8	0	1	0.51	1407	39	35	14	12	0.29	res://audio/sfx/real/organic_death.wav
+integrated_v04	2	wasp_overload v04	S	0.72	0.72	-8.0	-23.0	3	103	0.71	1594	65	13	5	17	0.32	res://audio/sfx/real/wasp_overload.wav
+integrated_v04	3	organic_charge v04	S	0.72	0.72	-8.0	-19.8	3	512	0.72	216	88	7	4	0	0.08	res://audio/sfx/real/organic_charge.wav
+integrated_v04	4	walker_charge v04	S	0.72	0.72	-8.0	-20.0	3	53	0.69	745	68	16	10	6	0.14	res://audio/sfx/real/walker_charge.wav
+integrated_v04	5	human_step v04	S	0.60	0.60	-8.7	-22.0	0	1	0.45	55	100	0	0	0	0.14	res://audio/sfx/real/human_step.wav
+integrated_v04	6	spider_telegraph v04	S	0.62	0.62	-8.0	-25.8	0	194	0.62	5184	6	24	30	40	0.74	res://audio/sfx/real/spider_telegraph.wav
+integrated_v04	7	spider_drop v04	S	0.72	0.72	-8.0	-28.8	3	43	0.22	1534	5	26	64	5	0.28	res://audio/sfx/real/spider_drop.wav
+integrated_v04	8	spider_retract v04	S	0.60	0.60	-8.0	-32.9	0	84	0.59	5390	0	1	55	45	0.56	res://audio/sfx/real/spider_retract.wav
+integrated_v04	9	ufo_approach v04	S	5.00	5.00	-6.0	-20.7	18	4134	4.97	235	66	33	1	0	0.03	res://audio/sfx/real/ufo_approach.wav
+integrated_v04	10	dusk_loop v04	S	22.00	8.00	-10.6	-28.8	0	6297	8.00	6349	0	6	2	93	0.35	res://audio/ambience/dusk_loop.wav
+spider	0	Insectoid Tremble Attack (drop)	S	2.47	2.47	-3.1	-19.6	8	103	2.29	1007	76	9	4	10	0.26	Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAInsc_Insectoid Creature Tremble Attack Long 1_SNDBTS_VB-SE.wav
+spider	1	Whip snap crack	S	1.47	1.47	-2.2	-20.3	78	219	1.02	2667	4	41	32	23	0.37	Sonniss.com-GDC2026-GameAudioBundle/David Dumais Audio - Melee Weapons Sound Effects Pack 2/WEAPWhip_WHIP Snap Crack 05_DDUMAIS_MWP2.wav
+spider	2	Woosh sweep slide basic	S	0.50	0.50	-0.4	-19.6	24	43	0.22	1534	5	26	64	5	0.27	Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Ultra Transitions & Impacts/Woosh Sweep Slide Infographics Basic.wav
+spider	3	Tape measure pull retract	S	3.26	3.26	-3.5	-28.1	25	1795	3.21	4285	0	3	67	30	0.46	Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MECHMisc_Tool Tape Measure Pull Retract Spring Slide Spin Long 07_ESM_HDLM.wav

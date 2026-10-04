@@ -176,3 +176,32 @@ Rutas Source relativas a `D:\proyectos\V_Asset_Library\01_Extracted\audio`. Orig
 - SHA256 originales: `3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343` / `9c3a1c73cadf0de5d5a578b31a264f20b1ac7cb6ec9bbd34a203f58402ea5390`
 - Bee: `res://audio/sfx/real/ufo_death.wav` (2,2 s). SHA256 Bee: `4c6b209832a49968e41276175f1a916149bb635db52c82289816f6678b6109eb`
 - Cambios: dos capas mezcladas a mono (crunch con 30 ms de retardo), 2,2 s, fade-out 0,4 s, pico 0,45.
+
+## GARDEN IDENTITY & AUDIO PASS 04 (2026-10-04)
+
+Herramienta: `tools/integrate_audio_garden04.gd` (idempotente: dos ejecuciones dan los mismos SHA-256). Fuentes en
+`D:\proyectos\V_Asset_Library\01_Extracted\audio\` (abreviado `SON\` = `Sonniss.com-GDC2026-GameAudioBundle\`).
+Licencias: Sonniss GDC 2026 royalty-free (sin atribución obligatoria; prohibido revender/redistribuir tal cual y
+entrenar IA con los sonidos) y Kenney CC0. Selección: análisis de señal + espectrogramas
+(`dev/audio_audition/analysis/`), **pendiente de confirmación auditiva del usuario** en
+`dev/audio_audition/audio_audition.tscn` (F6, tecla A = A/B con lo anterior). Ningún original modificado.
+Cues: mono PCM16 a la tasa de mezcla, pico 0,40, ≤ 0,72 s (contrato V02); muertes 0,60 s para que toda voz temporal termine en 1 s aun con pitch 0,82 de enemigo pesado y la variación. Los placeholders V01 siguen intactos.
+
+| Bee | Fuente (SHA-256 fuente) | Cambios | SHA-256 Bee |
+|---|---|---|---|
+| `real/tech_death.wav` (reemplaza Kenney explosionCrunch) | `SON\Epic Stock Media - Anime Game\EXPLDsgn_Explosion Small Blast Enemy Death Crunchy Boom Cartoon Noisy Crash Impact Delay 03_ESM_AG.wav` (`0fdfac62d1c0b80a9db28e41c878562ab67825202cb863e8a0a600c35c333dc4`) | desde el onset, 0,60 s, fade-out 180 ms | `65b6b0b270ce6208a03eddc9c526de0de4ff102b7670b10672d5a5d6efdd93d4` |
+| `real/organic_death.wav` (nuevo; antes placeholder procedural) | `SON\Epic Stock Media - Tower Defense Game\WOODImpt_Hit Blood Spill Splat Wood Impact Light Hit Squelch Small Thump 03_ESM_TDG.wav` (`022152183544436b2e7ae8c82ae3cb1cff6dff5e9c0153e1096a1b638e90e518`) + `SON\Cinematic Sound Design - Cartoon & Animation Vol 2\Cartoon Bubbles Short.wav` (`13bfc9f9b66dbe1208810fca8963fc154058063657079559980ce05c986c41fc`) | splat + burbujas a +70 ms ×0,55, 0,60 s, fade-out 150 ms | `b22ac3c63ad8fb85a7c1bed6c61aa9220f9be8d7d7f9b4c5cfe06892e557a097` |
+| `real/wasp_overload.wav` (nuevo; antes ufo_charge ×1,7) | `SON\SoundBits - Vox Bestiae - Source Elements\CREAInsc_Insectoid Creature Tremble Attack Long 1_SNDBTS_VB-SE.wav` (`2be627183c6652ae6ae47528cae580fb0311c03f544951e3060af5e588419e9c`) | desde el onset, 0,72 s, fade-out 160 ms | `d5d65a36ff3b7debbe99941510af8839a4221e912f3abc505606f107efacd094` |
+| `real/organic_charge.wav` (nuevo) | `SON\Epic Stock Media - Anime Game\DSGNMisc_Misc Monster Tentacle Modulated Creature Shadow Abstract Swept Wobble Lfo 02_ESM_AG.wav` (`d10c51599a12fbf9bcd9e73bc44bddd040029265fd33a514ff145396d7aebc2c`) | desde el onset, 0,72 s, fade-out 140 ms | `ca3bd5c42b8bf610ee026541fa01fa3a8c065209f839098fb13ae6b290f0d575` |
+| `real/walker_charge.wav` (nuevo) | `SON\Epic Stock Media - Tower Defense Game\ROBTMvmt_Tower Deploy Hitech Robot Motor Dark Thump Servo Whine 04_ESM_TDG.wav` (`c9f2c8b24ce6ae6fb7b519b2bbcdb2503816ca5cdd6c8f81ee3fc27149600d48`) | desde el onset, 0,72 s, fade-out 120 ms | `f88ed7c463728225098d8fda65661a675eca7a04d73a0d2e05a129ffba796c69` |
+| `real/human_step.wav`, `_b`, `_c` (reemplazan) | Kenney `footstep_grass_000/001/002.ogg` (misma receta V02: onset, pitch 0,7) + `SON\Cinematic Sound Design - Colossal Impacts\Impact Cut Sweep.wav` (`e6b918055aa5ed53917ad217ed9077b0bfff5b0c7bcf97d07ba48be492b61b21`) | el crujido conserva su pico 0,40; golpe grave desde 15 ms antes de su pico, pico 0,32, +30 ms; 0,60 s, fade-out 200 ms | `3c58e9a903001f49ca39ea4e42017c60312a5a06f7357ebf68a79766673c9fa1` / `f64f45d53e1a87c7448b96b139f486161fb336dc3efa8d26136244e41e8db288` / `b9089bafd727823ba4bd354d4cfdfdb13b35b697aca32ef94f72b9f50c602d6e` |
+| `real/spider_telegraph.wav` (nuevo) | `SON\InMotionAudio - Arc\ELECArc_ArcDesign15_InMotionAudio_Arc.wav` (`87c709fed078cfea7447e1e13b50715c59d7d78f2589d7bba9382ed3fafbef69`) | desde el onset, 0,62 s, fade-out 140 ms | `afbf79561d22a356a6b3c5ebb03e57103ff31e86c80430c7022aafe5bed03d59` |
+| `real/spider_drop.wav` (nuevo) | `SON\Cinematic Sound Design - Ultra Transitions & Impacts\Woosh Sweep Slide Infographics Basic.wav` (`c4e52e70037d52909874ad89d07720c72a24923a54bacb8892f742f2f5660fb5`) | desde el onset, 0,72 s, fade-out 60 ms | `e06411ffd74b331cfc620f5299510e40e1108d2e7b75b0a22458bbf0e87978fa` |
+| `real/spider_retract.wav` (nuevo) | `SON\Epic Stock Media - HD Lock And Mechanism Sound Design Kit\MECHMisc_Tool Tape Measure Pull Retract Spring Slide Spin Long 07_ESM_HDLM.wav` (`98ca9a8955b69cbe6844614bb0de2973014f9845314d17aa5f02a8f44cdfbfff`) | tramo de retracción desde 1,95 s, 0,60 s, fade-out 120 ms | `ce656205035d5452f5c2e8168bac889b01eaa72fff4a9178370d717412b2e544` |
+| `real/ufo_approach.wav` (nuevo, one-shot largo) | `SON\344 Audio - Air Designed\AEROJet_Unidentified Encounter_344 Audio_Air Designed.wav` (`45021960e53ba666e0e2c563480f469a3af05f69661a0b71d93276277b9166b2`) | tramo 2,0–7,0 s, fade-in 1,0 s, fade-out 0,7 s, pico 0,50 | `ca923751c06bba4c7494974f6afd225d10f4842191fa704bc98696f35ccac118` |
+| `ambience/dusk_loop.wav` (nuevo, loop) | `SON\344 Audio - East Coast America Vol. 1\AMBSubn_Ambience, Forest Crickets, Birds, Connecticut 02_344 Audio_East Coast America.wav` (`d227b21d2df0f329acd490ad1c4ecaddfef4e19f295880a40116a60112da147f`) | ventana más estable de 22 s desde 2 s, crossfade de loop 2,5 s, pico 0,30 | `b7747a72943c16a2935da052c02b2d8270b4251458bc8f51ad3d656885974ccc` |
+
+Mezcla (cue → dB): telegraphs hostiles `wasp_overload` −15, `walker_charge`/`organic_charge`/`spider_telegraph` −16
+(prioridad 4) > muertes `tech_death`/`organic_death` −17 (antes −15/−16) > golpes −20/−21 > ambiente (−24, dusk −27).
+El peligro del jugador (`bee_damage` −11, `bomb` −8) sigue arriba. Variación por reproducción en muertes, golpes,
+cajas y araña (pitch ±3–6 %, volumen ±0,5–1,5 dB).
