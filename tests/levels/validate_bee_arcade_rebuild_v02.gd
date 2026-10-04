@@ -271,7 +271,7 @@ func test_setpieces() -> void:
 	check(frog_event.frog != null and frog_event.frog.find_children("*", "CollisionObject3D", true, false).is_empty(), "Frog missing or collidable")
 	var max_z := -INF
 	var seen_on_screen := false
-	for i in 60 * 9:
+	for i in 60 * 15: # REBUILD 03: the frog enters from beyond the real edge at its depth, so the crossing is longer.
 		await physics_frame
 		if not is_instance_valid(frog_event.frog):
 			break

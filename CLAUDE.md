@@ -39,7 +39,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/levels/va
 godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_prototype/validate_<nombre>.gd
 ```
 - Sin `--headless` (con render) algunas suites guardan capturas PNG en `res://dev/<...>_review/`. Eso ESCRIBE archivos en `dev/`; avisar antes de correrlas así.
-- La suite completa son 37 validaciones (33 previas + `validate_bee_level01_arcade_director_v01`, `validate_bee_controlled_fauna_v01`, `validate_bee_level01_transformation_v01` y `validate_bee_arcade_rebuild_v02`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
+- La suite completa son 38 validaciones (33 previas + `validate_bee_level01_arcade_director_v01`, `validate_bee_controlled_fauna_v01`, `validate_bee_level01_transformation_v01`, `validate_bee_arcade_rebuild_v02` y `validate_bee_threat_camera_boss_v03`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos.
 - Los tests no miden si es divertido: el playtest del usuario manda.
 - Logs en `docs/bee_prototype/*.log` y `.godot/` están ignorados por git.
 

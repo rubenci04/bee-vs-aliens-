@@ -1,18 +1,24 @@
 class_name BeeLevel01ScaleEvent
 extends Node3D
 ## ARCADE CONTENT & SPECTACLE REBUILD 02 — "La rana": one large, cheap moving scale event (director moment
-## `scale_event`). A garden frog five times Bee's length hops across the background, stops to look around and snaps
-## its tongue at the sky, then hops away. Every landing thumps (dust + low step + a tiny shake): Bee is minuscule.
+## `scale_event`). A garden frog five times Bee's length hops across the background, stops to snap its tongue at the
+## sky, then hops away. Every landing thumps (dust + low step + a tiny shake): Bee is minuscule.
 ## Pure presentation: the frog lives behind the flight plane (z = FROG_Z), has no collision, no damage, no target.
+## REBUILD 03 staging fix (playtest: "rough entry, it goes through the bottle"):
+##   - it hops BEHIND the distant bottle (z -10.5; legs spread ~3.3 m each way in depth), never through it;
+##   - it enters from beyond the real visible edge at its own depth (no popping in on screen);
+##   - every hop has anticipation: crouch -> jump (stretch) -> landing squash.
 ## Asset: Quaternius Frog (CC0, assets/external/ASSET_PROVENANCE.md).
 
 const FROG := preload("res://assets/external/approved/fauna/quaternius/Easy Animated Enemy Pack - Jan 2019/FBX/Frog.fbx")
-const FROG_Z := -4.4
-const SCALE := 1.6 ## ~5.6 m long: a real frog is ~5x a bee
-const HOP_LENGTH := 2.6 ## world metres; the scroll adds ~2 m of apparent travel per hop
-const HOP_HEIGHT := 2.0
+const FROG_Z := -10.5
+const SCALE := 1.9 ## ~6.6 m long; further back, so a little bigger to keep the "giant" read
+const HOP_LENGTH := 3.4
+const HOP_HEIGHT := 2.4
 const HOP_SECONDS := 0.88 ## the Jump clip length
-const START_AHEAD := 10.5 ## camera-relative start, just past the right edge at this depth
+const CROUCH_SECONDS := 0.16
+const OFFSCREEN_MARGIN := 4.5 ## starts this far past the visible edge (the frog is ~6 m long)
+const STOP_AT := 1.0 ## camera-relative X where it stops to snap its tongue
 
 @export var stage_path: NodePath = ^".."
 
@@ -20,7 +26,10 @@ var stage: BeeShmupStage
 var frog: Node3D
 var landings := 0
 var played := false
+var max_hops := 12
 var _player: AnimationPlayer
+var _phase := &"in" # in -> snap -> out
+var _hops := 0
 
 
 func _ready() -> void:
@@ -36,6 +45,16 @@ func _on_moment(id: StringName) -> void:
 		_begin()
 
 
+## Visible half width at the frog's depth (camera-aware: works for any framing preset).
+func _half_at_depth() -> float:
+	var point := Vector3(stage.camera.global_position.x, 1.0, FROG_Z)
+	return BeeShmupFairness.visible_half_width(stage.camera, point, BeeLevel01Framing.view_aspect(get_viewport()))
+
+
+func _relative_x() -> float:
+	return frog.global_position.x - stage.camera.global_position.x
+
+
 func _begin() -> void:
 	frog = FROG.instantiate() as Node3D
 	frog.name = "GardenFrog"
@@ -45,39 +64,51 @@ func _begin() -> void:
 	BeeToonStyle.apply(frog, true, BeeToonStyle.OUTLINE_PROP)
 	for player: AnimationPlayer in frog.find_children("*", "AnimationPlayer", true, false):
 		_player = player
-	var x := stage.camera.global_position.x + START_AHEAD
-	frog.global_position = Vector3(x, 0.0, FROG_Z)
-	# World-anchored choreography (the camera keeps scrolling): hop in, hop to the middle, look + tongue snap,
-	# hop, hop out. Feet never slide while the frog is on the ground.
-	var tween := create_tween()
-	# Camera-relative result: enters at +10.5, lands ~+5.6, ~+0.7 (centre), looks + snaps ~1.25 s, ~-6.9, out.
-	var plan := [[1, 0.25], [1, 0.3], [0, 1.25], [1, 0.35], [1, 0.0]] # [hop? (0 = tongue snap), seconds after]
-	for step in plan:
-		if int(step[0]) == 1:
-			var from := x
-			x -= HOP_LENGTH
-			tween.tween_callback(_play.bind(&"Jump"))
-			tween.tween_method(_hop.bind(from, x), 0.0, 1.0, HOP_SECONDS)
-			tween.tween_callback(_land)
-		else:
-			tween.tween_callback(_play.bind(&"Attack")) # The tongue snap, then a short look around.
-			tween.tween_interval(0.75)
-			tween.tween_callback(_play.bind(&"Idle"))
-			tween.tween_interval(maxf(float(step[1]) - 0.75, 0.0))
-			continue
-		if float(step[1]) > 0.0:
-			tween.tween_callback(_play.bind(&"Idle"))
-			tween.tween_interval(float(step[1]))
-	for i in 1: # Exit: one more hop, out of view on the left.
-		var from := x
-		x -= HOP_LENGTH
-		tween.tween_callback(_play.bind(&"Jump"))
-		tween.tween_method(_hop.bind(from, x), 0.0, 1.0, HOP_SECONDS)
-		tween.tween_callback(_land)
-	tween.tween_callback(frog.queue_free)
+	frog.global_position = Vector3(stage.camera.global_position.x + _half_at_depth() + OFFSCREEN_MARGIN, 0.0, FROG_Z)
+	_play(&"Idle")
+	_next_step()
 
 
-func _hop(progress: float, from_x: float, to_x: float) -> void:
+## Decides the next beat from where the frog is now on screen (the camera keeps scrolling).
+func _next_step() -> void:
+	if not is_instance_valid(frog):
+		return
+	if _phase == &"in" and _relative_x() <= STOP_AT:
+		_phase = &"snap"
+		var snap := create_tween()
+		snap.tween_callback(_play.bind(&"Attack")) # The tongue snap at the sky.
+		snap.tween_interval(0.75)
+		snap.tween_callback(_play.bind(&"Idle"))
+		snap.tween_interval(0.5)
+		snap.tween_callback(func(): _phase = &"out")
+		snap.tween_callback(_next_step)
+		return
+	if (_phase == &"out" and _relative_x() < -(_half_at_depth() + OFFSCREEN_MARGIN)) or _hops >= max_hops:
+		frog.queue_free()
+		return
+	_hop()
+
+
+func _hop() -> void:
+	_hops += 1
+	var from := frog.global_position.x
+	var to := from - HOP_LENGTH
+	var base := Vector3.ONE * SCALE
+	var hop := create_tween()
+	# Anticipation: a quick crouch, then the jump with a little stretch, then the landing squash.
+	hop.tween_property(frog, "scale", Vector3(base.x * 1.08, base.y * 0.82, base.z * 1.08), CROUCH_SECONDS)
+	hop.tween_callback(_play.bind(&"Jump"))
+	hop.tween_property(frog, "scale", Vector3(base.x * 0.96, base.y * 1.08, base.z * 0.96), 0.12)
+	hop.parallel().tween_method(_arc.bind(from, to), 0.0, 1.0, HOP_SECONDS)
+	hop.tween_callback(_land)
+	hop.tween_property(frog, "scale", Vector3(base.x * 1.1, base.y * 0.86, base.z * 1.1), 0.07)
+	hop.tween_property(frog, "scale", base, 0.12)
+	hop.tween_callback(_play.bind(&"Idle"))
+	hop.tween_interval(0.18 if _phase == &"in" else 0.1)
+	hop.tween_callback(_next_step)
+
+
+func _arc(progress: float, from_x: float, to_x: float) -> void:
 	if not is_instance_valid(frog):
 		return
 	frog.global_position = Vector3(lerpf(from_x, to_x, progress), sin(progress * PI) * HOP_HEIGHT, FROG_Z)
@@ -88,9 +119,9 @@ func _land() -> void:
 		return
 	landings += 1
 	var feet := frog.global_position
-	BeeCombatVFX.spawn(stage, feet + Vector3(0.0, 0.2, 0.0), &"rock_break", Vector3.UP, 1.8)
+	BeeCombatVFX.spawn(stage, feet + Vector3(0.0, 0.2, 0.0), &"rock_break", Vector3.UP, 2.0)
 	BeeAudio.play(stage, &"human_step", feet, 1.35) # A lighter, higher thump than the human's step.
-	if absf(feet.x - stage.camera.global_position.x) < 9.0:
+	if absf(_relative_x()) < _half_at_depth():
 		BeeCameraShake.kick(self, 0.035, 0.16)
 
 

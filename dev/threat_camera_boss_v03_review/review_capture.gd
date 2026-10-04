@@ -128,4 +128,41 @@ func run() -> void:
 		spawn("Probe", 3, 4.6)
 		await live_until(4.0)
 		await shot("11_four_threat_peak")
+	if want("frog"):
+		await fresh()
+		await at(188.0, 5.4)
+		stage.scroll_speed = 2.0
+		stage.set_physics_process(true)
+		wave.director_moment.emit(&"scale_event")
+		var frog_event := stage.get_node("ScaleEvent") as BeeLevel01ScaleEvent
+		await live_until(8.0, func(): return frog_event._phase == &"snap")
+		await frames(10)
+		await shot("12_frog_corrected")
+		stage.scroll_speed = 0.0
+	if want("leaves"):
+		await fresh()
+		await at(30.0, 3.6)
+		await frames(200)
+		await shot("13_dry_leaves")
+	if want("power"):
+		await fresh()
+		await at(331.0, 3.8)
+		wave.director_moment.emit(&"preboss_power")
+		await frames(26)
+		await shot("14_s_plus")
+	if want("boss"):
+		await fresh()
+		await at(340.0)
+		wave.event_index = BeeLevel01Controller.EVENTS.size()
+		wave.set_physics_process(true)
+		await live_until(15.0, func(): return wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1 and wave.boss._state_time > 3.0)
+		await shot("15_boss_phase1")
+		wave.boss.health.take_damage(wave.boss.health.current_health - int(wave.boss.max_hp * 0.6))
+		await live_until(8.0, func(): return wave.boss.state == UfoBoss01.State.PHASE_2 and str(wave.boss._attack_step) == "summon" and wave.boss._attack_left < 0.4)
+		await shot("16_boss_summon")
+		await live_until(6.0, func(): return wave.boss.minions_alive >= 2 and wave.boss.live_projectiles().size() >= 3)
+		await shot("17_boss_phase2")
+		wave.boss.health.take_damage(wave.boss.health.current_health - int(wave.boss.max_hp * 0.3))
+		await live_until(8.0, func(): return wave.boss.state == UfoBoss01.State.PHASE_3 and wave.boss.live_projectiles().size() >= 5)
+		await shot("18_boss_phase3")
 	quit(0)

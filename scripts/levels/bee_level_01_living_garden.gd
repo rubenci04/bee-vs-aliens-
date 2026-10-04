@@ -3,7 +3,8 @@ extends Node3D
 ## ARCADE CONTENT & SPECTACLE REBUILD 02 — the garden breathes. Presentation only: no collision, no gameplay, no
 ## shadows, shared meshes/materials, and nothing processes far from the camera.
 ##   pollen motes   warm specks drifting through the whole view (world-space particles that follow the camera)
-##   leaves         a few leaves tumbling down; some cross IN FRONT of the flight plane (foreground crossings)
+##   leaves         a few dry leaves (real leaf silhouette, matte natural colours) tumbling down irregularly; some
+##                  cross IN FRONT of the flight plane (foreground crossings)
 ##   gnat clouds    tiny buzzing clouds over flowers in the background
 ##   butterflies    three butterflies wandering behind the flight plane (distant movement)
 
@@ -29,9 +30,13 @@ func _ready() -> void:
 	pollen.initial_velocity_min = 0.08
 	pollen.initial_velocity_max = 0.3
 	pollen.gravity = Vector3(0.0, 0.03, 0.0)
-	leaves = _particles("FallingLeaves", 7, 9.0, Vector3(9.0, 0.6, 2.8), _leaf_mesh())
+	leaves = _particles("FallingLeaves", 6, 9.0, Vector3(9.0, 0.6, 2.8), _leaf_mesh())
 	leaves.direction = Vector3(-0.8, -0.6, 0.0)
-	leaves.spread = 25.0
+	leaves.spread = 40.0 # Irregular fall: varied direction, side drift and tumbling.
+	leaves.linear_accel_min = -0.25
+	leaves.linear_accel_max = 0.25
+	leaves.damping_min = 0.05
+	leaves.damping_max = 0.2
 	leaves.initial_velocity_min = 0.35
 	leaves.initial_velocity_max = 0.7
 	leaves.gravity = Vector3(-0.05, -0.12, 0.0)
@@ -41,7 +46,7 @@ func _ready() -> void:
 	leaves.scale_amount_min = 0.8
 	leaves.scale_amount_max = 1.4
 	var tint := Gradient.new()
-	tint.colors = PackedColorArray([Color(0.47, 0.62, 0.22), Color(0.82, 0.6, 0.22), Color(0.66, 0.36, 0.16)])
+	tint.colors = PackedColorArray([Color(0.4, 0.48, 0.22), Color(0.64, 0.45, 0.17), Color(0.42, 0.26, 0.12)]) # Muted green, ochre, brown.
 	leaves.color_initial_ramp = tint
 	for point in GNATS:
 		var cloud := _particles("GnatCloud", 14, 0.9, Vector3.ONE * 0.5, _speck(Color(0.12, 0.1, 0.08), 0.045, false))
@@ -121,15 +126,46 @@ static func _speck(color: Color, radius: float, glow: bool) -> Mesh:
 	return mesh
 
 
+## REBUILD 03 (playtest: "golden papers"): a real dry-leaf silhouette - a pointed oval folded along its midrib, with a
+## short stem - natural colours from the particle ramp, matte (no specular), so it can never read as metal or paper.
 static func _leaf_mesh() -> Mesh:
-	var mesh := QuadMesh.new()
-	mesh.size = Vector2(0.24, 0.13)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var segments := 8
+	var length := 0.42
+	var width := 0.11
+	for i in segments:
+		var t0 := float(i) / float(segments)
+		var t1 := float(i + 1) / float(segments)
+		var x0 := -length * 0.5 + length * t0
+		var x1 := -length * 0.5 + length * t1
+		var w0 := width * pow(sin(PI * t0), 0.8)
+		var w1 := width * pow(sin(PI * t1), 0.8)
+		var rib0 := Vector3(x0, 0.0, 0.018)
+		var rib1 := Vector3(x1, 0.0, 0.018)
+		for side in [1.0, -1.0]:
+			var e0 := Vector3(x0, side * w0, 0.0)
+			var e1 := Vector3(x1, side * w1, 0.0)
+			st.add_vertex(rib0)
+			st.add_vertex(e0 if side > 0.0 else e1)
+			st.add_vertex(e1 if side > 0.0 else e0)
+			st.add_vertex(rib0)
+			st.add_vertex(e1 if side > 0.0 else rib1)
+			st.add_vertex(rib1 if side > 0.0 else e1)
+	# Stem.
+	var s := -length * 0.5
+	for v in [Vector3(s, 0.008, 0.0), Vector3(s - 0.07, 0.006, 0.0), Vector3(s - 0.07, -0.006, 0.0),
+			Vector3(s, 0.008, 0.0), Vector3(s - 0.07, -0.006, 0.0), Vector3(s, -0.008, 0.0)]:
+		st.add_vertex(v)
+	st.generate_normals()
+	var mesh := st.commit()
 	var material := StandardMaterial3D.new()
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.vertex_color_use_as_albedo = true
-	material.roughness = 0.9
-	mesh.material = material
+	material.roughness = 1.0
+	material.metallic_specular = 0.0
+	material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
+	mesh.surface_set_material(0, material)
 	return mesh
 
 
