@@ -96,7 +96,7 @@ func test_static() -> void:
 	check(human_at == 140.0, "The Giant Human stays at X=140")
 	check(hard == [254.0, 296.0, 340.0], "Hard gates moved: " + str(hard))
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
-	check(total >= 82 and total <= 92, "Unit budget %d outside 82-92 (REBUILD 02)" % total)
+	check(total >= 82 and total <= 97, "Unit budget %d outside 82-97 (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.

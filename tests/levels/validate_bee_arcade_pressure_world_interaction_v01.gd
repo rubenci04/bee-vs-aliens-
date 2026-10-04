@@ -414,12 +414,12 @@ func test_level() -> void:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 44 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (REBUILD 03: 44 events)")
-	check(total >= 82 and total <= 92, "Unit total %d outside 82-92 (REBUILD 02)" % total)
+	check(events.size() == 47 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
+	check(total >= 82 and total <= 97, "Unit total %d outside 82-97 (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.threat_cap(300.0) == 4 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10}, "HP changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.
 	arena(100.0)

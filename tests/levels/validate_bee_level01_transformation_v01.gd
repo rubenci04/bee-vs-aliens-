@@ -126,7 +126,8 @@ func test_run() -> void:
 				var event: Dictionary = BeeLevel01Controller.EVENTS[int(parts[1])]
 				var slot := int(parts[2])
 				var planned: Array = event.get("y", [])
-				if slot < planned.size() and str(parts[0]) not in ["Turret", "Walker"]:
+				# The spider drops in from above the top edge (GARDEN IDENTITY 04): no formation height, like ground units.
+				if slot < planned.size() and str(parts[0]) not in ["Turret", "Walker", "Spider"]:
 					heights_checked += 1
 					if absf((unit as Node3D).global_position.y - minf(float(planned[slot]), BeeLevel01Framing.max_entity_y())) < 0.5:
 						heights_ok += 1

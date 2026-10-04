@@ -282,7 +282,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 44, "Event count wrong (REBUILD 03: 44 incl. 7 director moments and the human)")
+	check(BeeLevel01Controller.EVENTS.size() == 47, "Event count wrong (GARDEN IDENTITY 04: 47 incl. 7 director moments, the human and 3 spider events)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
@@ -290,7 +290,7 @@ func run() -> void:
 		total += event["units"].size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 92 and max_gap <= 16, "Unit count/pacing wrong (REBUILD 02: 92 incl. 29 popcorn)")
+	check(total == 97 and max_gap <= 16, "Unit count/pacing wrong (GARDEN IDENTITY 04: 97 incl. 29 popcorn and 3 spiders)")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -388,7 +388,7 @@ func run() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 92, "Not all 92 units spawned (incl. 2 controlled dragonflies and 29 popcorn)")
+	check(spawned == 97, "Not all 97 units spawned (incl. 2 controlled dragonflies, 29 popcorn and 3 spiders)")
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -423,5 +423,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=44 units=92 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=47 units=97 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)

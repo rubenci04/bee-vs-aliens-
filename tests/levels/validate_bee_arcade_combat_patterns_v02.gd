@@ -395,11 +395,11 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.filter(func(f): return f != "Swarm").size() >= 4:
 			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
-	check(events.size() == 44 and float(events.back()["at"]) == 340.0, "Event table changed (REBUILD 03: 44 events, last defence at X=340)")
-	check(total >= 82 and total <= 92, "Unit total %d outside the 82-92 REBUILD 02 budget" % total)
+	check(events.size() == 47 and float(events.back()["at"]) == 340.0, "Event table changed (GARDEN IDENTITY 04: 44 + 3 spider events, last defence at X=340)")
+	check(total >= 82 and total <= 97, "Unit total %d outside the 82-97 budget (REBUILD 02 82-92 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Concurrency cap changed")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10}, "HP changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
 	# Controlled projectile ceiling: the heaviest legal quartet (REBUILD 02 caps threats at 4) alive for 14 s, Bee not shooting.
 	# The live-shot ceiling (10 + one 5-shot fan) keeps the peak inside 14.

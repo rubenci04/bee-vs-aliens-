@@ -1,7 +1,7 @@
 extends SceneTree
 
 # ARCADE CONTENT & SPECTACLE REBUILD 02 (structure, never "fun").
-#   static      living garden (no collision), unit budget 82-92, Walker x5 (clean presentation, showcase, escort, late gates), OrganicAlien x3
+#   static      living garden (no collision), unit budget 82-97 (GARDEN IDENTITY 04: was 82-92), Walker x5 (clean presentation, showcase, escort, late gates), OrganicAlien x3
 #               (presentation, crossfire, late gate), popcorn swarms with shooters, depth entries, set pieces, caps
 #   popcorn     one Base shot kills a drone, shooters fire exactly one aimed shot, contact hurts, escapes are freed,
 #               popcorn never counts towards the threat cap
@@ -108,7 +108,7 @@ func test_static() -> void:
 			depth_events.append(event)
 			depth_units += units.size()
 			check(not bool(event.get("hard", false)), "Depth entries never open a hard gate")
-	check(total >= 82 and total <= 92, "Unit budget %d outside 82-92" % total)
+	check(total >= 82 and total <= 97, "Unit budget %d outside 82-97 (+ GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(walkers.size() >= 4 and walkers.size() <= 5, "Walker appearances %d (want 4-5)" % walkers.size())
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")
