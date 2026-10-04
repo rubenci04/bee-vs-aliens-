@@ -120,7 +120,7 @@ func test_static() -> void:
 	check("Probe" in crossfire["units"] or "EyeDrone" in crossfire["units"], "Organic set piece B needs aimed fire around it")
 	check(swarm_groups >= 6 and swarm_shooters >= 8 and paths.size() >= 4, "Popcorn variety too low (%d groups, %d shooters, paths %s)" % [swarm_groups, swarm_shooters, str(paths.keys())])
 	check(depth_events.size() >= 4 and depth_events.filter(func(e): return (e["units"] as Array).size() >= 3).size() >= 2, "Need >= 4 depth entries incl. >= 2 formations")
-	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(50.0) == 3 and BeeLevel01Controller.threat_cap(200.0) == 4, "Threat cap 2/3/4")
+	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Threat cap 2/3/4 (REBUILD 03 thresholds 96 / 240)")
 	check(BeeLevel01Controller.LIVE_SHOT_CEILING - 1 + 5 <= 14, "Below-ceiling live shots + the largest volley (5) must stay <= 14")
 	var moments: Array[String] = []
 	for event: Dictionary in events:

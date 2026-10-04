@@ -3,7 +3,7 @@ extends CharacterBody3D
 
 signal defeated(enemy: WaspEnemy)
 
-enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT }
+enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT, STING, OVERLOAD, KAMIKAZE }
 
 @export var starts_active := false
 @export var move_speed := 5.0
@@ -31,6 +31,26 @@ enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT }
 @export var arcade_recovery := 1.1 # Visible back-off after each pass (the original recovery_time is for the plain chase).
 @export var stalk_lane := 0.0 # Vertical offset of the stalk so two Wasps hover on different lines.
 
+@export_category("Threat rebuild 03 (Level 01 only; off by default)")
+## IMPLANT STING: once per stalk the alien implant on its back charges (cyan) and fires `sting_shots` light aimed bolts.
+@export var sting_shots := 0
+@export var sting_windup := 0.45
+@export var sting_gap := 0.16
+@export var sting_speed := 6.2
+@export var sting_damage := 6
+## OVERLOAD: at `overload_ratio` HP the implant overloads (red/orange, flashing faster, sparks): telegraph, the line
+## locks `overload_lock` s before the end, then a straight kamikaze dash (no homing) that explodes at the end of its
+## line. Destroying it during the telegraph cancels the threat (a harmless controlled blast).
+@export var overload_enabled := false
+@export var overload_ratio := 0.35
+@export var overload_telegraph := 0.85
+@export var overload_lock := 0.3
+@export var overload_speed := 12.5
+@export var overload_damage := 18
+@export var overload_radius := 1.5
+const IMPLANT_OFFSET := Vector3(0.0, 0.34, -0.12) ## On the thorax, in VisualRoot space (follows the facing).
+const STING_PROJECTILE := preload("res://scenes/bee_prototype/alien_enemy_projectile.tscn")
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var attack_hitbox: DamageHitbox3D = $AttackHitbox
@@ -48,11 +68,25 @@ var _clock := 0.0
 var _stalk_cap := 0.0
 var _dash_dir := Vector3.LEFT
 var _dash_length := 6.0
+var implant: WaspImplant
+var sting_count := 0
+var overload_count := 0
+var exploded := false
+var overload_canceled := false
+var explosion_hit_bee := false
+var _sting_done := false
+var _sting_fired := 0
+var _overloaded := false
+var _kamikaze_left := 0.0
+var _kamikaze_dir := Vector3.LEFT
+var _overload_line: MeshInstance3D
 
 
 func _ready() -> void:
 	add_to_group("bee_auto_aim_targets")
 	health.died.connect(_on_died)
+	health.health_changed.connect(_on_health_changed)
+	attack_hitbox.hit_confirmed.connect(_on_attack_hit)
 	attack_hitbox.damage = attack_damage
 	attack_hitbox.set_enabled(false)
 	telegraph.hide()
@@ -67,6 +101,12 @@ func activate(new_target: BeePlayer) -> bool:
 	target = new_target
 	_active = true
 	current_state = State.IDLE
+	if arcade_mode and implant == null:
+		# Level 01 Wasps are alien-controlled: the implant on the back is where sting and overload come from.
+		implant = WaspImplant.new()
+		implant.name = "Implant"
+		implant.position = IMPLANT_OFFSET
+		visual_root.add_child(implant)
 	show()
 	hurtbox.set_deferred("monitorable", true)
 	set_physics_process(true)
@@ -137,6 +177,32 @@ func _physics_process(delta: float) -> void:
 		State.EXIT:
 			velocity.x = move_toward(velocity.x, -exit_speed, acceleration * delta)
 			velocity.y = move_toward(velocity.y, 0.0, acceleration * delta)
+		State.STING:
+			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
+			_state_left -= delta
+			if _state_left <= 0.0:
+				_fire_sting()
+				_sting_fired += 1
+				_state_left = sting_gap
+				if _sting_fired >= sting_shots:
+					if implant != null:
+						implant.set_mode(&"idle")
+					current_state = State.STALK
+		State.OVERLOAD:
+			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
+			visual_root.position = Vector3(randf_range(-0.04, 0.04), randf_range(-0.04, 0.04), 0.0) # Shaking.
+			_state_left -= delta
+			if _state_left <= overload_lock and _overload_line == null:
+				_lock_overload_line()
+			if _state_left <= 0.0:
+				if BeeAttackTokens.try_claim(self, 1.2) or _state_left <= -1.0: # Never with another heavy pattern; waits <= 1 s.
+					_begin_kamikaze()
+		State.KAMIKAZE:
+			velocity = _kamikaze_dir * overload_speed
+			_kamikaze_left -= delta
+			if _kamikaze_left <= 0.0 or not BeeShmupFairness.is_on_screen(self, 1.0):
+				_explode(true)
+				return
 	move_and_slide()
 	position.z = 0.0
 
@@ -188,6 +254,15 @@ func _update_facing() -> void:
 func _on_died() -> void:
 	if current_state == State.DEAD:
 		return
+	if current_state == State.OVERLOAD or current_state == State.KAMIKAZE:
+		# Shot down mid-overload: the implant blows harmlessly where it is (the reward for prioritising it).
+		overload_canceled = not exploded
+		if not exploded:
+			_blast_visual(false)
+	_clear_overload_line()
+	BeeAttackTokens.release(self)
+	if implant != null:
+		implant.set_mode(&"off")
 	current_state = State.DEAD
 	_active = false
 	velocity = Vector3.ZERO
@@ -202,6 +277,7 @@ func _on_died() -> void:
 
 func _begin_stalk(seconds: float) -> void:
 	add_to_group("arcade_wasps")
+	_sting_done = false
 	current_state = State.STALK
 	_state_left = seconds
 	_stalk_cap = seconds + 4.0
@@ -222,6 +298,9 @@ func _stalk(delta: float) -> void:
 	_stalk_cap -= delta
 	if absf(to_x) < 2.0:
 		_state_left -= delta
+		if sting_shots > 0 and not _sting_done and BeeShmupFairness.is_readable(self):
+			_begin_sting()
+			return
 	if (_state_left <= 0.0 and not _another_wasp_attacking()) or _stalk_cap <= 0.0:
 		_begin_windup()
 
@@ -252,6 +331,118 @@ func _finish_recovery() -> void:
 ## Two Wasps never run the same telegraph or pass together: one stalks while the other attacks.
 func _another_wasp_attacking() -> bool:
 	for other in get_tree().get_nodes_in_group("arcade_wasps"):
-		if other != self and other is WaspEnemy and other.is_active() and (other.current_state == State.WINDUP or other.current_state == State.DASH):
+		if other != self and other is WaspEnemy and other.is_active() and other.current_state in [State.WINDUP, State.DASH, State.KAMIKAZE]:
 			return true
 	return false
+
+
+# --- Threat rebuild 03: implant sting and overload -----------------------------------------------------------
+
+func _begin_sting() -> void:
+	_sting_done = true
+	_sting_fired = 0
+	current_state = State.STING
+	_state_left = sting_windup # The implant charges (cyan) before the first bolt.
+	if implant != null:
+		implant.set_mode(&"sting")
+
+
+func _fire_sting() -> void:
+	if target == null or not BeeShmupFairness.can_fire(self):
+		return
+	var origin := implant.global_position if implant != null else global_position
+	origin.z = 0.0
+	var projectile := STING_PROJECTILE.instantiate() as AlienEnemyProjectile
+	projectile.damage = sting_damage
+	projectile.speed = sting_speed
+	get_parent().add_child(projectile)
+	projectile.global_position = origin
+	projectile.scale = Vector3.ONE * 0.75 # A light bolt: smaller than a Probe shot.
+	projectile.launch((target.global_position - origin).normalized(), self) # Re-aims per bolt, then flies straight.
+	sting_count += 1
+
+
+func _on_health_changed(current: int, maximum: int, _change: int) -> void:
+	if not overload_enabled or _overloaded or current <= 0 or not _active:
+		return
+	if float(current) / float(maximum) <= overload_ratio and current_state not in [State.DEAD, State.EXIT, State.KAMIKAZE]:
+		_begin_overload()
+
+
+func _begin_overload() -> void:
+	_overloaded = true
+	overload_count += 1
+	attack_hitbox.set_enabled(false)
+	telegraph.hide()
+	current_state = State.OVERLOAD
+	_state_left = overload_telegraph
+	visual_root.scale = Vector3(1.12, 1.12, 1.12)
+	if implant != null:
+		implant.set_mode(&"overload")
+	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 1.7) # Rising whine from the implant.
+
+
+## The dash line locks a moment before the dash: aimed at where Bee is heading (a short lead), then fixed.
+func _lock_overload_line() -> void:
+	var predicted := target.global_position + target.velocity * 0.3
+	var to_bee := predicted - global_position
+	to_bee.z = 0.0
+	_kamikaze_dir = to_bee.normalized() if to_bee.length() > 0.05 else Vector3(facing_x, 0.0, 0.0)
+	_kamikaze_left = (to_bee.length() + 3.0) / overload_speed # Passes the point and blows up beyond it.
+	_overload_line = MeshInstance3D.new()
+	var bar := BoxMesh.new()
+	bar.size = Vector3(to_bee.length() + 3.0, 0.07, 0.07)
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(1.0, 0.3, 0.1, 0.45)
+	bar.material = material
+	_overload_line.mesh = bar
+	_overload_line.top_level = true
+	_overload_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_overload_line)
+	_overload_line.global_position = global_position + _kamikaze_dir * (bar.size.x * 0.5)
+	_overload_line.rotation.z = atan2(_kamikaze_dir.y, _kamikaze_dir.x)
+
+
+func _begin_kamikaze() -> void:
+	current_state = State.KAMIKAZE
+	_clear_overload_line()
+	visual_root.position = Vector3.ZERO
+	facing_x = signf(_kamikaze_dir.x) if absf(_kamikaze_dir.x) > 0.05 else facing_x
+	visual_root.rotation.y = -facing_x * PI * 0.5
+	attack_hitbox.damage = overload_damage
+	attack_hitbox.set_enabled(true)
+	attack_count += 1
+
+
+func _on_attack_hit(_hurtbox: DamageHurtbox3D, _damage: int) -> void:
+	if current_state == State.KAMIKAZE:
+		explosion_hit_bee = true
+		_explode(false) # Already hit by the body: the blast adds no second damage.
+
+
+## End of the kamikaze line (or a direct hit): a clearly visible blast; Bee only takes damage inside the radius.
+func _explode(radius_damage: bool) -> void:
+	if exploded or current_state == State.DEAD:
+		return
+	exploded = true
+	attack_hitbox.set_enabled(false)
+	if radius_damage and target != null and not target.is_defeated and target.hurtbox.monitorable \
+			and target.global_position.distance_to(global_position) <= overload_radius:
+		explosion_hit_bee = true
+		target.health.take_damage(overload_damage)
+	_blast_visual(true)
+	health.take_damage(health.current_health) # Dies through the normal path (feedback, controller release).
+
+
+func _blast_visual(live: bool) -> void:
+	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, overload_radius if live else overload_radius * 0.7)
+	BeeAudio.play(get_parent(), &"bomb", global_position, 1.35)
+	BeeCameraShake.kick(self, 0.05 if live else 0.03, 0.18)
+
+
+func _clear_overload_line() -> void:
+	if _overload_line != null and is_instance_valid(_overload_line):
+		_overload_line.queue_free()
+	_overload_line = null

@@ -85,7 +85,8 @@ func _chase(delta: float) -> void:
 	velocity.y = move_toward(velocity.y, direction.y * move_speed, acceleration * delta)
 
 func _begin_attack(distance: float) -> void:
-	_fan_now = fan_every > 0 and _attack_index % fan_every == fan_every - 1 and distance >= fan_min_distance
+	_fan_now = fan_every > 0 and _attack_index % fan_every == fan_every - 1 and distance >= fan_min_distance \
+			and BeeAttackTokens.try_claim(self, fan_windup + 0.4) # REBUILD 03: never with another heavy pattern.
 	current_state = State.WINDUP
 	_state_left = (fan_windup if _fan_now else windup_time) + (initial_delay if _attack_index == 0 else 0.0)
 	velocity = Vector3.ZERO

@@ -27,6 +27,15 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 @export var stay_on_screen := false
 ## With `stay_on_screen` it walks this far inside the edge before stopping to aim (the whole body reads on screen).
 const SHOWCASE_INSET := 1.8
+## THREAT REBUILD 03 (Level 01 only; 0 = off): every `sweep_every`-th attack is a SWEEP instead of the burst: a
+## longer violet charge, then `sweep_shots` shots from high to low across Bee's line (locked at the end of the
+## charge), forcing a height change. Never at the same time as another heavy pattern (BeeAttackTokens).
+@export var sweep_every := 0
+@export var sweep_shots := 5
+@export var sweep_step_degrees := 11.0
+@export var sweep_gap := 0.11
+@export var sweep_windup := 0.85
+const SWEEP_COLOR := Color(0.72, 0.3, 1.0)
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -49,6 +58,11 @@ var _shots_done := 0
 var _reposition_left := 0.0
 var _reposition_direction := -1.0
 var _aim_point := Vector3.ZERO
+var sweep_count := 0
+var attacks_started := 0
+var _sweeping := false
+var _sweep_dirs: Array[Vector3] = []
+static var _sweep_material: StandardMaterial3D
 
 func _ready() -> void:
 	visual_root.hide()
@@ -131,27 +145,41 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				_aim_point = target.global_position
 				current_state = State.WINDUP
-				_state_left = windup_time
+				attacks_started += 1
+				_sweeping = sweep_every > 0 and attacks_started % sweep_every == 0 \
+						and BeeAttackTokens.try_claim(self, sweep_windup + sweep_gap * float(sweep_shots) + 0.4)
+				_state_left = sweep_windup if _sweeping else windup_time
+				aim_charge.material_override = _sweep_charge_material() if _sweeping else null
 				aim_charge.show()
 		State.WINDUP:
 			_state_left -= delta
-			var charge_progress := 1.0 - _state_left / windup_time
-			aim_charge.scale = Vector3.ONE * lerpf(0.7, 1.4, charge_progress)
+			var charge_progress := 1.0 - _state_left / (sweep_windup if _sweeping else windup_time)
+			aim_charge.scale = Vector3.ONE * lerpf(0.7, 1.8 if _sweeping else 1.4, charge_progress)
 			if _state_left <= 0.0:
 				current_state = State.SHOOT
 				_shoot_elapsed = 0.0
 				_shots_done = 0
 				aim_charge.hide()
+				if _sweeping:
+					_lock_sweep()
 				_play(&"Shoot")
 		State.SHOOT:
 			_shoot_elapsed += delta
-			while _shots_done < burst_shots and _shoot_elapsed >= shoot_delay + burst_gap * float(_shots_done):
-				if _shots_done > 0:
-					_aim_point = target.global_position # Later shots of the burst re-aim; each one then flies straight.
+			var count := sweep_shots if _sweeping else burst_shots
+			var gap := sweep_gap if _sweeping else burst_gap
+			while _shots_done < count and _shoot_elapsed >= shoot_delay + gap * float(_shots_done):
+				if _sweeping:
+					_fire_projectile(_sweep_dirs[_shots_done])
+				else:
+					if _shots_done > 0:
+						_aim_point = target.global_position # Later shots of the burst re-aim; each one then flies straight.
+					_fire_projectile()
 				_shots_done += 1
-				_fire_projectile()
-			var burst_end := shoot_delay + burst_gap * float(burst_shots - 1) + 0.25
+			var burst_end := shoot_delay + gap * float(count - 1) + 0.25
 			if _shoot_elapsed >= maxf(animation_player.get_animation(&"CharacterArmature|Shoot").length, burst_end):
+				if _sweeping:
+					sweep_count += 1
+					BeeAttackTokens.release(self)
 				current_state = State.RECOVERY
 				_state_left = recovery_time
 				_play(&"Idle")
@@ -205,7 +233,7 @@ func _face_target() -> void:
 	visual_root.rotation.y = _facing_x * deg_to_rad(60.0)
 	aim_charge.position.x = _facing_x * muzzle_forward
 
-func _fire_projectile() -> void:
+func _fire_projectile(direction := Vector3.ZERO) -> void:
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
 		return
@@ -216,7 +244,7 @@ func _fire_projectile() -> void:
 	projectile.speed = projectile_speed
 	get_parent().add_child(projectile)
 	projectile.global_position = global_position + Vector3(_facing_x * muzzle_forward, muzzle_height, 0)
-	projectile.launch((_aim_point - projectile.global_position).normalized(), self)
+	projectile.launch(direction if direction != Vector3.ZERO else (_aim_point - projectile.global_position).normalized(), self)
 	projectile_fire_count += 1
 	projectile_fired.emit(projectile)
 
@@ -228,6 +256,7 @@ func _play(clip: StringName) -> void:
 func _on_died() -> void:
 	if current_state == State.DEAD:
 		return
+	BeeAttackTokens.release(self)
 	current_state = State.DEAD
 	_active = false
 	target = null
@@ -242,3 +271,27 @@ func _on_died() -> void:
 		if is_instance_valid(self):
 			visual_root.hide()
 	)
+
+
+## SWEEP: the line to Bee is locked at the end of the charge; shots fan across it from the highest to the lowest.
+func _lock_sweep() -> void:
+	var muzzle := global_position + Vector3(_facing_x * muzzle_forward, muzzle_height, 0.0)
+	var base := target.global_position - muzzle
+	base.z = 0.0
+	base = base.normalized() if base.length() > 0.01 else Vector3(_facing_x, 0.0, 0.0)
+	_sweep_dirs.clear()
+	for i in sweep_shots:
+		var angle := deg_to_rad(sweep_step_degrees) * (float(i) - float(sweep_shots - 1) * 0.5)
+		_sweep_dirs.append(base.rotated(Vector3.BACK, angle))
+	_sweep_dirs.sort_custom(func(a: Vector3, b: Vector3): return a.y > b.y) # High to low.
+
+
+static func _sweep_charge_material() -> StandardMaterial3D:
+	if _sweep_material == null:
+		_sweep_material = StandardMaterial3D.new()
+		_sweep_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_sweep_material.albedo_color = SWEEP_COLOR
+		_sweep_material.emission_enabled = true
+		_sweep_material.emission = SWEEP_COLOR
+		_sweep_material.emission_energy_multiplier = 2.0
+	return _sweep_material

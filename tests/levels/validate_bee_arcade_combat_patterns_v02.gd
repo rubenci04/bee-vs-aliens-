@@ -275,7 +275,7 @@ func test_walker() -> void:
 	await clear_units()
 	arena(100.0)
 	var walker := spawn("Walker") as GroundWalkerEnemy
-	check(walker.burst_shots == 4 and walker.health.max_health == 72 and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (REBUILD 02: burst 4, HP 72, walk 2.4)")
+	check(walker.burst_shots == 4 and walker.health.max_health == 120 and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, HP 120 since REBUILD 03, walk 2.4)")
 	listen(walker)
 	var captured := false
 	for i in 60 * 16:
@@ -309,7 +309,7 @@ func test_wasp() -> void:
 	await clear_units()
 	arena(60.0)
 	var wasp := spawn("Wasp") as WaspEnemy
-	check(wasp.arcade_mode and wasp.max_passes == 3 and wasp.health.max_health == 36 and wasp.attack_damage == 10, "Wasp tuning / HP / damage")
+	check(wasp.arcade_mode and wasp.max_passes == 3 and wasp.health.max_health == 44 and wasp.attack_damage == 10, "Wasp tuning / HP / damage")
 	var order: Array = []
 	var dash_dirs: Array = []
 	var stalk_first := 0.0
@@ -395,11 +395,11 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.filter(func(f): return f != "Swarm").size() >= 4:
 			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
-	check(events.size() == 42 and float(events.back()["at"]) == 340.0, "Event table changed (EVENTS V3: 42 events, last defence at X=340)")
+	check(events.size() == 44 and float(events.back()["at"]) == 340.0, "Event table changed (REBUILD 03: 44 events, last defence at X=340)")
 	check(total >= 82 and total <= 92, "Unit total %d outside the 82-92 REBUILD 02 budget" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
-	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(50.0) == 3 and BeeLevel01Controller.threat_cap(120.0) == 4, "Concurrency cap changed")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speeder": 30, "OrganicAlien": 47, "Walker": 72, "Dragonfly": 60, "Swarm": 10}, "HP changed")
+	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Concurrency cap changed")
+	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10}, "HP changed")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
 	# Controlled projectile ceiling: the heaviest legal quartet (REBUILD 02 caps threats at 4) alive for 14 s, Bee not shooting.
 	# The live-shot ceiling (10 + one 5-shot fan) keeps the peak inside 14.

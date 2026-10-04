@@ -3,7 +3,7 @@ extends CharacterBody3D
 
 signal defeated(enemy: OrganicAlienEnemy)
 
-enum State { ENTER, HOVER, STALK, WINDUP, LUNGE, RECOVERY, DEAD }
+enum State { ENTER, HOVER, STALK, WINDUP, LUNGE, RECOVERY, DEAD, RANGED, REPOSITION }
 
 @export var entry_speed := 3.2
 @export var stalk_speed := 3.0
@@ -17,12 +17,25 @@ enum State { ENTER, HOVER, STALK, WINDUP, LUNGE, RECOVERY, DEAD }
 ## ARCADE REBUILD 02 (Level 01 only, off by default): after every lunge the creature stalks from the other height
 ## (above / below Bee), so it keeps repositioning instead of hovering in one spot. Presence through movement, not HP.
 @export var vary_height := false
+## THREAT REBUILD 03 (Level 01 only, off by default): a second language. HOVER -> RANGED (the core glows, then a
+## fan of bio-orbs) -> REPOSITION -> STALK -> LUNGE -> RECOVERY -> RANGED... never both attacks at once.
+@export var ranged_enabled := false
+@export var ranged_windup := 0.6
+@export var orb_count := 3
+@export var orb_step_degrees := 16.0
+@export var orb_speed := 4.4
+@export var orb_damage := 7
+@export var reposition_time := 0.9
+const ORB := preload("res://scenes/bee_prototype/alien_enemy_projectile.tscn")
+const ORB_COLOR := Color(0.62, 0.95, 0.25)
+static var _orb_material: StandardMaterial3D
+static var _glow_material: StandardMaterial3D
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
 @onready var attack_hitbox: DamageHitbox3D = $BiteHitbox
-@onready var telegraph: Node3D = $AttackTelegraph
+@onready var telegraph: MeshInstance3D = $AttackTelegraph
 
 var target: BeePlayer
 var current_state := State.ENTER
@@ -36,6 +49,8 @@ var _state_left := 0.0
 var _stalk_side := 1.0
 var _stalk_height := 0.55
 var _animation_player: AnimationPlayer
+var ranged_count := 0
+var orbs_fired := 0
 
 func _ready() -> void:
 	add_to_group("bee_auto_aim_targets")
@@ -92,12 +107,28 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector3.ZERO
 			_state_left -= delta
 			if _state_left <= 0.0:
-				_begin_stalk()
+				_begin_ranged() if ranged_enabled else _begin_stalk()
 		State.STALK:
 			_move_to_stalk_position(delta)
 			_state_left -= delta
 			if _state_left <= 0.0 and _distance_to_target() <= 5.3:
-				_begin_windup()
+				if BeeAttackTokens.try_claim(self, windup_time + lunge_time + 0.2):
+					_begin_windup()
+				else:
+					_state_left = 0.3 # Another heavy pattern is running: keep stalking a beat.
+		State.RANGED:
+			velocity = velocity.move_toward(Vector3.ZERO, 10.0 * delta)
+			_state_left -= delta
+			var charge := 1.0 - clampf(_state_left / ranged_windup, 0.0, 1.0)
+			telegraph.scale = Vector3.ONE * lerpf(0.6, 1.1, charge)
+			if _state_left <= 0.0:
+				_fire_orbs()
+				_begin_reposition()
+		State.REPOSITION:
+			_move_to_stalk_position(delta)
+			_state_left -= delta
+			if _state_left <= 0.0:
+				_begin_stalk()
 		State.WINDUP:
 			velocity = Vector3.ZERO
 			_state_left -= delta
@@ -112,7 +143,7 @@ func _physics_process(delta: float) -> void:
 			velocity = -lunge_direction * 2.2
 			_state_left -= delta
 			if _state_left <= 0.0:
-				_begin_stalk()
+				_begin_ranged() if ranged_enabled else _begin_stalk()
 	move_and_slide()
 	position.z = 0.0
 
@@ -163,6 +194,7 @@ func _begin_recovery() -> void:
 	_state_left = recovery_time
 	attack_hitbox.set_enabled(false)
 	telegraph.hide()
+	BeeAttackTokens.release(self)
 	visual_root.scale = Vector3.ONE
 	_play_clip("Idle")
 
@@ -190,6 +222,7 @@ func _play_clip(fragment: String) -> bool:
 func _on_died() -> void:
 	if current_state == State.DEAD:
 		return
+	BeeAttackTokens.release(self)
 	current_state = State.DEAD
 	_active = false
 	velocity = Vector3.ZERO
@@ -205,3 +238,71 @@ func _on_died() -> void:
 	var fade := create_tween()
 	fade.tween_interval(death_time)
 	fade.tween_callback(hide)
+
+# --- Threat rebuild 03: the ranged language ----------------------------------------------------------------
+
+## The core glows green (a different colour from the lunge telegraph) for `ranged_windup`, then a fan of bio-orbs.
+func _begin_ranged() -> void:
+	current_state = State.RANGED
+	_state_left = ranged_windup
+	velocity = Vector3.ZERO
+	telegraph.material_override = _bio_glow()
+	telegraph.scale = Vector3.ONE * 0.6
+	telegraph.show()
+	visual_root.scale = Vector3(1.08, 0.94, 1.08)
+	_play_clip("Idle")
+
+
+func _fire_orbs() -> void:
+	telegraph.hide()
+	telegraph.material_override = null
+	telegraph.scale = Vector3.ONE
+	visual_root.scale = Vector3.ONE
+	ranged_count += 1
+	if target == null or not BeeShmupFairness.can_fire(self):
+		return
+	var origin := global_position + Vector3(facing_x * 0.35, 0.15, 0.0)
+	var to_bee := target.global_position - origin
+	var base := atan2(to_bee.y, to_bee.x)
+	for i in orb_count:
+		var angle := base + deg_to_rad(orb_step_degrees) * (float(i) - float(orb_count - 1) * 0.5)
+		var orb := ORB.instantiate() as AlienEnemyProjectile
+		orb.damage = orb_damage
+		orb.speed = orb_speed
+		get_parent().add_child(orb)
+		orb.global_position = origin
+		var visual := orb.get_node_or_null("Visual") as MeshInstance3D
+		if visual != null:
+			visual.material_override = _bio_orb() # Bio language: green-yellow orbs, not the tech magenta.
+		orb.launch(Vector3(cos(angle), sin(angle), 0.0), self)
+		orbs_fired += 1
+
+
+## Short repositioning between the two attacks (to the other stalk height), so they never overlap.
+func _begin_reposition() -> void:
+	current_state = State.REPOSITION
+	_state_left = reposition_time
+	_stalk_side = 1.0 if global_position.x >= target.global_position.x else -1.0
+	_stalk_height = -0.8 if _stalk_height > 0.5 else 1.5
+	_play_clip("Walk")
+
+
+static func _bio_orb() -> StandardMaterial3D:
+	if _orb_material == null:
+		_orb_material = StandardMaterial3D.new()
+		_orb_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_orb_material.albedo_color = ORB_COLOR
+		_orb_material.emission_enabled = true
+		_orb_material.emission = ORB_COLOR
+		_orb_material.emission_energy_multiplier = 1.6
+		_orb_material.render_priority = 50
+	return _orb_material
+
+
+static func _bio_glow() -> StandardMaterial3D:
+	if _glow_material == null:
+		_glow_material = StandardMaterial3D.new()
+		_glow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_glow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_glow_material.albedo_color = Color(ORB_COLOR, 0.45)
+	return _glow_material

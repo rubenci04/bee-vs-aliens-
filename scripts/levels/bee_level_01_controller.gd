@@ -22,25 +22,36 @@ const FAUNA_HINT := "DESTRUÍ EL IMPLANTE"
 const BOSS_BREATHER := 2.6
 ## ARCADE REBUILD 02: threats alive at once (popcorn never counts). BEFORE: 2, then 3 from X=150.
 ## AFTER: 2 for the first lesson, 3 from X=24, 4 from X=96 (with the Eye fans). See `threat_cap()`.
-const THREE_AT_ONCE_FROM := 24.0
-const FOUR_AT_ONCE_FROM := 96.0
+## REBUILD 03: threats now live longer (HP by role), so the cap follows the composition target instead:
+## 2 until X=96 (first half reads 1-2), 3 until X=240, 4 in the last third (peaks).
+const THREE_AT_ONCE_FROM := 96.0
+const FOUR_AT_ONCE_FROM := 240.0
 ## Popcorn drones alive at once (their own budget, outside the threat cap).
 const MAX_SWARM_ALIVE := 6
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 10
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
 const MIN_FORMATION_GAP := 0.2
+## REBUILD 03: Wasp implant sting / overload are introduced progressively (see `_spawn`).
+const STING_FROM_X := 40.0
+const OVERLOAD_FROM_X := 150.0
 ## Camera-relative X where a cinematic depth entry reaches the flight plane (inside the right half of the screen).
 const DEPTH_TARGET_X := 3.4
 ## Scroll speed while a showcase Walker ("hold") is alive: it walks with Bee instead of being left behind.
 const HOLD_SCROLL := 1.0
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
-## ARCADE REBUILD 02: medium threats +15-20 % (Probe 32->38, EyeDrone 24->28, Turret 40->46, Walker 60->72) so a
-## competent player still kills them in 1-2 s, but they usually get a second attack cycle; OrganicAlien keeps 47
-## (more presence through movement, not HP). Swarm = popcorn: one Base shot.
-const LEVEL_HP = {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speeder": 30, "OrganicAlien": 47, "Walker": 72, "Dragonfly": 60, "Swarm": 10}
-# "Dragonfly" is the HP of its alien IMPLANT (the animal itself has no health): measured ~1.8-2.4 s of reasonable Base fire.
+## THREAT, CAMERA & BOSS REBUILD 03 — HP by ROLE (not by tradition). Reasonable Base fire ~27-33 DPS (3 taps/s, 10 HP,
+## auto-aim). Target time-to-kill: POPCORN 0.1-0.8 s, LIGHT 1-2 s, MEDIUM 2.5-4.5 s, HEAVY 4-7 s, SHOWCASE 5-8 s.
+##   POPCORN  Swarm 10
+##   LIGHT    Wasp 36->44, EyeDrone 28->40, Speeder 30
+##   MEDIUM   Probe 38->80, Turret 46->70, OrganicAlien 47->100
+##   HEAVY    Walker 72->120 (a showcase Walker gets SHOWCASE_HP 150)
+## "Dragonfly" is the HP of its alien IMPLANT (special fauna, unchanged).
+const LEVEL_HP = {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10}
+const SHOWCASE_HP := 150
+const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
+		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL"}
 # Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
 # (windup) are never touched; HP is global-unchanged. BEFORE (Arcade Pressure pass 01) -> AFTER (Combat Pattern pass 02):
 #   Wasp      2 passes, recovery 0.9 s            -> 3 passes, recovery 1.1 s, stalk 2.2/2.9/3.6 s on lanes (no simultaneous attacks)
@@ -57,15 +68,23 @@ const LEVEL_HP = {"Wasp": 36, "Probe": 38, "EyeDrone": 28, "Turret": 46, "Speede
 #             Turret 1.55->1.3, Walker recovery 0.9->0.7 (telegraphs unchanged, so every attack stays readable)
 #   Bursts    Probe / EyeDrone / Walker aimed bursts 3 -> 4 shots (same gap; every shot re-aims and flies straight)
 #   Organic   alternates its stalk height above / below Bee after every lunge, recovery 0.75 -> 0.6 s (HP still 47)
+# THREAT, CAMERA & BOSS REBUILD 03 (roles; see ROLES / LEVEL_HP):
+#   Probe     moves 2.2 -> 3.0 m/s, holds at 8.5 m: telegraphs within ~1 s of being fully on screen
+#   Wasp      implant sting (2 aimed bolts while stalking) on some Wasps; OVERLOAD (kamikaze dash from the implant)
+#             from mid level - both assigned per spawn in `_spawn`
+#   Organic   ranged bio-orbs (fan of 3) -> reposition -> lunge -> recovery (never both at once)
+#   Walker    alternates its aimed burst with a high-to-low SWEEP of 5 (violet charge) that forces a height change
+#   Speeder   lane telegraph across the screen before its straight dash (fast crossing threat)
 const LEVEL_TUNING = {
 	"Wasp": {"arcade_mode": true, "max_passes": 3, "arcade_recovery": 1.1, "restalk_time": 1.0, "drift_amplitude": 0.8},
-	"Probe": {"cooldown_time": 1.6, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.55, "bursts_per_cycle": 2,
-			"advance_speed": 0.5, "reposition_speed": 1.2, "maximum_range": 8.0, "stay_on_screen": true},
+	"Probe": {"cooldown_time": 1.6, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.55, "bursts_per_cycle": 2, "move_speed": 3.0,
+			"advance_speed": 0.5, "reposition_speed": 1.2, "maximum_range": 8.5, "stay_on_screen": true},
 	"EyeDrone": {"cooldown_time": 1.5, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 2, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
 			"minimum_range": 3.0, "maximum_range": 5.0, "stay_on_screen": true},
 	"Turret": {"cooldown_time": 1.3, "fan_count": 3, "fan_step_degrees": 14.0},
-	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6},
-	"Walker": {"recovery_time": 0.7, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true},
+	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6, "ranged_enabled": true},
+	"Speeder": {"lane_telegraph": true},
+	"Walker": {"recovery_time": 0.7, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).
 # Playtest verdict: "still empty, not challenging, too static". V3 layers each stretch instead of enemy -> kill -> wait:
@@ -94,9 +113,10 @@ const EVENTS = [
 	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · PRIMERA SONDA", "units": ["Probe"], "y": [4.6], "depth": true},
 	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
 	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0], "depth": true},
+	{"at": 76.0, "act": 2, "label": "CARRIL · SPEEDER", "units": ["Speeder"], "y": [5.2]},
 	{"at": 80.0, "act": 2, "label": "ORGANISMO · PRESENTACIÓN", "units": ["OrganicAlien"], "y": [4.0], "depth": true},
 	{"at": 87.0, "act": 2, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.2, 2.2, 2.2], "shooters": [0, 2]},
-	{"at": 96.0, "act": 2, "label": "COLUMNA · DOS OJOS Y AVISPA", "units": ["EyeDrone", "EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 0.3, 1.4], "y": [2.0, 5.6, 3.8]},
+	{"at": 96.0, "act": 2, "label": "COLUMNA · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 1.4], "y": [5.6, 3.0]},
 	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"], "hold": true},
 	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6]},
 	{"at": 118.0, "act": 2, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 2]},
@@ -105,6 +125,7 @@ const EVENTS = [
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
 	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": [], "moment": "human_aftermath"},
+	{"at": 152.0, "act": 3, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [5.6, 2.0]},
 	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA, OJO Y AVISPA", "units": ["Turret", "EyeDrone", "Wasp"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.6], "y": [-0.2, 6.0, 3.0]},
 	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4]},
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
@@ -122,10 +143,10 @@ const EVENTS = [
 	{"at": 270.0, "act": 4, "label": "OLA · OJO Y TORRETA", "units": ["EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 0.8]},
 	{"at": 278.0, "act": 4, "label": "POPCORN · PICADA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "dive", "path": "dive", "delays": [0.0, 0.3, 0.6], "y": [5.6, 4.4, 5.6], "shooters": [0, 1, 2]},
 	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "delays": [0.0, 0.8]},
+	{"at": 289.0, "act": 4, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [2.4, 5.4]},
 	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 0.8, 1.8]},
 	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": [], "moment": "bomb_reward"},
-	{"at": 308.0, "act": 4, "label": "OLA FINAL · SPEEDER Y SONDA", "units": ["Speeder", "Probe"], "formation": "wave", "delays": [0.0, 0.8]},
-	{"at": 316.0, "act": 4, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.6, 2.6, 2.6], "shooters": [0, 2]},
+	{"at": 308.0, "act": 4, "label": "OLA FINAL · SONDA", "units": ["Probe"], "y": [4.6]},
 	{"at": 324.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4], "depth": true},
 	{"at": 330.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
 	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 3.0]},
@@ -168,10 +189,13 @@ func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
 	BeeShmupFairness.live_shot_ceiling = LIVE_SHOT_CEILING
 	BeeShmupFairness.screen_bound_combat = true
+	BeeAttackTokens.enabled = true # REBUILD 03: one heavy pattern at a time.
+	BeeAttackTokens.reset()
 
 func _exit_tree() -> void:
 	BeeShmupFairness.live_shot_ceiling = 0 # Static: never leak the Level 01 rules into POCs or other scenes.
 	BeeShmupFairness.screen_bound_combat = false
+	BeeAttackTokens.enabled = false
 
 func _physics_process(delta: float) -> void:
 	if _frozen or _complete:
@@ -330,6 +354,12 @@ func _spawn(request: Dictionary) -> void:
 		# Different presence per Wasp and different hover lines, so two Wasps never attack in lockstep.
 		unit.set("stalk_time", 2.2 + 0.7 * float(slot % 3))
 		unit.set("stalk_lane", [0.0, 1.1, -1.1][slot % 3])
+		# REBUILD 03, introduced progressively: implant sting on the second Wasp of a group from X=40 and on every
+		# Wasp from X=150; OVERLOAD on the first Wasp of a group from X=150 and on every Wasp from X=240.
+		if stage.distance >= STING_FROM_X and (slot % 2 == 1 or stage.distance >= 150.0):
+			unit.set("sting_shots", 2)
+		if stage.distance >= OVERLOAD_FROM_X and (slot % 2 == 0 or stage.distance >= 240.0):
+			unit.set("overload_enabled", true)
 	elif family == "Probe" or family == "EyeDrone":
 		unit.set("initial_delay", 0.35 * float(slot % 3)) # Never the same first-shot frame as a neighbour.
 	if family == "EyeDrone" and stage.distance < FAN_FROM_X:
@@ -340,6 +370,8 @@ func _spawn(request: Dictionary) -> void:
 		get_tree().create_timer(3.5, false).timeout.connect(_clear_fauna_hint) # Bound method: dropped if the level reloads.
 	if bool(request.get("hold", false)) and family == "Walker":
 		unit.set_meta("level_hold", true) # Showcase: the scroll slows while it lives, so it stays on screen.
+		health.max_health = SHOWCASE_HP # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
+		health.current_health = SHOWCASE_HP
 	max_active_seen = maxi(max_active_seen, active_units.size())
 	if bool(request.get("depth", false)):
 		var slot_point := Vector2(DEPTH_TARGET_X + float(request.get("x", 0.0)), height)
