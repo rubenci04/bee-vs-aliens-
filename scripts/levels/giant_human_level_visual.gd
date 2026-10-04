@@ -21,6 +21,7 @@ const PARTS := {
 @onready var skeleton: Skeleton3D = $VisualRoot/Hipster/Rig/Skeleton3D
 
 var _skins: Array[Skin] = []
+var close_up_meshes: Array[MeshInstance3D] = [] # Sneaker sole / toe cap shells added by GiantHumanCloseUp.
 var _samples: Dictionary = {} # part -> Array of [skin index, bind-space vertex, bind indices, weights]
 
 # The reused Hipster model has bright white SoleL/SoleR slabs. At 6x scale
@@ -47,6 +48,9 @@ func _ready() -> void:
 		collider.shape = placeholder
 		collider.disabled = true
 	_collect_samples()
+	# GARDEN IDENTITY 04: close-up polish (denim jeans, canvas sneakers). After sampling, on purpose: the damage hulls
+	# keep the exact body they were measured on (the polish never moves a vertex anyway).
+	close_up_meshes = GiantHumanCloseUp.apply($VisualRoot/Hipster)
 
 func _collect_samples() -> void:
 	var bone_part := {}
