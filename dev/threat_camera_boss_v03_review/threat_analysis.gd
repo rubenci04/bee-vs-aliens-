@@ -14,11 +14,14 @@ const ATTACK_STATES := ["WINDUP", "SHOOT", "AIM", "DASH", "TELEGRAPH", "PASS", "
 
 var fire_interval := 0.3
 var fight_boss := false
+var ghost := false # ghost=1: shots pass through Bee (a dodging player sees them cross the whole screen).
 
 func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("fire="):
 			fire_interval = float(arg.substr(5))
+		elif arg == "ghost=1":
+			ghost = true
 		elif arg == "boss=1":
 			fight_boss = true
 	call_deferred("run")
@@ -55,6 +58,8 @@ func run() -> void:
 	bee.set_physics_process(false)
 	bee.health.max_health = 1000000
 	bee.health.current_health = 1000000
+	if ghost:
+		bee.hurtbox.monitorable = false
 	var units := {} # id -> record
 	var t := 0.0
 	var fire_left := 0.0

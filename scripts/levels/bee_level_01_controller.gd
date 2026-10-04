@@ -39,6 +39,9 @@ const OVERLOAD_FROM_X := 150.0
 const DEPTH_TARGET_X := 3.4
 ## Scroll speed while a showcase Walker ("hold") is alive: it walks with Bee instead of being left behind.
 const HOLD_SCROLL := 1.0
+## BOSS V2: never more than this many minions alive; they fly out of the saucer in MINION_LAUNCH_SECONDS.
+const MAX_BOSS_MINIONS := 2
+const MINION_LAUNCH_SECONDS := 0.7
 
 # Level-only HP; reusable enemy scenes and attacks are unchanged.
 ## THREAT, CAMERA & BOSS REBUILD 03 — HP by ROLE (not by tradition). Reasonable Base fire ~27-33 DPS (3 taps/s, 10 HP,
@@ -75,16 +78,18 @@ const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Sp
 #   Organic   ranged bio-orbs (fan of 3) -> reposition -> lunge -> recovery (never both at once)
 #   Walker    alternates its aimed burst with a high-to-low SWEEP of 5 (violet charge) that forces a height change
 #   Speeder   lane telegraph across the screen before its straight dash (fast crossing threat)
+#   Cadence   combat-only pressure: Probe cooldown 1.6->1.3 / recovery 0.55->0.45, Eye 1.5->1.2, Turret 1.3->1.1,
+#             Walker recovery 0.7->0.6 (telegraphs, damage and shot speed unchanged)
 const LEVEL_TUNING = {
 	"Wasp": {"arcade_mode": true, "max_passes": 3, "arcade_recovery": 1.1, "restalk_time": 1.0, "drift_amplitude": 0.8},
-	"Probe": {"cooldown_time": 1.6, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.55, "bursts_per_cycle": 2, "move_speed": 3.0,
+	"Probe": {"cooldown_time": 1.3, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.45, "bursts_per_cycle": 2, "move_speed": 3.0,
 			"advance_speed": 0.5, "reposition_speed": 1.2, "maximum_range": 8.5, "stay_on_screen": true},
-	"EyeDrone": {"cooldown_time": 1.5, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 2, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
+	"EyeDrone": {"cooldown_time": 1.2, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 2, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
 			"minimum_range": 3.0, "maximum_range": 5.0, "stay_on_screen": true},
-	"Turret": {"cooldown_time": 1.3, "fan_count": 3, "fan_step_degrees": 14.0},
+	"Turret": {"cooldown_time": 1.1, "fan_count": 3, "fan_step_degrees": 14.0},
 	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6, "ranged_enabled": true},
 	"Speeder": {"lane_telegraph": true},
-	"Walker": {"recovery_time": 0.7, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2},
+	"Walker": {"recovery_time": 0.6, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).
 # Playtest verdict: "still empty, not challenging, too static". V3 layers each stretch instead of enemy -> kill -> wait:
@@ -213,6 +218,8 @@ func _physics_process(delta: float) -> void:
 			_spawn_pending()
 			return
 	_spawn_pending()
+	if boss != null and is_instance_valid(boss):
+		boss.minions_alive = boss_minions().size() # BOSS V2: the saucer only summons when the field allows it.
 	if event_index >= EVENTS.size():
 		if active_units.is_empty() and _pending.is_empty() and swarm_units.is_empty() and _swarm_pending.is_empty():
 			_advance_boss(delta) # Level complete only after the UFO is destroyed.
@@ -373,6 +380,10 @@ func _spawn(request: Dictionary) -> void:
 		health.max_health = SHOWCASE_HP # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
 		health.current_health = SHOWCASE_HP
 	max_active_seen = maxi(max_active_seen, active_units.size())
+	if bool(request.get("minion", false)):
+		unit.set_meta("boss_minion", true)
+		CinematicDepthEntry.begin_from(unit, request["launch_from"], request["launch_slot"], _on_depth_arrived.bind(unit.get_instance_id()), MINION_LAUNCH_SECONDS)
+		return
 	if bool(request.get("depth", false)):
 		var slot_point := Vector2(DEPTH_TARGET_X + float(request.get("x", 0.0)), height)
 		CinematicDepthEntry.begin(unit, slot_point, request.get("anchor", slot_point), _on_depth_arrived.bind(unit.get_instance_id()))
@@ -496,11 +507,15 @@ func _start_boss() -> void:
 	get_node("../Enemies").add_child(boss)
 	boss.defeated.connect(_on_boss_defeated)
 	boss.phase_changed.connect(_on_boss_phase)
+	boss.summon_requested.connect(_on_boss_summon)
 	encounter_label = "PRIMER CONTACTO · OVNI"
 	player_label = "¡PRIMER CONTACTO!"
 	boss.begin(stage.camera, bee)
 
 func _on_boss_phase(state: int) -> void:
+	if state == UfoBoss01.State.DEATH:
+		for minion in boss_minions():
+			minion.get_node("HealthComponent").take_damage(99999) # The minions fall with their ship.
 	if state == UfoBoss01.State.PHASE_1:
 		player_label = "" # The health bar takes over.
 
@@ -541,3 +556,26 @@ func _update_hold() -> void:
 		_holding = false
 		if is_equal_approx(stage.scroll_speed, HOLD_SCROLL):
 			stage.scroll_speed = 2.0
+
+# --- BOSS CHALLENGE V2 (REBUILD 03): minions ------------------------------------------------------------------
+
+## Live minions launched by the UFO (never more than MAX_BOSS_MINIONS).
+func boss_minions() -> Array[Node3D]:
+	var list: Array[Node3D] = []
+	for unit in active_units:
+		if is_instance_valid(unit) and unit.has_meta("boss_minion"):
+			list.append(unit)
+	return list
+
+## Minions leave the saucer's hatch and fly to their slots (no AI, shots or collision until they arrive), then fight
+## as normal Level 01 units that never retreat on their own.
+func _on_boss_summon(family: StringName, count: int) -> void:
+	if boss == null or not is_instance_valid(boss) or _frozen:
+		return
+	var slots := [Vector2(DEPTH_TARGET_X - 0.6, 5.6), Vector2(DEPTH_TARGET_X - 0.2, 2.2)]
+	for i in count:
+		if boss_minions().size() >= MAX_BOSS_MINIONS:
+			return
+		var free_slot: Vector2 = slots[(boss_minions().size() + i) % slots.size()]
+		_spawn({"family": str(family), "slot": i, "event": EVENTS.size() - 1, "hard": true, "y": free_slot.y, "minion": true,
+				"launch_from": boss.global_position - Vector3(stage.camera.global_position.x, 0.0, 0.0), "launch_slot": free_slot})

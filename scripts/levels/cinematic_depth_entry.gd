@@ -18,8 +18,13 @@ const PACK := 0.3 ## formations start at 30 % of their final spread
 ## `slot` is the final camera-relative point on the flight plane (x relative to the camera, absolute y);
 ## `anchor` is the formation's shared camera-relative start. Calls `on_arrive` exactly once, on the plane.
 static func begin(unit: Node3D, slot: Vector2, anchor: Vector2, on_arrive: Callable, seconds := SECONDS) -> Tween:
-	var camera := unit.get_viewport().get_camera_3d()
 	var start := Vector3(anchor.x + (slot.x - anchor.x) * PACK, anchor.y + RISE + (slot.y - anchor.y) * PACK, DEPTH_Z)
+	return begin_from(unit, start, slot, on_arrive, seconds)
+
+
+## Same entry from any camera-relative start (x relative, y and z absolute): e.g. minions launched from the UFO.
+static func begin_from(unit: Node3D, start: Vector3, slot: Vector2, on_arrive: Callable, seconds := SECONDS) -> Tween:
+	var camera := unit.get_viewport().get_camera_3d()
 	unit.set_meta("depth_entry", true)
 	unit.set_meta("depth_was_target", unit.is_in_group("bee_auto_aim_targets"))
 	unit.remove_from_group("bee_auto_aim_targets")

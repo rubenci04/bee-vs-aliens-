@@ -8,6 +8,8 @@ extends Node3D
 signal defeated(boss: UfoBoss01)
 signal phase_changed(state: int)
 signal projectile_fired(projectile: AlienEnemyProjectile, pattern: StringName)
+## BOSS CHALLENGE V2 (REBUILD 03): the level director spawns `count` minions of `family` launched from the saucer.
+signal summon_requested(family: StringName, count: int)
 
 enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, TRANSITION, DEATH, DONE }
 
@@ -27,11 +29,23 @@ const CENTER_Y := 3.9
 const TRANSITION_SECONDS := 0.9
 
 # Per phase: [bob amplitude, bob period, cooldown, aimed telegraph, fan telegraph].
-# Amplitude keeps the whole saucer inside the preset D frame (top edge ~5.96 m at the play plane).
+# Amplitude keeps the whole saucer inside the preset E frame (top edge ~7.1 m at the play plane).
+## BOSS CHALLENGE V2 (REBUILD 03): more active movement per phase - a figure-eight over the right part of the arena
+## (X amplitude per phase) plus, from phase 2, a slow approach / retreat. Never chases Bee and never leaves the band
+## [X_MIN, half width - X_EDGE] in front of the camera, so the left of the screen is always an escape route.
+const MOVE_X := {State.PHASE_1: 0.7, State.PHASE_2: 1.1, State.PHASE_3: 1.4}
+const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1}
+const X_MIN := 1.4
+const X_EDGE := 2.2
+## Minions: phase 2 launches 2 EyeDrones (then again whenever none is left, every MINION_COOLDOWN s); phase 3 launches
+## a single Probe only when the screen is clean enough. While summoning the saucer does not attack (~1 s).
+const SUMMON_SECONDS := 1.0
+const MINION_COOLDOWN := {State.PHASE_2: 11.0, State.PHASE_3: 13.0}
+const MAX_MINIONS := {State.PHASE_2: 2, State.PHASE_3: 1}
 const PHASE_TUNING := {
-	State.PHASE_1: [0.9, 6.0, 1.45, 0.6, 0.7],
-	State.PHASE_2: [1.0, 5.0, 1.3, 0.55, 0.7],
-	State.PHASE_3: [1.1, 3.6, 1.0, 0.5, 0.6],
+	State.PHASE_1: [1.0, 5.4, 1.45, 0.6, 0.7],
+	State.PHASE_2: [1.3, 4.6, 1.3, 0.55, 0.7],
+	State.PHASE_3: [1.5, 3.4, 1.0, 0.5, 0.6],
 }
 const AIMED_SHOTS := 3
 const AIMED_INTERVAL := 0.14
@@ -76,6 +90,9 @@ var _bar_layer: CanvasLayer
 var _bar: ProgressBar
 var _death_tween: Tween
 var _contact_refresh := 0.0
+var minions_alive := 0 # Written by the level director every frame.
+var summons := 0
+var _summon_cooldown := 1.6
 
 
 func _ready() -> void:
@@ -202,8 +219,16 @@ func _tuning() -> Array:
 func _move(delta: float) -> void:
 	var tuning := _tuning()
 	_bob_time += delta
-	var y := CENTER_Y + sin(_bob_time * TAU / float(tuning[1])) * float(tuning[0])
-	global_position = Vector3(anchor.x + sin(_bob_time * 0.7) * 0.35, y, 0.0)
+	var phase: int = state if state != State.TRANSITION else _next_state
+	var period := float(tuning[1])
+	var y := CENTER_Y + sin(_bob_time * TAU / period) * float(tuning[0])
+	# Figure-eight: X runs at half the vertical frequency; from phase 2 a slow approach / retreat on top.
+	var x := anchor.x + sin(_bob_time * PI / period) * float(MOVE_X.get(phase, 0.35)) \
+			- maxf(0.0, sin(_bob_time * 0.42)) * float(APPROACH_X.get(phase, 0.0))
+	if camera != null:
+		var half := BeeShmupFairness.visible_half_width(camera, Vector3(camera.global_position.x, y, 0.0), BeeLevel01Framing.view_aspect(get_viewport()))
+		x = clampf(x, camera.global_position.x + X_MIN, camera.global_position.x + half - X_EDGE)
+	global_position = Vector3(x, y, 0.0)
 	visual_root.rotation.y += delta * 0.6
 	visual_root.rotation.z = lerpf(visual_root.rotation.z, cos(_bob_time * TAU / float(tuning[1])) * 0.08, delta * 3.0)
 
@@ -221,9 +246,29 @@ func _refresh_contact(delta: float) -> void:
 func _attack(delta: float) -> void:
 	_attack_left -= delta
 	var tuning := _tuning()
+	if state == State.PHASE_2 or state == State.PHASE_3:
+		_summon_cooldown -= delta
 	match _attack_step:
-		&"cooldown":
+		&"summon":
+			# Pressure dip: no attack while the hatch opens (the core pulses), then the minions launch.
+			var pulse := sin(clampf(1.0 - _attack_left / SUMMON_SECONDS, 0.0, 1.0) * PI)
+			_core.scale = Vector3.ONE * (1.0 + 0.6 * pulse)
+			_set_glow(1.0 + 2.0 * pulse)
 			if _attack_left <= 0.0:
+				_core.scale = Vector3.ONE
+				_set_glow(1.0)
+				var family := &"EyeDrone" if state == State.PHASE_2 else &"Probe"
+				summon_requested.emit(family, maxi(int(MAX_MINIONS.get(state, 0)) - minions_alive, 0))
+				summons += 1
+				_summon_cooldown = float(MINION_COOLDOWN.get(state, 12.0))
+				_attack_step = &"cooldown"
+				_attack_left = 0.8
+		&"cooldown":
+			if _attack_left <= 0.0 and _wants_summon():
+				_attack_step = &"summon"
+				_attack_left = SUMMON_SECONDS
+				BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.7)
+			elif _attack_left <= 0.0:
 				_pattern = _choose_pattern()
 				_attack_step = &"telegraph"
 				_attack_left = float(tuning[3]) if _pattern == &"aimed" else float(tuning[4])
@@ -251,6 +296,15 @@ func _attack(delta: float) -> void:
 				if _burst_left <= 0:
 					_attack_step = &"cooldown"
 					_attack_left = float(tuning[2])
+
+
+func _wants_summon() -> bool:
+	var cap := int(MAX_MINIONS.get(state, 0))
+	if cap <= 0 or _summon_cooldown > 0.0 or minions_alive > 0:
+		return false
+	if state == State.PHASE_3: # Only when the screen is clean enough: never a minion on top of a full pattern.
+		return get_tree().get_nodes_in_group("alien_projectiles").size() <= 4
+	return true
 
 
 func _choose_pattern() -> StringName:
@@ -336,6 +390,7 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 	var wanted := State.PHASE_3 if ratio <= PHASE_3_RATIO else (State.PHASE_2 if ratio <= PHASE_2_RATIO else State.PHASE_1)
 	if wanted > state:
 		_next_state = wanted
+		_summon_cooldown = 1.6 if wanted == State.PHASE_2 else 3.0
 		transitions += 1
 		_set_charge(0.0)
 		_attack_step = &"cooldown"
@@ -375,10 +430,13 @@ func _spark(index: int) -> void:
 	var offset := Vector3([-0.9, 0.8, -0.3, 0.5][index], [0.2, -0.1, 0.35, -0.25][index], 0.4)
 	BeeCombatVFX.spawn(get_parent(), global_position + offset, &"tech_death", Vector3.RIGHT, 0.8)
 	BeeAudio.play(get_parent(), &"tech_hit", global_position + offset, 0.8)
+	BeeCameraShake.kick(self, 0.03, 0.15)
 
 
 func _main_explosion() -> void:
 	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, 2.6)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"heavy_death", Vector3.RIGHT, 2.0) # REBUILD 03: layered blast.
+	BeeCameraShake.kick(self, 0.09, 0.45)
 	_play_long("res://audio/sfx/real/ufo_death.wav", "UfoDeath", -9.0)
 	visual_root.hide()
 
