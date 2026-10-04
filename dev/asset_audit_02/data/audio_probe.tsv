@@ -1,0 +1,715 @@
+path	ext	bytes	status	channels	rate	bits	duration_s	wav_chunks
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Energy_Impulse_01.wav	wav	95570	OK	2	44100	32	0.270	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Energy_Impulse_02.wav	wav	74418	OK	2	44100	32	0.210	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Energy_Impulse_03.wav	wav	113498	OK	2	44100	32	0.321	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Energy_Impulse_04.wav	wav	111378	OK	2	44100	32	0.315	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Impulse_01.wav	wav	75434	OK	2	44100	32	0.213	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Impulse_Double_01.wav	wav	112376	OK	2	44100	32	0.317	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Shot_01.wav	wav	74226	OK	2	44100	32	0.210	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Shot_02.wav	wav	68370	OK	2	44100	32	0.193	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Shot_03.wav	wav	78858	OK	2	44100	32	0.223	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/Laser_Shot_04.wav	wav	71186	OK	2	44100	32	0.201	JUNK,fmt,fact,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/(free)FX_Laser_Sound_Pack/(free)FX_Laser_Sound_Pack/UI_Software_Sound.wav	wav	24020	OK	1	44100	16	0.269	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Beam 1.wav	wav	1170512	OK	2	48000	24	4.064	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Beam 2.wav	wav	2033744	OK	2	48000	24	7.061	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Beam 3.wav	wav	3403856	OK	2	48000	24	11.819	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Beam 4.wav	wav	3780080	OK	2	48000	24	13.125	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Beam 5.wav	wav	3085904	OK	2	48000	24	10.715	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Pistol 1.wav	wav	457808	OK	2	48000	24	1.589	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Pistol 2.wav	wav	405080	OK	2	48000	24	1.406	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Pistol 3.wav	wav	374864	OK	2	48000	24	1.301	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Pistol 4.wav	wav	353360	OK	2	48000	24	1.227	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Pistol 5.wav	wav	422480	OK	2	48000	24	1.467	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Rifle 1.wav	wav	734288	OK	2	48000	24	2.549	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Rifle 2.wav	wav	675080	OK	2	48000	24	2.344	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Rifle 3.wav	wav	546896	OK	2	48000	24	1.899	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Rifle 4.wav	wav	560720	OK	2	48000	24	1.947	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sci-Fi Weapon SFX by Lentikula/Laser Rifle 5.wav	wav	540080	OK	2	48000	24	1.875	JUNK,fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Air Designed/AEROJet_Blast Off Clean_344 Audio_Air Designed.wav	wav	5061266	OK	2	96000	24	8.736	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Air Designed/AEROJet_Unidentified Encounter_344 Audio_Air Designed.wav	wav	33608088	OK	2	96000	24	58.036	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 1/VOXMale_Boxer Level Up 1_344 Audio_Anime Fight Voices.wav	wav	3013520	OK	2	96000	24	5.200	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 1/VOXMale_Male Adventurer, Active Yell 19_344 Audio_Anime Fight Voices.wav	wav	259292	OK	2	96000	24	0.444	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 1/VOXMale_Warrior Opponent Attack, 'Ai yah' 2_344 Audio_Anime Fight Voices.wav	wav	534478	OK	2	96000	24	0.919	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 2/VOXFem_Anime, Adult Warrior Breaths 40_344 Audio_Anime Fight Voices Vol 2.wav	wav	530778	OK	2	96000	24	0.913	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 2/VOXFem_Anime, Schoolgirl Fight Exhale 15_344 Audio_Anime Fight Voices Vol 2.wav	wav	387416	OK	2	96000	24	0.665	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Anime Fight Voices Vol. 2/VOXFem_Anime, Warrior Elf Princess Aggressive Yell_344 Audio_Anime Fight Voices Vol 2_14.wav	wav	928824	OK	2	96000	24	1.600	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Books/PAPRMisc_Antique Books Flicking Through Pages 11_344 Audio_Antiques - Books.wav	wav	1089860	OK	2	96000	24	1.878	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Books/PAPRMisc_Antique Books Slow Page Turns 6_344 Audio_Antiques - Books.wav	wav	7964216	OK	2	96000	24	13.750	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Books/PAPRMisc_Pile Of Antique Books Falling Over 8_344 Audio_Antiques - Books.wav	wav	1621132	OK	2	96000	24	2.796	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Clocks/CLOCKTick_Crooked Antique Clock_344 Audio_Antique Clocks.wav	wav	34745080	OK	2	96000	24	60.000	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Clocks/CLOCKTick_You're Running Late _344 Audio_Antique Clocks.wav	wav	34745080	OK	2	96000	24	60.000	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Luggage/OBJLug_Rumaging Through Suitcase, Antique Suitcase_344 Audio_Antiques - Luggage_02.wav	wav	5062080	OK	2	96000	24	8.738	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Luggage/OBJLug_Suitcase Being Locked, Antique Suitcase 1_344 Audio_Antiques - Luggage.wav	wav	5281512	OK	2	96000	24	9.117	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Luggage/OBJLug_Suitcase Opening and Closing, Antique Suitcase_344 Audio_Antiques - Luggage_01.wav	wav	4756302	OK	2	96000	24	8.210	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Small Metals/METLMvmt_  Antique Measuring Tape_344 Audio_Antique Small Metals.wav	wav	399368	OK	2	96000	24	0.686	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Small Metals/METLMvmt_  Opening Lid Of Antique Blowtorch_344 Audio_Antique Small Metals.wav	wav	841590	OK	2	96000	24	1.449	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Small Metals/METLMvmt_  Tinkering Antique Lock_344 Audio_Antique Small Metals.wav	wav	2347140	OK	2	96000	24	4.049	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Telephone/COMTelph_Antique Telephone Ear Piece Falling Down_344 Audio_Antiques - Telephone_03.wav	wav	728778	OK	2	96000	24	1.255	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Telephone/COMTelph_Antique Telephone Pick Up & Drop Ear Piece_344 Audio_Antiques - Telephone_05.wav	wav	1864884	OK	2	96000	24	3.217	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Telephone/COMTelph_Antique Telephone Rotary Dial Number  9_344 Audio_Antiques - Telephone.wav	wav	1419044	OK	2	96000	24	2.447	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Typewriter/COMType_Typewriter Carriage Movement, Typewriter_344 Audio_Antiques - Typewriter_01.wav	wav	2428206	OK	2	96000	24	4.189	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Typewriter/COMType_Typewriter Paper Movements, Typewriter 04_344 Audio_Antiques - Typewriter.wav	wav	2053026	OK	2	96000	24	3.541	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Antique Typewriter/COMType_Typewriter Space Key, Typewriter 05_344 Audio_Antiques - Typewriter.wav	wav	313822	OK	2	96000	24	0.538	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 1/OBJFurn_Barber Chair, Foot Pump 4_344 Audio_Barbershop Vol 1.wav	wav	4240928	OK	2	96000	24	7.320	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 1/OBJMisc_Hair Dryer, On, Idle, Off 4_344 Audio_Barbershop Vol 1.wav	wav	7136164	OK	2	96000	24	12.320	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 1/OBJMisc_Spray Bottle, Spray 1_344 Audio_Barbershop Vol 1.wav	wav	303404	OK	2	96000	24	0.520	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 2/OBJMisc_Hair Brush, Plastic Bristles, Brushing Hair_344 Audio_Barbershop Vol 2.wav	wav	3476616	OK	2	96000	24	6.000	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 2/OBJMisc_Hair Scissor, Snips 4_344 Audio_Barbershop Vol 2.wav	wav	2990174	OK	2	96000	24	5.160	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Barbershop Vol. 2/OBJMisc_Wahl Sterling Trimmer, On, Idle, Off_344 Audio_Barbershop Vol 2.wav	wav	25874722	OK	2	96000	24	44.681	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Fast 16_344 Audio_Bass Drops & Downers.wav	wav	2489510	OK	2	192000	24	2.125	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Medium 04_344 Audio_Bass Drops & Downers.wav	wav	5253906	OK	2	192000	24	4.487	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Slow 10_344 Audio_Bass Drops & Downers.wav	wav	9319922	OK	2	192000	24	7.962	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 2/DSGNBass_Bass Drop & Downer Fast 12_344 Audio_Bass Drops & Downers Vol 2.wav	wav	3088636	OK	2	192000	24	2.637	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 2/DSGNBass_Bass Drop & Downer Medium 15_344 Audio_Bass Drops & Downers Vol 2.wav	wav	4142136	OK	2	192000	24	3.537	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 2/DSGNBass_Bass Drop & Downer Slow 07_344 Audio_Bass Drops & Downers Vol 2.wav	wav	5312628	OK	2	192000	24	4.538	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 3/DSGNBass_Jump Start Drop 3_344 Audio_Bass Drops and Downers Vol 3.wav	wav	4289666	OK	2	192000	24	3.702	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 3/DSGNBass_Rattling Downer 3_344 Audio_Bass Drops and Downers Vol 3.wav	wav	6476440	OK	2	192000	24	5.590	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Bass Drops & Downers Vol. 3/DSGNBass_Tone Downer (Reverb)_344 Audio_Bass Drops and Downers Vol 3.wav	wav	6771780	OK	2	192000	24	5.845	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - British Police Radio Vol. 1/VOXMale_Police Radio, Burglary, Calm, Update, Warning_344 Audio_British Police Radio.wav	wav	4312764	OK	2	96000	24	7.443	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - British Police Radio Vol. 1/VOXMale_Police Radio, Car Theft, Relaxed, Update, Helpful_344 Audio_British Police Radio.wav	wav	3420844	OK	2	96000	24	5.903	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - British Police Radio Vol. 1/VOXMale_Police, Vehicle, Calm, 'Standing By'_344 Audio_British Police Radio.wav	wav	1390040	OK	2	96000	24	2.396	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Car Foley Vol. 1/VEHInt_CLIMATE CONTROL SYSTEM, FAN SPEED DIAL, FAST_344 Audio_Car Foley Vol 1.wav	wav	992500	OK	2	96000	24	1.710	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Car Foley Vol. 1/VEHInt_CUP HOLDER, RELEASE 1_344 Audio_Car Foley Vol 1.wav	wav	628432	OK	2	96000	24	1.081	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Car Foley Vol. 1/VEHInt_LIGHTING CONTROL, RELEASE, HEADLIGHT FLASH_344 Audio_Car Foley Vol 1.wav	wav	306824	OK	2	96000	24	0.526	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Casino Cards Vol. 1/GAMECas_Automatic Shuffler, Shuffling 1_344 Audio_Casino Cards Vol 1.wav	wav	5991860	OK	2	192000	24	5.172	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Casino Cards Vol. 1/GAMECas_Dealing 3_344 Audio_Casino Cards Vol 1.wav	wav	8068792	OK	2	192000	24	6.965	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Casino Cards Vol. 1/GAMECas_Pick Up Multiple Cards At Once 5_344 Audio_Casino Cards Vol 1.wav	wav	437056	OK	2	192000	24	0.375	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Christmas Vol. 1/MAGMisc_Magic Christmas Bells 2_344 Audio_Christmas.wav	wav	5151498	OK	1	96000	24	17.786	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Christmas Vol. 1/MAGMisc_Sleigh Movement, Pulling_344 Audio_Christmas.wav	wav	6629298	OK	2	96000	24	11.445	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Christmas Vol. 1/MAGMisc_Wrapping Paper, Opening Present 1_344 Audio_Christmas.wav	wav	1628520	OK	1	96000	24	5.618	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Cinema Experience Vol. 1/FOLYProp_Sitting Down, Creaky Seat, Squeaks 3_344 Audio_CInema Experience.wav	wav	2591042	OK	2	96000	24	4.471	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Cinema Experience Vol. 1/FOODMisc_Broom Sweeping Up Snacks On Hard Floor 2_344 Audio_CInema Experience.wav	wav	3455042	OK	2	96000	24	5.963	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Cinema Experience Vol. 1/VOXReac_Spectator, Female, Various Questions_344 Audio_Cinema Experience.wav	wav	10395722	OK	2	96000	24	17.949	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Cinematic Fight Vol. 1/FGHTGrab_Choking, Tension 03_344 Audio_Cinematic Fight Vol 1.wav	wav	10277880	OK	2	192000	24	8.873	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Cinematic Fight Vol. 1/FGHTImpt_4 x Punch, Body 02_344 Audio_Cinematic Fight Vol 1.wav	wav	4534202	OK	2	192000	24	3.913	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Climbing Gear Foley Vol. 1/EQUISprt_Climbing Gear, Carabiner, Screwing Lock 01_344 Audio_Climbing Gear Foley Vol 1.wav	wav	1851894	OK	2	96000	24	3.194	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Climbing Gear Foley Vol. 1/EQUISprt_Climbing Gear, Flicking Carabiner On Rope_344 Audio_Climbing Gear Foley Vol 1.wav	wav	3611038	OK	2	96000	24	6.232	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 1/ANMLRept_Hatchling Calling Out_344 Audio_Dinosaurs.wav	wav	1021506	OK	2	96000	24	1.760	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 1/ANMLRept_Raptor Flair_344 Audio_Dinosaurs.wav	wav	1030770	OK	2	96000	24	1.776	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 1/ANMLRept_T Rex_344 Audio_Dinosaurs.wav	wav	3306810	OK	2	96000	24	5.707	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 2/ANMLRept_Dinosaur Eating Meat 01_344 Audio_Dinosaurs Vol 2.wav	wav	11269804	OK	2	96000	24	19.459	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 2/ANMLRept_Dinosaur Egg Hatching 02_344 Audio_Dinosaurs Vol 2.wav	wav	970472	OK	2	96000	24	1.672	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dinosaurs Vol. 2/ANMLRept_Large Herbivore Roar 01_344 Audio_Dinosaurs Vol 2.wav	wav	7218028	OK	2	96000	24	12.461	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dog Vocalisations Vol. 1/ANMLDog_Dog Barks, Multiple, Indoors, Perspective,_344 Audio_Dog Vocalisations_02.wav	wav	3438282	OK	2	96000	24	5.934	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Dog Vocalisations Vol. 1/ANMLDog_Dog Shuffle, Grunt, Movement, Lying Down_344 Audio_Dog Vocalisations.wav	wav	3108214	OK	2	96000	24	5.364	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - East Coast America Vol. 1/AMBSubn_Ambience, Forest Crickets, Birds, Connecticut 02_344 Audio_East Coast America.wav	wav	30287980	OK	2	96000	24	52.302	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - East Coast America Vol. 1/AMBSubn_Electricity Hum, Lightbulb,  Coil Pickup 01_344 Audio_East Coast America.wav	wav	35789962	OK	2	96000	24	61.804	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Elemental Palette Designed Vol. 1/METLMisc_Metal, Slow Whoosh, Rattle, Pass By x4 01_344 Audio_Elemental Palette Designed Vol 1.wav	wav	705550	OK	2	96000	24	1.214	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Elemental Palette Designed Vol. 1/WATRMisc_Water, Liquid Impact, Bubble, Sci Fi, Hit 04_344 Audio_Elemental Palette Designed Vol 1.wav	wav	704692	OK	2	96000	24	1.213	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Elemental Palette Designed Vol. 1/WINDDsgn_Wind, Rush, Whoosh, Long x5 01_344 Audio_Elemental Palette Designed Vol 1.wav	wav	609592	OK	2	96000	24	1.049	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Extreme Winds Vol. 1/METLFric_Large Metal Box, Drag, Geofon_344 Audio_Extreme Winds Vol 1.wav	wav	38960288	OK	1	192000	24	67.280	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Extreme Winds Vol. 1/WINDDsgn_EXT, Eye Of The Storm_344 Audio_Extreme Winds Vol 1.wav	wav	208667644	OK	2	192000	24	180.180	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Ghostly Presences Vol. 1/AMBDsgn_Evil Spell Ambience_344 Audio_Ghostly Presences.wav	wav	208490024	OK	2	192000	24	180.027	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Haunting Ambiences Vol. 3/METLImpt_Metal Bangs, Metal Hits, Banging On Doors_344 Audio_Haunting Ambiences Vol 3.wav	wav	208667740	OK	2	192000	24	180.180	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Haunting Ambiences Vol. 3/WOODImpt_Wooden Hit, Dark, Heavy Hit, Vampire's Prison_344 Audio_Haunting Ambiences Vol 3.wav	wav	208667700	OK	2	192000	24	180.180	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Haunting Ambiences Vol. 5/FIRECrkl_Fire Crackling, Popping, Witch's Cauldron_344 Audio_Haunting Ambiences Vol 5.wav	wav	208459238	OK	2	192000	24	180.000	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Haunting Ambiences Vol. 5/HMNBrth_Respirator, Specimen Breathing, Mad Scientist Lab_344 Audio_Haunting Ambiences Vol 5.wav	wav	208459500	OK	2	192000	24	180.000	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Historical Weapons Vol. 2/WEAPArmr_Metal Shield Spin On Floor, Buckler MKH_344 Audio_Medieval Weapons Vol 2.wav	wav	41983234	OK	2	192000	24	36.250	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Historical Weapons Vol. 2/WEAPBlnt_Spear And Stick Impact, Wooden MKH 2_344 Audio_Medieval Weapons Vol 2.wav	wav	13081382	OK	2	192000	24	11.294	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/344 Audio - Historical Weapons Vol. 2/WEAPSwrd_Sword Slide Cuts, Metallic, Impact CM4 2_344 Audio_Medieval Weapons Vol 2.wav	wav	15011226	OK	2	192000	24	12.960	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - 100 kHz Designed Ice/ice, block of ice crushed, heavy-015.wav	wav	822678	OK	2	48000	24	2.836	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - 100 kHz Designed Ice/ice, crack, ice block snapping-001.wav	wav	1716792	OK	2	48000	24	5.940	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - 100 kHz Designed Ice/ice, movement, ice drift, ice field cracking up, initial, wide-001.wav	wav	47972316	OK	2	96000	24	83.275	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - 100 kHz Designed Ice/ice, surface cracking, fissure, fast, hard-003.wav	wav	2905332	OK	2	96000	24	5.034	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - Emotion and Magic/magic, action gesture, evil presence, onslaught-004.wav	wav	11012742	OK	2	48000	24	38.215	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - Emotion and Magic/magic, drone, tension, spellbound, evanescence-002.wav	wav	18426736	OK	2	48000	24	63.978	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astonishment-001.wav	wav	5517652	OK	2	48000	24	19.138	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astral travel-015.wav	wav	35160876	OK	2	96000	24	61.030	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/CB_Sounddesign - Applicable Sounds - Organic UI and Building Games SFX/GAMEMisc_Magic Creation 23_CB Sounddesign_APPlicable Sounds.wav	wav	918434	OK	2	48000	24	3.186	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/CB_Sounddesign - Applicable Sounds - Organic UI and Building Games SFX/TOONMisc_Bird Flutes 3_CB Sounddesign_APPlicable Sounds.wav	wav	298912	OK	2	48000	24	1.033	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/CB_Sounddesign - Applicable Sounds - Organic UI and Building Games SFX/UIMisc_Kalimba 3 Up_CB Sounddesign_APPlicable Sounds.wav	wav	160420	OK	2	48000	24	0.553	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/CB_Sounddesign - Applicable Sounds - Organic UI and Building Games SFX/UIMisc_Xylophone Ringtone 2_CB Sounddesign_APPlicable Sounds.wav	wav	1184042	OK	2	48000	24	4.108	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon & Animation Vol 2/Cartoon Bubbles Short.wav	wav	506006	OK	2	96000	24	0.875	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon & Animation Vol 2/Cartoon Pull Swoosh Readout.wav	wav	1321866	OK	2	96000	24	2.290	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon & Animation Vol 2/Cartoon Transition Bass Down.wav	wav	2019974	OK	2	96000	24	3.500	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Bloopers/Arrow Hit Rattle.wav	wav	625998	OK	2	96000	24	1.083	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Bloopers/Cartoon Confused Dizzy.wav	wav	866310	OK	2	96000	24	1.500	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Bloopers/Character Elf It Shall Be Done.wav	wav	351536	OK	2	96000	24	0.607	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Impacts/Cartoon Airy Impact Creaks.wav	wav	1442992	OK	2	96000	24	2.500	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Impacts/Cartoon Pops Random Sequence Reverb.wav	wav	806164	OK	2	96000	24	1.396	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Cartoon Impacts/Vibrato Impact Snap Spin Transition.wav	wav	1844014	OK	2	96000	24	3.195	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Colossal Impacts/Impact Cut Sweep.wav	wav	1612464	OK	2	96000	24	2.792	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Colossal Impacts/Transition Frantic Shaker Snap.wav	wav	843488	OK	2	96000	24	1.458	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Colossal Impacts/Woosh Debris.wav	wav	1372248	OK	2	96000	24	2.375	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Hybrid Game & UI Elements/Cofetti Whoosh Pluck Spill.wav	wav	1463808	OK	2	96000	24	2.536	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Hybrid Game & UI Elements/Foley Coin Flip Single Fast.wav	wav	541916	OK	2	96000	24	0.938	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Hybrid Game & UI Elements/Game Entry Happy Short.wav	wav	505876	OK	2	96000	24	0.875	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Interface & Infographics/Interface Accept Glassy Snap.wav	wav	253766	OK	2	96000	24	0.438	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Interface & Infographics/Interface Percussion Snap.wav	wav	379628	OK	2	96000	24	0.656	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Interface & Infographics/Interface Pop High Short.wav	wav	374222	OK	2	96000	24	0.646	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Paper Foley/A4 Printing Paper Rattle Page Turn Tail.wav	wav	738314	OK	2	96000	24	1.280	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Paper Foley/Encyclopedia Glossy Page Turn Muted.wav	wav	317726	OK	2	96000	24	0.549	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Paper Foley/Newspaper Static Foley Rummage.wav	wav	2963434	OK	2	96000	24	5.143	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Sci-Fi Drones/Dark Industrial Ambience.wav	wav	18045128	OK	2	96000	24	31.286	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Sci-Fi Drones/Psycho Glitched Screechy Tones Noise.wav	wav	35985784	OK	2	96000	24	62.392	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Sci-Fi Drones/Roomtone Space Ship Interior Muted.wav	wav	41870872	OK	2	96000	24	72.691	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - System & UI Feedback Elements/Interface Arp Reveal Down Long.wav	wav	674198	OK	2	96000	24	1.167	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - System & UI Feedback Elements/Interface Deny Low Fat Dark.wav	wav	429698	OK	2	96000	24	0.743	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - System & UI Feedback Elements/Interface Sci-Fi Ping Down.wav	wav	433814	OK	2	96000	24	0.750	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - UI Interaction Elements/Accept Boing Crunch.wav	wav	559868	OK	2	96000	24	0.970	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - UI Interaction Elements/Deny Muted.wav	wav	461708	OK	2	96000	24	0.799	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - UI Interaction Elements/Ting Coins.wav	wav	637214	OK	2	96000	24	1.104	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Ultra Transitions & Impacts/Impact Hit Rapid Chord Reverb.wav	wav	1850532	OK	2	96000	24	3.206	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Ultra Transitions & Impacts/Transition Braam Slow Dark Creepy.wav	wav	2596696	OK	2	96000	24	4.500	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - Ultra Transitions & Impacts/Woosh Sweep Slide Infographics Basic.wav	wav	289696	OK	2	96000	24	0.500	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - User Interface/Button Arp Twinkle.wav	wav	1046414	OK	2	96000	24	1.813	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - User Interface/Interface Plucks Happy.wav	wav	493094	OK	2	96000	24	0.853	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Cinematic Sound Design - User Interface/Readout Thin Long.wav	wav	2524336	OK	2	96000	24	4.375	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/David Dumais Audio - Melee Weapons Sound Effects Pack 2/METLFric_SWING SCRAPE Swift Melee Weapon Swing With A Long Blade 14_DDUMAIS_MWP2.wav	wav	5655626	OK	2	96000	24	2.353	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/David Dumais Audio - Melee Weapons Sound Effects Pack 2/METLImpt_METAL SWING HIT Weapon Swing To Metallic Body Impact And Resonant Tail 01_DDUMAIS_MWP2.wav	wav	5990378	OK	2	96000	24	2.933	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/David Dumais Audio - Melee Weapons Sound Effects Pack 2/SWSH_SWING IMPACTS Quick Heavy Weapon Swing To Thud Impact Var 01_DDUMAIS_MWP2.wav	wav	39908232	OK	2	96000	24	61.818	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/David Dumais Audio - Melee Weapons Sound Effects Pack 2/WEAPWhip_WHIP Snap Crack 05_DDUMAIS_MWP2.wav	wav	5146722	OK	2	96000	24	1.471	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character British Female Detective/HMNBrth_British Detective Breathing Vocal Female Idle Annoyed Breath Grunt_ESM_AAAGCBFD.wav	wav	756538	OK	2	96000	24	1.038	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character British Female Detective/VOXCry_British Detective Crying Vocal Female Low Energy Weep_ESM_AAAGCBFD.wav	wav	1686838	OK	2	96000	24	2.654	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character British Female Detective/VOXFem_British Detective Custom Lines Vocal Female In A World Of Lies And Deception Im The One They Turn To When They Need The Truth B_ESM_AAAGCBFD.wav	wav	2915318	OK	2	96000	24	4.784	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character British Female Detective/VOXReac_British Detective Pain Vocal Female Dying High Grunt Breath_ESM_AAAGCBFD.wav	wav	1354592	OK	2	96000	24	2.077	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character Police Officer/HMNBrth_Police Officer Gasp Vocal Male Shocked Alert 1.wav	wav	438054	OK	2	96000	24	0.462	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character Police Officer/HMNCough_Police Officer Cough Vocal Male 11.wav	wav	969568	OK	2	96000	24	1.385	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character Police Officer/VOXLaff_Police Officer Laugh Vocal Male 1.wav	wav	1169080	OK	2	96000	24	1.731	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - AAA Game Character Police Officer/VOXMale_Police Officer Custom Lines Vocal Male Emergency Shots Fired Need Backup.wav	wav	1392658	OK	2	96000	24	2.118	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/DSGNMisc_Misc Monster Tentacle Modulated Creature Shadow Abstract Swept Wobble Lfo 02_ESM_AG.wav	wav	1726032	OK	2	96000	24	2.041	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/DSGNStngr_Power Up Bright Positive Successful Light Saturation Crash Shimmer 05_ESM_AG.wav	wav	1428656	OK	2	96000	24	1.525	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/EXPLDsgn_Explosion Small Blast Enemy Death Crunchy Boom Cartoon Noisy Crash Impact Delay 03_ESM_AG.wav	wav	1402002	OK	2	96000	24	1.478	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Anime Game/FGHTImpt_Combat Punch Impact Light Hit Delay Crunchy Vintage Quick Smack 05_ESM_AG.wav	wav	1159288	OK	2	96000	24	1.057	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Board Game - Sound Set Kit for Tabletop and Digital Games/GAMEBoard_Event Board Reset Organic Multiple Pieces Wood Small 02_ESM_BG.wav	wav	771518	OK	2	96000	24	1.113	fmt,bext,iXML,_PMX,cart,id3,junk,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Board Game - Sound Set Kit for Tabletop and Digital Games/GAMEBoard_Game Play Piece Action Organic Connect Dots Fall Bounce 04_ESM_BG.wav	wav	252008	OK	2	96000	24	0.215	fmt,bext,iXML,_PMX,cart,id3,junk,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Board Game - Sound Set Kit for Tabletop and Digital Games/PAPRHndl_Game Play Cards Dry Show Flip Toss Disgard Near 12_ESM_BG.wav	wav	226662	OK	2	96000	24	0.167	fmt,bext,iXML,_PMX,cart,id3,junk,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Board Game - Sound Set Kit for Tabletop and Digital Games/UIClick_UI Button Analog Vintage Double Click Neutral Dry Press 11_ESM_BG.wav	wav	506374	OK	1	96000	24	0.167	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Elemental Mutation Whooshes and Impacts/ELECMisc_Impact Electric Tonal Deep Movement Motion Hiss Glitch 01_ESM_EMWI.wav	wav	2513360	OK	2	96000	24	3.689	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Elemental Mutation Whooshes and Impacts/FIREWhsh_Whoosh Fire Deep Growl Monster Saturated Crisp 03_ESM_EMWI.wav	wav	1819142	OK	2	96000	24	2.484	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Elemental Mutation Whooshes and Impacts/GLASMvmt_Whoosh Glass Crystal Fragments Sharp Shards Dry 05_ESM_EMWI.wav	wav	1905280	OK	2	96000	24	2.633	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Elemental Mutation Whooshes and Impacts/WATRImpt_Impact Water Deep Submerge Bubble Drown Ship Hit 05_ESM_EMWI.wav	wav	1638358	OK	2	96000	24	2.170	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fake Advertisements and Radio Sound Effects Audio Construction Kit/COMStatic_Radio Ham Loop Static Hum Active Powered On Garbled Noise 01_ESM_FA.wav	wav	13631298	OK	2	96000	24	22.881	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fake Advertisements and Radio Sound Effects Audio Construction Kit/VOXMale_Voice Wet Male Emergency Broadcast Announcement Dry War 01_ESM_FA.wav	wav	9329650	OK	2	96000	24	15.413	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fantasy Game 2 - Sound Kit for Enchanted Realms/CLOTHFlp_Action Inventory Open Flip Cloth Canvas Bag Slide Light 02_ESM_FG2.wav	wav	1000064	OK	2	96000	24	0.688	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fantasy Game 2 - Sound Kit for Enchanted Realms/GAMEMisc_Source Card Tarot Deck Generic Neutral Dry Heavy Shuffle 01_ESM_FG2.wav	wav	3430834	OK	2	96000	24	4.908	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fantasy Game 2 - Sound Kit for Enchanted Realms/MAGAngl_Magic Light Spell Enchantment Potion Effect Tonal Bright 03_ESM_FG2.wav	wav	3599350	OK	2	96000	24	5.200	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Fantasy Game 2 - Sound Kit for Enchanted Realms/UIAlert_Collect Scifi Futuristic Electronic Bass Burst Sweep Heavy 04_ESM_FG2.wav	wav	782516	OK	2	96000	24	0.310	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Game Materials/ICEFric_Dry Ice High Metal Squeal Groan Bright Squeak Dissonant Short 13_ESM_HDGM.wav	wav	2683684	OK	2	96000	24	3.921	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Game Materials/ICEFric_Dry Ice Squeak Metal Animal Mouse Imitation Short 07_ESM_HDGM.wav	wav	1682408	OK	2	96000	24	2.183	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Game Materials/METLImpt_Metal Old File Impact Tap Against Tire Iron Metallic Hit 01_ESM_HDGM.wav	wav	695688	OK	2	96000	24	0.469	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Game Materials/WOODFric_Wood Shaker Microphone Head Roll Table Alternate Grainy 05_ESM_HDGM.wav	wav	2819814	OK	2	96000	24	4.157	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MACHMech_Mechanism Counting Machine Interact Loose Container Short 01_ESM_HDLM.wav	wav	464010	OK	2	192000	24	0.271	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MECHLtch_Click Deep Mechanism Latch Button Nearfield Thunk 02_ESM_HDLM.wav	wav	588596	OK	2	192000	24	0.379	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MECHMisc_Tool Tape Measure Pull Retract Spring Slide Spin Long 07_ESM_HDLM.wav	wav	3908402	OK	2	192000	24	3.261	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - HD Lock And Mechanism Sound Design Kit/METLTonl_Item Spring Wire Impact Flick Top Clatter Light Tap Roll Handling Short 01_ESM_HDLM.wav	wav	13373428	OK	2	192000	24	11.476	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/CREABeast_Creature Werewolf Growl Menacing Monstrous 06_ESM_HALG.wav	wav	3643598	OK	2	96000	24	5.973	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/DSGNEthr_Jumpscare Vocal Aggressive Whisper Harsh Distortion 02_ESM_HALG.wav	wav	1938700	OK	2	96000	24	3.013	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/GORESplt_Gore Designed Transient Heavy Impact Smash 01_ESM_HALG.wav	wav	1240452	OK	2	96000	24	1.801	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/UIAlert_Alert Designed Transition Swell Creature Strange Alien Layered 01_ESM_HALG.wav	wav	3738986	OK	2	96000	24	6.138	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Humanoid Creatures Vol 4 - Monstrous and Undead Creature Vocalization Sound Sets/CREAHmn_Designed Orc Male Attack Long Heavy Hit Charged Up 03_ESM_HC4.wav	wav	1972086	OK	2	96000	24	2.566	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Humanoid Creatures Vol 4 - Monstrous and Undead Creature Vocalization Sound Sets/CREAMnstr_Designed Sea Beast Creature Pain Intense Yell Long 04_ESM_HC4.wav	wav	3337682	OK	2	96000	24	4.937	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Humanoid Creatures Vol 4 - Monstrous and Undead Creature Vocalization Sound Sets/HMNBrth_Construction Kit Male Screeching Breath Inhale Weak Squeal 05_ESM_HC4.wav	wav	1058914	OK	2	96000	24	0.981	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Humanoid Creatures Vol 4 - Monstrous and Undead Creature Vocalization Sound Sets/VOXReac_Construction Kit Male Flutter Death Vocal Stuttered Long 05_ESM_HC4.wav	wav	3346358	OK	2	96000	24	4.952	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Basic Transportation Sounds/AEROInt_Airplane Interior Small Plane Cruise Altitude Calm Flight 01_ESM_CPS.wav	wav	43520016	OK	2	96000	24	75.248	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Basic Transportation Sounds/AMBTraf_Downtown Construction Traffic Light Walla 03 Distant Beep_ESM_CPS.wav	wav	69412276	OK	2	96000	24	120.208	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Basic Transportation Sounds/BOATMotr_Diesel Engine Boat Idle Steady Rpm Hum Motor Mic One 01_ESM_CPS.wav	wav	15148428	OK	2	96000	24	26.000	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Basic Transportation Sounds/TRNElec_Electric Train Passby 02 Long Subway Slow_ESM_CPS.wav	wav	26370208	OK	2	96000	24	45.483	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Crowds Walla and Everyday Ambiences/AMBPubl_Cruise Ship Walla Distant Adults Children Laughing Screaming 4_ESM_CPS.wav	wav	81186994	OK	2	96000	24	140.629	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Crowds Walla and Everyday Ambiences/AMBPubl_Metro Station Entrance Hall Dings Walla Footsteps 01 Women Shopping_ESM_CPS.wav	wav	48364560	OK	2	96000	24	83.653	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Crowds Walla and Everyday Ambiences/AMBWar_Paintball Match Firefight Shots Walla Nearfield Full 05_ESM_CPS.wav	wav	46361390	OK	2	96000	24	80.176	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Crowds Walla and Everyday Ambiences/CRWDChld_Walla Children Kids Daytime School Playing Laughing Playground 01_ESM_CPS.wav	wav	85048672	OK	2	96000	24	147.333	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Storms Lakes Parks and Rural Nature Exteriors/AMBPark_Berlin City Humboldthain Park Strong Wind On Trees Foliage Traffic Wash 03_ESM_CPS.wav	wav	86523068	OK	2	96000	24	149.957	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Storms Lakes Parks and Rural Nature Exteriors/STORM_Texas Rain Thunder Initial Crash Boom Storm 01 Clap Lightning_ESM_CPS.wav	wav	76178298	OK	2	96000	24	132.005	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Storms Lakes Parks and Rural Nature Exteriors/WATRLap_Summer Tennessee Lake Dock Water Ripples Wake Wave Gentle 05 Distant_ESM_CPS.wav	wav	59457730	OK	2	96000	24	102.976	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Urban Life Exteriors/AMBCnst_Baltimore Construction Streetside Heavy Machinery And Jakchammers 01_ESM_CPS.wav	wav	63458452	OK	2	96000	24	109.835	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Urban Life Exteriors/AMBTown_City Courtyard Calm Street Distant Traffic Children Playing 03_ESM_CPS.wav	wav	99525332	OK	2	96000	24	172.459	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Public Spaces - Urban Life Exteriors/AMBUrbn_City Nightlife Ext Street In Reutersplatz German Walla Traffic 01_ESM_CPS.wav	wav	95376288	OK	2	96000	24	165.248	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Shooter Game Announcer Voice/VOXFutz_Announcer Vocal Male Wet Countdown Ten Kills Remaining 03_ESM_SGAV.wav	wav	1374602	OK	2	96000	24	2.115	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Shooter Game Announcer Voice/VOXFutz_Announcer Vocal Male Wet Special Kill Laugh Monster Kill Hahaha 02_ESM_SGAV.wav	wav	2290402	OK	2	96000	24	3.704	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Shooter Game Announcer Voice/VOXMale_Announcer Vocal Male Dry Game Statement Objective Completed 04_ESM_SGAV.wav	wav	887878	OK	2	96000	24	1.269	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Shooter Game Announcer Voice/VOXMale_Announcer Vocal Male Dry Special Kill Headshot 01_ESM_SGAV.wav	wav	821168	OK	2	96000	24	1.154	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Strange Game Ambient Loops 3/AMBRoom_Factory Loop Heavy Machinery Tonal Roomtone Dark Wind Vent_ESM_SGA3.wav	wav	34430034	OK	2	96000	24	58.819	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Strange Game Ambient Loops 3/DSGNSynth_Dark Loop Mystic Forest Tonal Steady Synth_ESM_SGA3.wav	wav	34912614	OK	2	96000	24	59.657	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Strange Game Ambient Loops 3/DSGNSynth_Scifi Loop Ship Reactor Synth Layer Layered Saw Buzz_ESM_SGA3.wav	wav	35095076	OK	2	96000	24	59.974	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Strange Game Ambient Loops 3/MAGShim_Shimmer Loop Small Bell Metal Taps_ESM_SGA3.wav	wav	26180810	OK	2	96000	24	44.498	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/AMBTrop_Loop Ambience Jungle Night Humid Birds Bug Chirps 01_ESM_SNLS.wav	wav	23966210	OK	2	96000	24	41.574	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/ANMLAmph_Animal Frog Echo Short Squished Frequency Formant 03_ESM_SNLS.wav	wav	1023440	OK	1	96000	24	2.316	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/FIREBurn_Loop Elements Fire Crackling Crunchy Flame Burn 03_ESM_SNLS.wav	wav	3913062	OK	1	96000	24	12.350	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Synthesized Nature Loops and Sounds/WINDInt_Loop Weather Wind Whipping Constricted Flow Turbulent 01_ESM_SNLS.wav	wav	4689984	OK	2	96000	24	7.524	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/DSGNStngr_Action Deploy Units Sword Slice Special Move Layered Swish 04_ESM_TDG.wav	wav	4666720	OK	2	96000	24	2.454	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/ICEBrk_Skill Freeze Whoosh Break Impact Layered Movement Shatter 03_ESM_TDG.wav	wav	4698230	OK	2	96000	24	2.509	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/ROBTMvmt_Tower Deploy Hitech Robot Motor Dark Thump Servo Whine 04_ESM_TDG.wav	wav	3849898	OK	2	96000	24	1.036	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Epic Stock Media - Tower Defense Game/WOODImpt_Hit Blood Spill Splat Wood Impact Light Hit Squelch Small Thump 03_ESM_TDG.wav	wav	3444480	OK	2	96000	24	0.332	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_HalfNotes_003.wav	wav	8641394	OK	2	48000	24	30.000	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_QuarterNotes_013.wav	wav	8641394	OK	2	48000	24	30.000	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_WholeNotes_011.wav	wav	8641394	OK	2	48000	24	30.000	JUNK,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_011.wav	wav	9949324	OK	2	96000	24	17.271	JUNK,Fake,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_075.wav	wav	8906404	OK	2	96000	24	15.460	JUNK,Fake,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_214.wav	wav	9371176	OK	2	96000	24	16.267	JUNK,Fake,fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Arc/ELECArc_ArcDesign15_InMotionAudio_Arc.wav	wav	604778	OK	2	96000	24	1.040	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Arc/ELECArc_ArcPowerUpDesign04_InMotionAudio_Arc.wav	wav	4335934	OK	2	96000	24	7.484	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Arc/ELECBuzz_Buzz27_InMotionAudio_Arc.wav	wav	5677412	OK	2	96000	24	9.800	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Back Garden Storm/STORM_StormAmbience11_InMotionAudio_BackGardenStorm.wav	wav	118927178	OK	2	96000	24	205.380	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Back Garden Storm/STORM_StormAmbience13_InMotionAudio_BackGardenStorm.wav	wav	87230146	OK	2	96000	24	150.640	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Car Interior Driving Ambience/VEHCar_TownDrivingAmbience06_InMotionAudio_CarInteriorDrivingAmbience.wav	wav	29801122	OK	2	96000	24	51.462	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Car Interior Driving Ambience/VEHCar_TownDrivingAmbience13_InMotionAudio_CarInteriorDrivingAmbience.wav	wav	32416006	OK	2	96000	24	55.978	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Chimney Wind/WINDInt_ChimneyWind05_InMotionAudio_ChimneyWind.wav	wav	66756950	OK	2	96000	24	115.283	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Christmas Cracker/OBJMisc_CrackerHatMovement16_InMotionAudio_ChristmasCracker.wav	wav	961130	OK	2	96000	24	1.656	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Christmas Cracker/OBJMisc_CrackerPull_WithBang_Effected_03_InMotionAudio_ChristmasCracker.wav	wav	309240	OK	2	96000	24	0.530	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Christmas Cracker/OBJMisc_Cracker_Grab02_InMotionAudio_ChristmasCracker.wav	wav	411030	OK	2	96000	24	0.706	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Foley T-Shirt/FOLYClth_ClothMovement24_InMotionAudio_FoleyT-Shirt.wav	wav	1319446	OK	2	96000	24	2.275	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Foley T-Shirt/FOLYClth_ClothMovement29_InMotionAudio_FoleyT-Shirt.wav	wav	871798	OK	2	96000	24	1.501	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Foley T-Shirt/FOLYClth_SinglePats04_InMotionAudio_FoleyT-Shirt.wav	wav	333406	OK	2	96000	24	0.572	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Grand Central Station/AMBTran_MainHallAmbience03B_InMotionAudio_GrandCentralStation.wav	wav	112522964	OK	2	96000	24	194.320	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Grand Central Station/VOXFutz_TannoyAnnouncement_MainHall08_InMotionAudio_GrandCentralStation.wav	wav	7831124	OK	2	96000	24	13.520	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Instrument Case/OBJLug_CaseDown_Concrete12_InMotionAudio_InstrumentCase.wav	wav	852210	OK	2	96000	24	1.467	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Instrument Case/OBJLug_Case_Closed06_InMotionAudio_InstrumentCase.wav	wav	572454	OK	2	96000	24	0.984	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Instrument Case/OBJLug_Handle_Movement15_InMotionAudio_InstrumentCase.wav	wav	602168	OK	2	96000	24	1.036	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Medical Thermometer/BEEPMed_Thermometer_Beep11_InMotionAudio_MedicalThermometer.wav	wav	140616	OK	2	96000	24	0.239	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Medical Thermometer/ELECEmf_Thermometer02_InMotionAudio_MedicalThermometer.wav	wav	974626	OK	2	96000	24	1.679	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Medical Thermometer/MACHMed_Thermometer_ButtonPress_Beep03_InMotionAudio_MedicalThermometer.wav	wav	786682	OK	2	96000	24	1.354	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Saxophone/MUSCInst_Case_SaxPlace09_InMotionAudio_Saxophone.wav	wav	292170	OK	2	96000	24	0.500	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Saxophone/MUSCInst_Grabandrelease30_InMotionAudio_Saxophone.wav	wav	823536	OK	2	96000	24	1.418	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Saxophone/MUSCInst_KeyPress64_InMotionAudio_Saxophone.wav	wav	268084	OK	2	96000	24	0.459	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Scratch Card/OBJMisc_ScratchCard_CardMovement_09_InMotionAudio_ScratchCard.wav	wav	1501882	OK	2	96000	24	2.590	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Scratch Card/OBJMisc_ScratchCard_CoinTapScratch_01_InMotionAudio_ScratchCard.wav	wav	660424	OK	2	96000	24	1.137	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Scratch Card/OBJMisc_ScratchCard_SurfaceWipe_04_InMotionAudio_ScratchCard.wav	wav	625368	OK	2	96000	24	1.076	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Sinister Textures 4/DSGNErie_NoiseBoxHit_10_InMotionAudio_SinisterTextures4.wav	wav	8721376	OK	2	96000	24	15.057	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Sinister Textures 4/DSGNErie_NoiseBoxHit_36_InMotionAudio_SinisterTextures4.wav	wav	8047674	OK	2	96000	24	13.894	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Sinister Textures 5/GOREMisc_Cladding_NailScratch19_InMotionAudio_SinisterTextures5.wav	wav	558728	OK	2	96000	24	0.961	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Sinister Textures 5/GOREMisc_Cladding_Scratch06_InMotionAudio_SinisterTextures5.wav	wav	956342	OK	2	96000	24	1.647	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Sinister Textures 5/GOREMisc_Concrete_MetalPipe02_InMotionAudio_SinisterTextures5.wav	wav	257016	OK	2	96000	24	0.440	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - The Commute/AMBTran_TrainInterior09_InMotionAudio_UKTrainInteriorAmbience.wav	wav	37167368	OK	2	96000	24	64.182	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - The Commute/AMBTran_TrainInterior12_InMotionAudio_UKTrainInteriorAmbience.wav	wav	58821022	OK	2	96000	24	101.578	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - The Death Whistle/CREAEthr_Aztec Death Whistle Distortion_02_IMA_Death Whistle Samples.wav	wav	999124	OK	2	96000	24	1.721	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - The Death Whistle/CREAEthr_Aztec Death Whistle Drone_05_IMA_Death Whistle Samples.wav	wav	11197616	OK	2	96000	24	19.333	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - The Death Whistle/CREAEthr_Aztec Death Whistle DryPitch12_IMA_Death Whistle Samples.wav	wav	926790	OK	2	96000	24	1.607	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - USA Hotel/DOORMetl_StairWellDoor01_InMotionAudio_USAHotel.wav	wav	3789346	OK	2	96000	24	6.540	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - USA Hotel/MECHClik_USALightSwitch_On05_InMotionAudio_USAHotel.wav	wav	151290	OK	2	96000	24	0.257	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - USA Hotel/WATRPlmb_ToiletFlush01_InMotionAudio_USAHotel.wav	wav	5733090	OK	2	96000	24	9.897	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Velcro/OBJTape_VelcroRip29_InMotionAudio_Velcro.wav	wav	237612	OK	2	96000	24	0.406	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Velcro/OBJTape_VelcroSqueeze01_InMotionAudio_Velcro.wav	wav	3866464	OK	2	96000	24	6.673	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Washing Basket Foley/FOLYMisc_WashingBasket_Pats&Movement12_InMotionAudio_WashingBasketFoley.wav	wav	2968224	OK	2	96000	24	5.122	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/InMotionAudio - Washing Basket Foley/FOLYMisc_WashingBasket_Pats&Movement43_InMotionAudio_WashingBasketFoley.wav	wav	997266	OK	2	96000	24	1.718	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Campfire - Bonfire FX/24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav	wav	69464022	OK	2	96000	24	120.576	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Campfire - Bonfire FX/42 Campfire, Putting Out Fire, Water from Bottle, Variation, Close.wav	wav	17806148	OK	2	96000	24	30.891	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Campfire FX - Ambisonic/Camp fire, crackling, putting oil in fire, close, night_B-format, Ambix.wav	wav	88153696	OK	4	96000	24	76.522	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Church Bells/04 Church Bells, Near Distance, In Church Tower-3 Different Bell 02.wav	wav	40417110	OK	2	96000	24	70.147	fmt,minf,elm1,regn,umid,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Church Bells/25 Church Bells, Far Distance, Rural Soundscape Distant, Hills Ridge, Spring 02.wav	wav	26100224	OK	2	48000	24	90.580	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Fireworks FX/02 Fireworks_ explosions_dense_whistles.wav	wav	56168426	OK	2	96000	24	97.492	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Ivo Vicic - Fireworks FX/13 Fireworks_powerful explosions_multiples in a row_near.wav	wav	13948424	OK	2	96000	24	24.193	fmt,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - British Walla and Crowd/CRWDWalla_Pub Walla Atmos, Restaurant, Liverpool, Scouse,_Jake Fielding_11.wav	wav	58926078	OK	2	96000	24	101.760	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - British Walla and Crowd/CRWDWalla_Pub Walla, Crowd, Bar, _Jake Fielding_British Walla and Crowd_14.wav	wav	68131866	OK	2	96000	24	117.658	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Cinematic Horn Braams/DSGNBram____Cinematic Horn Braam, Epic, Cinematic, Dark, Instrument, Huge-32.wav	wav	13210768	OK	2	96000	24	16.498	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Cinematic Horn Braams/DSGNBram____Cinematic Horn Braam, Epic, Cinematic, Dark, Instrument, Huge-67.wav	wav	11592530	OK	2	96000	24	13.689	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Fridge Hums Vol.2/MACHAppl_Deep Fridge Hum, Buzz, Electric Tone, Deep_Jake Fielding_Fridge Hums Pt2.wav	wav	77044372	OK	1	96000	24	266.100	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Fridge Hums Vol.2/MACHAppl_Rhythmic Electric Fridge Hum, Buzz, Static,_Jake Fielding_Fridge Hums Pt2.wav	wav	33205054	OK	2	48000	24	114.680	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Interior Wind Rain and Storms/HAIL_Hail on Door Window, UVPC_JF_INT Storm.wav	wav	38208032	OK	2	96000	24	65.980	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Interior Wind Rain and Storms/RAINInt_Heavy Rain on Window,  Constant _JF_INT Storm.wav	wav	17790838	OK	2	96000	24	30.720	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Jake Fielding - Interior Wind Rain and Storms/THUN_Interior Thunder Rumble_JF_INT Storm_01.wav	wav	10786384	OK	2	96000	24	18.624	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Just Sound Effects - Highlands of Norway/AMBSwmp_Meadow Pipits calling many Insects humming Wind blowing through Grass_JSE_HoN_Stereo.wav	wav	50565614	OK	2	96000	24	86.496	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Just Sound Effects - Highlands of Norway/WATRLap_Small Waves sloshing onto Rock Slabs at huge Glacial Lake _JSE_HoN_Quad.wav	wav	106675740	OK	4	96000	24	91.955	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Just Sound Effects - Rocky Coast of Norway/WATRWave_Medium Waves at Pebble Beach_JSE_RCoN_Stereo.wav	wav	113457246	OK	2	96000	24	187.580	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Just Sound Effects - Rocky Coast of Norway/WATRWave_Soft Waves Cliffs_JSE_RCoN_Stereo.wav	wav	145595324	OK	2	96000	24	243.375	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Bars & Restaurants Ambience/SBbra_Bar E 001.wav	wav	358849502	OK	2	96000	24	623.000	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Bars & Restaurants Ambience/SBbra_Shopping Mall Food Court B 001.wav	wav	391608828	OK	2	96000	24	679.874	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Fireworks Ambience/SBfa_Distant Fireworks 005.wav	wav	165211548	OK	2	96000	24	286.823	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Fireworks Ambience/SBfa_Fireworks 001.wav	wav	25867824	OK	2	96000	24	44.907	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Music Boxes/SBmb_Music Box A 013.wav	wav	2178748	OK	1	192000	32	2.835	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Music Boxes/SBmb_Music Box B 028.wav	wav	2028624	OK	1	192000	32	2.640	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Music Boxes/SBmb_Music Box C 059.wav	wav	2087304	OK	1	192000	32	2.716	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Music Boxes/SBmb_Music Box C Wind Up 006.wav	wav	1220454	OK	1	192000	32	1.587	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Stormy Night Ambience/SBsna_City Block Square Storm 003.wav	wav	70561486	OK	2	96000	24	122.500	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Swimming Pool Ambience/SBspa_Water Polo Feminine League Match Presentation 001.wav	wav	142705680	OK	2	96000	24	247.750	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Swimming Pool Ambience/SBspa_Water Polo Masculine League Break 001.wav	wav	63578584	OK	2	96000	24	110.377	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Vintage Radio/SBvr_AM EQ Sweeping 002.wav	wav	78538334	OK	1	192000	32	102.261	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Vintage Radio/SBvr_Mode Select Wheel 006.wav	wav	958364	OK	1	192000	32	1.246	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Vintage Radio/SBvr_Power Button 003.wav	wav	603812	OK	1	192000	32	0.784	fmt,bext,FLLR,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Volleyball Match Ambience/SBvma_Feminine League Match 017.wav	wav	97489662	OK	2	96000	24	169.250	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonic Bat - Volleyball Match Ambience/SBvma_Masculine Regional Match 005.wav	wav	223849092	OK	2	96000	24	388.624	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Spanish Crowds/CRWDCheer_Small Club, 50 People, Crowd, Spanish, Cheering and Applause-Surround_KSL_KS015.wav	wav	23471060	OK	6	48000	24	26.902	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Spanish Crowds/CRWDWalla_Crowd, Walla, Movement, 30 People Working Film Crew, Preparing a Movie Set in a Warehouse, Spanish Hum of Voice, Decor Mount, Ladders, Warning Alarm, Light Contruction-Stereo_KSL_KS015.wav	wav	86532438	OK	2	48000	24	298.520	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Spanish Wallas/CRWDWalla_Crowd, Walla, Dense Immersive Group of Adults, After or Befor a Show, Exterior, Spanish-Stereo_KSL_KS014.wav	wav	19751192	OK	2	48000	24	67.811	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Spanish Wallas/CRWDWalla_Dinner Party Crowd in Terrace, Walla, Toast with Pomada, Mixed Group of Adults, Men and Women, Spanish, Catalan Language, Menorcan Language-Atmos_KSL_KS014.wav	wav	112041230	OK	10	48000	24	77.313	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Toy Quadcopter/AERORadio_Quadcopter, Toy, Flying Sustained Close to Mic_KSL_KS013.wav	wav	6551306	OK	2	48000	24	22.283	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Toy Quadcopter/AERORadio_Quadcopter, Toy, Turn On, Turn Off, Syncing, Calibrate, Beeps_KSL_KS013.wav	wav	3575840	OK	2	48000	24	12.006	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Urban Life/AMBTown_Ambience, Big Town, Streets, Valdemoro, Spain, Daytime, Brush Cutter, Far Traffica, Airplanes, People Activity, Spanish Voices-Stereo_KSL_KS016.wav	wav	40153226	OK	2	48000	24	138.174	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Sonik Sound Library - Urban Life/AMBUrbn_Ambience, City, Madrid, Spain, Soft Traffic and Human Activity, Some Birds-Surround_KSL_KS016.wav	wav	153649202	OK	6	48000	24	176.726	fmt,bext,JUNK,minf,elm1,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Cars - Mad Mustang Mercury/VEHCar_Various Driving at Slow Speed 15 06_SNDBTS_CRS-MMM.wav	wav	8246704	OK	1	96000	24	28.630	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Cars - Mad Mustang Mercury/VEHDoor_Car Foley Car Door Open and Close Exterior 04 Perspective A_SNDBTS_CRS-MMM.wav	wav	851438	OK	1	96000	24	2.951	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Cars - Mad Mustang Mercury/VEHMech_Car Foey Gas and Brakes Pedals 08 B_SNDBTS_CRS-MMM.wav	wav	1293666	OK	2	96000	24	2.243	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Cars - Mad Mustang Mercury/VEHSkid_Tire Skids on Gravel 15 06_SNDBTS_CRS-MMM.wav	wav	9549576	OK	1	96000	24	33.154	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Honda/MOVEMisc_Honda CB750 Hornet Get On Bike Helmet On 02_SNDBTS_MCH.wav	wav	3947506	OK	1	96000	24	13.702	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Honda/VEHHorn_Honda CB500F Horn Long 02_SNDBTS_MCH.wav	wav	371744	OK	1	96000	24	1.286	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Honda/VEHMoto_Honda CB500F Approach Fast Engine Stop 04_SNDBTS_MCH.wav	wav	4740112	OK	1	96000	24	16.454	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Honda/VEHSkid_Honda CB500F Engine Start Tires Skidding Stop 02_SNDBTS_MCH.wav	wav	4644618	OK	1	96000	24	16.122	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Kawasaki/VEHBy_Kawasaki Ninja ZX 10R Pass By Fast 04 mono_SNDBTS_MCK.wav	wav	3461064	OK	1	96000	24	12.013	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Kawasaki/VEHHorn_Kawasaki Ninja ZX 10R Horn Single 03_SNDBTS_MCK.wav	wav	114340	OK	1	96000	24	0.392	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Kawasaki/VEHMech_Kawasaki Ninja ZX 10R Keys In Out 01_SNDBTS_MCK.wav	wav	520270	OK	1	96000	24	1.802	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Motorcycles - Kawasaki/VEHMoto_Kawasaki Ninja ZX 10R Engine Start Leave 06_SNDBTS_MCK.wav	wav	5165960	OK	1	96000	24	17.932	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Pass-By - Trains, Trucks & Cars 2/AMBTraf_Traffic Multiple Cars Passing By 25_SNDBTS_PB-TTC2.wav	wav	10533264	OK	2	96000	24	18.282	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Pass-By - Trains, Trucks & Cars 2/TRNMisc_Pass By Train 41_SNDBTS_PB-TTC2.wav	wav	7134572	OK	2	96000	24	12.379	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Pass-By - Trains, Trucks & Cars 2/TRNTram_Generic Tram Pass Py 13_SNDBTS_PB-TTC2.wav	wav	10552796	OK	2	96000	24	18.319	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Pass-By - Trains, Trucks & Cars 2/VEHFrght_Freight Truck Pass By 22_SNDBTS_PB-TTC2.wav	wav	3003510	OK	2	96000	24	5.210	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAAqua_Aquatic Creature Gurgling 2_SNDBTS_VB-SE.wav	wav	1203794	OK	1	96000	24	4.174	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAEthr_Ethereal Entity Grim Pain Long 4_SNDBTS_VB-SE.wav	wav	499708	OK	1	96000	24	1.730	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAHmn_Violent Humanoid Creature Exhale Short 4_SNDBTS_VB-SE.wav	wav	125424	OK	1	96000	24	0.430	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Bestiae - Source Elements/CREAInsc_Insectoid Creature Tremble Attack Long 1_SNDBTS_VB-SE.wav	wav	711964	OK	1	96000	24	2.467	fmt,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Hominis - Human Effort Voices/HMNBrth_Panting Male 02 04_SNDBTS_VH.wav	wav	2611058	OK	1	96000	24	9.062	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Hominis - Human Effort Voices/VOXCry_Crying Female 04 05_SNDBTS_VH.wav	wav	1231538	OK	1	96000	24	4.272	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Hominis - Human Effort Voices/VOXLaff_Laughing Female 02 06_SNDBTS_VH.wav	wav	205692	OK	1	96000	24	0.710	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/SoundBits - Vox Hominis - Human Effort Voices/WHSTHmn_Whistle Male 06 09_SNDBTS_VH.wav	wav	704382	OK	1	96000	24	2.442	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - City Rain/RAINConc_Rain Medium Exterior Splatter City Traffic 6_The Noisery_City Rain.wav	wav	91200898	OK	2	96000	24	157.497	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - City Rain/RAINInt_Rain Light Interior Hail Storm_The Noisery_City Rain.wav	wav	48537430	OK	2	96000	24	83.819	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - City Rain/WINDInt_Wind Strong Metal Rattle_The Noisery_City Rain.wav	wav	31557496	OK	2	96000	24	53.931	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - City Rain/WINDTonl_Wind Strong Gusts Hurricane Vents Rattle 06_The Noisery_City Rain.wav	wav	93977696	OK	2	96000	24	162.293	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Moaning Metal/DSGNImpt_Metal Hit Thud Thump Low Ring Geofon 1_The Noisery_Moaning Metal.wav	wav	2996162	OK	1	192000	24	5.171	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Moaning Metal/DSGNTonl_Designed Metal Bowed Screech Tonal Reverb 7_The Noisery_Moaning Metal.wav	wav	23991126	OK	2	192000	24	20.714	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Moaning Metal/DSGNTonl_Metal Scrape Low Tonal LFE 4_The Noisery_Moaning Metal.wav	wav	3880946	OK	1	192000	24	6.699	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Rich Glitch/UIGlitch_Designed_Glitch_Corrupted_Data Error_The Noisery_Rich Glitch_06.wav	wav	3144154	OK	2	96000	24	5.426	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Rich Glitch/UIGlitch_User interface_Glitch_High_Electronic_The Noisery_Rich Glitch_05.wav	wav	14004708	OK	2	96000	24	24.182	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Transit Tunes - The German Train Collection/AMBTran_Ambience Platform Bahnhof Train Station Whistle_The Noisery_Transit Tunes_ The German Train Collection.wav	wav	175348566	OK	2	192000	32	113.706	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/The Noisery - Transit Tunes - The German Train Collection/TRNElec_Train Electric Passenger By Close Right To_The Noisery_Transit Tunes_ The German Train Collection_01.wav	wav	69692822	OK	2	192000	32	45.192	JUNK,fmt,minf,elm1,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Flip Flops/FFG002.wav	wav	23629630	OK	2	96000	24	39.180	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Flip Flops/FFW003.wav	wav	19191090	OK	2	96000	24	31.475	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Nigerian Walla/NIG015.wav	wav	12008382	OK	1	48000	24	79.339	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Nigerian Walla/NIG053.wav	wav	2101894	OK	1	48000	24	10.543	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Nigerian Walla/NIG065.wav	wav	18195860	OK	1	48000	24	122.307	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - South African Walla/SAV004.wav	wav	42035368	OK	2	48000	24	144.435	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - South African Walla/SAW002.wav	wav	35874822	OK	2	48000	24	123.045	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Wire Cars/WIR006.wav	wav	19831042	OK	1	96000	24	65.623	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/TheWorkRoom - Wire Cars/WIR028.wav	wav	29876300	OK	2	96000	24	50.251	fmt,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Victor Ermakov - Industrial Ambiences - Ship Repair Factory/AMBInd_Factory Hall Busy Alarm Machines Voices_CW.wav	wav	39517628	OK	2	96000	24	68.603	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/Sonniss.com-GDC2026-GameAudioBundle/Victor Ermakov - Industrial Ambiences - Ship Repair Factory/MACHInd_Crane Onboard Ride Squeaks Motors_CW.wav	wav	57295470	OK	2	96000	24	99.467	fmt,junk,bext,data
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_carpet_000.ogg	ogg	6353	OK	2	44100	0	0.145	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_carpet_001.ogg	ogg	6411	OK	2	44100	0	0.145	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_carpet_002.ogg	ogg	6411	OK	2	44100	0	0.145	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_carpet_003.ogg	ogg	6301	OK	2	44100	0	0.145	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_carpet_004.ogg	ogg	6301	OK	2	44100	0	0.145	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_concrete_000.ogg	ogg	5808	OK	2	44100	0	0.106	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_concrete_001.ogg	ogg	6308	OK	2	44100	0	0.108	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_concrete_002.ogg	ogg	6255	OK	2	44100	0	0.113	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_concrete_003.ogg	ogg	5805	OK	2	44100	0	0.110	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_concrete_004.ogg	ogg	5912	OK	2	44100	0	0.114	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_grass_000.ogg	ogg	8290	OK	2	44100	0	0.778	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_grass_001.ogg	ogg	8313	OK	2	44100	0	0.674	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_grass_002.ogg	ogg	8278	OK	2	44100	0	0.692	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_grass_003.ogg	ogg	8129	OK	2	44100	0	0.669	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_grass_004.ogg	ogg	7800	OK	2	44100	0	0.590	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_snow_000.ogg	ogg	7880	OK	2	44100	0	0.374	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_snow_001.ogg	ogg	7794	OK	2	44100	0	0.374	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_snow_002.ogg	ogg	7694	OK	2	44100	0	0.374	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_snow_003.ogg	ogg	7860	OK	2	44100	0	0.374	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_snow_004.ogg	ogg	7630	OK	2	44100	0	0.374	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_wood_000.ogg	ogg	5949	OK	2	44100	0	0.250	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_wood_001.ogg	ogg	5929	OK	2	44100	0	0.252	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_wood_002.ogg	ogg	5895	OK	2	44100	0	0.251	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_wood_003.ogg	ogg	6207	OK	2	44100	0	0.252	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/footstep_wood_004.ogg	ogg	5799	OK	2	44100	0	0.248	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactBell_heavy_000.ogg	ogg	13915	OK	2	44100	0	1.480	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactBell_heavy_001.ogg	ogg	15577	OK	2	44100	0	1.741	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactBell_heavy_002.ogg	ogg	9252	OK	2	44100	0	0.697	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactBell_heavy_003.ogg	ogg	9429	OK	2	44100	0	0.654	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactBell_heavy_004.ogg	ogg	6529	OK	2	44100	0	0.301	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGeneric_light_000.ogg	ogg	5827	OK	2	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGeneric_light_001.ogg	ogg	5636	OK	2	44100	0	0.118	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGeneric_light_002.ogg	ogg	5795	OK	2	44100	0	0.140	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGeneric_light_003.ogg	ogg	5792	OK	2	44100	0	0.138	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGeneric_light_004.ogg	ogg	5747	OK	2	44100	0	0.140	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_heavy_000.ogg	ogg	7403	OK	2	44100	0	0.241	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_heavy_001.ogg	ogg	8946	OK	2	44100	0	0.429	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_heavy_002.ogg	ogg	7661	OK	2	44100	0	0.247	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_heavy_003.ogg	ogg	6956	OK	2	44100	0	0.172	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_heavy_004.ogg	ogg	8300	OK	2	44100	0	0.399	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_light_000.ogg	ogg	6526	OK	2	44100	0	0.210	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_light_001.ogg	ogg	6544	OK	2	44100	0	0.210	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_light_002.ogg	ogg	6562	OK	2	44100	0	0.210	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_light_003.ogg	ogg	6618	OK	2	44100	0	0.210	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_light_004.ogg	ogg	6641	OK	2	44100	0	0.210	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_medium_000.ogg	ogg	8400	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_medium_001.ogg	ogg	8605	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_medium_002.ogg	ogg	8341	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_medium_003.ogg	ogg	8596	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactGlass_medium_004.ogg	ogg	8397	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_heavy_000.ogg	ogg	6110	OK	2	44100	0	0.168	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_heavy_001.ogg	ogg	7279	OK	2	44100	0	0.359	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_heavy_002.ogg	ogg	5634	OK	2	44100	0	0.117	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_heavy_003.ogg	ogg	6209	OK	2	44100	0	0.207	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_heavy_004.ogg	ogg	5788	OK	2	44100	0	0.134	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_light_000.ogg	ogg	7651	OK	2	44100	0	0.351	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_light_001.ogg	ogg	6967	OK	2	44100	0	0.252	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_light_002.ogg	ogg	6804	OK	2	44100	0	0.236	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_light_003.ogg	ogg	9023	OK	2	44100	0	0.482	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_light_004.ogg	ogg	6675	OK	2	44100	0	0.213	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_medium_000.ogg	ogg	7117	OK	2	44100	0	0.272	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_medium_001.ogg	ogg	6151	OK	2	44100	0	0.143	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_medium_002.ogg	ogg	5857	OK	2	44100	0	0.119	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_medium_003.ogg	ogg	6964	OK	2	44100	0	0.254	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMetal_medium_004.ogg	ogg	5744	OK	2	44100	0	0.109	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMining_000.ogg	ogg	12035	OK	2	44100	0	0.937	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMining_001.ogg	ogg	11481	OK	2	44100	0	0.869	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMining_002.ogg	ogg	11235	OK	2	44100	0	0.805	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMining_003.ogg	ogg	12160	OK	2	44100	0	0.992	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactMining_004.ogg	ogg	11668	OK	2	44100	0	0.830	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlank_medium_000.ogg	ogg	12016	OK	2	44100	0	0.779	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlank_medium_001.ogg	ogg	12082	OK	2	44100	0	0.779	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlank_medium_002.ogg	ogg	12313	OK	2	44100	0	0.779	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlank_medium_003.ogg	ogg	12138	OK	2	44100	0	0.779	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlank_medium_004.ogg	ogg	12084	OK	2	44100	0	0.779	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_heavy_000.ogg	ogg	10032	OK	2	44100	0	0.489	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_heavy_001.ogg	ogg	8713	OK	2	44100	0	0.352	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_heavy_002.ogg	ogg	10188	OK	2	44100	0	0.494	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_heavy_003.ogg	ogg	8490	OK	2	44100	0	0.347	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_heavy_004.ogg	ogg	11092	OK	2	44100	0	0.559	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_light_000.ogg	ogg	10474	OK	2	44100	0	0.542	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_light_001.ogg	ogg	11730	OK	2	44100	0	0.655	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_light_002.ogg	ogg	9932	OK	2	44100	0	0.489	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_light_003.ogg	ogg	10626	OK	2	44100	0	0.528	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_light_004.ogg	ogg	11928	OK	2	44100	0	0.657	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_medium_000.ogg	ogg	10921	OK	2	44100	0	0.609	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_medium_001.ogg	ogg	11491	OK	2	44100	0	0.616	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_medium_002.ogg	ogg	10250	OK	2	44100	0	0.515	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_medium_003.ogg	ogg	11616	OK	2	44100	0	0.654	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPlate_medium_004.ogg	ogg	10803	OK	2	44100	0	0.534	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_heavy_000.ogg	ogg	11617	OK	2	44100	0	0.649	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_heavy_001.ogg	ogg	10861	OK	2	44100	0	0.536	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_heavy_002.ogg	ogg	9025	OK	2	44100	0	0.457	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_heavy_003.ogg	ogg	10029	OK	2	44100	0	0.474	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_heavy_004.ogg	ogg	10452	OK	2	44100	0	0.536	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_medium_000.ogg	ogg	8800	OK	2	44100	0	0.431	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_medium_001.ogg	ogg	8701	OK	2	44100	0	0.405	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_medium_002.ogg	ogg	10399	OK	2	44100	0	0.541	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_medium_003.ogg	ogg	9509	OK	2	44100	0	0.455	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactPunch_medium_004.ogg	ogg	10032	OK	2	44100	0	0.543	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_heavy_000.ogg	ogg	6570	OK	2	44100	0	0.505	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_heavy_001.ogg	ogg	6689	OK	2	44100	0	0.572	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_heavy_002.ogg	ogg	6749	OK	2	44100	0	0.572	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_heavy_003.ogg	ogg	6665	OK	2	44100	0	0.544	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_heavy_004.ogg	ogg	6478	OK	2	44100	0	0.501	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_medium_000.ogg	ogg	5351	OK	2	44100	0	0.118	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_medium_001.ogg	ogg	5506	OK	2	44100	0	0.183	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_medium_002.ogg	ogg	5358	OK	2	44100	0	0.135	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_medium_003.ogg	ogg	5392	OK	2	44100	0	0.140	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactSoft_medium_004.ogg	ogg	5438	OK	2	44100	0	0.147	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactTin_medium_000.ogg	ogg	6509	OK	2	44100	0	0.159	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactTin_medium_001.ogg	ogg	6603	OK	2	44100	0	0.174	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactTin_medium_002.ogg	ogg	6156	OK	2	44100	0	0.134	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactTin_medium_003.ogg	ogg	6541	OK	2	44100	0	0.215	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactTin_medium_004.ogg	ogg	6362	OK	2	44100	0	0.179	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_heavy_000.ogg	ogg	6233	OK	2	44100	0	0.313	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_heavy_001.ogg	ogg	6239	OK	2	44100	0	0.313	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_heavy_002.ogg	ogg	6146	OK	2	44100	0	0.313	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_heavy_003.ogg	ogg	6181	OK	2	44100	0	0.313	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_heavy_004.ogg	ogg	6253	OK	2	44100	0	0.313	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_light_000.ogg	ogg	6343	OK	2	44100	0	0.266	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_light_001.ogg	ogg	6373	OK	2	44100	0	0.266	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_light_002.ogg	ogg	6366	OK	2	44100	0	0.266	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_light_003.ogg	ogg	6381	OK	2	44100	0	0.266	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_light_004.ogg	ogg	6395	OK	2	44100	0	0.266	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_medium_000.ogg	ogg	6575	OK	2	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_medium_001.ogg	ogg	6555	OK	2	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_medium_002.ogg	ogg	6607	OK	2	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_medium_003.ogg	ogg	6598	OK	2	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_impact-sounds/Audio/impactWood_medium_004.ogg	ogg	6481	OK	2	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/back_001.ogg	ogg	6997	OK	1	44100	0	0.064	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/back_002.ogg	ogg	7029	OK	1	44100	0	0.070	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/back_003.ogg	ogg	7208	OK	1	44100	0	0.093	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/back_004.ogg	ogg	6923	OK	1	44100	0	0.073	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/bong_001.ogg	ogg	4848	OK	1	44100	0	0.123	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/click_001.ogg	ogg	4876	OK	1	44100	0	0.100	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/click_002.ogg	ogg	4275	OK	1	44100	0	0.010	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/click_003.ogg	ogg	4371	OK	1	44100	0	0.010	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/click_004.ogg	ogg	4486	OK	1	44100	0	0.010	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/click_005.ogg	ogg	4410	OK	1	44100	0	0.010	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/close_001.ogg	ogg	9915	OK	1	44100	0	0.148	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/close_002.ogg	ogg	14752	OK	1	44100	0	0.314	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/close_003.ogg	ogg	15648	OK	1	44100	0	0.314	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/close_004.ogg	ogg	16263	OK	1	44100	0	0.323	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/confirmation_001.ogg	ogg	8968	OK	1	44100	0	0.290	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/confirmation_002.ogg	ogg	14169	OK	1	44100	0	0.539	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/confirmation_003.ogg	ogg	9535	OK	1	44100	0	0.322	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/confirmation_004.ogg	ogg	12391	OK	1	44100	0	0.490	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/drop_001.ogg	ogg	5859	OK	2	44100	0	0.110	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/drop_002.ogg	ogg	6411	OK	2	44100	0	0.191	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/drop_003.ogg	ogg	6288	OK	2	44100	0	0.191	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/drop_004.ogg	ogg	7230	OK	2	44100	0	0.287	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_001.ogg	ogg	7373	OK	2	44100	0	0.165	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_002.ogg	ogg	7369	OK	2	44100	0	0.165	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_003.ogg	ogg	12256	OK	2	44100	0	0.533	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_004.ogg	ogg	6393	OK	2	44100	0	0.103	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_005.ogg	ogg	7266	OK	1	44100	0	0.500	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_006.ogg	ogg	8288	OK	1	44100	0	0.500	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_007.ogg	ogg	10225	OK	1	44100	0	0.192	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/error_008.ogg	ogg	9215	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_001.ogg	ogg	6103	OK	1	44100	0	0.278	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_002.ogg	ogg	4917	OK	1	44100	0	0.125	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_003.ogg	ogg	5732	OK	1	44100	0	0.124	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_004.ogg	ogg	8323	OK	1	44100	0	0.692	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_005.ogg	ogg	6206	OK	1	44100	0	0.111	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glass_006.ogg	ogg	6956	OK	1	44100	0	0.111	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glitch_001.ogg	ogg	5121	OK	2	44100	0	0.020	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glitch_002.ogg	ogg	5473	OK	2	44100	0	0.030	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glitch_003.ogg	ogg	4915	OK	2	44100	0	0.010	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/glitch_004.ogg	ogg	5225	OK	2	44100	0	0.023	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_001.ogg	ogg	12111	OK	1	44100	0	0.258	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_002.ogg	ogg	9915	OK	1	44100	0	0.258	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_003.ogg	ogg	11748	OK	1	44100	0	0.212	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_004.ogg	ogg	17723	OK	1	44100	0	0.418	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_005.ogg	ogg	20900	OK	1	44100	0	0.526	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_006.ogg	ogg	11618	OK	1	44100	0	0.380	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_007.ogg	ogg	8097	OK	1	44100	0	0.186	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_008.ogg	ogg	9085	OK	1	44100	0	0.225	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/maximize_009.ogg	ogg	7650	OK	1	44100	0	0.225	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_001.ogg	ogg	11924	OK	1	44100	0	0.258	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_002.ogg	ogg	9441	OK	1	44100	0	0.258	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_003.ogg	ogg	11739	OK	1	44100	0	0.212	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_004.ogg	ogg	17099	OK	1	44100	0	0.418	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_005.ogg	ogg	19501	OK	1	44100	0	0.526	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_006.ogg	ogg	11292	OK	1	44100	0	0.380	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_007.ogg	ogg	7677	OK	1	44100	0	0.186	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_008.ogg	ogg	9298	OK	1	44100	0	0.225	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/minimize_009.ogg	ogg	7665	OK	1	44100	0	0.225	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/open_001.ogg	ogg	9834	OK	1	44100	0	0.148	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/open_002.ogg	ogg	14975	OK	1	44100	0	0.314	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/open_003.ogg	ogg	15046	OK	1	44100	0	0.314	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/open_004.ogg	ogg	15879	OK	1	44100	0	0.323	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/pluck_001.ogg	ogg	6317	OK	2	44100	0	0.102	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/pluck_002.ogg	ogg	6941	OK	2	44100	0	0.165	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/question_001.ogg	ogg	11700	OK	1	44100	0	0.491	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/question_002.ogg	ogg	9455	OK	1	44100	0	0.333	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/question_003.ogg	ogg	8233	OK	1	44100	0	0.332	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/question_004.ogg	ogg	9821	OK	1	44100	0	0.332	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scratch_001.ogg	ogg	8989	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scratch_002.ogg	ogg	9319	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scratch_003.ogg	ogg	8849	OK	1	44100	0	0.123	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scratch_004.ogg	ogg	16478	OK	1	44100	0	0.325	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scratch_005.ogg	ogg	15824	OK	1	44100	0	0.325	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scroll_001.ogg	ogg	21633	OK	1	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scroll_002.ogg	ogg	24628	OK	1	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scroll_003.ogg	ogg	29488	OK	1	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scroll_004.ogg	ogg	20348	OK	1	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/scroll_005.ogg	ogg	20448	OK	1	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_001.ogg	ogg	5468	OK	2	44100	0	0.043	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_002.ogg	ogg	5463	OK	2	44100	0	0.043	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_003.ogg	ogg	6901	OK	1	44100	0	0.383	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_004.ogg	ogg	6909	OK	1	44100	0	0.383	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_005.ogg	ogg	6767	OK	1	44100	0	0.383	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_006.ogg	ogg	8101	OK	1	44100	0	1.944	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_007.ogg	ogg	6580	OK	1	44100	0	0.047	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/select_008.ogg	ogg	6339	OK	1	44100	0	0.047	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_001.ogg	ogg	6753	OK	2	44100	0	0.618	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_002.ogg	ogg	7097	OK	2	44100	0	0.611	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_003.ogg	ogg	9653	OK	2	44100	0	0.500	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_004.ogg	ogg	7248	OK	2	44100	0	0.500	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_005.ogg	ogg	7814	OK	2	44100	0	0.612	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_006.ogg	ogg	7873	OK	2	44100	0	0.611	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/switch_007.ogg	ogg	7921	OK	2	44100	0	0.614	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/tick_001.ogg	ogg	4497	OK	1	44100	0	0.023	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/tick_002.ogg	ogg	4514	OK	1	44100	0	0.023	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/tick_004.ogg	ogg	5031	OK	1	44100	0	0.055	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/toggle_001.ogg	ogg	7369	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/toggle_002.ogg	ogg	8056	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/toggle_003.ogg	ogg	8654	OK	1	44100	0	0.139	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_interface-sounds/Audio/toggle_004.ogg	ogg	6695	OK	1	44100	0	0.066	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/computerNoise_000.ogg	ogg	119024	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/computerNoise_001.ogg	ogg	120178	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/computerNoise_002.ogg	ogg	130861	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/computerNoise_003.ogg	ogg	123515	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorClose_000.ogg	ogg	20369	OK	1	44100	0	0.532	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorClose_001.ogg	ogg	21561	OK	1	44100	0	0.529	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorClose_002.ogg	ogg	20530	OK	1	44100	0	0.533	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorOpen_000.ogg	ogg	19616	OK	1	44100	0	0.532	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorOpen_001.ogg	ogg	21442	OK	1	44100	0	0.529	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/doorOpen_002.ogg	ogg	19864	OK	1	44100	0	0.533	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/engineCircular_000.ogg	ogg	177470	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/engineCircular_001.ogg	ogg	199100	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/engineCircular_002.ogg	ogg	188542	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/engineCircular_003.ogg	ogg	184193	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/engineCircular_004.ogg	ogg	180870	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/explosionCrunch_000.ogg	ogg	28274	OK	1	44100	0	0.777	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/explosionCrunch_001.ogg	ogg	47916	OK	1	44100	0	1.357	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/explosionCrunch_002.ogg	ogg	47907	OK	1	44100	0	1.256	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/explosionCrunch_003.ogg	ogg	54824	OK	1	44100	0	1.553	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/explosionCrunch_004.ogg	ogg	79250	OK	1	44100	0	1.980	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/forceField_000.ogg	ogg	25672	OK	1	44100	0	0.954	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/forceField_001.ogg	ogg	28947	OK	1	44100	0	0.953	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/forceField_002.ogg	ogg	27647	OK	1	44100	0	0.955	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/forceField_003.ogg	ogg	23938	OK	1	44100	0	0.956	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/forceField_004.ogg	ogg	26885	OK	1	44100	0	0.954	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/impactMetal_000.ogg	ogg	15491	OK	1	44100	0	0.635	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/impactMetal_001.ogg	ogg	15305	OK	1	44100	0	0.688	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/impactMetal_002.ogg	ogg	12708	OK	1	44100	0	0.471	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/impactMetal_003.ogg	ogg	17303	OK	1	44100	0	0.777	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/impactMetal_004.ogg	ogg	11290	OK	1	44100	0	0.390	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserLarge_000.ogg	ogg	25566	OK	1	44100	0	0.677	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserLarge_001.ogg	ogg	26220	OK	1	44100	0	0.721	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserLarge_002.ogg	ogg	27440	OK	1	44100	0	0.744	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserLarge_003.ogg	ogg	26104	OK	1	44100	0	0.716	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserLarge_004.ogg	ogg	26283	OK	1	44100	0	0.693	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserRetro_000.ogg	ogg	12588	OK	1	44100	0	0.235	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserRetro_001.ogg	ogg	12732	OK	1	44100	0	0.236	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserRetro_002.ogg	ogg	13130	OK	1	44100	0	0.255	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserRetro_003.ogg	ogg	14271	OK	1	44100	0	0.255	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserRetro_004.ogg	ogg	12701	OK	1	44100	0	0.279	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserSmall_000.ogg	ogg	7286	OK	2	44100	0	0.239	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserSmall_001.ogg	ogg	7448	OK	2	44100	0	0.247	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserSmall_002.ogg	ogg	8973	OK	2	44100	0	0.344	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserSmall_003.ogg	ogg	8179	OK	2	44100	0	0.300	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/laserSmall_004.ogg	ogg	8632	OK	2	44100	0	0.414	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/lowFrequency_explosion_000.ogg	ogg	14317	OK	2	44100	0	2.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/lowFrequency_explosion_001.ogg	ogg	9408	OK	2	44100	0	1.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/slime_000.ogg	ogg	20870	OK	1	44100	0	0.500	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/slime_001.ogg	ogg	159177	OK	1	44100	0	4.710	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLarge_000.ogg	ogg	189900	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLarge_001.ogg	ogg	212818	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLarge_002.ogg	ogg	214424	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLarge_003.ogg	ogg	214580	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLarge_004.ogg	ogg	210809	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLow_000.ogg	ogg	99760	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLow_001.ogg	ogg	99120	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLow_002.ogg	ogg	72688	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLow_003.ogg	ogg	85760	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineLow_004.ogg	ogg	100444	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineSmall_000.ogg	ogg	116880	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineSmall_001.ogg	ogg	133181	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineSmall_002.ogg	ogg	120467	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineSmall_003.ogg	ogg	129935	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngineSmall_004.ogg	ogg	130520	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngine_000.ogg	ogg	109059	OK	2	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngine_001.ogg	ogg	121385	OK	2	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngine_002.ogg	ogg	111072	OK	2	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/spaceEngine_003.ogg	ogg	67503	OK	2	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/thrusterFire_000.ogg	ogg	201216	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/thrusterFire_001.ogg	ogg	204218	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/thrusterFire_002.ogg	ogg	205657	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/thrusterFire_003.ogg	ogg	196273	OK	1	44100	0	5.000	
+D:/proyectos/V_Asset_Library/01_Extracted/audio/kenney_sci-fi-sounds/Audio/thrusterFire_004.ogg	ogg	209339	OK	1	44100	0	5.000	
+D:/proyectos/bee_alien_3d/audio/ambience/garden_loop.wav	wav	3792644	OK	2	44100	16	21.500	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/enemies/organic_death.wav	wav	9306	OK	1	22050	16	0.210	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/enemies/organic_hit.wav	wav	4896	OK	1	22050	16	0.110	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/enemies/tech_death.wav	wav	12392	OK	1	22050	16	0.280	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/enemies/tech_hit.wav	wav	5336	OK	1	22050	16	0.120	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/environment/crate.wav	wav	11070	OK	1	22050	16	0.250	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/environment/human_step.wav	wav	11510	OK	1	22050	16	0.260	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/environment/human_warning.wav	wav	21212	OK	1	22050	16	0.480	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/pickups/bomb.wav	wav	11510	OK	1	22050	16	0.260	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/pickups/pollen.wav	wav	4454	OK	1	22050	16	0.100	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/pickups/spread.wav	wav	8424	OK	1	22050	16	0.190	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/player/damage.wav	wav	8424	OK	1	22050	16	0.190	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/player/defeat.wav	wav	18566	OK	1	22050	16	0.420	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/base.wav	wav	17684	OK	1	44100	16	0.200	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/bee_damage.wav	wav	25622	OK	1	44100	16	0.290	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/bee_defeat.wav	wav	22828	OK	1	44100	16	0.258	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/bomb.wav	wav	61784	OK	1	44100	16	0.700	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/bomb_pickup.wav	wav	22828	OK	1	44100	16	0.258	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/crate.wav	wav	26504	OK	1	44100	16	0.300	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/human_step.wav	wav	26504	OK	1	44100	16	0.300	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/human_step_b.wav	wav	26504	OK	1	44100	16	0.300	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/human_step_c.wav	wav	26504	OK	1	44100	16	0.300	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/melee.wav	wav	26504	OK	1	44100	16	0.300	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/organic_hit.wav	wav	10444	OK	1	44100	16	0.118	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/pollen.wav	wav	11510	OK	1	44100	16	0.130	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/spread.wav	wav	30034	OK	1	44100	16	0.340	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/spread_pickup.wav	wav	25600	OK	1	44100	16	0.290	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/tech_death.wav	wav	48556	OK	1	44100	16	0.550	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/tech_hit.wav	wav	24742	OK	1	44100	16	0.280	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/ufo_charge.wav	wav	39734	OK	1	44100	16	0.450	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/ufo_death.wav	wav	194084	OK	1	44100	16	2.200	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/ufo_hover.wav	wav	396936	OK	1	44100	16	4.500	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/ufo_sting.wav	wav	299924	OK	1	44100	16	3.400	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/real/wing_buzz.wav	wav	317564	OK	1	44100	16	3.600	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/weapons/base.wav	wav	3792	OK	1	22050	16	0.085	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/weapons/bomb.wav	wav	25622	OK	1	22050	16	0.580	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/weapons/melee.wav	wav	6218	OK	1	22050	16	0.140	fmt,data
+D:/proyectos/bee_alien_3d/audio/sfx/weapons/spread.wav	wav	4674	OK	1	22050	16	0.105	fmt,data
