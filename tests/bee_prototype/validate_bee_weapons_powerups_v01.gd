@@ -6,12 +6,16 @@ const REVIEW := "res://dev/weapons_powerups_review/"
 var stage: BeeShmupStage
 var bee: BeePlayer
 var hud: Control
+## GARDEN IDENTITY 04: the run used to end with quit(0) even after a failed check (quit(1) only requests the exit),
+## which hid a stale expectation since REBUILD 02. Any failure now keeps the exit code at 1.
+var failed := false
 
 func _initialize() -> void:
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
 	if not ok:
+		failed = true
 		push_error(message)
 		quit(1)
 		assert(ok, message)
@@ -259,7 +263,11 @@ func run() -> void:
 	Input.action_release("restart")
 	var restarted := current_scene as BeeShmupStage
 	check(restarted != stage and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "R did not restore kit")
-	check(restarted.get_node("Powerups").get_child_count() == 4 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
+	# 5 pickups since ARCADE REBUILD 02 (SpreadFirst, BombFirst, SpreadRecharge, PrebossPower, BombRecharge).
+	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
 	check("BASE" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text and "BOMB x1" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text, "R HUD wrong")
+	if failed:
+		quit(1)
+		return
 	print("BEE_WEAPONS_POWERUPS_V01_OK base=10 spread=3x8 angle=14 ammo=32 bomb=32 radius=3 cap=3 families=7 dedup=OK exclusions=OK restart=OK")
 	quit(0)
