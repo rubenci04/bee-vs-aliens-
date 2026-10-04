@@ -7,6 +7,7 @@ extends RefCounted
 
 const TOON := preload("res://assets/style/toon_body.gdshader")
 const TOON_DOUBLE := preload("res://assets/style/toon_body_double.gdshader")
+const TOON_CUTOUT := preload("res://assets/style/toon_body_cutout.gdshader")
 const OUTLINE := preload("res://assets/style/toon_outline.gdshader")
 const WING := preload("res://assets/style/toon_wing.gdshader")
 ## Alien-tech cyan emission is raised to at least this energy so it clears the glow threshold.
@@ -43,15 +44,47 @@ static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP) -> 
 				mesh.set_surface_override_material(surface, _material_for(source, outline, outline_width))
 
 
+## GARDEN IDENTITY 04 — Style C by asset type (imported props). Never applied blindly:
+##   &"prop"     closed meshes (pots, cans, tools, bushes): toon + rim + the thin prop outline
+##   &"foliage"  thin single-layer leaves / blades: toon double sided, NO outline (an inverted hull would paint the
+##               back faces black when the leaf is seen from behind)
+##   &"cutout"   leaves whose texture has holes (alpha): toon double sided with alpha scissor, NO outline
+static func apply_profile(model: Node, profile: StringName) -> void:
+	match profile:
+		&"foliage":
+			_apply_with(model, TOON_DOUBLE)
+		&"cutout":
+			_apply_with(model, TOON_CUTOUT)
+		_:
+			apply(model, true, OUTLINE_PROP)
+
+
+static func _apply_with(model: Node, shader: Shader) -> void:
+	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
+	if model is MeshInstance3D:
+		meshes.append(model)
+	for mesh: MeshInstance3D in meshes:
+		if mesh.mesh == null:
+			continue
+		for surface in mesh.mesh.get_surface_count():
+			var source := mesh.get_surface_override_material(surface) as BaseMaterial3D
+			if source == null:
+				source = mesh.mesh.surface_get_material(surface) as BaseMaterial3D
+			if source != null:
+				mesh.set_surface_override_material(surface, _material_for(source, false, OUTLINE_PROP, shader))
+
+
 static func is_cyan(color: Color) -> bool:
 	return color.h > 0.42 and color.h < 0.56 and color.s > 0.35
 
 
-static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: float) -> ShaderMaterial:
+## `forced_shader` (profiles): use this body shader instead of choosing by the source's culling.
+static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: float, forced_shader: Shader = null) -> ShaderMaterial:
 	var is_wing := source.resource_name == "Wing"
 	var texture := source.albedo_texture
-	var key := "%s|%s|%s|%s|%s|%s|%s|%s" % [is_wing, source.albedo_color.to_html(), source.emission_enabled, source.emission.to_html() if source.emission_enabled else "",
-			source.emission_energy_multiplier, source.cull_mode, texture.get_instance_id() if texture != null else 0, str(source.vertex_color_use_as_albedo) + str(outline) + str(outline_width)]
+	var key := "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [is_wing, source.albedo_color.to_html(), source.emission_enabled, source.emission.to_html() if source.emission_enabled else "",
+			source.emission_energy_multiplier, source.cull_mode, texture.get_instance_id() if texture != null else 0, str(source.vertex_color_use_as_albedo) + str(outline) + str(outline_width),
+			forced_shader.get_instance_id() if forced_shader != null else 0]
 	if _cache.has(key):
 		return _cache[key]
 	var material := ShaderMaterial.new()
@@ -59,7 +92,7 @@ static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: 
 		material.shader = WING
 		material.set_shader_parameter("tint", source.albedo_color.lerp(Color.WHITE, 0.35))
 	else:
-		material.shader = TOON_DOUBLE if source.cull_mode == BaseMaterial3D.CULL_DISABLED else TOON
+		material.shader = forced_shader if forced_shader != null else (TOON_DOUBLE if source.cull_mode == BaseMaterial3D.CULL_DISABLED else TOON)
 		var albedo := source.albedo_color
 		var luminance := albedo.get_luminance()
 		if luminance > BRIGHT_ALBEDO_CAP:
