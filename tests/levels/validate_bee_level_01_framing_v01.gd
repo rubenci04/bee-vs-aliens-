@@ -1,6 +1,6 @@
 extends SceneTree
 
-# Camera framing contract of Level 01 (preset D): camera values, flight window inside the
+# Camera framing contract of Level 01 (preset E, REBUILD 03; preset D kept as reference): camera values, flight window inside the
 # visible area, spawn just outside the right edge, and nothing above top edge - 0.5 m.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
@@ -28,17 +28,33 @@ func run() -> void:
 	var wave := stage.wave as BeeLevel01Controller
 	var aspect := BeeLevel01Framing.view_aspect(root)
 	var camera := stage.camera
-	check(is_equal_approx(camera.global_position.z, 8.5) and is_equal_approx(camera.global_position.y, 2.0), "Camera distance/height is not preset D")
-	check(is_equal_approx(rad_to_deg(camera.rotation.x), 5.0) and is_equal_approx(camera.fov, 40.0), "Camera pitch/FOV is not preset D")
+	var preset: Dictionary = BeeLevel01Framing.PRESETS[BeeLevel01Framing.DEFAULT_PRESET]
+	check(BeeLevel01Framing.DEFAULT_PRESET == &"E" and is_equal_approx(camera.global_position.z, preset["distance"]) and is_equal_approx(camera.global_position.y, preset["height"]), "Camera distance/height is not preset E")
+	check(is_equal_approx(rad_to_deg(camera.rotation.x), preset["pitch"]) and is_equal_approx(camera.fov, preset["fov"]), "Camera pitch/FOV is not preset E")
 	var top := BeeLevel01Framing.top_y()
 	var bottom := BeeLevel01Framing.bottom_y()
 	var half_min := BeeLevel01Framing.half_width_min(aspect)
 	var half_max := BeeLevel01Framing.half_width_max(aspect)
-	check(absf(top - 5.96) < 0.02 and absf(bottom + 0.28) < 0.02 and absf(half_min - 5.35) < 0.02, "Visible area differs from preset D review")
+	# REBUILD 03: preset E must give 15-25 % more width and height than preset D on the flight plane.
+	BeeLevel01Framing.use_preset(&"D")
+	var d_height := BeeLevel01Framing.top_y() - BeeLevel01Framing.bottom_y()
+	var d_half := BeeLevel01Framing.half_width_min(aspect)
+	check(absf(BeeLevel01Framing.top_y() - 5.96) < 0.02 and absf(d_half - 5.35) < 0.02, "Preset D reference changed")
+	BeeLevel01Framing.use_preset(BeeLevel01Framing.DEFAULT_PRESET)
+	var width_gain := half_min / d_half
+	var height_gain := (top - bottom) / d_height
+	check(width_gain >= 1.15 and width_gain <= 1.25 and height_gain >= 1.15 and height_gain <= 1.25, "Camera E gain outside 15-25 %% (w %.2f h %.2f)" % [width_gain, height_gain])
+	check(bottom < 0.0, "The ground line must stay in frame")
 	# Flight window: inside the visible area with the 0.4 m margin, relative to the camera.
 	var m := BeeLevel01Framing.FLIGHT_MARGIN
 	check(stage.bee.flight_max.x - stage.distance <= half_min - m + 0.001 and stage.distance - stage.bee.flight_min.x <= half_min - m + 0.001, "Horizontal flight limit leaves the screen")
 	check(stage.bee.flight_max.y <= top - m + 0.001 and stage.bee.flight_min.y >= bottom + m - 0.001, "Vertical flight limit leaves the screen")
+	# REBUILD 03 player anchor: Bee starts ~32 % from the left and never flies past ~66 % of the width.
+	var width := 2.0 * half_min
+	check(absf((stage.bee.flight_max.x - stage.distance + half_min) / width - BeeLevel01Framing.FLIGHT_RIGHT_FRACTION) < 0.01, "Flight window must end at the right fraction")
+	var start_fraction := (stage.bee.global_position.x - camera.global_position.x + half_min) / width
+	check(absf((BeeLevel01Framing.player_anchor_offset(aspect) + half_min) / width - 0.32) < 0.005, "Anchor must sit at 32 %% of the width")
+	check(start_fraction >= 0.25 and start_fraction <= 0.33, "Bee must start near the anchor (%.2f; the scroll already advanced a little)" % start_fraction)
 	# Fixture: Bee pushed far outside must end up inside the window.
 	stage.bee.global_position = Vector3(stage.distance + 50.0, 50.0, 0)
 	await frames(2)

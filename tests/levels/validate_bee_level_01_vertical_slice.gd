@@ -220,7 +220,7 @@ func test_human_collision() -> void:
 func test_log() -> void:
 	stage.set_physics_process(false)
 	wave.set_physics_process(false)
-	stage.distance = 55.0
+	stage.distance = 57.0 # REBUILD 03: Bee's window ends ~2 m right of the camera; frame the whole passage (52 -> 58).
 	stage._update_camera_and_bounds()
 	bee.global_position = Vector3(52.0, 0.9, 0)
 	bee.velocity = Vector3.ZERO

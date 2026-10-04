@@ -9,6 +9,8 @@ var elapsed_seconds := 0.0
 func _ready() -> void:
 	super._ready()
 	checkpoint.setup(self)
+	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
+		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 
 func _process(_delta: float) -> void:
 	# Esc/Shift+R and the defeat R are handled by the always-processing QoL component.
@@ -23,7 +25,7 @@ func _update_camera_and_bounds() -> void:
 	var aspect := BeeLevel01Framing.view_aspect(get_viewport())
 	var half_width := BeeLevel01Framing.half_width_min(aspect) - BeeLevel01Framing.FLIGHT_MARGIN
 	screen_left = -half_width
-	screen_right = half_width
+	screen_right = BeeLevel01Framing.flight_right_offset(aspect) # REBUILD 03: Bee lives in the left ~2/3; the right third reads threats.
 	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
 	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
 	super._update_camera_and_bounds()

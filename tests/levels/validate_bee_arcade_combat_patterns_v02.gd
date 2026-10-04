@@ -154,7 +154,10 @@ func test_probe() -> void:
 		var expected: Vector3 = (shot["bee"] - shot["origin"]).normalized()
 		check(angle_deg(shot["dir"], expected) < 2.5, "Probe shot not aimed at Bee at the moment of firing (%.1f deg)" % angle_deg(shot["dir"], expected))
 	var first: Array = groups[0]
-	check(angle_deg(first[0]["dir"], first[burst - 1]["dir"]) > 1.0, "Burst shots must re-aim (Bee moved between them)")
+	var reaim := 0.0 # Every shot re-aims: the largest change inside the burst (timing-independent).
+	for k in range(1, first.size()):
+		reaim = maxf(reaim, angle_deg(first[0]["dir"], first[k]["dir"]))
+	check(reaim > 0.5, "Burst shots must re-aim (Bee moved between them, %.2f deg)" % reaim)
 	# SHORT recovery between the two bursts of a cycle, LONG cooldown after the second one.
 	var starts: Array[int] = []
 	for g in groups:

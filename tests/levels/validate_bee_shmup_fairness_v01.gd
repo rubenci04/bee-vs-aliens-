@@ -97,7 +97,7 @@ func run() -> void:
 	await frames(3)
 	var camera_x := stage.camera.global_position.x
 	var half := BeeShmupFairness.visible_half_width(stage.camera, Vector3(camera_x, 3.0, 0.0), BeeLevel01Framing.view_aspect(root))
-	check(half > 5.0 and half < 6.2, "Unexpected visible half width %.2f" % half)
+	check(half > BeeLevel01Framing.half_width_min(BeeLevel01Framing.DESIGN_ASPECT) - 0.05 and half < BeeLevel01Framing.half_width_max(BeeLevel01Framing.DESIGN_ASPECT) + 0.05, "Unexpected visible half width %.2f" % half) # Camera-aware (REBUILD 03).
 	bee.global_position = Vector3(camera_x, 3.0, 0)
 
 	# 4. Off-screen fire and rear ceasefire for every ranged family.
