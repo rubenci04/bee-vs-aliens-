@@ -1,0 +1,7 @@
+BENCH[after] opening         first_spike=  10.3ms avg=10.00ms fps= 100 worst= 11.5ms render_cpu=1.50ms draws= 253 objects= 350 nodes=1664
+BENCH[after] dense_garden    first_spike=  32.9ms avg=10.00ms fps= 100 worst= 10.5ms render_cpu=1.08ms draws= 233 objects= 331 nodes=1664
+BENCH[after] watering_can    first_spike=  10.3ms avg=10.00ms fps= 100 worst= 10.5ms render_cpu=1.09ms draws= 270 objects= 369 nodes=1664
+BENCH[after] human           first_spike=  36.9ms avg=10.08ms fps=  99 worst= 48.8ms render_cpu=1.63ms draws= 329 objects= 463 nodes=1667
+BENCH[after] spider          first_spike=  32.8ms avg=10.06ms fps=  99 worst= 32.3ms render_cpu=1.28ms draws= 257 objects= 346 nodes=1719
+BENCH[after] post_checkpoint first_spike=  10.9ms avg=10.00ms fps= 100 worst= 10.2ms render_cpu=1.62ms draws= 245 objects= 345 nodes=1665
+BENCH[after] boss_phase2     first_spike=  10.5ms avg=10.00ms fps= 100 worst= 11.5ms render_cpu=1.42ms draws= 398 objects= 483 nodes=1778
