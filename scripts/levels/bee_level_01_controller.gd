@@ -90,16 +90,18 @@ const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Sp
 #   EyeDrone  cooldown 1.2 -> 1.1 s
 #   Popcorn   the two act-4 rows at X=222 / 245: 3 shooters instead of 2 (one more slow aimed shot each)
 #   Spider    new MEDIUM family (90 HP, 3 appearances) - the main new demand: change height on its column
+# COMBAT VARIETY 01 — one attack language per family (see docs/INFORME_LOTE_4.md): Wasp short fan of 3, EyeDrone vertical
+# laser sweep, Speeder ram, Turret mortar + puddle, Walker low horizontal burst, Probe split orb.
 const LEVEL_TUNING = {
 	"Wasp": {"arcade_mode": true, "max_passes": 3, "arcade_recovery": 1.1, "restalk_time": 0.85, "drift_amplitude": 0.8},
-	"Probe": {"cooldown_time": 1.3, "burst_shots": 4, "burst_gap": 0.2, "short_recovery": 0.45, "bursts_per_cycle": 2, "move_speed": 3.0,
+	"Probe": {"cooldown_time": 1.3, "burst_shots": 1, "split_orb": true, "burst_gap": 0.2, "short_recovery": 0.45, "bursts_per_cycle": 2, "move_speed": 3.0,
 			"advance_speed": 0.5, "reposition_speed": 1.2, "maximum_range": 8.5, "stay_on_screen": true},
-	"EyeDrone": {"cooldown_time": 1.1, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 2, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
+	"EyeDrone": {"cooldown_time": 1.1, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 0, "laser_every": 1, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
 			"minimum_range": 3.0, "maximum_range": 5.0, "stay_on_screen": true},
-	"Turret": {"cooldown_time": 1.1, "fan_count": 3, "fan_step_degrees": 14.0},
+	"Turret": {"cooldown_time": 1.3, "fan_count": 3, "fan_step_degrees": 14.0, "mortar_mode": true},
 	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6, "ranged_enabled": true},
-	"Speeder": {"lane_telegraph": true},
-	"Walker": {"recovery_time": 0.6, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2},
+	"Speeder": {"lane_telegraph": true, "ram_mode": true},
+	"Walker": {"recovery_time": 0.6, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2, "low_burst": true},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).
 # Playtest verdict: "still empty, not challenging, too static". V3 layers each stretch instead of enemy -> kill -> wait:
@@ -200,6 +202,8 @@ var _complete := false
 var _frozen := false
 var boss: UfoBoss01
 var boss_defeated := false
+var minion_gate_index := 0 # COMBAT VARIETY 01: next minion entry point (top, left, right).
+var minion_gates_used: Array[int] = []
 var _boss_breather_left := -1.0
 var current_act := 1 # Internal act (1-5) of the last launched event; 5 = FIRST CONTACT.
 var depth_entries := 0 # Cinematic depth entries started (dev/tests).
@@ -383,14 +387,16 @@ func _spawn(request: Dictionary) -> void:
 		unit.set("stalk_lane", [0.0, 1.1, -1.1][slot % 3])
 		# REBUILD 03, introduced progressively: implant sting on the second Wasp of a group from X=40 and on every
 		# Wasp from X=150; OVERLOAD on the first Wasp of a group from X=150 and on every Wasp from X=240.
-		if stage.distance >= STING_FROM_X and (slot % 2 == 1 or stage.distance >= 150.0):
-			unit.set("sting_shots", 2)
+		# COMBAT VARIETY 01: every Wasp from STING_FROM_X stings with ONE short fan of 3 (was 2 aimed bolts on some Wasps).
+		if stage.distance >= STING_FROM_X:
+			unit.set("sting_shots", 1)
+			unit.set("sting_fan_count", 3)
 		if stage.distance >= OVERLOAD_FROM_X and (slot % 2 == 0 or stage.distance >= 240.0):
 			unit.set("overload_enabled", true)
 	elif family == "Probe" or family == "EyeDrone":
 		unit.set("initial_delay", 0.35 * float(slot % 3)) # Never the same first-shot frame as a neighbour.
 	if family == "EyeDrone" and stage.distance < FAN_FROM_X:
-		unit.set("fan_every", 0) # Projectile language: aimed bursts first, fans only from FAN_FROM_X.
+		unit.set("laser_every", 0) # COMBAT VARIETY 01: aimed bursts first; the laser (was: fans) only from FAN_FROM_X.
 	if family == "Dragonfly" and not fauna_hint_shown:
 		fauna_hint_shown = true
 		player_label = FAUNA_HINT
@@ -534,6 +540,9 @@ func _start_boss() -> void:
 	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
 	if checkpoint != null:
 		checkpoint.activate_boss_checkpoint() # Retry after a defeat respawns at the start of the fight.
+	# BOSS v2: first attempt from the right, the retry from the left, and so on. Bee gets the whole width.
+	boss.entry_side = 1.0 if checkpoint == null or checkpoint.boss_checkpoint_count % 2 == 1 else -1.0
+	stage.set("boss_arena_wide", true)
 	boss.begin(stage.camera, bee)
 
 func _on_boss_phase(state: int) -> void:
@@ -596,13 +605,23 @@ func boss_minions() -> Array[Node3D]:
 func _on_boss_summon(family: StringName, count: int) -> void:
 	if boss == null or not is_instance_valid(boss) or _frozen:
 		return
-	var slots := [Vector2(DEPTH_TARGET_X - 0.6, 5.6), Vector2(DEPTH_TARGET_X - 0.2, 2.2)]
+	# COMBAT VARIETY 01 (boss v2): minions come in from several points - above the screen, the left edge and the right
+	# edge - in rotation, each to a slot on its own side (camera-relative). They keep aimed bursts (no laser) under the boss.
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
+	var gates := [[Vector3(-0.8, BeeLevel01Framing.top_y() + 1.4, 0.0), Vector2(-0.8, 5.8)],
+			[Vector3(-half - 1.2, 3.8, 0.0), Vector2(-half + 1.6, 4.2)],
+			[Vector3(half + 1.2, 2.8, 0.0), Vector2(half - 1.6, 2.6)]]
 	for i in count:
 		if boss_minions().size() >= MAX_BOSS_MINIONS:
 			return
-		var free_slot: Vector2 = slots[(boss_minions().size() + i) % slots.size()]
+		var gate: Array = gates[minion_gate_index % gates.size()]
+		minion_gate_index += 1
+		var free_slot: Vector2 = gate[1]
 		_spawn({"family": str(family), "slot": i, "event": EVENTS.size() - 1, "hard": true, "y": free_slot.y, "minion": true,
-				"launch_from": boss.global_position - Vector3(stage.camera.global_position.x, 0.0, 0.0), "launch_slot": free_slot})
+				"launch_from": gate[0], "launch_slot": free_slot})
+		if not active_units.is_empty():
+			active_units.back().set("laser_every", 0)
+		minion_gates_used.append(minion_gate_index - 1)
 
 ## UFO BOSS 01: a Bomb pickup appears in the arena during the last silence (only when Bee is low on charges, so dying and
 ## retrying never farms bombs). The level's last pollen (PollenM) sits just before the arena at X=338.4.

@@ -23,9 +23,25 @@ const PHASE_2_RATIO := 0.66
 const PHASE_3_RATIO := 0.33
 
 const APPROACH_SECONDS := 3.2
-const START_OFFSET := Vector3(4.0, 2.4, -38.0) # Far in depth, up and to the right of the arena anchor.
-const ANCHOR_DX := 3.0 # Arena position: right part of the screen, Bee keeps the left.
-const CENTER_Y := 3.5
+const START_OFFSET := Vector3(4.0, 2.4, -38.0) # Far in depth, up and to the side (x mirrored by `side`).
+const ANCHOR_DX := 3.0 # Arena position: |x| from the camera centre on the current side.
+const CENTER_Y := 3.6
+## BOSS v2 (combat variety 01): the saucer lives on ONE side of the screen (`side` +1 right / -1 left), enters from either
+## side and CROSSES to the other side at every phase change (and every SIDE_SWITCH_P3 s in phase 3). While crossing it
+## flies high, does not attack and its hull does not hurt. Bee may use the whole width during the fight.
+const CROSS_SECONDS := 1.5
+const CROSS_LIFT := 1.8
+const SIDE_SWITCH_P3 := 6.5
+## BOSS v2 MINES: thrown from the core, they fly TRAVEL s to their spot, hang still with a shrinking warning ring and
+## explode in MINE_RADIUS (radius drawn the whole time). Phase 2: 2 mines, 2.0 s fuse. Phase 3: 3 mines, 1.5 s fuse.
+const MINE_COUNT := {State.PHASE_2: 2, State.PHASE_3: 3}
+const MINE_FUSE := {State.PHASE_2: 2.0, State.PHASE_3: 1.5}
+const MINE_RADIUS := 1.5
+const MINE_DAMAGE := 12
+const MINE_SPREAD := 2.4 # m between neighbouring mines (one lands on Bee's spot, the rest beside it)
+const MINE_TELEGRAPH := 0.5 # core swell before the throw
+## Every damage source the boss owns must be announced at least this long before it can hurt (tests read `hazards`).
+const MIN_TELEGRAPH := 0.4
 const TRANSITION_SECONDS := 0.9
 ## Visual root scale: ring radius ~2.7 m (5.4 m wide). A full 6 m would cover Bee's flight window in the preset E frame.
 const VISUAL_SCALE := 1.6
@@ -42,19 +58,20 @@ const BEAM_TOP_Y := 7.3
 ## BOSS CHALLENGE V2 (REBUILD 03): more active movement per phase - a figure-eight over the right part of the arena
 ## (X amplitude per phase) plus, from phase 2, a slow approach / retreat. Never chases Bee and never leaves the band
 ## [X_MIN, half width - X_EDGE] in front of the camera, so the left of the screen is always an escape route.
-const MOVE_X := {State.PHASE_1: 1.1, State.PHASE_2: 1.3, State.PHASE_3: 1.5}
+## BOSS v2: wider bands - |x| in [X_MIN, half width - X_EDGE] on its side, vertical amplitude per phase in PHASE_TUNING.
+const MOVE_X := {State.PHASE_1: 1.4, State.PHASE_2: 1.6, State.PHASE_3: 1.8}
 const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1}
-const X_MIN := 2.2
-const X_EDGE := 3.0
+const X_MIN := 1.2
+const X_EDGE := 2.9
 ## Minions: phase 2 launches 2 EyeDrones (then again whenever none is left, every MINION_COOLDOWN s); phase 3 launches
 ## a single Probe only when the screen is clean enough. While summoning the saucer does not attack (~1 s).
 const SUMMON_SECONDS := 1.0
 const MINION_COOLDOWN := {State.PHASE_2: 9.0, State.PHASE_3: 12.0}
 const MAX_MINIONS := {State.PHASE_2: 2, State.PHASE_3: 1}
 const PHASE_TUNING := {
-	State.PHASE_1: [1.0, 4.6, 1.05, 0.5, 0.7],
-	State.PHASE_2: [1.1, 4.4, 1.1, 0.5, 0.65],
-	State.PHASE_3: [1.3, 3.4, 0.85, 0.45, 0.55],
+	State.PHASE_1: [1.3, 4.6, 1.05, 0.5, 0.7],
+	State.PHASE_2: [1.4, 4.4, 1.1, 0.5, 0.65],
+	State.PHASE_3: [1.5, 3.4, 0.85, 0.45, 0.55],
 }
 const AIMED_SHOTS := 3
 const AIMED_INTERVAL := 0.14
@@ -111,6 +128,18 @@ var _beam_box: DamageHitbox3D
 var _beam_visual: MeshInstance3D
 var _beam_column: MeshInstance3D
 var _beam_mark: MeshInstance3D
+## BOSS v2
+var side := 1.0 # +1 right of the camera centre, -1 left.
+var entry_side := 1.0 # Set by the director before begin(): alternates between attempts.
+var side_switches := 0
+var mines_thrown := 0
+var crossing := false
+var hazards: Array[Dictionary] = [] # {"kind", "telegraph"} per damaging spawn (balance test).
+var untelegraphed_damage := 0 # Damage dealt by sources without a telegraph (only the hull contact).
+var _cross_from := 0.0
+var _cross_t := 0.0
+var _side_timer := 0.0
+var _phase_label: Label
 
 
 func _ready() -> void:
@@ -123,6 +152,7 @@ func _ready() -> void:
 	contact.team_id = &"alien"
 	contact.damage = CONTACT_DAMAGE
 	contact.set_enabled(false)
+	contact.hit_confirmed.connect(func(h: DamageHurtbox3D, applied: int): if h.owner_entity is BeePlayer: untelegraphed_damage += applied) # Props it brushes do not count.
 	hurtbox.scale = Vector3.ONE * (VISUAL_SCALE / 0.8) # Collider authored for a 0.8 scale visual.
 	contact.scale = Vector3.ONE * (VISUAL_SCALE / 0.8)
 	_build_visual()
@@ -149,8 +179,9 @@ func _ready() -> void:
 func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 	camera = stage_camera
 	target = bee
-	anchor = Vector3(camera.global_position.x + ANCHOR_DX, CENTER_Y, 0.0)
-	global_position = anchor + START_OFFSET
+	side = signf(entry_side) if entry_side != 0.0 else 1.0
+	anchor = Vector3(camera.global_position.x + side * ANCHOR_DX, CENTER_Y, 0.0)
+	global_position = anchor + _start_offset()
 	state = State.APPROACH
 	_state_time = 0.0
 	visual_root.scale = Vector3.ONE * VISUAL_SCALE
@@ -177,10 +208,16 @@ func live_projectiles() -> Array:
 	return get_tree().get_nodes_in_group(PROJECTILE_GROUP).filter(func(p: Node): return not p.is_queued_for_deletion())
 
 
+func _start_offset() -> Vector3:
+	return Vector3(START_OFFSET.x * side, START_OFFSET.y, START_OFFSET.z)
+
+
 ## Bee defeated: everything stops in place (the scene is reloaded by R).
 func freeze() -> void:
 	set_physics_process(false)
 	_cancel_beam()
+	for mine in live_mines():
+		mine.freeze()
 	contact.set_enabled(false)
 	_set_charge(0.0)
 	if _hover != null:
@@ -193,7 +230,7 @@ func _physics_process(delta: float) -> void:
 		State.APPROACH:
 			var t := clampf(_state_time / APPROACH_SECONDS, 0.0, 1.0)
 			var eased := 1.0 - pow(1.0 - t, 3.0)
-			global_position = (anchor + START_OFFSET).lerp(anchor, eased)
+			global_position = (anchor + _start_offset()).lerp(anchor, eased)
 			visual_root.rotation.y += delta * lerpf(2.6, 0.6, t)
 			_set_glow(lerpf(3.0, 1.0, t))
 			if t >= 1.0:
@@ -203,11 +240,11 @@ func _physics_process(delta: float) -> void:
 			_attack(delta)
 			_refresh_contact(delta)
 		State.TRANSITION:
-			_move(delta * 0.5)
-			var pulse := sin(_state_time / TRANSITION_SECONDS * PI)
+			_move(delta) # BOSS v2: the phase change is a crossing to the other side (see _begin_cross).
+			var pulse := sin(clampf(_state_time / CROSS_SECONDS, 0.0, 1.0) * PI)
 			_core.scale = Vector3.ONE * (1.0 + 0.5 * pulse)
 			_set_glow(1.0 + 2.5 * pulse)
-			if _state_time >= TRANSITION_SECONDS:
+			if _state_time >= maxf(TRANSITION_SECONDS, CROSS_SECONDS) and not crossing:
 				_core.scale = Vector3.ONE
 				_set_glow(1.0)
 				_change_state(_next_state)
@@ -226,6 +263,7 @@ func _enter_fight() -> void:
 	_attack_step = &"cooldown"
 	_attack_left = 0.8
 	_change_state(State.PHASE_1)
+	_update_phase_label()
 
 
 func _change_state(value: int) -> void:
@@ -244,18 +282,51 @@ func _move(delta: float) -> void:
 	var phase: int = state if state != State.TRANSITION else _next_state
 	var period := float(tuning[1])
 	var y := CENTER_Y + sin(_bob_time * TAU / period) * float(tuning[0])
-	# Figure-eight: X runs at half the vertical frequency; from phase 2 a slow approach / retreat on top.
-	var x := anchor.x + sin(_bob_time * PI / period) * float(MOVE_X.get(phase, 0.35)) \
-			- maxf(0.0, sin(_bob_time * 0.42)) * float(APPROACH_X.get(phase, 0.0))
+	var cam_x := camera.global_position.x if camera != null else anchor.x - side * ANCHOR_DX
+	var half := 6.3
 	if camera != null:
-		var half := BeeShmupFairness.visible_half_width(camera, Vector3(camera.global_position.x, y, 0.0), BeeLevel01Framing.view_aspect(get_viewport()))
-		x = clampf(x, camera.global_position.x + X_MIN, camera.global_position.x + half - X_EDGE)
-	global_position = Vector3(x, y, 0.0)
+		half = BeeShmupFairness.visible_half_width(camera, Vector3(cam_x, y, 0.0), BeeLevel01Framing.view_aspect(get_viewport()))
+	anchor.x = cam_x + side * ANCHOR_DX
+	if crossing:
+		_cross(delta, cam_x, y)
+		return
+	# Figure-eight: X runs at half the vertical frequency; from phase 2 a slow approach / retreat towards the centre.
+	var rel := ANCHOR_DX + sin(_bob_time * PI / period) * float(MOVE_X.get(phase, 0.35)) \
+			- maxf(0.0, sin(_bob_time * 0.42)) * float(APPROACH_X.get(phase, 0.0))
+	rel = clampf(rel, X_MIN, half - X_EDGE)
+	global_position = Vector3(cam_x + side * rel, y, 0.0)
 	visual_root.rotation.y += delta * 0.6
 	visual_root.rotation.z = lerpf(visual_root.rotation.z, cos(_bob_time * TAU / float(tuning[1])) * 0.08, delta * 3.0)
 
 
+## BOSS v2: fly to the other side of the screen (high arc, harmless hull, no attacks).
+func _begin_cross() -> void:
+	var cam_x := camera.global_position.x if camera != null else anchor.x - side * ANCHOR_DX
+	crossing = true
+	_cross_from = global_position.x - cam_x
+	_cross_t = 0.0
+	side = -side
+	side_switches += 1
+	contact.set_enabled(false)
+	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.55)
+
+
+func _cross(delta: float, cam_x: float, y: float) -> void:
+	_cross_t += delta
+	var k := smoothstep(0.0, 1.0, _cross_t / CROSS_SECONDS)
+	var x := lerpf(_cross_from, side * ANCHOR_DX, k)
+	var top := BeeLevel01Framing.top_y() - 1.5 # The dome stays inside the frame.
+	global_position = Vector3(cam_x + x, minf(y + CROSS_LIFT * sin(k * PI), top), 0.0)
+	visual_root.rotation.z = lerpf(visual_root.rotation.z, -side * 0.25 * sin(k * PI), delta * 6.0) # Banks into the turn.
+	if _cross_t >= CROSS_SECONDS:
+		crossing = false
+		contact.set_enabled(true)
+		_contact_refresh = 1.5
+
+
 func _refresh_contact(delta: float) -> void:
+	if crossing:
+		return
 	# The contact hitbox hits once per enable; re-arm it so touching the hull keeps hurting.
 	_contact_refresh -= delta
 	if _contact_refresh <= 0.0:
@@ -266,6 +337,14 @@ func _refresh_contact(delta: float) -> void:
 # --- attacks ----------------------------------------------------------------------------------
 
 func _attack(delta: float) -> void:
+	if crossing:
+		return # No attack while it changes side.
+	if state == State.PHASE_3:
+		_side_timer -= delta
+		if _side_timer <= 0.0 and _attack_step == &"cooldown": # Never in the middle of a pattern.
+			_side_timer = SIDE_SWITCH_P3
+			_begin_cross()
+			return
 	_attack_left -= delta
 	var tuning := _tuning()
 	if state == State.PHASE_2 or state == State.PHASE_3:
@@ -295,10 +374,23 @@ func _attack(delta: float) -> void:
 				if _pattern == &"beam":
 					_start_beam()
 					return
+				if _pattern == &"mines":
+					_attack_step = &"mine_tele"
+					_attack_left = MINE_TELEGRAPH
+					attacks_started += 1
+					BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.7)
+					return
 				_attack_step = &"telegraph"
 				_attack_left = float(tuning[3]) if _pattern == &"aimed" else float(tuning[4])
 				attacks_started += 1
 				BeeAudio.play(get_parent(), &"ufo_charge", global_position, 1.2 if _pattern == &"aimed" else 0.85)
+		&"mine_tele":
+			_set_charge(1.0 - _attack_left / MINE_TELEGRAPH)
+			if _attack_left <= 0.0:
+				_set_charge(0.0)
+				_throw_mines()
+				_attack_step = &"cooldown"
+				_attack_left = float(tuning[2])
 		&"beam_tele":
 			_update_beam_telegraph()
 			if _attack_left <= 0.0:
@@ -313,6 +405,7 @@ func _attack(delta: float) -> void:
 			_set_charge(1.0 - _attack_left / total)
 			if _attack_left <= 0.0:
 				_set_charge(0.0)
+				hazards.append({"kind": _pattern, "telegraph": total})
 				if _pattern == &"fan" or _pattern == &"fan_aimed":
 					_fire_fan()
 				if _pattern == &"aimed" or _pattern == &"fan_aimed":
@@ -345,12 +438,16 @@ func _choose_pattern() -> StringName:
 	match state:
 		State.PHASE_1:
 			return &"aimed"
-		State.PHASE_2:
-			return &"fan" if attacks_started % 2 == 1 else &"aimed"
-		_:
-			if attacks_started % 3 == 0:
-				return &"beam" # Every third attack of phase 3 is the tractor beam (never two in a row).
-			return &"fan_aimed" if attacks_started % 2 == 1 else &"aimed"
+		State.PHASE_2: # BOSS v2: mines alternate with aimed bursts (drones come on their own timer).
+			return &"mines" if attacks_started % 2 == 1 else &"aimed"
+		_: # BOSS v2: beam -> faster mines -> 4-shot burst, and a side change every SIDE_SWITCH_P3 s.
+			match attacks_started % 3:
+				0:
+					return &"beam"
+				1:
+					return &"mines"
+				_:
+					return &"aimed"
 
 
 func _muzzle_for_aimed() -> Vector3:
@@ -409,6 +506,58 @@ func clear_projectiles() -> int:
 		projectile.queue_free()
 		cleared += 1
 	return cleared
+
+
+# --- BOSS v2: mines -----------------------------------------------------------------------------
+
+## One mine on Bee's spot at the moment of the throw, the others MINE_SPREAD m to the sides (alternating), all clamped
+## inside the visible play area. The warning ring + drawn radius is the telegraph (TRAVEL + fuse seconds).
+func _throw_mines() -> void:
+	if target == null or not BeeShmupFairness.can_fire(self):
+		return
+	var count := int(MINE_COUNT.get(state, 2))
+	var fuse := float(MINE_FUSE.get(state, 2.0))
+	var cam_x := camera.global_position.x if camera != null else global_position.x
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport())) - MINE_RADIUS * 0.6
+	var low := BeeLevel01Framing.bottom_y() + 0.9
+	var high := BeeLevel01Framing.top_y() - 1.0
+	var origin := Vector3(_core.global_position.x, _core.global_position.y, 0.0)
+	for i in count:
+		var offset := 0.0 if i == 0 else MINE_SPREAD * float((i + 1) / 2) * (1.0 if i % 2 == 1 else -1.0)
+		var spot := Vector3(clampf(target.global_position.x + offset, cam_x - half, cam_x + half),
+				clampf(target.global_position.y + (0.8 if i % 2 == 1 else -0.6) * float(i > 0), low, high), 0.0)
+		var mine := UfoBossMine.new()
+		mine.name = "UfoMine"
+		mine.fuse = fuse
+		mine.radius = MINE_RADIUS
+		mine.damage = MINE_DAMAGE
+		mine.attacker = self
+		get_parent().add_child(mine)
+		mine.throw(origin, spot)
+		mines_thrown += 1
+		hazards.append({"kind": &"mine", "telegraph": UfoBossMine.TRAVEL + fuse})
+	BeeAudio.play(get_parent(), &"tech_hit", origin, 0.7)
+
+
+func live_mines() -> Array:
+	return get_tree().get_nodes_in_group("ufo_boss_mines").filter(func(m: Node): return not m.is_queued_for_deletion())
+
+
+func clear_mines() -> void:
+	for mine in live_mines():
+		mine.defuse()
+
+
+# --- BOSS v2: phase label on the bar ---------------------------------------------------------------
+
+func current_phase_number() -> int:
+	var phase: int = _next_state if state == State.TRANSITION else state
+	return clampi(phase - State.PHASE_1 + 1, 1, 3)
+
+
+func _update_phase_label() -> void:
+	if _phase_label != null:
+		_phase_label.text = "FASE %d / 3" % current_phase_number()
 
 
 # --- tractor beam (phase 3) --------------------------------------------------------------------
@@ -500,6 +649,7 @@ func _update_beam_telegraph() -> void:
 
 
 func _fire_beam() -> void:
+	hazards.append({"kind": &"beam", "telegraph": BEAM_TELEGRAPH})
 	_set_charge(0.0)
 	_beam_column.visible = false
 	_beam_mark.visible = false
@@ -548,9 +698,13 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		_summon_cooldown = 1.6 if wanted == State.PHASE_2 else 3.0
 		transitions += 1
 		_set_charge(0.0)
+		_cancel_beam()
 		_attack_step = &"cooldown"
+		_side_timer = SIDE_SWITCH_P3
 		_change_state(State.TRANSITION)
-		BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.6)
+		if not crossing:
+			_begin_cross() # BOSS v2: every phase change moves the saucer to the other side.
+		_update_phase_label()
 
 
 func _die() -> void:
@@ -564,6 +718,8 @@ func _die() -> void:
 	_cancel_beam()
 	_set_charge(0.0)
 	clear_projectiles() # No unfair hit after the win.
+	clear_mines()
+	crossing = false
 	_bar_layer.visible = false
 	set_physics_process(false)
 	hit_flash.flash()
@@ -726,6 +882,21 @@ func _build_health_bar() -> void:
 	_bar.add_theme_stylebox_override("fill", fill)
 	_bar.add_theme_stylebox_override("background", back)
 	box.add_child(_bar)
+	# BOSS v2: phase ticks at 66 % and 33 % and the current phase under the bar.
+	for ratio in [PHASE_2_RATIO, PHASE_3_RATIO]:
+		var tick := ColorRect.new()
+		tick.color = Color(1.0, 1.0, 1.0, 0.85)
+		tick.size = Vector2(2, 14)
+		tick.position = Vector2(440.0 * ratio - 1.0, 0.0)
+		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_bar.add_child(tick)
+	_phase_label = Label.new()
+	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_phase_label.add_theme_font_size_override("font_size", 14)
+	_phase_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_phase_label.add_theme_constant_override("outline_size", 4)
+	box.add_child(_phase_label)
+	_update_phase_label()
 
 
 func health_bar_visible() -> bool:

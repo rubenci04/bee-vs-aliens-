@@ -31,6 +31,19 @@ enum State { IDLE, POSITION, WINDUP, SHOOT, COOLDOWN, DEAD }
 ## whole bursts to the off-screen fairness rule.
 @export var stay_on_screen := false
 
+## COMBAT VARIETY 01 (Level 01 only; off by default): SPLIT ORB. One big slow orb per attack (after the usual windup
+## telegraph); after ORB_SPLIT_DISTANCE m it swells for ORB_SPLIT_WARN s and splits into two shots at +-ORB_SPLIT_ANGLE.
+@export var split_orb := false
+const ORB_SPEED := 3.2
+const ORB_SCALE := 1.8
+const ORB_DAMAGE := 9
+const ORB_SPLIT_DISTANCE := 4.0
+const ORB_SPLIT_ANGLE := 24.0
+const ORB_SPLIT_SPEED := 5.6
+const ORB_SPLIT_DAMAGE := 6
+const ORB_SPLIT_WARN := 0.45
+var orb_count := 0
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
@@ -162,6 +175,9 @@ func _fire_one() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
 		return
+	if split_orb:
+		_fire_split_orb()
+		return
 	var projectile := projectile_scene.instantiate() as AlienEnemyProjectile
 	get_parent().add_child(projectile)
 	projectile.global_position = global_position
@@ -199,3 +215,29 @@ func _on_died() -> void:
 	visual_root.hide()
 	set_physics_process(false)
 	defeated.emit(self)
+
+# --- COMBAT VARIETY 01: split orb -----------------------------------------------------------------------------
+
+func _fire_split_orb() -> void:
+	var orb := projectile_scene.instantiate() as AlienEnemyProjectile
+	orb.speed = ORB_SPEED
+	orb.damage = ORB_DAMAGE
+	orb.lifetime = 4.0
+	orb.add_to_group("alien_split_orbs")
+	get_parent().add_child(orb)
+	orb.global_position = global_position
+	orb.scale = Vector3.ONE * ORB_SCALE
+	orb.launch((target.global_position - global_position).normalized(), self)
+	var splitter := AlienOrbSplitter.new()
+	splitter.name = "Splitter"
+	splitter.projectile_scene = projectile_scene
+	splitter.split_distance = ORB_SPLIT_DISTANCE
+	splitter.split_angle = ORB_SPLIT_ANGLE
+	splitter.split_speed = ORB_SPLIT_SPEED
+	splitter.split_damage = ORB_SPLIT_DAMAGE
+	splitter.warn_seconds = ORB_SPLIT_WARN
+	splitter.attacker = self
+	orb.add_child(splitter)
+	orb_count += 1
+	projectile_fire_count += 1
+	projectile_fired.emit(orb)

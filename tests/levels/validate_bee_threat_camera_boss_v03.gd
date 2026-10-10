@@ -111,14 +111,15 @@ func test_camera() -> void:
 # --- wasp -------------------------------------------------------------------------------------------------
 
 func test_wasp() -> void:
-	arena(120.0)
+	arena(20.0) # COMBAT VARIETY 01: before STING_FROM_X (40) a Wasp has no sting.
 	# Standard Wasp (before X=40 in the director): no sting, no overload.
 	var plain := spawn("Wasp", 0, 4.6) as WaspEnemy
 	check(plain.sting_shots == 0 and not plain.overload_enabled and plain.implant != null, "Standard Wasp must stay standard (implant visible only)")
 	await clear()
-	# Implant sting: implant charges (telegraph) then two aimed bolts.
-	var stinger := spawn("Wasp", 1, 4.6) as WaspEnemy
-	check(stinger.sting_shots == 2, "Second Wasp of a group after X=40 must carry the implant sting")
+	# COMBAT VARIETY 01 - implant sting: implant charges (telegraph) then ONE short fan of 3 bolts (every Wasp after X=40).
+	arena(120.0)
+	var stinger := spawn("Wasp", 0, 4.6) as WaspEnemy
+	check(stinger.sting_shots == 1 and stinger.sting_fan_count == 3, "Every Wasp after X=40 must carry the fan sting")
 	place(stinger, 2.5, 4.6)
 	var charge_seen := -1
 	var first_bolt := -1
@@ -128,9 +129,9 @@ func test_wasp() -> void:
 			charge_seen = i
 		if first_bolt < 0 and stinger.sting_count >= 1:
 			first_bolt = i
-		if stinger.sting_count >= 2:
+		if stinger.sting_count >= 3:
 			break
-	check(stinger.sting_count == 2 and charge_seen >= 0 and first_bolt - charge_seen >= int(stinger.sting_windup * 60.0) - 2, "Sting must telegraph (%d frames) then fire 2 bolts" % (first_bolt - charge_seen))
+	check(stinger.sting_count == 3 and charge_seen >= 0 and first_bolt - charge_seen >= int(stinger.sting_windup * 60.0) - 2, "Sting must telegraph (%d frames) then fire a fan of 3" % (first_bolt - charge_seen))
 	await clear()
 	# Overload: telegraph >= 0.7 s, locked straight dash, blast only inside its radius.
 	arena(260.0)

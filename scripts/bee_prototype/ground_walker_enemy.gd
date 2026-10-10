@@ -36,6 +36,15 @@ const SHOWCASE_INSET := 1.8
 @export var sweep_gap := 0.11
 @export var sweep_windup := 0.85
 const SWEEP_COLOR := Color(0.72, 0.3, 1.0)
+## COMBAT VARIETY 01 (Level 01 only; off by default): LOW BURST. The neck cannon charges (cyan sphere grows, LOW_BURST_WINDUP)
+## and fires LOW_BURST_SHOTS shots STRAIGHT AHEAD, horizontal, at the cannon height (~2.6 m): dodge by flying above or
+## below that line. It replaces the aimed burst (the violet sweep still alternates). Between bursts it walks TOWARDS Bee.
+@export var low_burst := false
+const LOW_BURST_SHOTS := 3
+const LOW_BURST_GAP := 0.22
+const LOW_BURST_WINDUP := 0.6
+const LOW_BURST_KEEP := 3.0
+var low_burst_count := 0
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -148,14 +157,14 @@ func _physics_process(delta: float) -> void:
 				attacks_started += 1
 				_sweeping = sweep_every > 0 and attacks_started % sweep_every == 0 \
 						and BeeAttackTokens.try_claim(self, sweep_windup + sweep_gap * float(sweep_shots) + 0.4)
-				_state_left = sweep_windup if _sweeping else windup_time
+				_state_left = sweep_windup if _sweeping else (LOW_BURST_WINDUP if low_burst else windup_time)
 				aim_charge.material_override = _sweep_charge_material() if _sweeping else null
 				if _sweeping:
 					BeeAudio.play(get_parent(), &"walker_charge", global_position) # GARDEN IDENTITY 04: servo whine of the violet sweep.
 				aim_charge.show()
 		State.WINDUP:
 			_state_left -= delta
-			var charge_progress := 1.0 - _state_left / (sweep_windup if _sweeping else windup_time)
+			var charge_progress := 1.0 - _state_left / (sweep_windup if _sweeping else (LOW_BURST_WINDUP if low_burst else windup_time))
 			aim_charge.scale = Vector3.ONE * lerpf(0.7, 1.8 if _sweeping else 1.4, charge_progress)
 			if _state_left <= 0.0:
 				current_state = State.SHOOT
@@ -167,11 +176,15 @@ func _physics_process(delta: float) -> void:
 				_play(&"Shoot")
 		State.SHOOT:
 			_shoot_elapsed += delta
-			var count := sweep_shots if _sweeping else burst_shots
-			var gap := sweep_gap if _sweeping else burst_gap
+			var count := sweep_shots if _sweeping else (LOW_BURST_SHOTS if low_burst else burst_shots)
+			var gap := sweep_gap if _sweeping else (LOW_BURST_GAP if low_burst else burst_gap)
 			while _shots_done < count and _shoot_elapsed >= shoot_delay + gap * float(_shots_done):
 				if _sweeping:
 					_fire_projectile(_sweep_dirs[_shots_done])
+				elif low_burst:
+					_fire_projectile(Vector3(_facing_x, 0.0, 0.0))
+					if _shots_done == 0:
+						low_burst_count += 1
 				else:
 					if _shots_done > 0:
 						_aim_point = target.global_position # Later shots of the burst re-aim; each one then flies straight.
@@ -192,6 +205,8 @@ func _physics_process(delta: float) -> void:
 				_reposition_left = reposition_distance
 				var dx := target.global_position.x - global_position.x
 				_reposition_direction = signf(dx) if absf(dx) >= 2.2 else -_facing_x
+				if low_burst: # Walks towards Bee; backs off only when closer than LOW_BURST_KEEP.
+					_reposition_direction = signf(dx) if absf(dx) >= LOW_BURST_KEEP else -signf(dx)
 				_facing_x = _reposition_direction
 				visual_root.rotation.y = _facing_x * deg_to_rad(60.0)
 				reposition_count += 1

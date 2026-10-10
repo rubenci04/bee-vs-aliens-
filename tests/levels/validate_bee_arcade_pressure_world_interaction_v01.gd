@@ -119,8 +119,8 @@ func wasp_trace() -> Dictionary:
 		var distance := Vector2(wasp.global_position.x - bee.global_position.x, wasp.global_position.y - bee.global_position.y).length()
 		if distance < 1.2:
 			near_frames += 1
-		if state == WaspEnemy.State.STALK:
-			if order.count(WaspEnemy.State.STALK) == 1:
+		if state == WaspEnemy.State.STALK or state == WaspEnemy.State.STING: # COMBAT VARIETY 01: the fan sting happens inside the stalk.
+			if not order.has(WaspEnemy.State.WINDUP): # Until the first pass telegraph (stalk + sting = one presence).
 				stalk_first += 1.0 / 60.0
 				if stalk_first > 1.2:
 					stalk_closest = minf(stalk_closest, distance)
@@ -160,6 +160,7 @@ func wasp_pass(dodge: bool) -> int:
 	await clear_units()
 	arena(60.0)
 	var wasp := spawn("Wasp") as WaspEnemy
+	wasp.sting_shots = 0 # COMBAT VARIETY 01: this measures the pass alone (the fan sting is tested in combat_variety_v01).
 	var start_hp := bee.health.current_health
 	var windup_seen := false
 	var dodged := false
@@ -188,8 +189,10 @@ func test_wasp() -> void:
 # --- Ranged ---------------------------------------------------------------------------------------
 
 func test_ranged() -> void:
-	var burst := int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"])
-	check(burst == 4 and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 4, "Burst tuning missing (REBUILD 02: 4)")
+	# COMBAT VARIETY 01: Level 01 Probes fire one split orb; the hold / advance / burst machinery below is checked with
+	# the pass-02 burst (4) forced on the unit, as the POCs and the EyeDrone still use it.
+	check(int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) == 1 and BeeLevel01Controller.LEVEL_TUNING["Probe"]["split_orb"] and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 4, "Ranged tuning missing")
+	var burst := 4
 	for family in ["Probe", "EyeDrone"]:
 		var scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn" if family == "Probe" else "res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()
 		check(int(scene.burst_shots) == 1 and float(scene.advance_speed) == 0.0, "Base scene of %s was changed" % family)
@@ -199,6 +202,8 @@ func test_ranged() -> void:
 	arena(100.0)
 	bee.health.damage_blocked = true
 	var probe := spawn("Probe") as AlienProbeRanged
+	probe.split_orb = false
+	probe.burst_shots = burst
 	var launches: Array[int] = []
 	var distances: Array[float] = []
 	var offsets: Array[float] = []

@@ -20,6 +20,21 @@ enum State { IDLE, TRACK, WINDUP, SHOOT, COOLDOWN, DEAD }
 @export var fan_count := 1
 @export var fan_step_degrees := 14.0
 
+## COMBAT VARIETY 01 (Level 01 only; off by default): MORTAR. At the start of the charge a cyan ring marks the ground
+## under Bee (locked); the shell flies a high arc to it (MORTAR_FLIGHT s) and leaves a short cyan energy puddle.
+## Warning = charge (windup_time) + flight: the marker is visible ~1.5 s before the shell lands.
+@export var mortar_mode := false
+const MORTAR_FLIGHT := 0.9
+const MORTAR_APEX := 2.8
+const MORTAR_DAMAGE := 9
+const PUDDLE_DAMAGE := 6
+const PUDDLE_RADIUS := 1.0
+const PUDDLE_SECONDS := 1.4
+const MORTAR_MAX_REACH := 8.0
+var mortar_count := 0
+var _mortar_target := Vector3.ZERO
+var _mortar_marker: MeshInstance3D
+
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
 @onready var visual_root: Node3D = $VisualRoot
@@ -75,6 +90,8 @@ func _physics_process(delta: float) -> void:
 				current_state = State.WINDUP
 				_state_left = windup_time
 				telegraph.show()
+				if mortar_mode:
+					_mark_mortar()
 		State.WINDUP:
 			_state_left -= delta
 			if _state_left <= 0.0:
@@ -102,10 +119,14 @@ func _shoot() -> void:
 	telegraph.hide()
 	if not BeeShmupFairness.can_fire(self):
 		suppressed_shot_count += 1
+		_clear_marker()
 		return
 	if projectile_scene == null or target == null:
 		return
 	var origin := global_position + Vector3(_facing_x * muzzle_forward, muzzle_height, 0.0)
+	if mortar_mode:
+		_fire_mortar(origin)
+		return
 	var aim := target.global_position - origin
 	for direction in BeeEnemyPatterns.fan_directions(aim, maxi(fan_count, 1), fan_step_degrees if fan_count > 1 else 0.0):
 		var projectile := BeeEnemyPatterns.spawn_shot(get_parent(), projectile_scene, origin, direction, projectile_damage, projectile_speed, self)
@@ -116,6 +137,7 @@ func _on_died() -> void:
 	if current_state == State.DEAD:
 		return
 	current_state = State.DEAD
+	_clear_marker()
 	_active = false
 	target = null
 	telegraph.hide()
@@ -126,3 +148,42 @@ func _on_died() -> void:
 	defeated.emit(self)
 
 
+
+
+# --- COMBAT VARIETY 01: mortar --------------------------------------------------------------------------------
+
+func _mark_mortar() -> void:
+	var dx := clampf(target.global_position.x - global_position.x, -MORTAR_MAX_REACH, MORTAR_MAX_REACH)
+	_mortar_target = Vector3(global_position.x + dx, -0.2, 0.0)
+	_clear_marker()
+	_mortar_marker = BeeAttackVisuals.ring(get_parent(), _mortar_target + Vector3(0, 0.08, 0), PUDDLE_RADIUS, 0.18, Color(0.2, 0.95, 1.0, 0.8))
+	_mortar_marker.rotation.x = 0.0 # Flat on the ground.
+	_mortar_marker.scale = Vector3(PUDDLE_RADIUS, 1.0, PUDDLE_RADIUS * 0.6)
+
+
+func _fire_mortar(origin: Vector3) -> void:
+	var shell := AlienMortarShell.new()
+	shell.name = "MortarShell"
+	shell.attacker = self
+	shell.flight_time = MORTAR_FLIGHT
+	shell.apex = MORTAR_APEX
+	shell.damage = MORTAR_DAMAGE
+	shell.puddle_damage = PUDDLE_DAMAGE
+	shell.puddle_radius = PUDDLE_RADIUS
+	shell.puddle_seconds = PUDDLE_SECONDS
+	get_parent().add_child(shell)
+	shell.launch(origin, _mortar_target, _mortar_marker)
+	_mortar_marker = null
+	mortar_count += 1
+	projectile_fire_count += 1
+	BeeAudio.play(get_parent(), &"tech_hit", origin, 0.6)
+
+
+func _clear_marker() -> void:
+	if _mortar_marker != null and is_instance_valid(_mortar_marker):
+		_mortar_marker.queue_free()
+	_mortar_marker = null
+
+
+func _exit_tree() -> void:
+	_clear_marker()

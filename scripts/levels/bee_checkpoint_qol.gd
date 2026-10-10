@@ -177,6 +177,7 @@ func activate_boss_checkpoint() -> void:
 	snapshot["debug"] = was_debug
 	checkpoint_active = true
 	boss_checkpoint_count += 1
+	snapshot["boss_attempts"] = boss_checkpoint_count # BOSS v2: the entry side alternates between attempts.
 
 ## DEBUG (F9): reload Level 01 at the start of the boss fight with the normal loadout there (Base weapon, 2 bombs, full HP), to test it without playing the level.
 func debug_jump_to_boss() -> void:
@@ -230,6 +231,7 @@ func restore_snapshot() -> void:
 		if stage.is_ancestor_of(rock) and str(rock.name) in snapshot["broken"]:
 			rock.restore_broken()
 	debug_active = bool(snapshot.get("debug", false))
+	boss_checkpoint_count = int(snapshot.get("boss_attempts", 0))
 	debug_label.visible = debug_active
 	protection_left = protection_seconds
 	bee.health.damage_blocked = true

@@ -38,6 +38,10 @@ enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT, STI
 @export var sting_gap := 0.16
 @export var sting_speed := 6.2
 @export var sting_damage := 6
+## COMBAT VARIETY 01 (Level 01 only; 0 = the original aimed bolts): the sting is ONE short fan of `sting_fan_count`
+## bolts, `STING_FAN_STEP` degrees apart, centred on Bee. Same cyan implant charge (`sting_windup`) as the telegraph.
+@export var sting_fan_count := 0
+const STING_FAN_STEP := 13.0
 ## OVERLOAD: at `overload_ratio` HP the implant overloads (red/orange, flashing faster, sparks): telegraph, the line
 ## locks `overload_lock` s before the end, then a straight kamikaze dash (no homing) that explodes at the end of its
 ## line. Destroying it during the telegraph cancels the threat (a harmless controlled blast).
@@ -76,6 +80,7 @@ var overload_canceled := false
 var explosion_hit_bee := false
 var _sting_done := false
 var _sting_fired := 0
+var _stalk_resume := 0.0
 var _overloaded := false
 var _kamikaze_left := 0.0
 var _kamikaze_dir := Vector3.LEFT
@@ -181,13 +186,18 @@ func _physics_process(delta: float) -> void:
 			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 			_state_left -= delta
 			if _state_left <= 0.0:
-				_fire_sting()
-				_sting_fired += 1
+				if sting_fan_count > 0:
+					_fire_sting_fan()
+					_sting_fired = sting_shots
+				else:
+					_fire_sting()
+					_sting_fired += 1
 				_state_left = sting_gap
 				if _sting_fired >= sting_shots:
 					if implant != null:
 						implant.set_mode(&"idle")
 					current_state = State.STALK
+					_state_left = _stalk_resume
 		State.OVERLOAD:
 			velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 			visual_root.position = Vector3(randf_range(-0.04, 0.04), randf_range(-0.04, 0.04), 0.0) # Shaking.
@@ -341,6 +351,7 @@ func _another_wasp_attacking() -> bool:
 func _begin_sting() -> void:
 	_sting_done = true
 	_sting_fired = 0
+	_stalk_resume = _state_left # COMBAT VARIETY 01 fix: the sting no longer eats the stalk timer (the hover kept its length).
 	current_state = State.STING
 	_state_left = sting_windup # The implant charges (cyan) before the first bolt.
 	if implant != null:
@@ -446,3 +457,15 @@ func _clear_overload_line() -> void:
 	if _overload_line != null and is_instance_valid(_overload_line):
 		_overload_line.queue_free()
 	_overload_line = null
+
+
+## COMBAT VARIETY 01: one volley of `sting_fan_count` light bolts in a short fan centred on Bee (fixed straight paths).
+func _fire_sting_fan() -> void:
+	if target == null or not BeeShmupFairness.can_fire(self):
+		return
+	var origin := implant.global_position if implant != null else global_position
+	origin.z = 0.0
+	for direction in BeeEnemyPatterns.fan_directions(target.global_position - origin, sting_fan_count, STING_FAN_STEP):
+		var projectile := BeeEnemyPatterns.spawn_shot(get_parent(), STING_PROJECTILE, origin, direction, sting_damage, sting_speed, self)
+		projectile.scale = Vector3.ONE * 0.75
+		sting_count += 1

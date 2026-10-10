@@ -145,42 +145,39 @@ func run() -> void:
 	check(boss.live_projectiles().size() >= mini(live_before, 1) or live_before == 0, "Bomb must not cancel boss projectiles")
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)
 
-	# 6. Phase 2 at 66 %: transition, then fans of 5 alternating with aimed bursts.
+	# 6. Phase 2 at 66 %: transition = crossing to the other side, then MINES alternating with aimed bursts (BOSS v2).
 	shots.clear()
+	var side_before := boss.side
 	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.6))
 	await frames(1)
-	check(boss.state == UfoBoss01.State.TRANSITION and boss.transitions == 1, "No transition at 66 %")
-	check(await wait_state(UfoBoss01.State.PHASE_2, 120), "Phase 2 not reached")
-	var fan_frame := -1
+	check(boss.state == UfoBoss01.State.TRANSITION and boss.transitions == 1 and boss.crossing and boss.side == -side_before, "Phase 2 must start with a side change")
+	check(await wait_state(UfoBoss01.State.PHASE_2, 150), "Phase 2 not reached")
+	check(signf(boss.global_position.x - stage.camera.global_position.x) == boss.side, "Saucer did not reach the other side")
+	var mines_seen := false
 	for i in 600:
 		await frames(1)
-		if fan_frame < 0 and shots.filter(func(s: Dictionary): return s["pattern"] == &"fan").size() >= UfoBoss01.FAN_SHOTS and Engine.get_physics_frames() - (shots.filter(func(s: Dictionary): return s["pattern"] == &"fan")[0]["frame"] as int) >= 24:
-			fan_frame = Engine.get_physics_frames()
-			await capture("05_phase2_fan")
-	var fans := shots.filter(func(s: Dictionary): return s["pattern"] == &"fan")
-	check(fans.size() >= 5 and fans.size() % UfoBoss01.FAN_SHOTS == 0, "Fan must fire groups of 5 (%d)" % fans.size())
-	check(shots.any(func(s: Dictionary): return s["pattern"] == &"aimed"), "Phase 2 must alternate aimed bursts")
-	var first_fan := fans.slice(0, UfoBoss01.FAN_SHOTS)
-	var spread := (first_fan[0]["direction"] as Vector3).angle_to(first_fan[UfoBoss01.FAN_SHOTS - 1]["direction"])
-	check(absf(rad_to_deg(spread) - UfoBoss01.FAN_STEP_DEGREES * (UfoBoss01.FAN_SHOTS - 1)) < 1.0, "Fan spread wrong (%.1f deg)" % rad_to_deg(spread))
-	var distance_to_bee: float = Vector2(first_fan[0]["bee"].x - first_fan[0]["origin"].x, first_fan[0]["bee"].y - first_fan[0]["origin"].y).length()
-	var gap := 2.0 * distance_to_bee * tan(deg_to_rad(UfoBoss01.FAN_STEP_DEGREES) * 0.5) * 2.0 - 2.0 * lethal - 2.0 * 0.2
-	check(gap > 0.8, "Fan gaps not passable at Bee's distance (%.2f m)" % gap)
+		if not mines_seen and boss.live_mines().size() >= 2:
+			mines_seen = true
+			await frames(40)
+			await capture("05_phase2_mines")
+	check(boss.mines_thrown >= 2 and shots.any(func(s: Dictionary): return s["pattern"] == &"aimed"), "Phase 2 must alternate mines and aimed bursts (%d mines)" % boss.mines_thrown)
 
-	# 7. Phase 3 at 33 %: faster movement, aimed + fan combined, projectile count stays moderate.
+	# 7. Phase 3 at 33 %: faster movement, beam + faster mines + aimed, frequent side changes, moderate projectiles.
 	shots.clear()
 	peak_projectiles = 0
+	var switches_before := boss.side_switches
 	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.3))
-	check(await wait_state(UfoBoss01.State.PHASE_3, 120), "Phase 3 not reached")
+	check(await wait_state(UfoBoss01.State.PHASE_3, 150), "Phase 3 not reached")
 	check(float(UfoBoss01.PHASE_TUNING[UfoBoss01.State.PHASE_3][1]) < float(UfoBoss01.PHASE_TUNING[UfoBoss01.State.PHASE_1][1]), "Phase 3 must move faster")
 	var phase3_captured := false
-	for i in 720:
+	for i in 900:
 		await frames(1)
-		if not phase3_captured and i > 120 and boss.live_projectiles().size() >= 7:
+		if not phase3_captured and i > 120 and boss.live_projectiles().size() + boss.live_mines().size() >= 4:
 			phase3_captured = true
 			await capture("06_phase3")
-	check(shots.any(func(s: Dictionary): return s["pattern"] == &"fan") and shots.any(func(s: Dictionary): return s["pattern"] == &"aimed"), "Phase 3 must combine aimed and fan")
-	check(peak_projectiles >= 5 and peak_projectiles <= 15, "Peak boss projectiles out of range (%d)" % peak_projectiles)
+	check(boss.beams >= 1 and boss.mines_thrown >= 4 and shots.any(func(s: Dictionary): return s["pattern"] == &"aimed"), "Phase 3 must combine beam, mines and aimed bursts")
+	check(boss.side_switches - switches_before >= 2, "Phase 3 must change side often (%d)" % (boss.side_switches - switches_before))
+	check(peak_projectiles >= 3 and peak_projectiles <= 15, "Peak boss projectiles out of range (%d)" % peak_projectiles)
 	var phase3_peak := peak_projectiles
 
 	# 8. Damage feedback reuses HitFlash.

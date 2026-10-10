@@ -119,8 +119,13 @@ func test_probe() -> void:
 	await clear_units()
 	arena(100.0)
 	var probe := spawn("Probe") as AlienProbeRanged
-	var burst := int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) # ARCADE REBUILD 02: 3 -> 4.
-	check(burst == 4 and probe.burst_shots == burst and is_equal_approx(probe.burst_gap, 0.2) and probe.short_recovery > 0.0, "Probe tuning not applied")
+	# COMBAT VARIETY 01: Level 01 Probes now fire one split orb (validate_bee_combat_variety_v01). This section keeps
+	# checking the aimed-burst machinery (still used by the POCs and the EyeDrone) with the pass-02 values.
+	check(int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) == 1 and probe.split_orb, "Probe tuning not applied")
+	probe.split_orb = false
+	probe.burst_shots = 4
+	var burst := 4
+	check(is_equal_approx(probe.burst_gap, 0.2) and probe.short_recovery > 0.0, "Probe burst timing changed")
 	listen(probe)
 	var captured := false
 	var tracked: Dictionary = {}
@@ -170,6 +175,8 @@ func test_probe() -> void:
 	await clear_units()
 	# Fairness: outside the readable area the whole burst is suppressed.
 	var far := spawn("Probe") as AlienProbeRanged
+	far.split_orb = false # COMBAT VARIETY 01: burst machinery check (see above).
+	far.burst_shots = 4
 	far.set_physics_process(false)
 	far.global_position = Vector3(camera_x() + 12.0, 4.0, 0)
 	far._shoot()
@@ -186,7 +193,11 @@ func test_eye() -> void:
 	await clear_units()
 	arena(100.0)
 	var eye := spawn("EyeDrone") as EyeDroneEnemy
-	check(eye.fan_every == 2 and eye.fan_count == 5, "Eye tuning not applied")
+	# COMBAT VARIETY 01: Level 01 Eyes now use the laser (validate_bee_combat_variety_v01); this section keeps checking the
+	# aimed-burst / fan machinery with the pass-02 values forced on the unit.
+	check(eye.laser_every == 1 and eye.fan_every == 0 and eye.fan_count == 5, "Eye tuning not applied")
+	eye.laser_every = 0
+	eye.fan_every = 2
 	listen(eye)
 	var telegraph_by_attack: Array = []
 	var windups_seen := 0
@@ -241,6 +252,8 @@ func test_turret() -> void:
 	await clear_units()
 	arena(100.0)
 	var turret := spawn("Turret") as GroundTurretEnemy
+	check(turret.mortar_mode, "Turret mortar not applied")
+	turret.mortar_mode = false # COMBAT VARIETY 01: fan machinery check (the mortar is tested in combat_variety_v01).
 	check(turret.fan_count == 3 and is_equal_approx(turret.windup_time, 0.65), "Turret tuning not applied / warning changed")
 	listen(turret)
 	var warning_frames := 0
@@ -275,6 +288,8 @@ func test_walker() -> void:
 	await clear_units()
 	arena(100.0)
 	var walker := spawn("Walker") as GroundWalkerEnemy
+	check(walker.low_burst, "Walker low burst not applied")
+	walker.low_burst = false # COMBAT VARIETY 01: aimed-burst machinery check (the low burst is tested in combat_variety_v01).
 	check(walker.burst_shots == 4 and walker.health.max_health == 120 and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, HP 120 since REBUILD 03, walk 2.4)")
 	listen(walker)
 	var captured := false
@@ -324,7 +339,7 @@ func test_wasp() -> void:
 			order.append(state)
 			if state == WaspEnemy.State.DASH:
 				dash_dirs.append([])
-		if state == WaspEnemy.State.STALK and order.count(WaspEnemy.State.STALK) == 1:
+		if (state == WaspEnemy.State.STALK or state == WaspEnemy.State.STING) and not order.has(WaspEnemy.State.WINDUP): # COMBAT VARIETY 01: stalk + fan sting = one presence.
 			stalk_first += 1.0 / 60.0
 			if stalk_first > 1.5 and not captured_stalk:
 				captured_stalk = true

@@ -4,6 +4,8 @@ extends BeeShmupStage
 @onready var section_label: Label = $CanvasLayer/Section
 
 var elapsed_seconds := 0.0
+## BOSS v2 (combat variety 01): during the NODO ALIEN fight the saucer changes side, so Bee may use the whole width.
+var boss_arena_wide := false
 @onready var checkpoint: BeeCheckpointQoL = $CheckpointQoL
 
 func _ready() -> void:
@@ -26,6 +28,8 @@ func _update_camera_and_bounds() -> void:
 	var half_width := BeeLevel01Framing.half_width_min(aspect) - BeeLevel01Framing.FLIGHT_MARGIN
 	screen_left = -half_width
 	screen_right = BeeLevel01Framing.flight_right_offset(aspect) # REBUILD 03: Bee lives in the left ~2/3; the right third reads threats.
+	if boss_arena_wide:
+		screen_right = half_width
 	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
 	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
 	super._update_camera_and_bounds()

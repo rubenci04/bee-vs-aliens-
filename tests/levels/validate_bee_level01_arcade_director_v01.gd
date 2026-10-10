@@ -130,20 +130,20 @@ func test_fans() -> void:
 		bee.global_position = Vector3(stage.camera.global_position.x - 3.0, 3.5, 0)
 		wave._spawn({"family": "EyeDrone", "slot": 0, "event": 0, "hard": false})
 		var eye := wave.active_units.back() as EyeDroneEnemy
-		check((eye.fan_every > 0) == bool(entry[1]), "EyeDrone fan gating wrong at X=%.0f (fan_every=%d)" % [entry[0], eye.fan_every])
+		check((eye.laser_every > 0) == bool(entry[1]), "EyeDrone laser gating wrong at X=%.0f (laser_every=%d)" % [entry[0], eye.laser_every]) # COMBAT VARIETY 01: the laser replaces the fan from FAN_FROM_X.
 		for i in 60 * 9:
 			bee.global_position.y = 3.5 + sin(float(i) / 60.0 * 2.2) * 0.6
 			await physics_frame
 		if bool(entry[1]):
-			check(eye.fan_shot_count >= 1, "No fan after X=%.0f" % entry[0])
+			check(eye.laser_count >= 1, "No laser after X=%.0f" % entry[0])
 		else:
-			check(eye.fan_shot_count == 0 and eye.projectile_fire_count >= 3, "A fan appeared before FAN_FROM_X (X=%.0f)" % entry[0])
+			check(eye.laser_count == 0 and eye.fan_shot_count == 0 and eye.projectile_fire_count >= 3, "A laser/fan appeared before FAN_FROM_X (X=%.0f)" % entry[0])
 		wave.active_units.erase(eye)
 		eye.queue_free()
 		for shot in get_nodes_in_group("alien_projectiles"):
 			shot.queue_free()
 		await frames(2)
-	print("DIRECTOR_FANS aimed_only_before=%.0f fans_after=OK" % BeeLevel01Controller.FAN_FROM_X)
+	print("DIRECTOR_FANS aimed_only_before=%.0f lasers_after=OK" % BeeLevel01Controller.FAN_FROM_X)
 
 # --- whole level ------------------------------------------------------------------------------------------
 

@@ -107,7 +107,7 @@ func run() -> void:
 		var unit := spawn(spec[0], camera_x + half - 1.0, spec[1])
 		unit.target = bee
 		var before: int = unit.projectile_fire_count
-		var volley: int = maxi(int(unit.get("fan_count")), 1) if unit is GroundTurretEnemy else 1 # A Turret volley is a fan (pass 02).
+		var volley: int = (1 if unit.mortar_mode else maxi(int(unit.get("fan_count")), 1)) if unit is GroundTurretEnemy else 1 # A Turret volley is a fan (pass 02); COMBAT VARIETY 01: one mortar shell in Level 01.
 		fire(unit)
 		check(unit.projectile_fire_count == before + volley, spec[0] + " must fire when readable")
 		unit.global_position.x = camera_x + half + 2.5 # Not entered yet.
