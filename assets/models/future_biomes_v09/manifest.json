@@ -1,0 +1,77 @@
+{
+  "batch": "V09",
+  "assets": [
+    {
+      "id": "controlled_ant",
+      "role": "Common ground enemy; six legs, elbowed antennae, petiole and removable dorsal controller",
+      "triangles": 13456,
+      "mesh_objects": 17,
+      "dimensions_xyz_blender": [
+        2.373,
+        0.895,
+        0.92
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v09/controlled_ant.blend",
+      "glb": "assets/models/future_biomes_v09/controlled_ant.glb"
+    },
+    {
+      "id": "controlled_caterpillar",
+      "role": "Slow armoured larva; natural segmented body and all external armour removable",
+      "triangles": 20344,
+      "mesh_objects": 29,
+      "dimensions_xyz_blender": [
+        2.201,
+        0.576,
+        0.865
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v09/controlled_caterpillar.blend",
+      "glb": "assets/models/future_biomes_v09/controlled_caterpillar.glb"
+    },
+    {
+      "id": "amphibian_mount_study",
+      "role": "Original giant toad mount study; future lake miniboss visual, not the current UFO boss",
+      "triangles": 22136,
+      "mesh_objects": 22,
+      "dimensions_xyz_blender": [
+        2.121,
+        1.432,
+        1.526
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v09/amphibian_mount_study.blend",
+      "glb": "assets/models/future_biomes_v09/amphibian_mount_study.glb"
+    },
+    {
+      "id": "canonical_implant_kit",
+      "role": "Four detachable mounts with one visual identity: insect, mammal, bird, amphibian",
+      "triangles": 28288,
+      "mesh_objects": 4,
+      "dimensions_xyz_blender": [
+        2.64,
+        0.892,
+        1.88
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v09/canonical_implant_kit.blend",
+      "glb": "assets/models/future_biomes_v09/canonical_implant_kit.glb"
+    }
+  ]
+}

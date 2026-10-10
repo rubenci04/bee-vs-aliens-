@@ -1,0 +1,54 @@
+{
+  "version": 5,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "controlled_octopus",
+      "role": "Costa/mar: ocho brazos naturales con ventosas; receptor removible en manto",
+      "triangles": 20144,
+      "mesh_objects": 34,
+      "dimensions_xyz_blender": [
+        2.842,
+        0.713,
+        2.441
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v05/controlled_octopus.blend",
+      "glb": "assets/models/future_biomes_v05/controlled_octopus.glb"
+    },
+    {
+      "id": "controlled_gull",
+      "role": "Costa: gaviota de alas largas, pico amarillo, patas palmeadas; receptor en hombro",
+      "triangles": 11348,
+      "mesh_objects": 43,
+      "dimensions_xyz_blender": [
+        2.429,
+        2.16,
+        1.349
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v05/controlled_gull.blend",
+      "glb": "assets/models/future_biomes_v05/controlled_gull.glb"
+    },
+    {
+      "id": "coastal_buoy",
+      "role": "Costa/lago: boya humana naranja con banda crema, asa y cabo de amarre, sin emisión",
+      "triangles": 4592,
+      "mesh_objects": 7,
+      "dimensions_xyz_blender": [
+        0.97,
+        0.957,
+        2.1
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v05/coastal_buoy.blend",
+      "glb": "assets/models/future_biomes_v05/coastal_buoy.glb"
+    }
+  ]
+}

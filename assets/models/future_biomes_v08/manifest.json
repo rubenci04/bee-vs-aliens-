@@ -1,0 +1,59 @@
+{
+  "batch": "V08",
+  "assets": [
+    {
+      "id": "coastal_rowboat",
+      "role": "Hollow human rowboat with three benches and two removable oars",
+      "triangles": 5412,
+      "mesh_objects": 20,
+      "dimensions_xyz_blender": [
+        4.745,
+        1.68,
+        0.9
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v08/coastal_rowboat.blend",
+      "glb": "assets/models/future_biomes_v08/coastal_rowboat.glb"
+    },
+    {
+      "id": "shore_wave_module",
+      "role": "Closed decorative shore wave with cream foam crest",
+      "triangles": 7900,
+      "mesh_objects": 4,
+      "dimensions_xyz_blender": [
+        4.137,
+        1.033,
+        1.634
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v08/shore_wave_module.blend",
+      "glb": "assets/models/future_biomes_v08/shore_wave_module.glb"
+    },
+    {
+      "id": "shore_rock",
+      "role": "Smooth shore stone with conforming olive moss cap and two pebbles",
+      "triangles": 5472,
+      "mesh_objects": 4,
+      "dimensions_xyz_blender": [
+        2.69,
+        1.302,
+        1.396
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v08/shore_rock.blend",
+      "glb": "assets/models/future_biomes_v08/shore_rock.glb"
+    }
+  ]
+}

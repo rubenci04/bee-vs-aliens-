@@ -1,0 +1,70 @@
+{
+  "version": 4,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "controlled_stick_insect",
+      "role": "Bosque: emboscada entre ramitas; receptor removible sobre tórax",
+      "triangles": 7416,
+      "mesh_objects": 33,
+      "dimensions_xyz_blender": [
+        2.882,
+        0.766,
+        1.311
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v04/controlled_stick_insect.blend",
+      "glb": "assets/models/future_biomes_v04/controlled_stick_insect.glb"
+    },
+    {
+      "id": "controlled_pigeon",
+      "role": "Residencial: vuelo de cruce; dos alas y patas recogidas, receptor en nuca",
+      "triangles": 11008,
+      "mesh_objects": 45,
+      "dimensions_xyz_blender": [
+        1.833,
+        1.459,
+        1.562
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v04/controlled_pigeon.blend",
+      "glb": "assets/models/future_biomes_v04/controlled_pigeon.glb"
+    },
+    {
+      "id": "controlled_mouse",
+      "role": "Residencial y jardín: amenaza de suelo liberable con orejas, cuatro patas y cola",
+      "triangles": 10748,
+      "mesh_objects": 32,
+      "dimensions_xyz_blender": [
+        2.794,
+        0.682,
+        0.845
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v04/controlled_mouse.blend",
+      "glb": "assets/models/future_biomes_v04/controlled_mouse.glb"
+    },
+    {
+      "id": "giant_bottle_cap",
+      "role": "Residencial: tapa humana cóncava, plataforma o refugio a escala de Bee",
+      "triangles": 5984,
+      "mesh_objects": 30,
+      "dimensions_xyz_blender": [
+        1.48,
+        1.48,
+        0.326
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v04/giant_bottle_cap.blend",
+      "glb": "assets/models/future_biomes_v04/giant_bottle_cap.glb"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "controlled_stag_beetle",
+      "role": "Forest armoured fauna visual, external thorax controller",
+      "triangles": 9952,
+      "mesh_objects": 37,
+      "dimensions_xyz_blender": [
+        2.805,
+        1.376,
+        0.96
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v02/controlled_stag_beetle.blend",
+      "glb": "assets/models/future_biomes_v02/controlled_stag_beetle.glb"
+    },
+    {
+      "id": "controlled_woodland_snail",
+      "role": "Forest slow fauna visual, intact natural shell and removable top clamp",
+      "triangles": 7748,
+      "mesh_objects": 19,
+      "dimensions_xyz_blender": [
+        2.252,
+        0.665,
+        1.451
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v02/controlled_woodland_snail.blend",
+      "glb": "assets/models/future_biomes_v02/controlled_woodland_snail.glb"
+    },
+    {
+      "id": "alien_seed_carrier",
+      "role": "Alien cargo ship visual, swept wings and twin external cargo pods",
+      "triangles": 9108,
+      "mesh_objects": 22,
+      "dimensions_xyz_blender": [
+        2.43,
+        1.828,
+        1.192
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v02/alien_seed_carrier.blend",
+      "glb": "assets/models/future_biomes_v02/alien_seed_carrier.glb"
+    },
+    {
+      "id": "alien_signal_relay",
+      "role": "Portable alien control relay, removable mounting clamps and protected cyan emitter",
+      "triangles": 4520,
+      "mesh_objects": 14,
+      "dimensions_xyz_blender": [
+        0.896,
+        0.926,
+        0.994
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v02/alien_signal_relay.blend",
+      "glb": "assets/models/future_biomes_v02/alien_signal_relay.glb"
+    }
+  ]
+}
