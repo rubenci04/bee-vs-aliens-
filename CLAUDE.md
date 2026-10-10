@@ -10,6 +10,7 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 - Motor: Godot 4.7.2, renderer GL Compatibility, Windows PC. Proyecto: `D:\proyectos\bee_alien_3d`.
 - Estado: core gameplay funcional (Level 01 de 360 m, 7 familias enemigas, checkpoint, audio, VFX). Visualmente aún prototipo.
 - Fase actual: Core Gameplay Closure Audit 01 → luego Art Direction / Visual Target. No inventar features para seguir programando.
+- Ramas (LOTE 3): no hay remoto configurado (solo commits locales). `master` quedó atrasada (04f11fa); el trabajo vigente es la cadena lineal `level01-garden-identity-04`, que ya incluye `polish-02` (rocas apoyadas, props de jardín, vida en el suelo, atardecer, audio ambiente/pasos/aleteo), `level01-arcade-rebuild-02`, `level01-threat-camera-boss-03` y `level01-transformation-01`. `camera-fp-spike` (parte de esa cadena) es un experimento aislado en `dev/camera_fp_spike/` con informe `docs/CAMERA_FP_SPIKE_REPORT.md` (recomendación: seguir en vista lateral; no es contenido de juego). Resumen del lote: `docs/INFORME_LOTE_3.md`.
 
 ## Rutas importantes
 - `project.godot` — main_scene: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (Level 01).
