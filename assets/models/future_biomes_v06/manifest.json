@@ -1,0 +1,70 @@
+{
+  "version": 6,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "garden_sapling",
+      "role": "Jardín/bosque: árbol joven de copa lobulada, tronco curvo, ramas y raíces",
+      "triangles": 7904,
+      "mesh_objects": 11,
+      "dimensions_xyz_blender": [
+        2.362,
+        1.4,
+        3.17
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v06/garden_sapling.blend",
+      "glb": "assets/models/future_biomes_v06/garden_sapling.glb"
+    },
+    {
+      "id": "flowering_shrub",
+      "role": "Jardín: arbusto bajo de hojas lanceoladas y tres margaritas crema/ocre",
+      "triangles": 11784,
+      "mesh_objects": 19,
+      "dimensions_xyz_blender": [
+        1.458,
+        0.393,
+        1.307
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v06/flowering_shrub.blend",
+      "glb": "assets/models/future_biomes_v06/flowering_shrub.glb"
+    },
+    {
+      "id": "empty_drink_can",
+      "role": "Residencial: lata vacía genérica tumbada, abertura real, anilla y abolladura suave",
+      "triangles": 4572,
+      "mesh_objects": 6,
+      "dimensions_xyz_blender": [
+        1.438,
+        1.136,
+        0.84
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v06/empty_drink_can.blend",
+      "glb": "assets/models/future_biomes_v06/empty_drink_can.glb"
+    },
+    {
+      "id": "wrapped_candy",
+      "role": "Residencial: caramelo envuelto rojo/crema, dos extremos retorcidos, sin marca",
+      "triangles": 2024,
+      "mesh_objects": 3,
+      "dimensions_xyz_blender": [
+        1.52,
+        0.38,
+        0.38
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v06/wrapped_candy.blend",
+      "glb": "assets/models/future_biomes_v06/wrapped_candy.glb"
+    }
+  ]
+}

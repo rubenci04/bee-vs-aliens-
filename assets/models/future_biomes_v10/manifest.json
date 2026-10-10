@@ -1,0 +1,77 @@
+{
+  "batch": "V10",
+  "assets": [
+    {
+      "id": "controlled_dragonfly",
+      "role": "Fast air enemy visual; long segmented abdomen, four natural wings and removable canonical controller",
+      "triangles": 16580,
+      "mesh_objects": 18,
+      "dimensions_xyz_blender": [
+        2.77,
+        2.5,
+        0.978
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v10/controlled_dragonfly.blend",
+      "glb": "assets/models/future_biomes_v10/controlled_dragonfly.glb"
+    },
+    {
+      "id": "controlled_bomb_moth",
+      "role": "Bomb moth with four scaled wings, feathery antennae and removable alien bomb magazine",
+      "triangles": 23592,
+      "mesh_objects": 18,
+      "dimensions_xyz_blender": [
+        1.571,
+        2.41,
+        1.351
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v10/controlled_bomb_moth.blend",
+      "glb": "assets/models/future_biomes_v10/controlled_bomb_moth.glb"
+    },
+    {
+      "id": "controlled_mushroom_cannon",
+      "role": "Static ground artillery visual; natural mushroom with fully detachable horizontal cyan cannon",
+      "triangles": 11822,
+      "mesh_objects": 5,
+      "dimensions_xyz_blender": [
+        1.52,
+        1.52,
+        1.736
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v10/controlled_mushroom_cannon.blend",
+      "glb": "assets/models/future_biomes_v10/controlled_mushroom_cannon.glb"
+    },
+    {
+      "id": "moth_stationary_bomb",
+      "role": "Separate small alien mine visual; designed to hang stationary after release",
+      "triangles": 2528,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.41,
+        0.316,
+        0.441
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v10/moth_stationary_bomb.blend",
+      "glb": "assets/models/future_biomes_v10/moth_stationary_bomb.glb"
+    }
+  ]
+}

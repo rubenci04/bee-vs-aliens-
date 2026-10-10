@@ -1,0 +1,70 @@
+{
+  "version": 3,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "controlled_firefly",
+      "role": "Flying firefly visual, warm natural lantern and removable thorax receiver",
+      "triangles": 8864,
+      "mesh_objects": 35,
+      "dimensions_xyz_blender": [
+        1.293,
+        1.112,
+        0.729
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v03/controlled_firefly.blend",
+      "glb": "assets/models/future_biomes_v03/controlled_firefly.glb"
+    },
+    {
+      "id": "controlled_flying_ladybird",
+      "role": "Flying ladybird visual, six natural spots, six legs and removable receiver",
+      "triangles": 9384,
+      "mesh_objects": 39,
+      "dimensions_xyz_blender": [
+        1.377,
+        1.295,
+        0.778
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v03/controlled_flying_ladybird.blend",
+      "glb": "assets/models/future_biomes_v03/controlled_flying_ladybird.glb"
+    },
+    {
+      "id": "controlled_owl",
+      "role": "Large airborne owl threat visual, natural paired wings and external dorsal receiver",
+      "triangles": 13540,
+      "mesh_objects": 53,
+      "dimensions_xyz_blender": [
+        1.777,
+        2.755,
+        1.49
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v03/controlled_owl.blend",
+      "glb": "assets/models/future_biomes_v03/controlled_owl.glb"
+    },
+    {
+      "id": "controlled_manta_ray",
+      "role": "Marine manta ray visual, broad natural fins, cephalic lobes and removable dorsal clamp",
+      "triangles": 7280,
+      "mesh_objects": 19,
+      "dimensions_xyz_blender": [
+        2.997,
+        3.2,
+        0.526
+      ],
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false,
+      "source": "art_source/blender/future_biomes_v03/controlled_manta_ray.blend",
+      "glb": "assets/models/future_biomes_v03/controlled_manta_ray.glb"
+    }
+  ]
+}

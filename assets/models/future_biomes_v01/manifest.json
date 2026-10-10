@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "controlled_mosquito",
+      "role": "Lake aerial swarmer visual; external dorsal device",
+      "triangles": 7840,
+      "mesh_objects": 39,
+      "dimensions_xyz_blender": [
+        1.697,
+        1.039,
+        0.888
+      ],
+      "source": "art_source/blender/future_biomes_v01/controlled_mosquito.blend",
+      "glb": "assets/models/future_biomes_v01/controlled_mosquito.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    },
+    {
+      "id": "controlled_perch",
+      "role": "Lake underwater threat visual; dorsal detachable receiver",
+      "triangles": 8236,
+      "mesh_objects": 24,
+      "dimensions_xyz_blender": [
+        2.46,
+        0.76,
+        1.546
+      ],
+      "source": "art_source/blender/future_biomes_v01/controlled_perch.blend",
+      "glb": "assets/models/future_biomes_v01/controlled_perch.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    },
+    {
+      "id": "orbital_skimmer",
+      "role": "Space alien interceptor visual; no animal anatomy",
+      "triangles": 5548,
+      "mesh_objects": 15,
+      "dimensions_xyz_blender": [
+        1.504,
+        1.329,
+        1.035
+      ],
+      "source": "art_source/blender/future_biomes_v01/orbital_skimmer.blend",
+      "glb": "assets/models/future_biomes_v01/orbital_skimmer.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    },
+    {
+      "id": "lotus_lily_pad",
+      "role": "Lake modular platform decoration; warm lotus, no glow",
+      "triangles": 7632,
+      "mesh_objects": 28,
+      "dimensions_xyz_blender": [
+        1.957,
+        1.619,
+        0.335
+      ],
+      "source": "art_source/blender/future_biomes_v01/lotus_lily_pad.blend",
+      "glb": "assets/models/future_biomes_v01/lotus_lily_pad.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    },
+    {
+      "id": "cattails_cluster",
+      "role": "Lake shore vertical framing; natural green and ochre",
+      "triangles": 4272,
+      "mesh_objects": 15,
+      "dimensions_xyz_blender": [
+        1.744,
+        0.415,
+        2.611
+      ],
+      "source": "art_source/blender/future_biomes_v01/cattails_cluster.blend",
+      "glb": "assets/models/future_biomes_v01/cattails_cluster.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    },
+    {
+      "id": "warm_asteroid",
+      "role": "Space modular obstacle decoration; no emission",
+      "triangles": 3752,
+      "mesh_objects": 7,
+      "dimensions_xyz_blender": [
+        2.046,
+        1.558,
+        1.696
+      ],
+      "source": "art_source/blender/future_biomes_v01/warm_asteroid.blend",
+      "glb": "assets/models/future_biomes_v01/warm_asteroid.glb",
+      "forward": "-X",
+      "up_godot": "+Y",
+      "rigged": false
+    }
+  ]
+}

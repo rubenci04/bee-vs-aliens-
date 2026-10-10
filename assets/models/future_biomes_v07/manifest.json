@@ -1,0 +1,78 @@
+{
+  "version": 7,
+  "original_assets": true,
+  "assets": [
+    {
+      "id": "sky_cloud",
+      "role": "Cielo: nube continua lobulada, base baja y contorno suave",
+      "triangles": 5888,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.358,
+        0.88,
+        1.281
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v07/sky_cloud.blend",
+      "glb": "assets/models/future_biomes_v07/sky_cloud.glb"
+    },
+    {
+      "id": "sky_sun",
+      "role": "Cielo diurno: disco solar ocre/dorado, sin emisión ni luz incorporada",
+      "triangles": 2208,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.44,
+        0.29,
+        1.44
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v07/sky_sun.blend",
+      "glb": "assets/models/future_biomes_v07/sky_sun.glb"
+    },
+    {
+      "id": "sky_crescent_moon",
+      "role": "Cielo nocturno: creciente sólido biselado con tres manchas suaves de superficie",
+      "triangles": 3692,
+      "mesh_objects": 4,
+      "dimensions_xyz_blender": [
+        1.026,
+        0.135,
+        1.44
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v07/sky_crescent_moon.blend",
+      "glb": "assets/models/future_biomes_v07/sky_crescent_moon.glb"
+    },
+    {
+      "id": "sky_star_cluster",
+      "role": "Cielo nocturno: nueve estrellas cálidas discretas, cuatro destellos y cinco puntos",
+      "triangles": 2640,
+      "mesh_objects": 9,
+      "dimensions_xyz_blender": [
+        1.972,
+        0.032,
+        1.226
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/future_biomes_v07/sky_star_cluster.blend",
+      "glb": "assets/models/future_biomes_v07/sky_star_cluster.glb"
+    }
+  ]
+}
