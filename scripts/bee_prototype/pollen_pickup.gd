@@ -8,6 +8,9 @@ var was_collected := false
 
 
 func _ready() -> void:
+	var visual := get_node_or_null("Visual") as Node3D
+	if visual != null:
+		BeeToonStyle.apply(visual, true, BeeToonStyle.OUTLINE_PROP) # VISUAL POLISH 02: same look as everything else (emission kept).
 	body_entered.connect(_on_body_entered)
 
 

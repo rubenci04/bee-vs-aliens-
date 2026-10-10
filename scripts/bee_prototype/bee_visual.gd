@@ -9,6 +9,8 @@ var elapsed := 0.0
 var _rim_materials: Array[ShaderMaterial] = []
 var _rim_applied := -1.0
 const BODY_LIFT := 0.9
+## VISUAL POLISH 02: Bee reads a little larger (silhouette) - presentation only, the body / hurtbox / melee boxes are untouched.
+const VISUAL_SCALE := 1.2
 
 func _ready() -> void:
 	BeeToonStyle.apply(self, true, BeeToonStyle.OUTLINE_BEE)
@@ -21,6 +23,7 @@ func _ready() -> void:
 		rest_angles.append(wing.rotation)
 	# Matches the existing Player facing convention, including its initial pose.
 	get_parent().rotation.y = -actor.facing_x * PI * 0.5
+	get_parent().scale = Vector3.ONE * VISUAL_SCALE
 
 func _process(delta: float) -> void:
 	_update_buzz(delta, actor.is_defeated)

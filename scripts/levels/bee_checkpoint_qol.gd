@@ -83,6 +83,8 @@ func create_beacon() -> void:
 	title.font_size = 40
 	title.pixel_size = 0.009
 	beacon.add_child(title)
+	BeeToonStyle.apply(post, true, BeeToonStyle.OUTLINE_PROP) # VISUAL POLISH 02: same look as every prop.
+	BeeToonStyle.apply(ring, true, BeeToonStyle.OUTLINE_PROP)
 
 func _process(delta: float) -> void:
 	if stage == null:

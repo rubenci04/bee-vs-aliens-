@@ -12,6 +12,8 @@ const OVERCHARGE_SCALE := 1.35
 static var _halo_mesh: TorusMesh
 
 func _ready() -> void:
+	BeeToonStyle.apply($SpreadVisual, true, BeeToonStyle.OUTLINE_PROP) # VISUAL POLISH 02: same look as everything else.
+	BeeToonStyle.apply($BombVisual, true, BeeToonStyle.OUTLINE_PROP)
 	$SpreadVisual.visible = kind == Kind.SPREAD
 	$BombVisual.visible = kind == Kind.BOMB
 	$Label.text = "S" if kind == Kind.SPREAD else "B"

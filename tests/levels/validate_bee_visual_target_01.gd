@@ -59,9 +59,10 @@ func run() -> void:
 	var max_x := -INF
 	var all_meshes: Array = target.find_children("*", "MeshInstance3D", true, false)
 	for mesh: MeshInstance3D in all_meshes:
-		var material := mesh.material_override as StandardMaterial3D
-		check(material != null and material.albedo_texture == null, "Decoration must use flat colours: " + mesh.name)
-		var c := material.albedo_color
+		# VISUAL POLISH 02: the decoration uses the style C toon shader (flat colour in its `albedo` parameter, no texture).
+		var material := mesh.material_override as ShaderMaterial
+		check(material != null and material.shader.resource_path.contains("toon_") and not (material.get_shader_parameter("use_texture") == true), "Decoration must use flat toon colours: " + mesh.name)
+		var c: Color = material.get_shader_parameter("albedo")
 		check(not (c.h > 0.42 and c.h < 0.56 and c.s > 0.35), "Cyan is reserved for alien tech: " + mesh.name)
 		var is_flower := false
 		for key in FLOWER_KEYS:
@@ -150,18 +151,18 @@ func run() -> void:
 	var sun := stage.get_node("Sun") as DirectionalLight3D
 	check(color_distance(sun.light_color, BeeLevel01LightProgression.settings_at(300.0)["sun_color"]) < 0.001, "Sun not following the scroll position")
 	# Sunset readability: darker, less saturated soil and a stronger rim on Bee, both gradual.
-	var soil := (target.get_node("MulchGround") as MeshInstance3D).material_override as StandardMaterial3D
+	var soil := (target.get_node("MulchGround") as MeshInstance3D).material_override as ShaderMaterial
 	stage.distance = 0.0
 	await process_frame
-	var morning_soil := soil.albedo_color
+	var morning_soil := (soil.get_shader_parameter("albedo") as Color)
 	check(is_zero_approx(BeeToonStyle.bee_rim_boost), "Bee rim boost must be off in the morning")
 	stage.distance = 330.0
 	await process_frame
-	check(soil.albedo_color.v < morning_soil.v * 0.65 and soil.albedo_color.s < morning_soil.s * 0.6, "Sunset soil must be darker and less saturated")
+	check((soil.get_shader_parameter("albedo") as Color).v < morning_soil.v * 0.65 and (soil.get_shader_parameter("albedo") as Color).s < morning_soil.s * 0.6, "Sunset soil must be darker and less saturated")
 	check(BeeToonStyle.bee_rim_boost > 0.99, "Bee rim boost must be full at sunset")
 	stage.distance = 270.0
 	await process_frame
 	var mid := BeeToonStyle.bee_rim_boost
-	check(mid > 0.0 and mid < 1.0 and soil.albedo_color.v < morning_soil.v and soil.albedo_color.v > Color.from_hsv(morning_soil.h, 0.0, morning_soil.v * 0.58).v, "Sunset contrast aids must blend in gradually")
+	check(mid > 0.0 and mid < 1.0 and (soil.get_shader_parameter("albedo") as Color).v < morning_soil.v and (soil.get_shader_parameter("albedo") as Color).v > Color.from_hsv(morning_soil.h, 0.0, morning_soil.v * 0.58).v, "Sunset contrast aids must blend in gradually")
 	print("VISUAL_LEVEL_01_OK life=", life.instance_total, " batches=", target.batches.size(), " flowers=", target.flower_head_count, " hidden=", target.hidden_scenery.size(), " foreground=", target.foreground_nodes.size(), " light_step=", snappedf(worst, 0.0001))
 	quit(0)

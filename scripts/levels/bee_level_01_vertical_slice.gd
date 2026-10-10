@@ -11,6 +11,13 @@ var boss_arena_wide := false
 func _ready() -> void:
 	super._ready()
 	checkpoint.setup(self)
+	for leftover in ["Ground", "GroundExtension"]: # POC boxes under the mulch slab (coplanar): never visible, never styled.
+		var poc_ground := get_node_or_null(leftover) as Node3D
+		if poc_ground != null:
+			poc_ground.hide()
+	var ambient_fx := BeeLevel01AmbientFx.new() # VISUAL POLISH 02: GPU sparks, ground dust, dew glints, haze.
+	ambient_fx.name = "AmbientFx"
+	add_child(ambient_fx)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 

@@ -104,6 +104,8 @@ func place(asset: PackedScene, label: String, floor_position: Vector3, factor: f
 		flower_counts[key] = int(flower_counts.get(key, 0)) + 1
 	super.place(asset, label, floor_position, factor, yaw)
 	var instance := get_node(label) as Node3D
+	if label == "FallenLog" or label.ends_with("Bottle"):
+		BeeToonStyle.apply_profile(instance, &"prop") # VISUAL POLISH 02: the last solid prop with a smooth material.
 	if floor_position.z > 0.0 and asset == FERN:
 		# Retain foreground accents below Bee's lowest flight/hurtbox height.
 		instance.scale.y *= 0.2

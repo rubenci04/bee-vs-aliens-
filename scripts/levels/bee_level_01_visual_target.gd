@@ -46,6 +46,9 @@ const PALETTE := {
 	"far_dark": Color(0.22, 0.32, 0.22),
 	"far_petal": Color(0.8, 0.7, 0.38),
 	"foreground": Color(0.07, 0.11, 0.05),
+	"veil": Color(0.4, 0.5, 0.37), # VISUAL POLISH 02 depth layers.
+	"veil_dark": Color(0.32, 0.43, 0.35),
+	"seed": Color(0.72, 0.6, 0.28),
 }
 const GROUND_TINT_KEYS := ["mulch", "mulch_dark", "mulch_light", "pebble", "pebble_warm", "leaf_fallen"]
 const FLOWER_PETALS := ["petal_pink", "petal_warm", "petal_violet"]
@@ -80,6 +83,7 @@ func _ready() -> void:
 	_build_giant_stems(X_MAX, LEVEL_END)
 	_build_background(X_MAX + 30.0, LEVEL_END + 30.0, X_MAX + 50.0, LEVEL_END + 50.0)
 	_build_foreground(_foreground_specs(X_MAX + 12.0, LEVEL_END))
+	_build_depth_layers(X_MIN, LEVEL_END) # VISUAL POLISH 02: own RNG, the sequences above are untouched.
 	_flush_batches()
 
 
@@ -277,6 +281,42 @@ func _build_background(x0: float, x1: float, mound_x0: float, mound_x1: float) -
 		m += 1
 
 
+## VISUAL POLISH 02 — extra depth layers, built with their OWN random generator so the approved scatter sequences above stay
+## identical:
+##   veil    a soft band of broad, muted blades far behind the stems (z -20 .. -13): fog does the rest, so it reads as out-of-focus
+##   seeds   clusters of 2-3 slender seed-grass stems at irregular gaps (z -8 .. -4.5) that break the rows of giant stems
+## Spacing is deliberately uneven (long empty stretches, then clumps) so no two stretches of the level repeat.
+func _build_depth_layers(x0: float, x1: float) -> void:
+	var layer_rng := RandomNumberGenerator.new()
+	layer_rng.seed = 9091
+	var x := x0
+	var i := 0
+	while x < x1:
+		x += layer_rng.randf_range(0.9, 4.6) if layer_rng.randf() < 0.7 else layer_rng.randf_range(5.0, 9.0)
+		var height := layer_rng.randf_range(5.0, 13.0)
+		var blade := _blade(height, layer_rng.randf_range(1.2, 2.4), layer_rng.randf_range(-2.5, 2.5))
+		_add(blade, "veil" if i % 3 else "veil_dark", Vector3(x, GROUND_Y, layer_rng.randf_range(-20.0, -13.0)), Vector3(0, layer_rng.randf_range(-0.6, 0.6), 0), Vector3.ONE, "VeilBlade%d" % i, false, true)
+		i += 1
+	x = x0
+	i = 0
+	while x < x1:
+		x += layer_rng.randf_range(4.0, 11.0)
+		for k in layer_rng.randi_range(2, 3):
+			var base := Vector3(x + float(k) * layer_rng.randf_range(0.3, 0.7), GROUND_Y, layer_rng.randf_range(-8.0, -4.5))
+			var height := layer_rng.randf_range(2.4, 5.5)
+			var bend := layer_rng.randf_range(-0.7, 0.7)
+			var stalk := _blade(height, 0.32, bend, 4) # Thick enough to read as a stalk (a thin one made the head look like it floated).
+			_add(stalk, "grass", base, Vector3(0, layer_rng.randf_range(-0.4, 0.4), 0), Vector3.ONE, "SeedStalk%d_%d" % [i, k], true, true)
+			var head := SphereMesh.new()
+			head.radial_segments = 5
+			head.rings = 3
+			head.radius = 0.16
+			head.height = 0.55
+			var tip := base + Vector3(bend, height, 0) # The blade bends by `bend` at its tip (t = 1).
+			_add(_faceted(head), "seed", tip + Vector3(0, 0.1, 0), Vector3(0, 0, layer_rng.randf_range(-0.3, 0.3)), Vector3.ONE, "SeedHead%d_%d" % [i, k], true)
+		i += 1
+
+
 ## Dark leaves very close to the camera. Their height is derived from the camera so that,
 ## in screen space, they only cover the band below FOREGROUND_SCREEN_Y on the play plane.
 func _build_foreground(specs: Array) -> void:
@@ -360,15 +400,22 @@ func _flush_batches() -> void:
 	_buckets.clear()
 
 
-func _material(key: String, double_sided: bool) -> StandardMaterial3D:
+## VISUAL POLISH 02: the decoration uses the same style C toon shader as every actor and prop (3 light bands, rim, fine
+## outline on closed solids) instead of the smooth StandardMaterial3D it had, so nothing in the level has another "look".
+## No rim on the ground (it faces the camera at a grazing angle and would wash out); no outline on thin blades / petals.
+const OUTLINE_KEYS := ["pebble", "pebble_warm", "flower_core", "stem"]
+const NO_RIM_KEYS := ["mulch", "mulch_dark", "mulch_light", "leaf_fallen", "grass", "grass_yellow", "foreground", "far_green", "far_dark", "veil", "veil_dark"]
+
+
+func _material(key: String, double_sided: bool) -> ShaderMaterial:
 	var cache_key := key + ("_2" if double_sided else "")
 	if not _materials.has(cache_key):
-		var material := StandardMaterial3D.new()
-		material.albedo_color = PALETTE[key]
-		material.roughness = 1.0
-		material.metallic_specular = 0.2
-		if double_sided:
-			material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var material := ShaderMaterial.new()
+		material.shader = BeeToonStyle.TOON_DOUBLE if double_sided else BeeToonStyle.TOON
+		material.set_shader_parameter("albedo", PALETTE[key])
+		material.set_shader_parameter("rim_strength", 0.0 if key in NO_RIM_KEYS else 0.22)
+		if key in OUTLINE_KEYS and not double_sided:
+			material.next_pass = BeeToonStyle.shared_outline(BeeToonStyle.OUTLINE_PROP)
 		_materials[cache_key] = material
 	return _materials[cache_key]
 
@@ -451,4 +498,4 @@ func apply_ground_tint(strength: float) -> void:
 		if not GROUND_TINT_KEYS.has(key):
 			continue
 		var base: Color = PALETTE[key]
-		(_materials[cache_key] as StandardMaterial3D).albedo_color = Color.from_hsv(base.h, base.s * (1.0 - 0.5 * strength), base.v * (1.0 - 0.42 * strength))
+		(_materials[cache_key] as ShaderMaterial).set_shader_parameter("albedo", Color.from_hsv(base.h, base.s * (1.0 - 0.5 * strength), base.v * (1.0 - 0.42 * strength)))
