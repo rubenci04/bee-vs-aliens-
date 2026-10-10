@@ -15,41 +15,53 @@ enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, TRANSITION, DEATH, DONE }
 
 const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
 const PROJECTILE_GROUP := &"ufo_boss_projectiles"
-const DISPLAY_NAME := "ALIEN SCOUT"
+const DISPLAY_NAME := "NODO ALIEN"
 
-## HP from the measured DPS (see docs/BEE_UFO_BOSS_01.md): ~60 s for a reasonable player.
-@export var max_hp := 1300
+## UFO BOSS 01: HP 500 (was 400 in the first NODO pass, which Base fire melted in ~12 s): ~15 s of continuous Base fire (33 dps), ~25 s with dodging.
+@export var max_hp := 500
 const PHASE_2_RATIO := 0.66
 const PHASE_3_RATIO := 0.33
 
 const APPROACH_SECONDS := 3.2
 const START_OFFSET := Vector3(4.0, 2.4, -38.0) # Far in depth, up and to the right of the arena anchor.
-const ANCHOR_DX := 3.3 # Arena position: right part of the screen, Bee keeps the left.
-const CENTER_Y := 3.9
+const ANCHOR_DX := 3.0 # Arena position: right part of the screen, Bee keeps the left.
+const CENTER_Y := 3.5
 const TRANSITION_SECONDS := 0.9
+## Visual root scale: ring radius ~2.7 m (5.4 m wide). A full 6 m would cover Bee's flight window in the preset E frame.
+const VISUAL_SCALE := 1.6
+## PHASE 3 TRACTOR BEAM: a vertical column on the ground line, marked 1 s before, 15 damage once per exposure.
+const BEAM_TELEGRAPH := 1.0
+const BEAM_ACTIVE := 0.8
+const BEAM_WIDTH := 1.5
+const BEAM_DAMAGE := 15
+const BEAM_GROUND_Y := -0.2
+const BEAM_TOP_Y := 7.3
 
 # Per phase: [bob amplitude, bob period, cooldown, aimed telegraph, fan telegraph].
 # Amplitude keeps the whole saucer inside the preset E frame (top edge ~7.1 m at the play plane).
 ## BOSS CHALLENGE V2 (REBUILD 03): more active movement per phase - a figure-eight over the right part of the arena
 ## (X amplitude per phase) plus, from phase 2, a slow approach / retreat. Never chases Bee and never leaves the band
 ## [X_MIN, half width - X_EDGE] in front of the camera, so the left of the screen is always an escape route.
-const MOVE_X := {State.PHASE_1: 0.7, State.PHASE_2: 1.1, State.PHASE_3: 1.4}
+const MOVE_X := {State.PHASE_1: 1.1, State.PHASE_2: 1.3, State.PHASE_3: 1.5}
 const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1}
-const X_MIN := 1.4
-const X_EDGE := 2.2
+const X_MIN := 2.2
+const X_EDGE := 3.0
 ## Minions: phase 2 launches 2 EyeDrones (then again whenever none is left, every MINION_COOLDOWN s); phase 3 launches
 ## a single Probe only when the screen is clean enough. While summoning the saucer does not attack (~1 s).
 const SUMMON_SECONDS := 1.0
-const MINION_COOLDOWN := {State.PHASE_2: 11.0, State.PHASE_3: 13.0}
+const MINION_COOLDOWN := {State.PHASE_2: 9.0, State.PHASE_3: 12.0}
 const MAX_MINIONS := {State.PHASE_2: 2, State.PHASE_3: 1}
 const PHASE_TUNING := {
-	State.PHASE_1: [1.0, 5.4, 1.45, 0.6, 0.7],
-	State.PHASE_2: [1.3, 4.6, 1.3, 0.55, 0.7],
-	State.PHASE_3: [1.5, 3.4, 1.0, 0.5, 0.6],
+	State.PHASE_1: [1.0, 4.6, 1.05, 0.5, 0.7],
+	State.PHASE_2: [1.1, 4.4, 1.1, 0.5, 0.65],
+	State.PHASE_3: [1.3, 3.4, 0.85, 0.45, 0.55],
 }
 const AIMED_SHOTS := 3
 const AIMED_INTERVAL := 0.14
-const AIMED_SPEED := 6.2
+const AIMED_SPEED := 6.2 # Fallback; per phase see AIMED_SPEED_BY_PHASE.
+## Balance pass (fixes 01): aimed bursts get faster and, in phase 3, longer. Phase 1 = pure aimed, phase 2 = fans + drones, phase 3 = beam + 4-shot bursts.
+const AIMED_SPEED_BY_PHASE := {State.PHASE_1: 6.8, State.PHASE_2: 7.2, State.PHASE_3: 7.6}
+const AIMED_SHOTS_BY_PHASE := {State.PHASE_1: 3, State.PHASE_2: 3, State.PHASE_3: 4}
 const FAN_SHOTS := 5
 const FAN_STEP_DEGREES := 17.0 # 5 shots over 68°: gaps of ~1.7 m at Bee's distance.
 const FAN_SPEED := 4.8
@@ -93,6 +105,12 @@ var _contact_refresh := 0.0
 var minions_alive := 0 # Written by the level director every frame.
 var summons := 0
 var _summon_cooldown := 1.6
+var beams := 0
+var _beam_x := 0.0
+var _beam_box: DamageHitbox3D
+var _beam_visual: MeshInstance3D
+var _beam_column: MeshInstance3D
+var _beam_mark: MeshInstance3D
 
 
 func _ready() -> void:
@@ -105,8 +123,11 @@ func _ready() -> void:
 	contact.team_id = &"alien"
 	contact.damage = CONTACT_DAMAGE
 	contact.set_enabled(false)
+	hurtbox.scale = Vector3.ONE * (VISUAL_SCALE / 0.8) # Collider authored for a 0.8 scale visual.
+	contact.scale = Vector3.ONE * (VISUAL_SCALE / 0.8)
 	_build_visual()
 	_build_health_bar()
+	_build_beam()
 	_hover = AudioStreamPlayer3D.new()
 	_hover.name = "HoverLoop"
 	var source := load("res://audio/sfx/real/ufo_hover.wav") as AudioStreamWAV
@@ -132,7 +153,7 @@ func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 	global_position = anchor + START_OFFSET
 	state = State.APPROACH
 	_state_time = 0.0
-	visual_root.scale = Vector3.ONE * 0.8
+	visual_root.scale = Vector3.ONE * VISUAL_SCALE
 	_play_long("res://audio/sfx/real/ufo_sting.wav", "UfoSting", -12.0)
 	if DisplayServer.get_name() != "headless" and _hover.stream != null:
 		_hover.play()
@@ -159,6 +180,7 @@ func live_projectiles() -> Array:
 ## Bee defeated: everything stops in place (the scene is reloaded by R).
 func freeze() -> void:
 	set_physics_process(false)
+	_cancel_beam()
 	contact.set_enabled(false)
 	_set_charge(0.0)
 	if _hover != null:
@@ -270,10 +292,22 @@ func _attack(delta: float) -> void:
 				BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.7)
 			elif _attack_left <= 0.0:
 				_pattern = _choose_pattern()
+				if _pattern == &"beam":
+					_start_beam()
+					return
 				_attack_step = &"telegraph"
 				_attack_left = float(tuning[3]) if _pattern == &"aimed" else float(tuning[4])
 				attacks_started += 1
 				BeeAudio.play(get_parent(), &"ufo_charge", global_position, 1.2 if _pattern == &"aimed" else 0.85)
+		&"beam_tele":
+			_update_beam_telegraph()
+			if _attack_left <= 0.0:
+				_fire_beam()
+		&"beam_on":
+			if _attack_left <= 0.0:
+				_end_beam()
+				_attack_step = &"cooldown"
+				_attack_left = float(tuning[2])
 		&"telegraph":
 			var total := float(tuning[3]) if _pattern == &"aimed" else float(tuning[4])
 			_set_charge(1.0 - _attack_left / total)
@@ -283,7 +317,7 @@ func _attack(delta: float) -> void:
 					_fire_fan()
 				if _pattern == &"aimed" or _pattern == &"fan_aimed":
 					_attack_step = &"burst"
-					_burst_left = AIMED_SHOTS
+					_burst_left = int(AIMED_SHOTS_BY_PHASE.get(state, AIMED_SHOTS))
 					_attack_left = 0.0 if _pattern == &"aimed" else 0.35
 				else:
 					_attack_step = &"cooldown"
@@ -314,6 +348,8 @@ func _choose_pattern() -> StringName:
 		State.PHASE_2:
 			return &"fan" if attacks_started % 2 == 1 else &"aimed"
 		_:
+			if attacks_started % 3 == 0:
+				return &"beam" # Every third attack of phase 3 is the tractor beam (never two in a row).
 			return &"fan_aimed" if attacks_started % 2 == 1 else &"aimed"
 
 
@@ -335,7 +371,7 @@ func _fire_aimed() -> void:
 		return
 	var origin := _muzzle_for_aimed()
 	var direction := target.global_position - origin # Bee's position at the moment of this shot.
-	_spawn_projectile(origin, Vector3(direction.x, direction.y, 0.0).normalized(), AIMED_SPEED, &"aimed")
+	_spawn_projectile(origin, Vector3(direction.x, direction.y, 0.0).normalized(), float(AIMED_SPEED_BY_PHASE.get(state, AIMED_SPEED)), &"aimed")
 	fired_aimed += 1
 
 
@@ -375,6 +411,125 @@ func clear_projectiles() -> int:
 	return cleared
 
 
+# --- tractor beam (phase 3) --------------------------------------------------------------------
+
+func _unshaded(color: Color) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = color
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	return material
+
+
+func _build_beam() -> void:
+	var height := BEAM_TOP_Y - BEAM_GROUND_Y
+	_beam_box = DamageHitbox3D.new()
+	_beam_box.name = "BeamHitbox"
+	_beam_box.team_id = &"alien"
+	_beam_box.damage = BEAM_DAMAGE
+	_beam_box.collision_layer = 0
+	_beam_box.collision_mask = 2
+	_beam_box.top_level = true # The column stays where it was marked while the saucer keeps moving.
+	add_child(_beam_box)
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(BEAM_WIDTH * 0.9, height, 1.2) # Slightly narrower than the drawn column.
+	shape.shape = box
+	_beam_box.add_child(shape)
+	_beam_box.attacker = self
+	_beam_visual = MeshInstance3D.new()
+	_beam_visual.name = "BeamVisual"
+	var column := BoxMesh.new()
+	column.size = Vector3(BEAM_WIDTH, height, 0.5)
+	column.material = _unshaded(Color(0.3, 1.0, 1.0, 0.55))
+	_beam_visual.mesh = column
+	_beam_visual.visible = false
+	_beam_visual.top_level = true
+	add_child(_beam_visual)
+	# Telegraph: a faint column outline and a pulsing mark on the ground at the locked X.
+	_beam_column = MeshInstance3D.new()
+	_beam_column.name = "BeamWarningColumn"
+	var faint := BoxMesh.new()
+	faint.size = Vector3(BEAM_WIDTH, height, 0.5)
+	faint.material = _unshaded(Color(1.0, 0.6, 0.2, 0.2))
+	_beam_column.mesh = faint
+	_beam_column.visible = false
+	_beam_column.top_level = true
+	add_child(_beam_column)
+	_beam_mark = MeshInstance3D.new()
+	_beam_mark.name = "BeamGroundMark"
+	var disc := CylinderMesh.new()
+	disc.top_radius = BEAM_WIDTH * 0.62
+	disc.bottom_radius = BEAM_WIDTH * 0.62
+	disc.height = 0.02
+	disc.radial_segments = 20
+	disc.material = _unshaded(Color(1.0, 0.55, 0.15, 0.8))
+	_beam_mark.mesh = disc
+	_beam_mark.visible = false
+	_beam_mark.top_level = true
+	add_child(_beam_mark)
+
+
+func _start_beam() -> void:
+	attacks_started += 1
+	beams += 1
+	var half := BeeShmupFairness.visible_half_width(camera, Vector3(camera.global_position.x, 3.0, 0.0), BeeLevel01Framing.view_aspect(get_viewport())) \
+			if camera != null else 6.0
+	var bee_x := target.global_position.x if target != null else global_position.x
+	var cam_x := camera.global_position.x if camera != null else 0.0
+	_beam_x = clampf(bee_x, cam_x - half + BEAM_WIDTH, cam_x + half - BEAM_WIDTH) # Locked here: moving away dodges it.
+	var mid := Vector3(_beam_x, (BEAM_TOP_Y + BEAM_GROUND_Y) * 0.5, 0.0)
+	_beam_column.global_position = mid
+	_beam_column.visible = true
+	_beam_mark.global_position = Vector3(_beam_x, BEAM_GROUND_Y + 0.04, 0.0)
+	_beam_mark.scale = Vector3(0.3, 1.0, 0.3)
+	_beam_mark.visible = true
+	_attack_step = &"beam_tele"
+	_attack_left = BEAM_TELEGRAPH
+	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.5)
+
+
+func _update_beam_telegraph() -> void:
+	var progress := clampf(1.0 - _attack_left / BEAM_TELEGRAPH, 0.0, 1.0)
+	_set_charge(progress)
+	var s := lerpf(0.3, 1.0, progress)
+	_beam_mark.scale = Vector3(s, 1.0, s)
+	var blink := 0.5 + 0.5 * sin(progress * TAU * 3.0)
+	((_beam_mark.mesh as CylinderMesh).material as StandardMaterial3D).albedo_color = Color(1.0, 0.35 + 0.4 * blink, 0.1, 0.65 + 0.3 * progress)
+
+
+func _fire_beam() -> void:
+	_set_charge(0.0)
+	_beam_column.visible = false
+	_beam_mark.visible = false
+	_beam_visual.global_position = Vector3(_beam_x, (BEAM_TOP_Y + BEAM_GROUND_Y) * 0.5, 0.0)
+	_beam_visual.visible = true
+	_beam_box.global_position = _beam_visual.global_position
+	_beam_box.set_enabled(true) # One hit per exposure: the hitbox ignores a target it already hit until re-enabled.
+	_attack_step = &"beam_on"
+	_attack_left = BEAM_ACTIVE
+	BeeCameraShake.kick(self, 0.02, 0.2)
+
+
+func _end_beam() -> void:
+	_beam_box.set_enabled(false)
+	_beam_visual.visible = false
+
+
+func _cancel_beam() -> void:
+	if _beam_box == null:
+		return
+	_beam_box.set_enabled(false)
+	_beam_visual.visible = false
+	_beam_column.visible = false
+	_beam_mark.visible = false
+
+
+func beam_active() -> bool:
+	return _attack_step == &"beam_on" and is_physics_processing()
+
+
 # --- health and phases ------------------------------------------------------------------------
 
 func _on_health_changed(current: int, maximum: int, change: int) -> void:
@@ -382,8 +537,8 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		_bar.value = float(current) / float(maximum) * 100.0
 	if change < 0 and current > 0:
 		var punch := create_tween()
-		punch.tween_property(visual_root, "scale", Vector3.ONE * 0.84, 0.05)
-		punch.tween_property(visual_root, "scale", Vector3.ONE * 0.8, 0.08)
+		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE * 1.05, 0.05)
+		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE, 0.08)
 	if not (state in [State.PHASE_1, State.PHASE_2, State.PHASE_3]) or current <= 0:
 		return
 	var ratio := float(current) / float(maximum)
@@ -406,6 +561,7 @@ func _die() -> void:
 	contact.set_enabled(false)
 	hurtbox.set_deferred("monitorable", false)
 	remove_from_group("bee_auto_aim_targets")
+	_cancel_beam()
 	_set_charge(0.0)
 	clear_projectiles() # No unfair hit after the win.
 	_bar_layer.visible = false
@@ -434,9 +590,9 @@ func _spark(index: int) -> void:
 
 
 func _main_explosion() -> void:
-	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, 2.6)
-	BeeCombatVFX.spawn(get_parent(), global_position, &"heavy_death", Vector3.RIGHT, 2.0) # REBUILD 03: layered blast.
-	BeeCameraShake.kick(self, 0.09, 0.45)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, 3.8)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"heavy_death", Vector3.RIGHT, 3.2) # REBUILD 03: layered blast.
+	BeeCameraShake.kick(self, 0.12, 0.6)
 	_play_long("res://audio/sfx/real/ufo_death.wav", "UfoDeath", -9.0)
 	visual_root.hide()
 

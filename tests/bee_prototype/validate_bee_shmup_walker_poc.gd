@@ -57,7 +57,7 @@ func run() -> void:
 	var c := wave.walker_c
 	var d := wave.walker_d
 	check(a.health.max_health == 45 and a.health.current_health == 45 and is_equal_approx(a.walk_speed, 1.9), "Walker HP/speed wrong")
-	check(a.visual_root.scale == Vector3.ONE * 1.4 and is_equal_approx(a.get_node("VisualRoot/ModelPivot").position.y, 1.07) and is_equal_approx(a.global_position.y, -0.2), "Walker scale/grounding wrong")
+	check(a.visual_root.scale == Vector3.ONE * 2.8 and is_equal_approx(a.get_node("VisualRoot/ModelPivot").position.y, 0.0) and is_equal_approx(a.global_position.y, -0.2), "Walker scale/grounding wrong")
 	check(a.animation_player != null and a.animation_player.has_animation(&"CharacterArmature|Walk") and a.animation_player.has_animation(&"CharacterArmature|Shoot") and a.animation_player.has_animation(&"CharacterArmature|Death"), "Walker animations missing")
 	check(not a.is_active() and not a.is_in_group("bee_auto_aim_targets") and wave.active_count() == 0, "Walker active early")
 	check(await until_wave(1) and a.is_active() and a.current_state == GroundWalkerEnemy.State.ENTER, "Encounter 1 entry missing")

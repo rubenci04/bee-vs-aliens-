@@ -18,7 +18,7 @@ script = ExtResource("1")
 [node name="VisualRoot" type="Node3D" parent="."]
 
 [node name="HealthComponent" parent="." instance=ExtResource("2")]
-max_health = 1300
+max_health = 500
 
 [node name="HitFlash3D" parent="." instance=ExtResource("4")]
 

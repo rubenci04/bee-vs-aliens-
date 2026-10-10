@@ -13,6 +13,7 @@ const SPEEDER = preload("res://scenes/bee_prototype/speeder_enemy.tscn")
 const ORGANIC = preload("res://scenes/bee_prototype/organic_alien_enemy.tscn")
 const WALKER = preload("res://scenes/bee_prototype/ground_walker_enemy.tscn")
 const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
+const POWERUP_PICKUP = preload("res://scenes/bee_prototype/bee_powerup_pickup.tscn")
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 const SWARM = preload("res://scenes/levels/popcorn_drone.tscn")
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
@@ -515,7 +516,8 @@ func _advance_boss(delta: float) -> void:
 			director_moment.emit(&"last_silence")
 			stage.scroll_speed = 0.0 # Arena lock: no more scroll, no more encounters.
 			encounter_label = "FINAL · CONTACTO"
-			player_label = ""
+			player_label = "SEÑAL DESCONOCIDA" # UFO BOSS 01: warning during the last silence and the approach.
+			_spawn_boss_supplies()
 		_boss_breather_left -= delta
 		if _boss_breather_left <= 0.0:
 			_start_boss()
@@ -528,7 +530,10 @@ func _start_boss() -> void:
 	boss.phase_changed.connect(_on_boss_phase)
 	boss.summon_requested.connect(_on_boss_summon)
 	encounter_label = "PRIMER CONTACTO · OVNI"
-	player_label = "¡PRIMER CONTACTO!"
+	player_label = "SEÑAL DESCONOCIDA"
+	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
+	if checkpoint != null:
+		checkpoint.activate_boss_checkpoint() # Retry after a defeat respawns at the start of the fight.
 	boss.begin(stage.camera, bee)
 
 func _on_boss_phase(state: int) -> void:
@@ -598,3 +603,14 @@ func _on_boss_summon(family: StringName, count: int) -> void:
 		var free_slot: Vector2 = slots[(boss_minions().size() + i) % slots.size()]
 		_spawn({"family": str(family), "slot": i, "event": EVENTS.size() - 1, "hard": true, "y": free_slot.y, "minion": true,
 				"launch_from": boss.global_position - Vector3(stage.camera.global_position.x, 0.0, 0.0), "launch_slot": free_slot})
+
+## UFO BOSS 01: a Bomb pickup appears in the arena during the last silence (only when Bee is low on charges, so dying and
+## retrying never farms bombs). The level's last pollen (PollenM) sits just before the arena at X=338.4.
+func _spawn_boss_supplies() -> void:
+	if bee.bomb_charges >= 2:
+		return
+	var pickup := POWERUP_PICKUP.instantiate() as BeePowerupPickup
+	pickup.name = "BossBomb"
+	pickup.kind = BeePowerupPickup.Kind.BOMB
+	stage.add_child(pickup) # Not under "Powerups": that node is the level's fixed pickup set.
+	pickup.global_position = Vector3(stage.camera.global_position.x - 0.5, 3.2, 0.0)

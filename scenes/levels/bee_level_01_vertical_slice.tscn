@@ -144,7 +144,7 @@ position = Vector3(288, 5.46, 0)
 position = Vector3(326, 1.8, 0)
 
 [node name="PollenM" parent="Pollen" instance=ExtResource("6")]
-position = Vector3(347, 5.46, 0)
+position = Vector3(338.4, 2.6, 0)
 
 [node name="PollenN" parent="Pollen" instance=ExtResource("6")]
 position = Vector3(20, 1.9, 0)

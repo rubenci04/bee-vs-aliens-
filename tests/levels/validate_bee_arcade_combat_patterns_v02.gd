@@ -482,7 +482,7 @@ func test_checkpoint_and_complete() -> void:
 		if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1:
 			break
 	var boss := wave.boss
-	check(boss != null and boss.max_hp == 1300 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "UFO Boss changed")
+	check(boss != null and boss.max_hp == 500 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "UFO Boss changed")
 	boss.health.take_damage(boss.health.max_health)
 	for i in 900:
 		await physics_frame
@@ -490,7 +490,7 @@ func test_checkpoint_and_complete() -> void:
 		if stage.sector_complete:
 			break
 	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level Complete missing after the boss died")
-	print("PATTERN_CHECKPOINT_COMPLETE OK (UFO 1300 HP unchanged)")
+	print("PATTERN_CHECKPOINT_COMPLETE OK (UFO 500 HP)")
 
 func run() -> void:
 	create_timer(560.0, true, false, true).timeout.connect(func(): quit(1))

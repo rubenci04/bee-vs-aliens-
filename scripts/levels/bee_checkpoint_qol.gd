@@ -2,6 +2,9 @@ class_name BeeCheckpointQoL
 extends Node
 
 const HANDOFF := &"bee_level_01_checkpoint_handoff"
+## UFO BOSS 01: the fight has its own checkpoint (taken when the boss starts) and a debug jump (F9) straight to it.
+const BOSS_ARENA_X := 340.5
+const DEBUG_KEY := KEY_F9
 @export var checkpoint_x := 190.0
 @export var protection_seconds := 1.25
 var checkpoint_active := false
@@ -15,6 +18,10 @@ var controls_hint: Label
 var beacon: Node3D
 var _notice_left := 0.0
 var _hint_left := 5.0
+var debug_active := false
+var boss_checkpoint_count := 0
+var _f9_was_down := false
+var debug_label: Label
 
 func setup(value: BeeShmupStage) -> void:
 	stage = value
@@ -22,6 +29,12 @@ func setup(value: BeeShmupStage) -> void:
 	notice = label("CheckpointNotice", "", Vector2(430, 180), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
 	controls_hint = label("ControlsHint", "X DISPARO · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 165), 18)
+	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
+	debug_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.2))
+	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) · NO ES EL JUEGO NORMAL", Vector2(330, 6), 20)
+	debug_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.2))
+	debug_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	debug_label.add_theme_constant_override("outline_size", 6)
 	create_beacon()
 	controls_hint.show()
 	if get_tree().has_meta(HANDOFF):
@@ -80,6 +93,12 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("bee_pause"):
 		get_tree().paused = not get_tree().paused
 		pause_label.visible = get_tree().paused
+	var f9_down := Input.is_physical_key_pressed(DEBUG_KEY)
+	if f9_down and not _f9_was_down and not get_tree().paused:
+		_f9_was_down = true
+		debug_jump_to_boss()
+		return
+	_f9_was_down = f9_down
 	if get_tree().paused:
 		return
 	if stage.bee.is_defeated:
@@ -129,6 +148,53 @@ func activate_checkpoint() -> void:
 	notice.show()
 	BeeAudio.play(stage, &"spread_pickup", beacon.global_position + Vector3(0, 1.8, 0))
 
+## Snapshot of the current run state. `limit`: pollen / powerups / crates left of it count as already gone.
+func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_from: float) -> Dictionary:
+	var bee := stage.bee
+	var broken: Array[String] = []
+	for crate in stage.get_node("Destructibles").get_children():
+		if crate.position.x < limit and crate.is_destroyed:
+			broken.append(str(crate.name))
+	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+		if stage.is_ancestor_of(rock) and rock.global_position.x < limit and rock.is_destroyed:
+			broken.append(str(rock.name))
+	return {"distance": distance, "bee_position": bee_position,
+		"hp": bee.health.current_health, "spread": bee.spread_ammo, "bomb": bee.bomb_charges,
+		"pollen": stage.pollen_count, "pollen_available": available_names("Pollen"),
+		"powerups_available": available_names("Powerups"), "broken": broken, "keep_from": keep_from,
+		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true)}
+
+## UFO BOSS 01: called by the director the moment the boss fight starts. Retrying after a defeat respawns here (not at
+## X=190) with the same minimum HP as the normal checkpoint (60 %).
+func activate_boss_checkpoint() -> void:
+	var bee := stage.bee
+	if bee.is_defeated:
+		return
+	var minimum := ceili(bee.health.max_health * 0.6)
+	bee.health.restore_health(maxi(0, minimum - bee.health.current_health))
+	var was_debug := debug_active
+	snapshot = _build_snapshot(stage.distance + 0.25, Vector3(stage.distance - 3.0, 3.4, 0), 1.0e9, -1.0e9)
+	snapshot["debug"] = was_debug
+	checkpoint_active = true
+	boss_checkpoint_count += 1
+
+## DEBUG (F9): reload Level 01 at the start of the boss fight with the normal loadout there (Base weapon, 2 bombs, full HP), to test it without playing the level.
+func debug_jump_to_boss() -> void:
+	var bee := stage.bee
+	var arena := BOSS_ARENA_X
+	var from := arena - 8.0
+	snapshot = {"distance": arena, "bee_position": Vector3(arena - 3.0, 3.4, 0), "hp": bee.health.max_health,
+		"spread": 0, "bomb": 2, "pollen": stage.pollen_count, "pollen_available": [], "powerups_available": [],
+		"broken": [], "keep_from": from, "elapsed": stage.elapsed_seconds, "debug": true,
+		"taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true)}
+	for pair in [["Pollen", "pollen_available"], ["Powerups", "powerups_available"]]:
+		for item in stage.get_node(pair[0]).get_children():
+			if item.position.x >= from:
+				snapshot[pair[1]].append(str(item.name))
+	get_tree().paused = false
+	get_tree().set_meta(HANDOFF, snapshot.duplicate(true))
+	get_tree().reload_current_scene()
+
 func restore_snapshot() -> void:
 	checkpoint_active = true
 	activation_count = 1
@@ -148,7 +214,7 @@ func restore_snapshot() -> void:
 	stage.wave.resume_after_checkpoint(stage.distance)
 	for pair in [["Pollen", "pollen_available"], ["Powerups", "powerups_available"]]:
 		for item in stage.get_node(pair[0]).get_children():
-			if item.position.x < checkpoint_x or str(item.name) not in snapshot[pair[1]]:
+			if item.position.x < float(snapshot.get("keep_from", checkpoint_x)) or str(item.name) not in snapshot[pair[1]]:
 				item.hide()
 				item.queue_free()
 	for crate in stage.get_node("Destructibles").get_children():
@@ -163,6 +229,8 @@ func restore_snapshot() -> void:
 	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
 		if stage.is_ancestor_of(rock) and str(rock.name) in snapshot["broken"]:
 			rock.restore_broken()
+	debug_active = bool(snapshot.get("debug", false))
+	debug_label.visible = debug_active
 	protection_left = protection_seconds
 	bee.health.damage_blocked = true
 	_hint_left = 0.0

@@ -115,6 +115,70 @@ func _opening_can() -> void:
 
 # --- after the giant: the world is still alive -----------------------------------------------------------
 
+## FIXES VISUALES 01: the aftermath crawler was a shapeless dark-green blob (the old beetle at 2.6x). It is now a small
+## alien turtle: grey-green dome shell with darker plates, short legs, a lighter head with a cyan eye and a cyan-tipped
+## antenna. Clear side silhouette, harmless (no Area3D), toon style like the other creatures. Faces +X (rotated to -X to walk).
+static func build_alien_turtle() -> Node3D:
+	var root := Node3D.new()
+	root.name = "AftermathTurtle"
+	var body := Node3D.new() # Everything that bobs while it walks.
+	body.name = "Body"
+	root.add_child(body)
+	var shell := MeshInstance3D.new()
+	shell.mesh = GardenLitterMeshes._blob(Vector3(0.62, 0.36, 0.5), 8, 4)
+	shell.mesh.surface_set_material(0, GardenProps.flat(Color(0.42, 0.5, 0.42)))
+	shell.position = Vector3(0, 0.34, 0)
+	body.add_child(shell)
+	for plate in [[-0.28, 0.0], [0.0, 0.0], [0.28, 0.0]]: # Darker dorsal plates: reads as armour from the side.
+		var p := MeshInstance3D.new()
+		p.mesh = GardenLitterMeshes._blob(Vector3(0.14, 0.1, 0.3), 6, 3)
+		p.mesh.surface_set_material(0, GardenProps.flat(Color(0.26, 0.32, 0.3)))
+		p.position = Vector3(float(plate[0]), 0.66 - absf(float(plate[0])) * 0.35, 0.0)
+		body.add_child(p)
+	var head := MeshInstance3D.new()
+	head.mesh = GardenLitterMeshes._blob(Vector3(0.2, 0.15, 0.15), 7, 4)
+	head.mesh.surface_set_material(0, GardenProps.flat(Color(0.6, 0.68, 0.5)))
+	head.position = Vector3(0.7, 0.3, 0.0)
+	body.add_child(head)
+	var glow := StandardMaterial3D.new()
+	glow.albedo_color = Color(0.2, 0.95, 1.0)
+	glow.emission_enabled = true
+	glow.emission = Color(0.1, 0.9, 1.0)
+	glow.emission_energy_multiplier = 2.5
+	for side in [-1.0, 1.0]: # One eye per side: the lateral camera always sees one.
+		var eye := MeshInstance3D.new()
+		eye.mesh = GardenLitterMeshes._blob(Vector3(0.05, 0.05, 0.05), 6, 3)
+		eye.mesh.surface_set_material(0, glow)
+		eye.position = Vector3(0.8, 0.36, side * 0.12)
+		body.add_child(eye)
+	var stalk := MeshInstance3D.new()
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = 0.015
+	cylinder.bottom_radius = 0.025
+	cylinder.height = 0.28
+	cylinder.radial_segments = 5
+	cylinder.material = GardenProps.flat(Color(0.3, 0.36, 0.32))
+	stalk.mesh = cylinder
+	stalk.position = Vector3(0.68, 0.55, 0.0)
+	stalk.rotation.z = -0.25
+	body.add_child(stalk)
+	var tip := MeshInstance3D.new()
+	tip.mesh = GardenLitterMeshes._blob(Vector3(0.045, 0.045, 0.045), 6, 3)
+	tip.mesh.surface_set_material(0, glow)
+	tip.position = Vector3(0.74, 0.69, 0.0)
+	body.add_child(tip)
+	var legs: Array[MeshInstance3D] = []
+	for leg_spec in [[0.38, 0.28], [0.38, -0.28], [-0.38, 0.28], [-0.38, -0.28]]:
+		var leg := MeshInstance3D.new()
+		leg.mesh = GardenLitterMeshes._blob(Vector3(0.13, 0.12, 0.09), 6, 3)
+		leg.mesh.surface_set_material(0, GardenProps.flat(Color(0.52, 0.6, 0.46)))
+		leg.position = Vector3(float(leg_spec[0]), 0.1, float(leg_spec[1]))
+		root.add_child(leg)
+		legs.append(leg)
+	root.set_meta("legs", legs)
+	return root
+
+
 func _human_aftermath() -> void:
 	var camera_x := stage.camera.global_position.x
 	for i in 4:
@@ -122,16 +186,12 @@ func _human_aftermath() -> void:
 		get_tree().create_timer(0.35 * float(i), false).timeout.connect(_dust.bind(Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2))))
 	if beetle != null and is_instance_valid(beetle):
 		beetle.queue_free()
-	beetle = Node3D.new()
-	beetle.name = "AftermathBeetle"
-	var shell := MeshInstance3D.new()
-	shell.mesh = GardenLitterMeshes.beetle()
-	shell.mesh.surface_set_material(0, GardenProps.flat(Color(0.12, 0.24, 0.16)))
-	beetle.add_child(shell)
+	beetle = build_alien_turtle()
+	var shell := beetle.get_node("Body") as Node3D
 	BeeToonStyle.apply(beetle, true)
-	beetle.scale = Vector3.ONE * 2.6
+	beetle.scale = Vector3.ONE * 1.5
 	add_child(beetle)
-	beetle.position = Vector3(camera_x + 7.0, -0.12, -1.6)
+	beetle.position = Vector3(camera_x + 7.0, -0.15, -1.6)
 	beetle.rotation.y = PI # Walks towards -X.
 	var walk := beetle.create_tween()
 	walk.tween_property(beetle, "position:x", camera_x - 7.5, BEETLE_SECONDS)
@@ -139,6 +199,10 @@ func _human_aftermath() -> void:
 	var bob := beetle.create_tween().set_loops(int(BEETLE_SECONDS / 0.36))
 	bob.tween_property(shell, "position:y", 0.03, 0.18)
 	bob.tween_property(shell, "position:y", 0.0, 0.18)
+	# Stepping: front-left + rear-right legs swing together, then the other diagonal.
+	var legs: Array = beetle.get_meta("legs")
+	var steps := beetle.create_tween().set_loops(int(BEETLE_SECONDS / 0.36))
+	steps.tween_method(func(t: float): _step_legs(legs, t), 0.0, 1.0, 0.36)
 
 
 # --- after the Walker gate: the Bomb as a reward -----------------------------------------------------------
@@ -229,3 +293,12 @@ func _physics_process(_delta: float) -> void:
 
 func _dust(at: Vector3) -> void:
 	BeeCombatVFX.spawn(self, at, &"crate", Vector3.UP, 2.2)
+
+
+func _step_legs(legs: Array, t: float) -> void:
+	var swing := sin(t * TAU) * 0.09
+	for i in legs.size():
+		var leg := legs[i] as Node3D
+		if is_instance_valid(leg):
+			leg.position.x = float([0.38, 0.38, -0.38, -0.38][i]) + swing * (1.0 if i == 0 or i == 3 else -1.0)
+			leg.position.y = 0.1 + maxf(0.0, sin(t * TAU + (0.0 if i == 0 or i == 3 else PI))) * 0.05

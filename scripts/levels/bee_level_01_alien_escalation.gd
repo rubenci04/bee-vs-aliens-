@@ -277,8 +277,8 @@ func _last_silence() -> void:
 	dim.parallel().tween_property(environment, "ambient_light_energy", ambient_energy * 0.78, 1.4)
 	# The light comes back with the reveal: the boss fight keeps the usual sunset readability.
 	dim.tween_interval(3.0)
-	dim.tween_property(sun, "light_energy", sun_energy, 1.6)
-	dim.parallel().tween_property(environment, "ambient_light_energy", ambient_energy, 1.6)
+	dim.tween_property(sun, "light_energy", sun_energy * 0.88, 1.6) # UFO BOSS 01: the fight stays slightly darker.
+	dim.parallel().tween_property(environment, "ambient_light_energy", ambient_energy * 0.9, 1.6)
 	# The shadow of something enormous crosses the garden from right to left.
 	ufo_shadow = MeshInstance3D.new()
 	ufo_shadow.name = "UfoShadow"

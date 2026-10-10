@@ -402,7 +402,7 @@ func test_boss() -> void:
 			break
 	boss = wave.boss
 	check(boss != null and boss.state == UfoBoss01.State.PHASE_1, "Boss did not reach phase 1")
-	check(boss.max_hp == 1300 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "Boss HP/approach changed (out of scope)")
+	check(boss.max_hp == 500 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "Boss HP/approach changed (out of scope)")
 	# The hurtbox lives inside the visible saucer.
 	var shape_node := boss.hurtbox.get_node("CollisionShape3D") as CollisionShape3D
 	# The saucer spins about Y: use radial extents (rotation-proof) and the exact vertical extents.
@@ -431,7 +431,7 @@ func test_boss() -> void:
 	boss.set_physics_process(false)
 	boss.health.max_health = 100000
 	await frames(2)
-	for entry in [[0.3, true], [-0.3, true], [0.62, true], [1.1, false], [-0.95, false]]:
+	for entry in [[0.3, true], [-0.3, true], [1.0, true], [1.6, false], [-1.5, false]]: # Boss doubled in size (batch 4): offsets scaled.
 		boss.health.current_health = boss.health.max_health
 		bee.global_position = Vector3(boss.global_position.x - 3.0, boss.global_position.y + float(entry[0]), 0)
 		bee.facing_x = 1.0

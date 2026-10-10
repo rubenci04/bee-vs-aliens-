@@ -10,7 +10,7 @@ extends SceneTree
 #   setpieces   Walker hold keeps the showcase on screen; the frog scale event hops behind the flight plane (no collision)
 #   checkpoint  resume after X=190 without replaying the Walker showcase or the frog; the power moment still ahead
 #   run         whole level with a fast harness: caps, ceiling, every family, depth units never fire from depth,
-#               moments in order, UFO 1300 HP, Level Complete
+#               moments in order, UFO 500 HP, Level Complete
 # Dev filter: -- only=static|popcorn|depth|power|setpieces|checkpoint|run
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
@@ -336,7 +336,7 @@ func test_run() -> void:
 		if wave._waiting_for_human:
 			bee.global_position = Vector3(stage.distance - 5.1, 7.0, 0)
 		if wave.boss != null and wave.boss.is_active():
-			check(wave.boss.max_hp == 1300, "UFO HP changed")
+			check(wave.boss.max_hp == 500, "UFO HP changed")
 			wave.boss.health.take_damage(99999)
 		if stage.sector_complete:
 			break

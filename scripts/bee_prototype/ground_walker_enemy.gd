@@ -15,8 +15,8 @@ enum State { INACTIVE, ENTER, ADVANCE, AIM, WINDUP, SHOOT, RECOVERY, REPOSITION,
 @export var reposition_distance := 1.5
 @export var projectile_damage := 9
 @export var projectile_speed := 6.5
-@export var muzzle_height := 3.0
-@export var muzzle_forward := 1.05
+@export var muzzle_height := 2.8 # FIXES 01: the model now stands on the ground (scale 2.8); barrel at ~2.5 m, shots leave just above it.
+@export var muzzle_forward := 1.5
 @export var projectile_scene: PackedScene
 
 @export_category("Heavy pressure (Level 01 only; 1 = the original single shot)")

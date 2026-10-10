@@ -5,7 +5,7 @@ extends SceneTree
 #               control device that frees the flower; the last silence (shadow + hum) before the unchanged UFO
 #   run         the whole level with a fast harness: acts 1-5, director moments in order, formation heights on entry,
 #               both dragonflies liberated (never "killed"), destructibles intact, Giant Human crossed once,
-#               no hostile shot born off screen, threat cap, UFO 1300 HP, Level Complete
+#               no hostile shot born off screen, threat cap, UFO 500 HP, Level Complete
 #   checkpoint  resume in act 3 after X=190 without the first dragonfly, Giant Human or earlier moments
 # Dev filter: -- only=escalation|run|checkpoint
 
@@ -139,7 +139,7 @@ func test_run() -> void:
 		if wave._waiting_for_human:
 			bee.global_position = Vector3(stage.distance - 5.1, 7.0, 0)
 		if wave.boss != null and wave.boss.is_active():
-			check(wave.boss.max_hp == 1300, "UFO HP changed")
+			check(wave.boss.max_hp == 500, "UFO HP changed")
 			wave.boss.health.take_damage(99999)
 		if stage.sector_complete:
 			break

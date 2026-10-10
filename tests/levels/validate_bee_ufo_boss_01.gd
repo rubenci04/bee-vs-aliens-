@@ -102,7 +102,7 @@ func run() -> void:
 	check(shots.is_empty() and get_nodes_in_group(UfoBoss01.PROJECTILE_GROUP).is_empty(), "UFO fired during the approach")
 	check(boss.state == UfoBoss01.State.PHASE_1 and is_zero_approx(boss.global_position.z), "UFO did not enter the play plane")
 	await capture("03_ufo_enters_plane")
-	check(boss.is_vulnerable() and boss.health_bar_visible() and boss.health.current_health == boss.max_hp and boss.max_hp == 1300, "Fight did not start correctly")
+	check(boss.is_vulnerable() and boss.health_bar_visible() and boss.health.current_health == boss.max_hp and boss.max_hp == 500, "Fight did not start correctly")
 	var visible_half := BeeShmupFairness.visible_half_width(stage.camera, boss.global_position, BeeLevel01Framing.view_aspect(root))
 	check(absf(boss.global_position.x - stage.camera.global_position.x) < visible_half - 1.5, "UFO arena position off screen")
 
@@ -229,13 +229,13 @@ func run() -> void:
 	boss = wave.boss
 	boss.health.take_damage(300)
 	await frames(200)
-	check(boss.live_projectiles().size() > 0 or boss.fired_aimed > 0, "Boss idle before the retry")
+	check(boss.live_projectiles().size() > 0 or boss.fired_aimed > 0 or boss.beams > 0, "Boss idle before the retry")
 	bee.health.damage_blocked = false
 	bee.health.take_damage(99999)
 	await frames(2)
 	check(bee.is_defeated and not boss.is_physics_processing(), "Boss must freeze when Bee dies")
 	await load_after(func(): stage.checkpoint.restart_level(false))
-	check(stage.distance >= 190.0 and stage.distance < 191.5 and stage.checkpoint.checkpoint_active, "Checkpoint retry did not resume at X=190 (%.2f)" % stage.distance)
+	check(stage.distance >= 352.0 and stage.distance < 353.0 and stage.checkpoint.checkpoint_active and wave.event_index == BeeLevel01Controller.EVENTS.size(), "Retry did not resume at the start of the boss fight (%.2f)" % stage.distance)
 	await assert_clean("checkpoint retry")
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true

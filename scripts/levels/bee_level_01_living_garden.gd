@@ -54,6 +54,11 @@ func _ready() -> void:
 		cloud.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 		cloud.emission_sphere_radius = 0.55
 		cloud.spread = 180.0
+		cloud.gravity = Vector3.ZERO # FIXES 01: the default (0, -9.8, 0) made every gnat fall: a vertical "waterfall" of black dots.
+		cloud.damping_min = 1.0
+		cloud.damping_max = 1.6
+		cloud.lifetime = 1.6
+		cloud.preprocess = 1.6
 		cloud.initial_velocity_min = 0.25
 		cloud.initial_velocity_max = 0.6
 		cloud.position = point
@@ -83,9 +88,9 @@ func _process(delta: float) -> void:
 		# A lazy figure-eight around its flowers.
 		fly.global_position = home + Vector3(sin(t * 0.45) * 2.4, sin(t * 0.9) * 0.7 + sin(t * 3.1) * 0.12, cos(t * 0.45) * 0.5)
 		fly.rotation.y = PI if cos(t * 0.45) < 0.0 else 0.0
-		var flap := sin(t * 15.0) * 0.95
-		(fly.get_child(0) as Node3D).rotation.x = flap
-		(fly.get_child(1) as Node3D).rotation.x = -flap
+		var lift := 1.25 + sin(t * 15.0) * 0.4 # Wing angle above the body plane: 0.85 .. 1.65 rad (the lateral camera sees them face-on near vertical).
+		(fly.get_child(0) as Node3D).rotation.x = lift
+		(fly.get_child(1) as Node3D).rotation.x = -lift
 
 
 func _particles(label: String, amount: int, lifetime: float, extents: Vector3, mesh: Mesh) -> CPUParticles3D:
@@ -169,25 +174,76 @@ static func _leaf_mesh() -> Mesh:
 	return mesh
 
 
+## FIXES VISUALES 01 (playtest: "a folded gold / silver paper floating in the air"): the butterflies were two plain
+## quads. Now each one has a dark body, head and antennae and two shaped wings (forewing + hindwing lobes) with a dark
+## border and a lifted V pose, so it reads as a butterfly even from the side. Wings are the first two children
+## (the flap in _process rotates them about the body axis).
 func _butterfly(home: Vector3, color: Color) -> Node3D:
 	var body := Node3D.new()
 	body.name = "Butterfly"
 	body.set_meta("home", home)
 	add_child(body)
-	var wing_mesh := QuadMesh.new()
-	wing_mesh.size = Vector2(0.42, 0.34)
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.roughness = 0.9
-	wing_mesh.material = material
-	for side in [-1.0, 1.0]:
+	var wing_mesh := _wing_mesh(color)
+	for side in [-1.0, 1.0]: # -1: left wing (extends -Z), +1: right wing (+Z); the lateral camera sees the right one.
 		var pivot := Node3D.new()
+		pivot.position = Vector3(0.0, 0.03, 0.0)
 		body.add_child(pivot)
 		var wing := MeshInstance3D.new()
 		wing.mesh = wing_mesh
-		wing.position = Vector3(side * 0.1, 0.16, side * 0.02) # Wings face the side camera; the flap foreshortens them.
+		wing.scale = Vector3(1.0, 1.0, side)
 		wing.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		pivot.add_child(wing)
+	var dark := StandardMaterial3D.new()
+	dark.albedo_color = Color(0.1, 0.07, 0.05)
+	dark.roughness = 1.0
+	var torso := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = 0.03
+	capsule.height = 0.3
+	capsule.radial_segments = 6
+	capsule.rings = 2
+	capsule.material = dark
+	torso.mesh = capsule
+	torso.rotation.z = PI * 0.5 # Lies along +X (the flight direction).
+	torso.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	body.add_child(torso)
+	for tilt in [-0.35, 0.35]:
+		var antenna := MeshInstance3D.new()
+		var stick := CylinderMesh.new()
+		stick.top_radius = 0.004
+		stick.bottom_radius = 0.008
+		stick.height = 0.14
+		stick.radial_segments = 4
+		stick.material = dark
+		antenna.mesh = stick
+		antenna.position = Vector3(0.2, 0.05, float(tilt) * 0.12)
+		antenna.rotation = Vector3(float(tilt), 0.0, -1.0)
+		antenna.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		body.add_child(antenna)
 	body.global_position = home
 	return body
+
+
+## One wing in the XZ plane (extends towards +Z): fan from a bright centre to a dark rim.
+static func _wing_mesh(color: Color) -> ArrayMesh:
+	var rim := Color(color.r * 0.5, color.g * 0.38, color.b * 0.3)
+	var outline := [Vector2(0.05, 0.02), Vector2(0.2, 0.1), Vector2(0.28, 0.3), Vector2(0.16, 0.44), Vector2(0.0, 0.38),
+			Vector2(-0.12, 0.42), Vector2(-0.24, 0.3), Vector2(-0.15, 0.1), Vector2(-0.04, 0.02)]
+	var centre := Vector3(0.0, 0.0, 0.17)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in outline.size() - 1:
+		var a: Vector2 = outline[i]
+		var b: Vector2 = outline[i + 1]
+		for vertex in [[centre, color.lightened(0.15)], [Vector3(b.x, 0.0, b.y), rim], [Vector3(a.x, 0.0, a.y), rim]]:
+			st.set_normal(Vector3.UP)
+			st.set_color(vertex[1])
+			st.add_vertex(vertex[0])
+	var mesh := st.commit()
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED # Always the full wing colour: never a dark silhouette.
+	material.roughness = 0.9
+	mesh.surface_set_material(0, material)
+	return mesh

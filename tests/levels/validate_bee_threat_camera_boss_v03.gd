@@ -254,7 +254,7 @@ func boss_fight() -> UfoBoss01:
 
 func test_boss() -> void:
 	var boss := await boss_fight()
-	check(boss != null and boss.max_hp == 1300, "Boss missing or HP changed")
+	check(boss != null and boss.max_hp == 500, "Boss missing or HP changed")
 	var cam_x := stage.camera.global_position.x
 	var xs: Array[float] = []
 	for i in 60 * 6:
