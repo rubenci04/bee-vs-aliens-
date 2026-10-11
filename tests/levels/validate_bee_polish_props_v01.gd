@@ -43,6 +43,7 @@ func run() -> void:
 			var collider := child.get_node("CollisionShape3D") as CollisionShape3D
 			var box := (collider.shape as BoxShape3D).size
 			var rock := child.get_node(label + "Mesh") as MeshInstance3D
+			var rock_material := rock.mesh.surface_get_material(0) as StandardMaterial3D
 			var rock_bounds := rock.global_transform * rock.get_aabb()
 			var collider_bottom := collider.global_position.y - box.y * 0.5
 			var collider_top := collider.global_position.y + box.y * 0.5
@@ -53,10 +54,14 @@ func run() -> void:
 			check(rock_bounds.size.x >= box.x * 0.85 and rock_bounds.size.z >= box.z * 0.8, "Rock mesh smaller than its collider: " + label)
 			check(collider_bottom <= 0.25, "Rock collider floats: " + label)
 			check(rock.mesh.surface_get_material(0) != null and rock.get_surface_override_material(0) is ShaderMaterial, "Rock without toon: " + label)
+			check(rock_material.albedo_color.g >= rock_material.albedo_color.r and rock_material.albedo_color.v < 0.4, "Rock palette must stay muted olive-grey: " + label)
 		elif label.begins_with("BackdropRock") and child is MeshInstance3D:
 			backdrop += 1
-			var box_b := (child as MeshInstance3D).global_transform * (child as MeshInstance3D).get_aabb()
+			var backdrop_mesh := child as MeshInstance3D
+			var box_b := backdrop_mesh.global_transform * backdrop_mesh.get_aabb()
 			check(box_b.position.y <= 0.0 and box_b.position.y >= -0.2, "Backdrop rock floats: " + label)
+			var backdrop_material := backdrop_mesh.mesh.surface_get_material(0) as StandardMaterial3D
+			check(backdrop_material != null and backdrop_material.albedo_color.g >= backdrop_material.albedo_color.r and backdrop_material.albedo_color.v < 0.4, "Backdrop rock must not read as white/beige: " + label)
 	check(solid == 8 and backdrop == 10, "Rock count changed (%d solid, %d backdrop)" % [solid, backdrop])
 
 	# Crates: litter instead of wood, same HP and hitbox, three distinct kinds.

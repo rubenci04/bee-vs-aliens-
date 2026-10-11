@@ -100,7 +100,8 @@ func test_camera() -> void:
 	arena(60.0)
 	var width := 2.0 * half
 	var right_fraction := (bee.flight_max.x - stage.distance + half) / width
-	check(absf(right_fraction - BeeLevel01Framing.FLIGHT_RIGHT_FRACTION) < 0.01 and (bee.flight_min.x - stage.distance + half) / width < 0.06, "Bee window must span ~4 %..66 % of the width")
+	var left_fraction := (bee.flight_min.x - stage.distance + half) / width
+	check(absf(right_fraction - 0.975) < 0.01 and absf(left_fraction - 0.025) < 0.01, "Bee window must span ~2.5 %..97.5 % of the width")
 	# Camera-aware spawn edge and auto-aim.
 	var probe := spawn("Probe", 0, 4.0) as AlienProbeRanged
 	check(probe.global_position.x - stage.camera.global_position.x >= BeeLevel01Framing.half_width_max(aspect) + 0.99, "Spawn not past the camera E edge")

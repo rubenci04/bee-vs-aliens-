@@ -27,6 +27,7 @@ const TALL_PINE := preload("res://scenes/art_labs/pine_woods_v01/tall_pine.tscn"
 const UMBRELLA_PINE := preload("res://scenes/art_labs/pine_woods_v01/umbrella_pine.tscn")
 const HOLLOW_LOG := preload("res://scenes/art_labs/forest_floor_v01/hollow_fallen_log.tscn")
 const BELLFLOWER := preload("res://scenes/art_labs/forest_floor_v01/garden_bellflower.tscn")
+const SUN_MODEL := preload("res://scenes/art_labs/assets_v07/sky_sun.tscn")
 const MOON_MODEL := preload("res://assets/models/future_biomes_v07/sky_crescent_moon.glb")
 const STARS_MODEL := preload("res://assets/models/future_biomes_v07/sky_star_cluster.glb")
 
@@ -34,6 +35,18 @@ const RELAY_SCALE := 2.1 # The model is ~0.95 m tall; the old pylon column was 1
 const SKY_DEPTH := 70.0
 const SKY_FADE_FROM := 255.0 # Level distance where the night sky starts to appear...
 const SKY_FADE_TO := 310.0 # ...and where it is fully visible.
+const SUN_DEPTH := 38.0 # Inside the far fog cut-off, so the toon disk remains crisp.
+const SUN_SCREEN_X := 0.82
+const SUN_ASSET_HEIGHT := 1.44
+const SUN_SCREEN_HEIGHT := 0.19
+const SUN_MORNING_SCREEN_Y := 0.31
+const SUN_MIDDAY_SCREEN_Y := 0.13
+const SUN_MIDDAY_FROM := 80.0
+const SUN_MIDDAY_TO := 180.0
+const SUN_FADE_FROM := 270.0
+const SUN_FADE_TO := 315.0
+## Fireflies are reserved for a forest level. Keep the scene, movement and model available, but off in Level 01.
+const FIREFLIES_ENABLED := false
 const FIREFLY_COUNT := 3
 const FIREFLY_FADE_FROM := 150.0
 ## NOCHE 01 — foreground fireflies: world drift (m/s, towards -X), wrap distance from the camera, depths (behind the plane).
@@ -56,7 +69,7 @@ const LITTER := [
 	[GREEN_BOTTLE, 41.0, -3.4, 6.0, 0.2, 0.0],
 	[TUNA_TIN, 171.0, -3.9, 3.2, 0.5, 0.0], [BANANA_PEEL, 63.0, -2.6, 2.0, 1.1, 0.0],
 	[HOSE, 96.0, -3.8, 4.0, 0.3, 0.0],
-	[HOLLOW_LOG, 126.0, -3.4, 2.5, 0.2, 0.0], [BELLFLOWER, 122.5, -3.0, 1.6, 0.1, 0.0], [BELLFLOWER, 129.5, -3.6, 1.4, 1.2, 0.0],
+	[HOLLOW_LOG, 55.0, -3.4, 2.5, 0.2, 0.0], [BELLFLOWER, 122.5, -3.0, 1.6, 0.1, 0.0], [BELLFLOWER, 129.5, -3.6, 1.4, 1.2, 0.0],
 	[BELLFLOWER, 31.0, -3.2, 1.5, 0.4, 0.0], [BELLFLOWER, 72.0, -3.4, 1.6, 2.0, 0.0], [BELLFLOWER, 205.0, -3.0, 1.5, 0.8, 0.0],
 	[SHRUB, 68.0, -3.9, 3.0, 1.3, 0.0], [SHRUB, 158.0, -4.1, 3.3, 0.6, 0.0],
 	[FENCE, 148.0, -21.0, 3.6, 0.0, 0.0], [FENCE, 155.2, -21.0, 3.6, 0.0, 0.0], [FENCE, 162.4, -21.0, 3.6, 0.0, 0.0], [FENCE, 169.6, -21.0, 3.6, 0.0, 0.0], [FENCE, 176.8, -21.0, 3.6, 0.0, 0.0], [FENCE, 184.0, -21.0, 3.6, 0.0, 0.0],
@@ -71,6 +84,10 @@ var stage: BeeShmupStage
 var relays: Array[Node3D] = []
 var litter: Array[Node3D] = []
 var fireflies: Array[Node3D] = []
+var sun: Node3D
+var sun_halo: MeshInstance3D
+var _sun_materials: Array[ShaderMaterial] = []
+var _sun_halo_material: StandardMaterial3D
 var moon: Node3D
 var stars: Array[Node3D] = []
 var _glows: Array[MeshInstance3D] = []
@@ -85,7 +102,8 @@ func _ready() -> void:
 	stage = get_parent() as BeeShmupStage
 	_build_litter()
 	call_deferred("_hide_old_props")
-	_build_fireflies()
+	if FIREFLIES_ENABLED:
+		_build_fireflies()
 	_build_sky()
 	call_deferred("_swap_pylons") # After the escalation node has created its pylons.
 
@@ -186,19 +204,68 @@ func _sky_item(model: PackedScene, label: String) -> Node3D:
 
 
 func _build_sky() -> void:
+	sun = SUN_MODEL.instantiate() as Node3D
+	sun.name = "DaySun"
+	add_child(sun)
+	sun.hide()
+	for mesh: MeshInstance3D in sun.find_children("*", "MeshInstance3D", true, false):
+		for surface in mesh.mesh.get_surface_count():
+			var original := mesh.get_surface_override_material(surface) as ShaderMaterial
+			if original == null:
+				continue
+			var own := original.duplicate() as ShaderMaterial
+			var base: Color = own.get_meta("sky_base_albedo", own.get_shader_parameter("albedo"))
+			own.set_meta("sun_base_albedo", base)
+			mesh.set_surface_override_material(surface, own)
+			_sun_materials.append(own)
+	var halo_mesh := QuadMesh.new()
+	halo_mesh.size = Vector2(2.2, 2.2)
+	var halo_gradient := GradientTexture2D.new()
+	halo_gradient.fill = GradientTexture2D.FILL_RADIAL
+	halo_gradient.fill_from = Vector2(0.5, 0.5)
+	halo_gradient.fill_to = Vector2(1.0, 0.5)
+	halo_gradient.width = 64
+	halo_gradient.height = 64
+	var halo_ramp := Gradient.new()
+	halo_ramp.colors = PackedColorArray([Color(1.0, 0.72, 0.28, 0.36), Color(1.0, 0.72, 0.28, 0.0)])
+	halo_gradient.gradient = halo_ramp
+	_sun_halo_material = StandardMaterial3D.new()
+	_sun_halo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_sun_halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_sun_halo_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_sun_halo_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	_sun_halo_material.albedo_texture = halo_gradient
+	_sun_halo_material.disable_receive_shadows = true
+	sun_halo = MeshInstance3D.new()
+	sun_halo.name = "SoftHalo"
+	sun_halo.mesh = halo_mesh
+	sun_halo.material_override = _sun_halo_material
+	sun_halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	sun_halo.position.z = -0.18
+	sun.add_child(sun_halo)
 	moon = _sky_item(MOON_MODEL, "CrescentMoon")
 	for i in 2:
 		stars.append(_sky_item(STARS_MODEL, "Stars%d" % i))
 
 
 ## Places `item` at a fraction of the screen (0..1), SKY_DEPTH away, covering about `height_fraction` of the screen height.
-func _pin(item: Node3D, camera: Camera3D, screen: Vector2, height_fraction: float, asset_height: float, drift: float) -> void:
+func _pin(item: Node3D, camera: Camera3D, screen: Vector2, height_fraction: float, asset_height: float, drift: float, depth := SKY_DEPTH) -> void:
 	var size := get_viewport().get_visible_rect().size
 	var point := Vector2(size.x * screen.x, size.y * screen.y)
-	item.global_position = camera.project_position(point, SKY_DEPTH) + Vector3(drift, 0.0, 0.0)
-	var view_height := 2.0 * SKY_DEPTH * tan(deg_to_rad(camera.fov) * 0.5)
+	item.global_position = camera.project_position(point, depth) + Vector3(drift, 0.0, 0.0)
+	var view_height := 2.0 * depth * tan(deg_to_rad(camera.fov) * 0.5)
 	item.scale = Vector3.ONE * (height_fraction * view_height / asset_height)
 	item.global_rotation = camera.global_rotation
+
+
+static func sun_screen_y_at(distance: float) -> float:
+	var midday := smoothstep(SUN_MIDDAY_FROM, SUN_MIDDAY_TO, distance)
+	var sunset := smoothstep(SUN_FADE_FROM, SUN_FADE_TO, distance)
+	return lerpf(lerpf(SUN_MORNING_SCREEN_Y, SUN_MIDDAY_SCREEN_Y, midday), SUN_MORNING_SCREEN_Y, sunset)
+
+
+static func sun_visibility_at(distance: float) -> float:
+	return 1.0 - smoothstep(SUN_FADE_FROM, SUN_FADE_TO, distance)
 
 
 # --- per frame --------------------------------------------------------------------------------------------------
@@ -210,6 +277,15 @@ func _process(delta: float) -> void:
 	var camera := stage.camera
 	var camera_x := camera.global_position.x
 	var distance := stage.distance
+	var sun_alpha := sun_visibility_at(distance)
+	sun.visible = sun_alpha > 0.01
+	for material in _sun_materials:
+		var base: Color = material.get_meta("sun_base_albedo")
+		var sun_brightness := lerpf(0.05, 1.0, sun_alpha)
+		material.set_shader_parameter("albedo", Color(base.r * sun_brightness, base.g * sun_brightness, base.b * sun_brightness, base.a))
+	_sun_halo_material.albedo_color.a = sun_alpha
+	var sun_y := sun_screen_y_at(distance)
+	_pin(sun, camera, Vector2(SUN_SCREEN_X, sun_y), SUN_SCREEN_HEIGHT, SUN_ASSET_HEIGHT, 0.0, SUN_DEPTH)
 	var dusk := clampf(inverse_lerp(FIREFLY_FADE_FROM, 290.0, distance), 0.0, 1.0)
 	for i in fireflies.size():
 		var phase := float(i) * 2.1
@@ -298,6 +374,9 @@ func _update_far_lights(camera_x: float, dusk: float) -> void:
 ## NOCHE 01 · ETAPA 2: the red soda bottle at the start is replaced by the Codex green bottle (node kept, hidden: other
 ## scenes and tests still find it by name).
 func _hide_old_props() -> void:
+	var old_log := stage.get_node_or_null("Scenery/FallenLog") as Node3D
+	if old_log != null:
+		old_log.hide() # Its imported light material reads as a white angular block; reuse the existing brown hollow log above.
 	var bottle := stage.find_child("GiantBottle", true, false) as Node3D
 	if bottle != null:
 		bottle.hide()

@@ -45,13 +45,22 @@ func run() -> void:
 		var replaced := false
 		for prefix: String in BeeLevel01VisualTarget.HIDDEN_SCENERY_PREFIXES:
 			replaced = replaced or label.begins_with(prefix)
+		replaced = replaced or label == "FallenLog" # Replaced by the hollow forest-floor GLB.
 		if label == "GiantBottle":
 			continue # NOCHE 01: hidden on purpose (Codex green bottle instead).
 		check(child.visible != replaced, "Scenery visibility wrong for " + label)
 	check(target.hidden_scenery.size() > 250, "Trees, ferns and Kenney flowers must be hidden along the whole level")
-	for label in ["DistantBottle", "FallenLog", "FlightRock96", "FlightRock307", "BackdropRock38"]: # NOCHE 01: GiantBottle (red) is replaced by the Codex green bottle.
+	for label in ["DistantBottle", "FlightRock96", "FlightRock307", "BackdropRock38"]: # NOCHE 01: GiantBottle (red) is replaced by the Codex green bottle.
 		var node := scenery.get_node_or_null(label) if scenery.has_node(label) else scenery.get_node_or_null(label + "Mesh")
 		check(node != null and (node as Node3D).visible, "Gameplay prop must stay visible: " + label)
+	var old_log := scenery.get_node("FallenLog") as Node3D
+	check(not old_log.visible, "Legacy solid white log prop must be hidden")
+	var dressing := stage.get_node("AssetDressing") as BeeLevel01AssetDressing
+	var hollow_log_found := false
+	for prop: Node3D in dressing.litter:
+		if is_equal_approx(prop.position.x, 55.0):
+			hollow_log_found = prop.find_children("*", "MeshInstance3D", true, false).size() > 0
+	check(hollow_log_found, "Existing hollow brown log must replace the legacy log near the green bottle")
 
 	# Flat colours, no cyan, readable layers, flower heads out of the play band.
 	var foreground_limit_ok := true

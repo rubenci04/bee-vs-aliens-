@@ -198,8 +198,7 @@ func test_mosquito_smooth() -> void:
 
 func test_fireflies_and_turtle() -> void:
 	var dressing := stage.get_node("AssetDressing") as BeeLevel01AssetDressing
-	check(dressing.far_lights != null and (dressing.far_lights.process_material as ParticleProcessMaterial).gravity == Vector3.ZERO, "Far fireflies must be GPU light points with no gravity")
-	check(dressing.far_lights.draw_pass_1 is QuadMesh, "Far fireflies have no body")
+	check(not BeeLevel01AssetDressing.FIREFLIES_ENABLED and dressing.fireflies.is_empty() and dressing.far_lights == null, "Level 01 must not create firefly fauna or light decoration")
 	var turtle := BeeAftermathTurtle.new()
 	stage.add_child(turtle)
 	await frames(2)
@@ -214,7 +213,7 @@ func test_fireflies_and_turtle() -> void:
 	check(turtle.liberated and wave.liberated_count == freed + 1 and wave.animals_total == animals + 1, "The turtle is freed and counted")
 	check(wave.liberation_text() == "LIBERADOS %d/%d" % [wave.liberated_count, wave.animals_total], "Liberation text format")
 	turtle.queue_free()
-	report.append("fireflies far=light points, turtle plates=%d freeable, text '%s'" % [turtle.plates, wave.liberation_text()])
+	report.append("fireflies reserved for forest, turtle plates=%d freeable, text '%s'" % [turtle.plates, wave.liberation_text()])
 
 func run() -> void:
 	create_timer(600.0, true, false, true).timeout.connect(func(): quit(1))

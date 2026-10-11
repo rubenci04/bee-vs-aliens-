@@ -45,20 +45,26 @@ func run() -> void:
 	var height_gain := (top - bottom) / d_height
 	check(width_gain >= 1.15 and width_gain <= 1.25 and height_gain >= 1.15 and height_gain <= 1.25, "Camera E gain outside 15-25 %% (w %.2f h %.2f)" % [width_gain, height_gain])
 	check(bottom < 0.0, "The ground line must stay in frame")
-	# Flight window: inside the visible area with the 0.4 m margin, relative to the camera.
+	# Horizontal flight uses 95 % of the visible width with equal left/right margins at both supported aspect ratios.
 	var m := BeeLevel01Framing.FLIGHT_MARGIN
-	check(stage.bee.flight_max.x - stage.distance <= half_min - m + 0.001 and stage.distance - stage.bee.flight_min.x <= half_min - m + 0.001, "Horizontal flight limit leaves the screen")
+	for ratio in [16.0 / 9.0, 16.0 / 10.0]:
+		var visible_half := BeeLevel01Framing.half_width_min(ratio)
+		var left := BeeLevel01Framing.flight_left_offset(ratio)
+		var right := BeeLevel01Framing.flight_right_offset(ratio)
+		check(absf((right - left) / (2.0 * visible_half) - 0.95) < 0.001, "Playable width must be 95 %% at aspect %.3f" % ratio)
+		check(absf((visible_half + left) - (visible_half - right)) < 0.001, "Horizontal margins must be symmetric at aspect %.3f" % ratio)
+	check(stage.bee.flight_max.x - stage.distance <= BeeLevel01Framing.flight_right_offset(aspect) + 0.001 and stage.bee.flight_min.x - stage.distance >= BeeLevel01Framing.flight_left_offset(aspect) - 0.001, "Horizontal flight limit leaves the 95 % play area")
 	check(stage.bee.flight_max.y <= top - m + 0.001 and stage.bee.flight_min.y >= bottom + m - 0.001, "Vertical flight limit leaves the screen")
-	# REBUILD 03 player anchor: Bee starts ~32 % from the left and never flies past ~66 % of the width.
+	# The spawn anchor stays at 32 %; the flight range reaches near both screen edges.
 	var width := 2.0 * half_min
-	check(absf((stage.bee.flight_max.x - stage.distance + half_min) / width - BeeLevel01Framing.FLIGHT_RIGHT_FRACTION) < 0.01, "Flight window must end at the right fraction")
+	check(absf((stage.bee.flight_max.x - stage.distance - BeeLevel01Framing.flight_left_offset(aspect)) / width - 0.95) < 0.01, "Flight window must span 95 %% of visible width")
 	var start_fraction := (stage.bee.global_position.x - camera.global_position.x + half_min) / width
 	check(absf((BeeLevel01Framing.player_anchor_offset(aspect) + half_min) / width - 0.32) < 0.005, "Anchor must sit at 32 %% of the width")
 	check(start_fraction >= 0.25 and start_fraction <= 0.33, "Bee must start near the anchor (%.2f; the scroll already advanced a little)" % start_fraction)
 	# Fixture: Bee pushed far outside must end up inside the window.
 	stage.bee.global_position = Vector3(stage.distance + 50.0, 50.0, 0)
 	await frames(2)
-	check(stage.bee.global_position.x <= stage.distance + half_min - m + 0.001 and stage.bee.global_position.y <= top - m + 0.001, "Bee escaped the visible area")
+	check(stage.bee.global_position.x <= stage.distance + BeeLevel01Framing.flight_right_offset(aspect) + 0.001 and stage.bee.global_position.y <= top - m + 0.001, "Bee escaped the visible area")
 	# Pollen and powerups never above the entity ceiling.
 	var ceiling := BeeLevel01Framing.max_entity_y()
 	for group in ["Pollen", "Powerups"]:

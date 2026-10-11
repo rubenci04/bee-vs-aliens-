@@ -66,7 +66,9 @@ func _ready() -> void:
 func _place_rock(label: String, x: float, z: float, radius: Vector3, solid: bool, hp := 0) -> void:
 	var half := Vector3(radius.x * 0.85, radius.y * 0.95 + 0.05, radius.z * 0.85)
 	var mesh := GardenProps.boulder(half, int(x))
-	mesh.surface_set_material(0, GardenProps.flat(Color(0.39 + float(int(x) % 3) * 0.035, 0.41, 0.36)))
+	# The old warm grey shifted to chalk/beige under Level 01 sunlight. A muted olive-grey keeps both
+	# the small rock near the apple and the large structural rock near the frog in the garden palette.
+	mesh.surface_set_material(0, GardenProps.flat(Color(0.31 + float(int(x) % 3) * 0.025, 0.37, 0.28)))
 	var rock := MeshInstance3D.new()
 	rock.name = label + "Mesh"
 	rock.mesh = mesh

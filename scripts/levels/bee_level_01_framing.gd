@@ -5,9 +5,7 @@ extends RefCounted
 ## Preset D (Visual Target pass) stays available for comparisons: BeeLevel01Framing.use_preset(&"D").
 ##   D: distance 8.5, height 2.0, pitch +5°, FOV 40 -> visible 10.7-11.4 m x 6.2 m on the flight plane.
 ##   E: distance 10.0, height 2.45, pitch +5°, FOV 40 -> visible 12.6-13.4 m x 7.3 m (+18 % each way, +39 % area).
-## The camera keeps following the scroll at the same X; what changes is how much of the garden the lens takes in.
-## Player anchor: Bee's flight window ends at FLIGHT_RIGHT_FRACTION of the width, so she lives in the left part of the
-## screen (spawn / respawn at PLAYER_ANCHOR_FRACTION) and the right ~35 % is always free to read incoming threats.
+## The camera follows the scroll at the same X. Bee can use almost all of the visible width while keeping equal side margins.
 
 const PRESETS := {
 	&"D": {"distance": 8.5, "height": 2.0, "pitch": 5.0, "fov": 40.0},
@@ -21,15 +19,15 @@ static var CAMERA_HEIGHT: float = PRESETS[DEFAULT_PRESET]["height"]
 static var CAMERA_PITCH_DEGREES: float = PRESETS[DEFAULT_PRESET]["pitch"]
 static var CAMERA_FOV: float = PRESETS[DEFAULT_PRESET]["fov"]
 
-const FLIGHT_MARGIN := 0.4 # Bee never gets closer than this to any visible edge.
+const FLIGHT_MARGIN := 0.4 # Vertical clearance from the visible top/bottom edges.
+const PLAYABLE_WIDTH_FRACTION := 0.95 # Equal 2.5 % screen margins on each side.
+const LAKE_RIGHT_FRACTION := 0.66 # Preserve the existing Level 02 prototype window.
 const ENTITY_TOP_MARGIN := 0.5 # Enemies, pickups and pollen stay this far below the top edge.
 const SPAWN_OUTSIDE_MARGIN := 1.0 # Moving enemies are born this far past the right edge.
 const ONSCREEN_SPAWN_X := 4.0 # Static enemies (turret) are born on screen so a hard gate can always be cleared.
 const DESIGN_ASPECT := 16.0 / 9.0
-## REBUILD 03: Bee's resting / spawn point and the right end of her flight window, as fractions of the screen width
-## measured from the left edge (on the flight plane, at the narrow bottom edge).
+## Bee's resting / spawn point, measured from the left edge of the visible width.
 const PLAYER_ANCHOR_FRACTION := 0.32
-const FLIGHT_RIGHT_FRACTION := 0.66
 
 
 ## Switches every camera value (dev comparisons, tests). The next level load / camera update uses it.
@@ -96,4 +94,12 @@ static func player_anchor_offset(aspect: float) -> float:
 
 ## Camera-relative X of the right end of Bee's flight window.
 static func flight_right_offset(aspect: float) -> float:
-	return half_width_min(aspect) * (2.0 * FLIGHT_RIGHT_FRACTION - 1.0)
+	return half_width_min(aspect) * PLAYABLE_WIDTH_FRACTION
+
+
+static func flight_left_offset(aspect: float) -> float:
+	return -half_width_min(aspect) * PLAYABLE_WIDTH_FRACTION
+
+
+static func lake_flight_right_offset(aspect: float) -> float:
+	return half_width_min(aspect) * (2.0 * LAKE_RIGHT_FRACTION - 1.0)

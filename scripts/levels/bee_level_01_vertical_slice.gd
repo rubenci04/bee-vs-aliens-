@@ -61,14 +61,10 @@ func _process(_delta: float) -> void:
 		checkpoint.restart_level(true)
 
 func _update_camera_and_bounds() -> void:
-	# Flight window = visible area of the Level 01 camera minus a margin (the old fixed
-	# +-5.2 / 7.2 bounds are only the outer limit now). Set before the base class uses them.
+	# Use 95 % of the visible width with equal margins; vertical framing remains independently bounded.
 	var aspect := BeeLevel01Framing.view_aspect(get_viewport())
-	var half_width := BeeLevel01Framing.half_width_min(aspect) - BeeLevel01Framing.FLIGHT_MARGIN
-	screen_left = -half_width
-	screen_right = BeeLevel01Framing.flight_right_offset(aspect) # REBUILD 03: Bee lives in the left ~2/3; the right third reads threats.
-	if boss_arena_wide:
-		screen_right = half_width
+	screen_left = BeeLevel01Framing.flight_left_offset(aspect)
+	screen_right = BeeLevel01Framing.flight_right_offset(aspect)
 	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
 	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
 	super._update_camera_and_bounds()

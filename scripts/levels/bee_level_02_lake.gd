@@ -44,7 +44,7 @@ func _update_camera_and_bounds() -> void:
 	var aspect := BeeLevel01Framing.view_aspect(get_viewport())
 	var half_width := BeeLevel01Framing.half_width_min(aspect) - BeeLevel01Framing.FLIGHT_MARGIN
 	screen_left = -half_width
-	screen_right = half_width if wave != null and (wave as BeeLevel02Controller).boss != null else BeeLevel01Framing.flight_right_offset(aspect)
+	screen_right = half_width if wave != null and (wave as BeeLevel02Controller).boss != null else BeeLevel01Framing.lake_flight_right_offset(aspect)
 	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
 	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
 	super._update_camera_and_bounds()

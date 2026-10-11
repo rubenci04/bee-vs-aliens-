@@ -90,6 +90,8 @@ func test_family(family: String) -> void:
 func test_fireflies() -> void:
 	arena(220.0)
 	var dressing := stage.get_node("AssetDressing") as BeeLevel01AssetDressing
+	check(not BeeLevel01AssetDressing.FIREFLIES_ENABLED and dressing.fireflies.is_empty(), "Fireflies must stay disabled in Level 01")
+	dressing._build_fireflies() # Exercise the reserved forest-level movement implementation without adding Level 01 decoration.
 	var bug := dressing.fireflies[0]
 	dressing.set_process(false) # Driven at a fixed 60 Hz below (headless process frames have no stable delta).
 	var prev := bug.global_position.x

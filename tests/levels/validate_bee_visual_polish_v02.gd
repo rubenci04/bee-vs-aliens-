@@ -9,7 +9,7 @@ extends SceneTree
 #   bee       visual scale 1.2, body / hurtbox / melee shapes unchanged
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const EXEMPT := ["Halo"] # Emissive rings of the S+ capsule: intentionally unshaded.
+const EXEMPT := ["Halo", "SoftHalo"] # Emissive rings and the warm sun halo are intentionally unshaded.
 ## LOTE 9: item beacons, plasma shots and the hostile cyan core are glows by design (unshaded, no toon).
 const EXEMPT_PARENTS := ["ItemBeacon", "PlasmaBall", "HostileGlow"]
 const BEE_VISUAL_SCALE: float = preload("res://scripts/bee_prototype/bee_visual.gd").VISUAL_SCALE
