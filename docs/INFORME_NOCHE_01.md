@@ -6,7 +6,7 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 - [x] ETAPA 1 — Liberación y correcciones (`liberation-01`)
 - [x] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
 - [x] ETAPA 3 — Pulido y legibilidad (`polish-03`)
-- [ ] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
+- [x] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
 - [ ] ETAPA 5 — Preparar demo (`demo-prep-01`)
 
 ## Decisiones tomadas sin poder preguntar (interpretación más razonable)
@@ -67,3 +67,18 @@ GPU sin cambios (~2,0 ms, ruido ±0,4).
 - **Capturas:** antes `noche3before_x{10,100,176,250,300,355}.png`, después `noche3after_x…`, más `noche3_{x100,x176,x300,sunset_actor}.png`.
 - **Falta playtest:** si el corredor quedó demasiado vacío o si falta "jungla" en algunos tramos (es fácil de ajustar con `CORRIDOR_Z`).
 - **Tests:** nuevo `validate_bee_readability_v03` (corredor, contornos al atardecer, brillo de implantes, auditoría de cian). **Suite:** 74/74 PASS.
+
+## ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`, NO va a master)
+- **Escena** `scenes/levels/bee_level_02_lake.tscn` (hereda la base del shmup). Reutiliza la cámara del Level 01 (encuadre E), los controles, el apuntado libre y la mira, el HUD de armas, los disparos toon, la liberación y la dificultad. Tiene director propio (`bee_level_02_controller.gd`) y decoración propia (`bee_level_02_lake_scenery.gd`).
+- **Agua estilizada**: un plano con el shader de lago de Codex; el plano de juego queda sobre la superficie. Decoración (detrás del plano de juego): nenúfares (algunos con ranas Quaternius descansando), totoras, tronco hueco, raíces sumergidas, campanillas, helechos, pinos y orillas lejanas.
+- **Enemigos nuevos** (animales: se liberan):
+  - **zapatero de agua**: se desliza por la superficie y embiste (aviso 0,5 s);
+  - **ninfa de libélula**: escupe un orbe lento (0,6 s);
+  - **perca**: nada bajo el agua (sin hurtbox ni auto-aim mientras está sumergida), avisa con un anillo sobre el agua y una columna tenue en la X de Bee (0,7 s) y salta en arco a través de ese punto.
+  - Además reaparecen la libélula ondulante y los mosquitos.
+- **Mini-jefe sapo** (`lake_toad_boss.gd`, visual de Codex): **lengua** con línea de aviso de 0,7 s y **salto** con anillo en el punto de aterrizaje (0,9 s). Al caer lanza una **onda baja** por el agua hacia ambos lados (se esquiva volando alto). Implante en el lomo, 220 HP. Se **libera** (se va saltando) y eso completa el nivel: "LAGUNA DESPEJADA · LIBERADOS n/N".
+- **Duración medida con el bot:** sapo a los 75 s, nivel completo en **~90 s** (9/15 liberados).
+- **Acceso:** botón "Laguna (prototipo · debug)" en el título, solo en modo debug. El flujo del Level 01 no cambia.
+- **Capturas:** `noche4_{start,strider,perch,toad_tongue,complete}.png`.
+- **Pendiente:** no hay ranas enemigas (Codex no entregó una rana jugable; las ranas de Quaternius son decoración). Faltan sonidos propios del agua (salpicón, croar), checkpoint y transición desde el Level 01. El sapo no tiene animación esquelética (se mueve por transformaciones). Todo esto necesita playtest.
+- **Tests:** nuevo `validate_bee_level02_lake_proto` (escena, 3 enemigos nuevos con telegrafía medida, sapo, recorrido con bot, acceso solo debug). **Suite:** 75/75 PASS (incluye todo el Level 01 sin cambios).

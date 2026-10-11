@@ -25,6 +25,10 @@ const FACE_SMOOTHING := 0.18 # s
 const LEAVE_SECONDS := 3.0
 ## NOCHE 01 · ETAPA 3: emission energy of the cyan implant parts (Codex wrappers cap it at 0.65 for Compatibility).
 const IMPLANT_GLOW := 1.1
+## NOCHE 01 · ETAPA 4 — perch leap: depth under the water, half the horizontal span of the arc, water surface height.
+const LEAP_DEPTH := -1.4
+const LEAP_SPAN := 1.8
+const WATER_SURFACE_Y := -0.15
 ## NOCHE 01 — smooth mosquito: slow sine drift (amplitude m, rate rad/s) and gradual acceleration (m/s²).
 const MOSQUITO_SPEED := 3.6
 const MOSQUITO_ACCEL := 6.0
@@ -56,6 +60,13 @@ const KINDS := {
 	# for 0.6 s and fires a fan of 3 toon bolts, then strafes to another spot.
 	&"fighter": {"scene": "res://scenes/art_labs/alien_ships_v02/alien_needle_interceptor.tscn", "mode": &"fighter", "ground": false, "scale": 0.62,
 			"telegraph": 0.6, "damage": 8, "cycles": 99, "speed": 4.5, "shot_speed": 7.0, "machine": true, "label": "AlienFighter"},
+	# NOCHE 01 · ETAPA 4 — Level 02 "Laguna" prototype fauna (animals: freed, never killed).
+	&"strider": {"scene": "res://scenes/art_labs/lake_fauna_v01/controlled_water_strider.tscn", "mode": &"lunge", "ground": true, "scale": 1.0,
+			"telegraph": 0.5, "damage": 8, "cycles": 99, "speed": 3.0, "lunge_range": 3.6, "label": "Strider"},
+	&"nymph": {"scene": "res://scenes/art_labs/lake_fauna_v01/controlled_dragonfly_nymph.tscn", "mode": &"spitter", "ground": true, "scale": 1.0,
+			"telegraph": 0.6, "damage": 7, "cycles": 99, "speed": 1.0, "shot_speed": 4.4, "label": "Nymph"},
+	&"perch": {"scene": "res://scenes/art_labs/assets/controlled_perch.tscn", "mode": &"leaper", "ground": true, "scale": 1.0,
+			"telegraph": 0.7, "damage": 10, "cycles": 99, "speed": 2.2, "leap_time": 1.0, "leap_height": 4.6, "label": "Perch"},
 	&"seed_carrier": {"scene": "res://scenes/art_labs/assets_v02/alien_seed_carrier.tscn", "mode": &"seeder", "ground": false, "scale": 1.15,
 			"telegraph": 0.8, "damage": 6, "cycles": 99, "speed": 2.0, "shot_speed": 3.6, "machine": true, "label": "SeedCarrier"},
 }
@@ -98,6 +109,8 @@ var _activated := false # State.IDLE is also the between-attacks phase, so activ
 var spent := false # NOCHE 01: mushroom cannon after its cannon blew up (stays, harmless).
 var model_scale := 1.0 # Final scale of the model (BeeFaunaSizes for animals, KINDS "scale" for the rest).
 var _velocity := Vector3.ZERO # Steering velocity (smooth mosquito).
+var _leap_apex := 3.0
+var _submerged := false
 var _move_vx := 0.0
 var _prev_rel_x := 0.0
 var _has_prev := false
@@ -275,6 +288,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _enter(delta: float, camera_x: float) -> void:
+	if config["mode"] == &"leaper":
+		_leaper_swim(delta, camera_x)
+		_begin(State.IDLE, idle_time)
+		return
 	if config["mode"] == &"cannon":
 		_begin(State.IDLE, idle_time) # Planted in the garden: it never walks.
 		return
@@ -314,6 +331,12 @@ func _hover_point(camera_x: float) -> Vector3:
 
 
 func _idle(delta: float, camera_x: float) -> void:
+	if config["mode"] == &"leaper":
+		_leaper_swim(delta, camera_x)
+		_left -= delta
+		if _left <= 0.0:
+			_start_telegraph()
+		return
 	_hover = _hover_point(camera_x)
 	var speed := float(config["speed"])
 	match config["mode"]:
@@ -383,6 +406,16 @@ func _start_telegraph() -> void:
 		&"fighter":
 			_lock_to = bee
 			_add_line(global_position, bee, 0.08) # Thin aim line: where the fan will be centred.
+		&"leaper":
+			var lock_x := bee.x
+			_lock_from = Vector3(lock_x + LEAP_SPAN, LEAP_DEPTH, 0.0)
+			_lock_to = Vector3(lock_x - LEAP_SPAN, LEAP_DEPTH, 0.0)
+			_leap_apex = clampf(bee.y + 0.4, 2.2, float(config["leap_height"]))
+			var ripple := BeeAttackVisuals.ring(get_parent(), Vector3(lock_x, WATER_SURFACE_Y + 0.05, 0.0), 1.0, 0.08, WARN_COLOR)
+			ripple.rotation.x = 0.0
+			ripple.scale = Vector3(1.4, 1.0, 0.6)
+			_warn.append(ripple)
+			_warn.append(BeeAttackVisuals.line(get_parent(), Vector3(lock_x, WATER_SURFACE_Y, 0.0), Vector3(lock_x, _leap_apex, 0.0), 0.06, Color(1.0, 0.55, 0.15, 0.35)))
 		&"bomber":
 			_add_ring(global_position + Vector3(0, -0.8, 0), float(config["radius"]))
 		_:
@@ -409,6 +442,11 @@ func _telegraph(delta: float) -> void:
 func _start_attack() -> void:
 	state = State.ATTACK
 	var mode: StringName = config["mode"]
+	if mode == &"leaper":
+		_left = float(config["leap_time"])
+		global_position = _lock_from
+		attack_hitbox.set_enabled(true)
+		return
 	match mode:
 		&"dash":
 			_left = float(config["dash_range"]) / float(config["dash_speed"])
@@ -436,6 +474,9 @@ func _start_attack() -> void:
 
 
 func _attack(delta: float, _camera_x: float) -> void:
+	if config["mode"] == &"leaper":
+		_leaper_leap(delta)
+		return
 	_left -= delta
 	var mode: StringName = config["mode"]
 	match mode:
@@ -466,6 +507,12 @@ func _attack(delta: float, _camera_x: float) -> void:
 
 
 func _recover(delta: float, camera_x: float) -> void:
+	if config["mode"] == &"leaper":
+		_leaper_swim(delta, camera_x)
+		_left -= delta
+		if _left <= 0.0:
+			_begin(State.IDLE, idle_time)
+		return
 	_hover = _hover_point(camera_x)
 	if not is_ground():
 		var back := _hover
@@ -660,7 +707,10 @@ func _on_died() -> void:
 	_facing = -1.0
 	rig.rotation.y = 0.0 # It leaves towards -X: it looks where it goes.
 	var away := create_tween()
-	if is_ground():
+	if config["mode"] == &"leaper":
+		# The perch dives back and swims away under the surface.
+		away.tween_property(self, "global_position", Vector3(global_position.x - LEAVE_GROUND_SPEED * LEAVE_SECONDS, LEAP_DEPTH, 0.0), LEAVE_SECONDS)
+	elif is_ground():
 		# Walks off, relaxed (a little slower than its attack, with a soft bob from the tween's sine).
 		away.tween_property(self, "global_position", global_position + Vector3(-LEAVE_GROUND_SPEED * LEAVE_SECONDS, 0.0, 0.0), LEAVE_SECONDS)
 	else:
@@ -689,3 +739,47 @@ func _steer(goal: Vector3, max_speed: float, delta: float) -> void:
 	desired = desired.limit_length(max_speed)
 	_velocity = _velocity.move_toward(desired, MOSQUITO_ACCEL * delta)
 	global_position += _velocity * delta
+
+
+# --- NOCHE 01 · ETAPA 4: the perch (leaper) ------------------------------------------------------------------------
+# Swims under the surface (no hurtbox, not targetable) a little ahead of Bee; the warning is a ring on the water + a faint
+# column at Bee's X; then it leaps out in an arc through that X (hurts while in the air) and dives back.
+
+func _leaper_swim(delta: float, camera_x: float) -> void:
+	var goal_x := minf(target.global_position.x + 1.5, camera_x + 4.5)
+	global_position.x = move_toward(global_position.x, goal_x, float(config["speed"]) * delta)
+	global_position.y = move_toward(global_position.y, LEAP_DEPTH, 3.0 * delta)
+	_set_submerged(true)
+
+
+func _leaper_leap(delta: float) -> void:
+	_left -= delta
+	var t := 1.0 - clampf(_left / float(config["leap_time"]), 0.0, 1.0)
+	var p := _lock_from.lerp(_lock_to, t)
+	p.y = LEAP_DEPTH + (_leap_apex - LEAP_DEPTH) * 4.0 * t * (1.0 - t)
+	global_position = p
+	rig.rotation.z = lerpf(0.5, -0.5, t) * (-_facing) # Nose up on the way out, down on the way in.
+	_set_submerged(p.y < WATER_SURFACE_Y - 0.3)
+	if _left <= 0.0:
+		rig.rotation.z = 0.0
+		attack_hitbox.set_enabled(false)
+		cycles_done += 1
+		state = State.RECOVER
+		_left = recovery_time + 0.6
+		if cycles_done >= max_cycles:
+			state = State.EXIT
+
+
+func _set_submerged(value: bool) -> void:
+	if value == _submerged:
+		return
+	_submerged = value
+	hurtbox.set_deferred("monitorable", not value)
+	if value:
+		remove_from_group("bee_auto_aim_targets")
+	elif not liberated:
+		add_to_group("bee_auto_aim_targets")
+
+
+func is_submerged() -> bool:
+	return _submerged
