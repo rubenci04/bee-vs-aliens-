@@ -25,6 +25,10 @@ const FACE_SMOOTHING := 0.18 # s
 const LEAVE_SECONDS := 3.0
 ## NOCHE 01 · ETAPA 3: emission energy of the cyan implant parts (Codex wrappers cap it at 0.65 for Compatibility).
 const IMPLANT_GLOW := 1.1
+## LOTE 9: largest implant hit sphere (m).
+const IMPLANT_RADIUS_MAX := 0.62
+## LOTE 9: weak-point line radius on the body area (m), from the implant size; small animals (mosquito) need the low end.
+const WEAK_RADIUS_RANGE := Vector2(0.22, 0.32)
 ## NOCHE 01 · ETAPA 4 — perch leap: depth under the water, half the horizontal span of the arc, water surface height.
 const LEAP_DEPTH := -1.4
 const LEAP_SPAN := 1.8
@@ -36,6 +40,10 @@ const MOSQUITO_DRIFT := Vector2(1.1, 0.8)
 const MOSQUITO_DRIFT_RATE := Vector2(0.9, 0.65)
 const LEAVE_GROUND_SPEED := 1.8
 const LEAVE_AIR_SPEED := 2.4
+## LOTE 9 — FLAPPING: kinds whose Codex model has separate "FlightWing_*" nodes flap them about the body axis (the wings
+## are modelled flat, so without this the side camera sees them edge-on and the moth looks rigid). Per kind:
+## [beats per second, wing lift min (rad), wing lift max (rad), body sway (rad), body bob (m), bob waves per second].
+const FLAP := {&"moth": [6.5, 0.25, 1.35, 0.1, 0.16, 0.8]}
 
 ## scene: art wrapper. mode: behaviour. ground: walks on the soil. scale: model scale. telegraph: warning seconds.
 ## damage: contact / shot damage. cycles: attacks before leaving. armored: extra shield below the implant.
@@ -81,6 +89,7 @@ var cycles_done := 0
 var liberated := false
 var health: HealthComponent
 var hurtbox: DamageHurtbox3D
+var body_hurtbox: DamageHurtbox3D # LOTE 9: body area (1x to the implant); null when the model has none.
 var attack_hitbox: DamageHitbox3D
 var rig: Node3D
 var visual: Node3D
@@ -114,6 +123,10 @@ var _submerged := false
 var _move_vx := 0.0
 var _prev_rel_x := 0.0
 var _has_prev := false
+var wings: Array[Node3D] = [] # LOTE 9: flapping wing hinges (see FLAP).
+var _wing_bases: Array[Basis] = []
+var _wing_sides: Array[float] = []
+var _aim_local := Vector3.ZERO # LOTE 9: rig-space point the auto-aim locks (see auto_aim_point).
 
 
 func _ready() -> void:
@@ -144,6 +157,11 @@ func activate(new_target: BeePlayer) -> bool:
 	return true
 
 
+## LOTE 9: where Bee's auto-aim points: a controlled animal's body (1x), a machine's centre.
+func auto_aim_point() -> Vector3:
+	return rig.to_global(_aim_local)
+
+
 func is_active() -> bool:
 	return _activated and not liberated and state != State.DONE
 
@@ -166,6 +184,13 @@ func _build() -> void:
 		# NOCHE 01: size relative to Bee (BeeFaunaSizes), from the model's own measured length.
 		model_scale = BeeFaunaSizes.target_length(kind) / maxf(_bounds(visual, rig).size.x, 0.01)
 	visual.scale = Vector3.ONE * model_scale
+	if FLAP.has(kind):
+		for hinge: Node3D in visual.find_children("FlightWing_*", "Node3D", true, false):
+			if str(hinge.name).ends_with("Geometry"):
+				continue
+			wings.append(hinge)
+			_wing_bases.append(hinge.transform.basis)
+			_wing_sides.append(-1.0 if str(hinge.name).begins_with("FlightWing_-1") else 1.0) # _-1 wings sit on +Z.
 	_device = visual.find_child("AlienControlDevice", true, false) as Node3D
 	if _device != null:
 		# NOCHE 01 · ETAPA 3: a brighter cyan implant (the shot target) reads against every light of the level.
@@ -184,6 +209,9 @@ func _build() -> void:
 		var device_bounds := _bounds(_device, rig)
 		_implant_center = device_bounds.get_center()
 		radius = maxf(device_bounds.size.x, maxf(device_bounds.size.y, device_bounds.size.z)) * 0.5 + 0.22
+		# LOTE 9: the body now damages the implant too, so the implant area can be precise: capped (the moth bomb
+		# magazine made it a 1.4 m sphere that swallowed the whole animal).
+		radius = minf(radius, IMPLANT_RADIUS_MAX)
 	else:
 		_implant_center = center
 		radius = maxf(bounds.size.y, bounds.size.x * 0.5) * 0.5
@@ -196,19 +224,29 @@ func _build() -> void:
 	health.died.connect(_on_died)
 	health.health_changed.connect(_on_health_changed)
 	if _has_implant:
-		var body_health := HEALTH_SCENE.instantiate() as HealthComponent
-		body_health.name = "BodyHealth"
-		body_health.max_health = 1000000
-		add_child(body_health)
-		# The shell below the implant absorbs shots with a neutral puff; the implant stays reachable above it.
-		var low := bounds.position.y
-		var high := _implant_center.y - radius * 0.7
-		if high - low > 0.15:
-			var box := BoxShape3D.new()
-			box.size = Vector3(bounds.size.x, high - low, 1.0)
-			var shield := _hurtbox("BodyShield", body_health, box, Vector3(center.x, (low + high) * 0.5, 0.0))
-			shield.set_meta("neutral_hit", true)
-		body_health.health_changed.connect(func(_c: int, _m: int, change: int): if change < 0: body_health.current_health = body_health.max_health)
+		# LOTE 9: the implant takes 2x; the body below it (shell, legs, wings) also damages the implant at 1x (it was a
+		# neutral shield). Body and implant share `health`; one shot hits one area.
+		hurtbox.damage_multiplier = BeeLiberation.IMPLANT_MULTIPLIER
+		# The body area covers the whole model (some implants are as tall as the animal, e.g. the ant). A shot lined up
+		# on the implant that touches the body first still counts as a direct implant hit (weak-point line, see
+		# DamageHurtbox3D), so aiming at the implant is always rewarded.
+		var box := BoxShape3D.new()
+		box.size = Vector3(bounds.size.x, bounds.size.y, 1.0)
+		body_hurtbox = _hurtbox("BodyShield", health, box, Vector3(center.x, center.y, 0.0))
+		body_hurtbox.damage_multiplier = BeeLiberation.BODY_MULTIPLIER
+		body_hurtbox.set_meta("body_hit", true)
+		var implant_point := Node3D.new()
+		implant_point.name = "ImplantPoint"
+		implant_point.position = _implant_center
+		rig.add_child(implant_point)
+		body_hurtbox.weak_point = implant_point
+		body_hurtbox.weak_point_radius = clampf(radius - 0.22, WEAK_RADIUS_RANGE.x, WEAK_RADIUS_RANGE.y)
+		body_hurtbox.weak_point_multiplier = BeeLiberation.IMPLANT_MULTIPLIER
+		# Auto-aim point: the middle of the body under the implant (1x); never the implant itself.
+		var aim_y := minf(lerpf(bounds.position.y, _implant_center.y - body_hurtbox.weak_point_radius, 0.5), _implant_center.y - body_hurtbox.weak_point_radius - 0.12)
+		_aim_local = Vector3(center.x, maxf(aim_y, bounds.position.y + 0.05), 0.0)
+	else:
+		_aim_local = _implant_center
 	attack_hitbox = HITBOX_SCENE.instantiate() as DamageHitbox3D
 	attack_hitbox.name = "AttackHitbox"
 	attack_hitbox.team_id = &"alien"
@@ -258,6 +296,7 @@ static func _bounds(root: Node3D, space: Node3D) -> AABB:
 
 func _physics_process(delta: float) -> void:
 	_clock += delta
+	_flap()
 	if spent:
 		var cam := get_viewport().get_camera_3d()
 		if cam != null and global_position.x < cam.global_position.x - 11.0:
@@ -726,6 +765,31 @@ func _finish() -> void:
 	defeated.emit(self)
 
 
+# --- LOTE 9: flapping wings, body sway and a soft wavy bob ------------------------------------------------------------
+
+func _flap() -> void:
+	if wings.is_empty():
+		return
+	var spec: Array = FLAP[kind]
+	var beat := 0.5 + 0.5 * sin(_clock * TAU * float(spec[0])) # 0 = wings down, 1 = wings up.
+	var lift := lerpf(float(spec[1]), float(spec[2]), beat)
+	for i in wings.size():
+		# Rotate about the body axis (X) in the hinge's parent space: the wing sweeps up through the camera's view.
+		wings[i].transform.basis = Basis(Vector3.RIGHT, _wing_sides[i] * lift) * _wing_bases[i]
+	# The body rides each beat (rises on the downstroke) and sways slowly: never a rigid, still silhouette.
+	var wave := TAU * float(spec[5]) * _clock
+	visual.position.y = float(spec[4]) * (sin(wave) + 0.35 * (1.0 - beat))
+	visual.rotation.z = float(spec[3]) * sin(wave * 0.7 + 0.6)
+	visual.rotation.x = 0.5 * float(spec[3]) * sin(wave * 1.3)
+
+
+## Current wing lift (rad) of the first wing (tests).
+func wing_lift() -> float:
+	if wings.is_empty():
+		return 0.0
+	return (wings[0].transform.basis * _wing_bases[0].inverse()).get_euler().x * _wing_sides[0]
+
+
 # --- NOCHE 01: smooth mosquito flight -------------------------------------------------------------------------------
 
 func _mosquito_drift() -> Vector3:
@@ -775,6 +839,8 @@ func _set_submerged(value: bool) -> void:
 		return
 	_submerged = value
 	hurtbox.set_deferred("monitorable", not value)
+	if body_hurtbox != null:
+		body_hurtbox.set_deferred("monitorable", not value)
 	if value:
 		remove_from_group("bee_auto_aim_targets")
 	elif not liberated:

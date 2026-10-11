@@ -208,7 +208,7 @@ func test_walker() -> void:
 			on_screen += 1.0 / 60.0
 		if walker.sweep_count >= 1 and walker.attacks_started >= 3:
 			break
-	check(walker.health.max_health == 120, "Walker HEAVY HP")
+	check(walker.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Walker"]), "Walker HEAVY HP")
 	check(walker.sweep_count >= 1 and walker.attacks_started >= 3, "Walker must alternate burst and sweep (%d attacks, %d sweeps)" % [walker.attacks_started, walker.sweep_count])
 	check(on_screen >= 4.0 and walker.suppressed_shot_count <= 1, "Walker must stay on screen and fire from it (%.1f s, %d suppressed)" % [on_screen, walker.suppressed_shot_count])
 	# Sweep order: high to low.
@@ -229,8 +229,8 @@ func test_roles() -> void:
 	for light in ["Wasp", "EyeDrone", "Speeder"]:
 		check(hp[light] >= 28 and hp[light] <= 56, "LIGHT HP out of the 1-2 s band: " + light)
 	for medium in ["Probe", "Turret", "OrganicAlien"]:
-		check(hp[medium] >= 70 and hp[medium] <= 126, "MEDIUM HP out of the 2.5-4.5 s band: " + medium)
-	check(hp["Walker"] >= 112 and hp["Walker"] <= 196 and BeeLevel01Controller.SHOWCASE_HP >= 140, "HEAVY / SHOWCASE HP")
+		check(hp[medium] >= 60 and hp[medium] <= 126, "MEDIUM HP out of the ~2-4.5 s band: " + medium)
+	check(hp["Walker"] >= 90 and hp["Walker"] <= 196 and BeeLevel01Controller.SHOWCASE_HP >= 120, "HEAVY / SHOWCASE HP (LOTE 9: Walker ~3 s, showcase ~4 s)")
 	# One heavy pattern at a time.
 	arena(300.0)
 	var a := spawn("Wasp", 0, 4.0)

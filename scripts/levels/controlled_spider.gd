@@ -24,6 +24,7 @@ const MODEL := preload("res://assets/external/approved/fauna/quaternius/Easy Ani
 ## NOCHE 01: size relative to Bee (BeeFaunaSizes "spider" 1.4). SPIDER_LENGTH_AT_034 = measured body length at the old scale 0.34.
 const SPIDER_LENGTH_AT_034 := 2.02 # Body (legs spread) only, without silk / implant.
 const SIZE_FACTOR := 1.4 * 1.18 / SPIDER_LENGTH_AT_034 # = BeeFaunaSizes.target_length(&"spider") / SPIDER_LENGTH_AT_034
+const AUTO_AIM_DROP := 0.45 # LOTE 9: m below the hurtbox centre where the auto-aim points (the body, not the implant).
 const MODEL_SCALE := 0.34 * SIZE_FACTOR
 ## NOCHE 01: a freed spider climbs its thread out of the top edge, relaxed, in FREED_SECONDS.
 const FREED_SECONDS := 1.8
@@ -109,6 +110,11 @@ func activate(new_target: BeePlayer) -> bool:
 	_play(&"Idle")
 	set_physics_process(true)
 	return true
+
+
+## LOTE 9: the auto-aim takes the lower body (abdomen / legs, 1x); the implant above it is the deliberate 2x shot.
+func auto_aim_point() -> Vector3:
+	return hurtbox.global_position + Vector3(0.0, -AUTO_AIM_DROP, 0.0)
 
 
 func is_active() -> bool:
@@ -321,6 +327,10 @@ func _build_visual() -> void:
 	((get_node("Hurtbox3D/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius = 0.7 * maxf(SIZE_FACTOR, 0.75)
 	((get_node("ContactHitbox/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius = 0.55 * SIZE_FACTOR
 	visual_root.add_child(implant)
+	# LOTE 9: the whole spider damages the implant (1x); a shot lined up on the implant does 2x.
+	hurtbox.weak_point = implant
+	hurtbox.weak_point_radius = BeeLiberation.WEAK_POINT_RADIUS
+	hurtbox.weak_point_multiplier = BeeLiberation.IMPLANT_MULTIPLIER
 	if _thread_mesh == null:
 		_thread_mesh = CylinderMesh.new()
 		_thread_mesh.top_radius = 0.025

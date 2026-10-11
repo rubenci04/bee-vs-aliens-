@@ -43,11 +43,12 @@ var liberated := false
 var visual_root: Node3D
 var health: HealthComponent        # The implant's health (the only damageable thing).
 var hurtbox: DamageHurtbox3D       # On the implant; auto-aim aims here ("Hurtbox3D").
-var body_shield: DamageHurtbox3D   # Absorbs shots on the animal body with neutral feedback.
+var body_shield: DamageHurtbox3D   # LOTE 9: the animal body; its hits damage the implant at 1x (was a neutral shield).
 var pass_hitbox: DamageHitbox3D
 var implant: Node3D
-var body_absorbed := 0
-var _body_health: HealthComponent
+## LOTE 9: hits that landed on the body area (they damage the implant at 1x).
+var body_absorbed: int:
+	get: return body_shield.hits_taken if body_shield != null else 0
 var _wings: Array[Node3D] = []
 var _body_materials: Dictionary = {} # part -> ShaderMaterial (own copies, tinted)
 var _core_material: ShaderMaterial
@@ -72,13 +73,11 @@ func _ready() -> void:
 	flash.visual_root_path = ^"../VisualRoot/Body/Implant"
 	add_child(flash)
 	hurtbox = _make_hurtbox("Hurtbox3D", 0.5, health)
-	_body_health = HEALTH_SCENE.instantiate() as HealthComponent
-	_body_health.name = "BodyHealth"
-	_body_health.max_health = 1000000
-	add_child(_body_health)
-	body_shield = _make_hurtbox("BodyShield", 0.0, _body_health)
-	body_shield.set_meta("neutral_hit", true)
-	_body_health.health_changed.connect(_on_body_hit)
+	# LOTE 9: the implant takes 2x and the long abdomen now damages the implant too (1x); it was a neutral shield.
+	hurtbox.damage_multiplier = BeeLiberation.IMPLANT_MULTIPLIER
+	body_shield = _make_hurtbox("BodyShield", 0.0, health)
+	body_shield.damage_multiplier = BeeLiberation.BODY_MULTIPLIER
+	body_shield.set_meta("body_hit", true)
 	pass_hitbox = HITBOX_SCENE.instantiate() as DamageHitbox3D
 	pass_hitbox.name = "PassHitbox"
 	pass_hitbox.team_id = &"alien"
@@ -244,10 +243,6 @@ func _set_core(multiplier: float) -> void:
 		_core_material.set_shader_parameter("emission_energy", BeeAlienPalette.MAX_EMISSION * minf(multiplier, 1.4))
 
 
-func _on_body_hit(_current: int, _maximum: int, change: int) -> void:
-	if change < 0:
-		body_absorbed += 1
-		_body_health.current_health = _body_health.max_health # The animal is never hurt.
 
 
 # --- liberation -------------------------------------------------------------------------------------------

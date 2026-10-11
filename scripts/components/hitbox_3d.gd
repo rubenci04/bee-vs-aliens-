@@ -11,6 +11,9 @@ signal hit_confirmed(hurtbox: DamageHurtbox3D, applied_damage: int)
 var attacker: Node
 var enabled := false
 var _hit_targets: Dictionary = {}
+var hit_healths: Dictionary = {} # LOTE 9: HealthComponent ids already damaged since the last enable (see DamageHurtbox3D).
+## LOTE 9: area damage (the Alien Bomb) is not a direct hit: implants / weak points take it at 1x.
+var ignores_weak_points := false
 
 
 func _ready() -> void:
@@ -24,6 +27,7 @@ func set_enabled(value: bool) -> void:
 	set_deferred("monitoring", value)
 	if value:
 		_hit_targets.clear()
+		hit_healths.clear()
 
 
 func can_damage(hurtbox: DamageHurtbox3D) -> bool:

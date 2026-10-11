@@ -2,7 +2,7 @@ extends SceneTree
 
 # LEVEL 01 TRANSFORMATION PASS 01 — PHASE A: ARCADE DIRECTOR (structure, not fun).
 #   order       thresholds ascending, five internal acts in order, checkpoint/human/gates where the blueprint puts them
-#   cadence     no metronome: varied spacing, no long runs of identical spacing, max 16 m between events
+#   cadence     no metronome: varied spacing, no long runs of identical spacing, max 20 m between events (LOTE 9: was 16)
 #   formations  several readable shapes, per-unit data consistent (delays ascending, y/x arrays sized)
 #   fans        EyeDrone fans only from FAN_FROM_X; earlier Eyes fire aimed bursts only
 #   moments     enemy-free director moments are emitted in order exactly once
@@ -78,6 +78,9 @@ func test_static() -> void:
 		var units: Array = event["units"]
 		total += units.size()
 		by_act[act] += units.size()
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: combat-zone waves are part of the budget and the density.
+			total += (zone_wave["units"] as Array).size()
+			by_act[act] += (zone_wave["units"] as Array).size()
 		for key in ["delays", "y", "x"]:
 			var values: Array = event.get(key, [])
 			check(values.is_empty() or values.size() == units.size(), "%s size mismatch: %s" % [key, event["label"]])
@@ -96,7 +99,7 @@ func test_static() -> void:
 	check(human_at == 140.0, "The Giant Human stays at X=140")
 	check(hard == [254.0, 296.0, 340.0], "Hard gates moved: " + str(hard))
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
-	check(total >= 82 and total <= 108, "Unit budget %d outside 82-109 (LOTE 6: +11 Codex fauna units) (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(total >= 55 and total <= 70, "Unit budget %d outside 55-70 (LOTE 9: quality over quantity, zones included)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.
@@ -112,7 +115,7 @@ func test_static() -> void:
 			run = 1
 	check(distinct.size() >= 6, "Cadence still too regular: %d distinct spacings" % distinct.size())
 	check(longest_run <= 3, "More than three identical spacings in a row (metronome)")
-	check(spacings.max() <= 16.0 and spacings.min() >= 4.0, "Spacing outside 4-16 m")
+	check(spacings.max() <= 20.0 and spacings.min() >= 4.0, "Spacing outside 4-20 m (LOTE 9: was 16 m; fewer units, landscape breathers kept)")
 	# Intensity grows by act (units per metre) without making act 1 a wall.
 	check(float(by_act[1]) / 68.0 < float(by_act[4]) / 142.0, "Act 4 must be denser than act 1")
 	print("DIRECTOR_STATIC events=%d enemies=%d formations=%s moments=%d spacing=%.0f..%.0f m distinct=%d acts=%s" % [events.size(), total, str(formations.keys()), moments.size(), spacings.min(), spacings.max(), distinct.size(), str(by_act)])

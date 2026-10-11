@@ -415,18 +415,20 @@ func test_level() -> void:
 		var units: Array = event["units"]
 		total += units.size()
 		biggest = maxi(biggest, units.filter(func(f): return f != "Swarm").size()) # Popcorn is outside the threat cap.
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
+			total += (zone_wave["units"] as Array).size()
 		if not units.is_empty() and not units.all(func(f): return BeeLevel01Controller.ASSET_FAUNA.has(f) and not (f in RANGED)): # LOTE 6: melee-only Codex fauna are extra variety, outside this ratio.
 			combat_events += 1
 			for family in units:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 56 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
-	check(total >= 82 and total <= 108, "Unit total %d outside 82-109 (LOTE 6) (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(events.size() == 38 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
+	check(total >= 55 and total <= 70, "Unit total %d outside 55-70 (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
-	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
+	check(float(with_ranged) / float(combat_events) >= 0.6, "Too few encounters with a ranged threat (%d/%d; LOTE 9: >= 60 %%, fewer escorts)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.threat_cap(300.0) == 4 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
-	check(_base_hp() == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
+	check(_base_hp() == {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80}, "HP changed (LOTE 9 liberation / destruction times)")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.
 	arena(100.0)

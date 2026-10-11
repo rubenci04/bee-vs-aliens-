@@ -15,6 +15,12 @@ const TEXT_SECONDS := 1.3
 const TEXT_RISE := 0.9
 const TEXT_COLOR := Color(1.0, 0.9, 0.45)
 const CHIME_PITCH := 1.45
+## LOTE 9 — every hit on a controlled animal (body, shell, wings, legs) damages its implant at BODY_MULTIPLIER; a
+## direct hit on the implant / weak point does IMPLANT_MULTIPLIER. Area damage (the bomb) is always 1x.
+const IMPLANT_MULTIPLIER := 2.0
+const BODY_MULTIPLIER := 1.0
+## Wasp / spider (one hit area): a shot whose line passes this close to the implant (X/Y, m) is a direct implant hit.
+const WEAK_POINT_RADIUS := 0.32
 
 
 ## Runs the whole liberation look. `implant` (optional) is hidden after its blast; `at` is where the implant was.

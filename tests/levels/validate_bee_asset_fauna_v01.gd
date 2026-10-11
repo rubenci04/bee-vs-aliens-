@@ -105,9 +105,12 @@ func test_static() -> void:
 		last = float(event["at"])
 		for unit in event["units"]:
 			used[unit] = true
+		for wave_def in event.get("arena", []): # LOTE 9: the combat-zone waves are Level 01 events too.
+			for unit in wave_def["units"]:
+				used[unit] = true
 	for family in families:
 		check(used.has(family), "%s never appears in the Level 01 events" % family)
-	check(float(BeeLevel01Controller.LEVEL_HP["Ladybird"]) > float(BeeLevel01Controller.LEVEL_HP["Mosquito"]) * 2.5, "Ladybird must be much more resistant than the mosquito")
+	check(float(BeeLevel01Controller.LEVEL_HP["Ladybird"]) >= float(BeeLevel01Controller.LEVEL_HP["Mosquito"]) * 1.8, "Ladybird must be clearly more resistant than the mosquito (LOTE 9: 1.5-2 s vs 0.7 s)")
 	check(float(BeeLevel01Controller.LEVEL_HP["Snail"]) >= 90 and float(BeeLevel01Controller.LEVEL_HP["StagBeetle"]) >= 90, "Armored ground units need HP")
 	for kind in AssetFauna.KINDS:
 		check(float(AssetFauna.KINDS[kind]["telegraph"]) >= AssetFauna.MIN_TELEGRAPH, "%s configured telegraph < 0.4 s" % kind)
@@ -138,7 +141,7 @@ func test_ladybird() -> void:
 	await capture("ladybird_warning")
 	await telegraph_ok(unit, "Ladybird")
 	check(float(unit.telegraphs[0]) >= 0.75, "Ladybird warning is its slow, readable tell (>= 0.75 s)")
-	check(unit.health.max_health >= 120, "Ladybird must be resistant")
+	check(unit.health.max_health >= 64, "Ladybird must be resistant (LOTE 9: 1.5-2 s of Base fire)")
 	await frames(30)
 	await capture("ladybird_sweep")
 	await clear()
@@ -254,9 +257,9 @@ func test_liberation() -> void:
 	var unit := spawn("Mosquito", 4.0)
 	var freed := [false]
 	unit.liberated_now.connect(func(_u): freed[0] = true)
-	var body_health := unit.get_node("BodyHealth") as HealthComponent
-	body_health.take_damage(500)
-	check(unit.health.current_health == unit.health.max_health, "Hits on the animal's body must not hurt the implant")
+	# LOTE 9: the body area feeds the implant's health at 1x (it was a separate, never-hurt BodyHealth).
+	check(unit.get_node_or_null("BodyHealth") == null and unit.body_hurtbox != null and unit.body_hurtbox.health_component == unit.health \
+			and is_equal_approx(unit.body_hurtbox.damage_multiplier, 1.0) and is_equal_approx(unit.hurtbox.damage_multiplier, 2.0), "Body 1x / implant 2x on the same health")
 	unit.health.take_damage(9999)
 	await frames(2)
 	check(freed[0] and unit.liberated and not unit.is_in_group("bee_auto_aim_targets"), "Breaking the implant must liberate the animal")
@@ -269,7 +272,7 @@ func test_liberation() -> void:
 	await frames(2)
 	check(machine.liberated, "The machine (no implant) is destroyed by its own HP")
 	await clear()
-	report.append("liberation: body hits absorbed, implant break frees the animal, machine dies by HP")
+	report.append("liberation: body 1x + implant 2x on one health, implant break frees the animal, machine dies by HP")
 
 func test_dressing() -> void:
 	arena(10.0)

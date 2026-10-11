@@ -11,6 +11,7 @@ func activate(source: BeePlayer, area_radius: float, amount: int) -> void:
 	team_id = &"bee"
 	damage = amount
 	radius = area_radius
+	ignores_weak_points = true # LOTE 9: area damage, never a 2x implant hit.
 	enabled = true
 	call_deferred("_discharge")
 	BeeAudio.play(get_parent(), &"bomb")

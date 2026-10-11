@@ -265,6 +265,9 @@ func _is_valid_target(candidate: Node3D) -> bool:
 
 
 func _target_point(candidate: Node3D) -> Vector3:
+	# LOTE 9: a controlled animal offers its BODY to the auto-aim (1x); the 2x implant hit is a deliberate mouse shot.
+	if candidate.has_method("auto_aim_point"):
+		return candidate.call("auto_aim_point")
 	var hurtbox := candidate.get_node_or_null("Hurtbox3D") as Node3D
 	return hurtbox.global_position if hurtbox != null else candidate.global_position
 

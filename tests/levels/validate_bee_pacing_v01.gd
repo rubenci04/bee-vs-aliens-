@@ -12,8 +12,8 @@ const BOT_TAPS_PER_SECOND := 3.0
 const BOT_SPEED := 5.0
 const TIME_SCALE := 4.0
 ## Target (game seconds from start to the UFO entry).
-const MIN_TO_BOSS := 320.0
-const MAX_TO_BOSS := 420.0
+const MIN_TO_BOSS := 330.0 # LOTE 9: 5.5-6.5 min (was 320-420 s).
+const MAX_TO_BOSS := 390.0
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -149,16 +149,19 @@ func run() -> void:
 		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the UFO %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
 		check(complete_at > boss_at, "Level must complete after the UFO")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())
-		check(is_equal_approx(BeeLevel01Controller.LEVEL_SCROLL, 1.5), "Cruise scroll must be 1.5 m/s")
+		check(is_equal_approx(BeeLevel01Controller.LEVEL_SCROLL, 1.25), "Cruise scroll must be 1.25 m/s (LOTE 9)")
 		check(wave.arena_log.size() == 3, "Three combat zones must play (%d)" % wave.arena_log.size())
 		var zone_seconds := 0.0
 		for zone in wave.arena_log:
 			zone_seconds += float(zone["seconds"])
 			check(float(zone["seconds"]) >= 20.0, "A combat zone ended too early: %s" % zone)
-		check(zone_seconds >= 90.0, "New combat-zone content %.0f s < 90 s" % zone_seconds)
+		check(zone_seconds >= 60.0, "Combat-zone content %.0f s < 60 s (LOTE 9: 3 zones of 2 waves)" % zone_seconds)
 		check(early_retire.is_empty(), "Units left before their camera time: %s" % str(early_retire))
 		check(longest_quiet <= 25.0, "A breather longer than 25 s feels empty (%.0f s)" % longest_quiet)
+		check(wave.max_alive_route <= BeeLevel01Controller.MAX_ON_SCREEN, "LOTE 9: %d enemies at once on the route (max %d)" % [wave.max_alive_route, BeeLevel01Controller.MAX_ON_SCREEN])
+		check(wave.max_alive_arena <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA, "LOTE 9: %d enemies at once in a zone (max %d)" % [wave.max_alive_arena, BeeLevel01Controller.MAX_ON_SCREEN_ARENA])
 	print("PACING camera-time violations=%d retired_checked=%d" % [early_retire.size(), retired_seen.size()])
+	print("PACING max_alive route=%d arena=%d (popcorn included)" % [wave.max_alive_route, wave.max_alive_arena])
 	print("BEE_PACING_V01_OK")
 	quit(0)
 

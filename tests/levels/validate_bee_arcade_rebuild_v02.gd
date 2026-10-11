@@ -98,6 +98,12 @@ func test_static() -> void:
 				walkers.append(at)
 			elif family == "OrganicAlien":
 				organics.append(at)
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: combat-zone waves count in the budget and the popcorn variety.
+			total += (zone_wave["units"] as Array).size()
+			if "Swarm" in zone_wave["units"]:
+				swarm_groups += 1
+				swarm_shooters += (zone_wave.get("shooters", []) as Array).size()
+				paths[str(zone_wave.get("path", "sine"))] = true
 		if "Swarm" in units:
 			swarm_groups += 1
 			swarm_shooters += (event.get("shooters", []) as Array).size()
@@ -108,14 +114,14 @@ func test_static() -> void:
 			depth_events.append(event)
 			depth_units += units.size()
 			check(not bool(event.get("hard", false)), "Depth entries never open a hard gate")
-	check(total >= 82 and total <= 108, "Unit budget %d outside 82-109 (LOTE 6: +11 Codex fauna units) (+ GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(total >= 55 and total <= 70, "Unit budget %d outside 55-70 (LOTE 9: quality over quantity, zones included)" % total)
 	check(walkers.size() >= 4 and walkers.size() <= 5, "Walker appearances %d (want 4-5)" % walkers.size())
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")
 	check(walkers.back() == 340.0 and walkers.filter(func(x): return x >= 254.0).size() >= 2, "Walker needs late-game encounters")
 	check(organics.is_empty(), "NOCHE 01: the purple organism is a UFO minion only (%d normal appearances)" % organics.size())
-	check(swarm_groups >= 6 and swarm_shooters >= 8 and paths.size() >= 4, "Popcorn variety too low (%d groups, %d shooters, paths %s)" % [swarm_groups, swarm_shooters, str(paths.keys())])
-	check(depth_events.size() >= 4 and depth_events.filter(func(e): return (e["units"] as Array).size() >= 3).size() >= 2, "Need >= 4 depth entries incl. >= 2 formations")
+	check(swarm_groups >= 5 and swarm_shooters >= 8 and paths.size() >= 4, "Popcorn variety too low (%d groups, %d shooters, paths %s)" % [swarm_groups, swarm_shooters, str(paths.keys())])
+	check(depth_events.size() >= 2 and depth_events.filter(func(e): return (e["units"] as Array).size() >= 2).size() >= 1, "Need >= 2 depth entries incl. a formation (LOTE 9: was 4 incl. 2 formations of 3)")
 	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Threat cap 2/3/4 (REBUILD 03 thresholds 96 / 240)")
 	check(BeeLevel01Controller.LIVE_SHOT_CEILING - 1 + 5 <= 14, "Below-ceiling live shots + the largest volley (5) must stay <= 14")
 	var moments: Array[String] = []
@@ -351,8 +357,8 @@ func test_run() -> void:
 	for family in wave.spawned_by_family:
 		spawned += int(wave.spawned_by_family[family])
 	check(spawned == planned, "Spawned %d of %d planned units" % [spawned, planned])
-	check(int(wave.spawned_by_family.get("Walker", 0)) == 6 and int(wave.spawned_by_family.get("OrganicAlien", 0)) <= 2, "Walker/Organic presence wrong (LOTE 7: +1 Walker in the zones; NOCHE 01: organism only as UFO minion)")
-	check(depth_seen >= 8 and depth_fired == 0, "Depth entries: %d seen, %d shots from depth" % [depth_seen, depth_fired])
+	check(int(wave.spawned_by_family.get("Walker", 0)) == 5 and int(wave.spawned_by_family.get("OrganicAlien", 0)) <= 2, "Walker/Organic presence wrong (LOTE 9: 5 Walkers incl. 1 in a zone; NOCHE 01: organism only as UFO minion)")
+	check(depth_seen >= 3 and depth_fired == 0, "Depth entries: %d seen, %d shots from depth" % [depth_seen, depth_fired])
 	check(peak <= 14, "Projectile ceiling exceeded (%d)" % peak)
 	check(max_swarm <= BeeLevel01Controller.MAX_SWARM_ALIVE, "Popcorn budget exceeded")
 	print("REBUILD_RUN units=%d depth_units=%d peak_shots=%d max_swarm=%d moments=%d complete=OK" % [spawned, depth_seen, peak, max_swarm, moments.size()])

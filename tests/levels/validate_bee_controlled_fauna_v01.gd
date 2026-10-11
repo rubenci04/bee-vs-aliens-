@@ -1,7 +1,7 @@
 extends SceneTree
 
 # LEVEL 01 TRANSFORMATION PASS 01 — PHASE C: CONTROLLED FAUNA (the dragonfly).
-#   Only the implant is damageable; the body absorbs shots with neutral feedback and never loses health.
+#   Only the implant has health; LOTE 9: a body shot damages it at 1x, a direct implant hit at 2x (was: neutral body).
 #   Auto-aim targets the implant (generous hurtbox). Implant HP gives ~1.5-2.5 s of reasonable Base fire.
 #   Up to 3 broad passes, each locked at the telegraph (no homing), contact only during the pass.
 #   Breaking the implant liberates the dragonfly at once: attack cancelled, device off, glow off, natural colours,
@@ -97,7 +97,7 @@ func test_body() -> void:
 	await arena()
 	var fly := spawn_dragonfly()
 	check(fly.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Dragonfly"]), "Implant HP not set by the level")
-	check(fly.find_children("*", "HealthComponent", true, false).size() == 2, "Only the implant and the neutral body absorber may hold health")
+	check(fly.find_children("*", "HealthComponent", true, false).size() == 1, "Only the implant holds health (LOTE 9: the body damages it at 1x)")
 	await wait_state(fly, ControlledDragonfly.State.HOVER)
 	fly.set_physics_process(false) # Hold still for exact body shots.
 	await frames(2)
@@ -114,13 +114,10 @@ func test_body() -> void:
 		await physics_frame
 		if not is_instance_valid(shot):
 			break
-	check(fly.health.current_health == implant_hp and fly.body_absorbed >= 1 and not is_instance_valid(shot), "A body shot must be absorbed without damaging the animal")
-	check(fly.is_active() and not fly.liberated, "The animal was harmed")
-	var neutral := false
-	for effect in get_nodes_in_group("bee_combat_vfx"):
-		neutral = neutral or (effect as BeeCombatVFX).kind == &"neutral_hit"
-	check(neutral, "No neutral feedback on a body shot")
-	print("FAUNA_BODY absorbed=%d implant_hp=%d (unchanged)" % [fly.body_absorbed, fly.health.current_health])
+	# LOTE 9: a body hit damages the implant at 1x (it was absorbed with a neutral puff); the animal is still never killed.
+	check(implant_hp - fly.health.current_health == 10 and fly.body_absorbed >= 1 and not is_instance_valid(shot), "A body shot must damage the implant at 1x (%d)" % (implant_hp - fly.health.current_health))
+	check(fly.is_active() and not fly.liberated, "One body shot must not free it")
+	print("FAUNA_BODY body_hits=%d implant_hp=%d (-10, 1x)" % [fly.body_absorbed, fly.health.current_health])
 	fly.set_physics_process(true)
 
 # --- auto-aim and implant HP ---------------------------------------------------------------------------------

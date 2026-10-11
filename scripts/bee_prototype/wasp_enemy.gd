@@ -116,6 +116,10 @@ func activate(new_target: BeePlayer) -> bool:
 		implant.name = "Implant"
 		implant.position = IMPLANT_OFFSET
 		visual_root.add_child(implant)
+		# LOTE 9: the whole Wasp damages the implant (1x); a shot lined up on the implant does 2x.
+		hurtbox.weak_point = implant
+		hurtbox.weak_point_radius = BeeLiberation.WEAK_POINT_RADIUS
+		hurtbox.weak_point_multiplier = BeeLiberation.IMPLANT_MULTIPLIER
 	show()
 	hurtbox.set_deferred("monitorable", true)
 	set_physics_process(true)

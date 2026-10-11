@@ -290,7 +290,7 @@ func test_walker() -> void:
 	var walker := spawn("Walker") as GroundWalkerEnemy
 	check(walker.low_burst, "Walker low burst not applied")
 	walker.low_burst = false # COMBAT VARIETY 01: aimed-burst machinery check (the low burst is tested in combat_variety_v01).
-	check(walker.burst_shots == 4 and walker.health.max_health == 120 and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, HP 120 since REBUILD 03, walk 2.4)")
+	check(walker.burst_shots == 4 and walker.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Walker"]) and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, LEVEL_HP, walk 2.4)")
 	listen(walker)
 	var captured := false
 	for i in 60 * 16:
@@ -324,7 +324,7 @@ func test_wasp() -> void:
 	await clear_units()
 	arena(60.0)
 	var wasp := spawn("Wasp") as WaspEnemy
-	check(wasp.arcade_mode and wasp.max_passes == 99 and wasp.health.max_health == 44 and wasp.attack_damage == 10, "Wasp tuning / HP / damage (LOTE 7: passes 99, retired at CAMERA_TIME)")
+	check(wasp.arcade_mode and wasp.max_passes == 99 and wasp.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Wasp"]) and wasp.attack_damage == 10, "Wasp tuning / HP / damage (LOTE 7: passes 99, retired at CAMERA_TIME; HP from LEVEL_HP)")
 	wasp.max_passes = 3 # The 3-pass pattern itself (the level keeps Wasps until CAMERA_TIME).
 	var order: Array = []
 	var dash_dirs: Array = []
@@ -401,6 +401,8 @@ func test_level() -> void:
 	for event: Dictionary in events:
 		var units: Array = event["units"]
 		total += units.size()
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
+			total += (zone_wave["units"] as Array).size()
 		var threats := units.filter(func(f): return f != "Swarm") # Popcorn sits outside the threat cap.
 		biggest = maxi(biggest, threats.size())
 		for family in units:
@@ -411,11 +413,11 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.filter(func(f): return f != "Swarm").size() >= 4:
 			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
-	check(events.size() == 56 and float(events.back()["at"]) == 340.0, "Event table changed (GARDEN IDENTITY 04: 44 + 3 spider events, last defence at X=340)")
-	check(total >= 82 and total <= 108, "Unit total %d outside the 82-109 budget (LOTE 6) (REBUILD 02 82-92 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(events.size() == 38 and float(events.back()["at"]) == 340.0, "Event table changed (LOTE 9: 38 events, last defence at X=340)")
+	check(total >= 55 and total <= 70, "Unit total %d outside the 55-70 budget (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Concurrency cap changed")
-	check(_base_hp() == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
+	check(_base_hp() == {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80}, "HP changed (LOTE 9 table)")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
 	# Controlled projectile ceiling: the heaviest legal quartet (REBUILD 02 caps threats at 4) alive for 14 s, Bee not shooting.
 	# The live-shot ceiling (10 + one 5-shot fan) keeps the peak inside 14.

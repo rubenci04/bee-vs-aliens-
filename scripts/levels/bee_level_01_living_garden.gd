@@ -11,6 +11,14 @@ extends Node3D
 const GNATS := [Vector3(58.0, 1.4, -2.6), Vector3(112.0, 1.2, -3.0), Vector3(164.0, 1.5, -2.4), Vector3(236.0, 1.3, -2.8), Vector3(292.0, 1.4, -2.6)]
 const BUTTERFLIES := [[30.0, 3.6, -3.2, Color(0.98, 0.62, 0.18)], [132.0, 4.4, -4.6, Color(0.97, 0.95, 0.88)], [214.0, 3.2, -3.6, Color(0.98, 0.84, 0.25)]]
 const ACTIVE_RANGE := 15.0
+## LOTE 9 — butterfly flight: wingbeats per second, wing lift range (rad above the body plane), body bob per beat (m),
+## extra vertical wave (m) and bank / pitch sway (rad).
+const BUTTERFLY_BEATS := 2.6
+const BUTTERFLY_LIFT_MIN := 0.2
+const BUTTERFLY_LIFT_MAX := 1.75
+const BUTTERFLY_BOB := 0.14
+const BUTTERFLY_WAVE := 0.22
+const BUTTERFLY_SWAY := 0.22
 
 @export var stage_path: NodePath = ^".."
 
@@ -85,10 +93,15 @@ func _process(delta: float) -> void:
 		if not near:
 			continue
 		var t := _t + float(i) * 2.1
-		# A lazy figure-eight around its flowers.
-		fly.global_position = home + Vector3(sin(t * 0.45) * 2.4, sin(t * 0.9) * 0.7 + sin(t * 3.1) * 0.12, cos(t * 0.45) * 0.5)
-		fly.rotation.y = PI if cos(t * 0.45) < 0.0 else 0.0
-		var lift := 1.25 + sin(t * 15.0) * 0.4 # Wing angle above the body plane: 0.85 .. 1.65 rad (the lateral camera sees them face-on near vertical).
+		# LOTE 9: a lazy figure-eight plus a soft wave; each wingbeat lifts the body a little (no rigid glide).
+		var beat := 0.5 + 0.5 * sin(t * TAU * BUTTERFLY_BEATS)
+		fly.global_position = home + Vector3(sin(t * 0.45) * 2.4 + sin(t * 1.7) * 0.25,
+				sin(t * 0.9) * 0.7 + sin(t * 2.3) * BUTTERFLY_WAVE + beat * BUTTERFLY_BOB, cos(t * 0.45) * 0.5)
+		# Turns smoothly towards where it flies (was a snap between 0 and PI) and banks / pitches with the wave.
+		var heading := 0.5 * PI * (1.0 - clampf(cos(t * 0.45) * 4.0, -1.0, 1.0))
+		fly.rotation = Vector3(BUTTERFLY_SWAY * 0.6 * sin(t * 2.3), heading, BUTTERFLY_SWAY * sin(t * 1.3 + 0.4))
+		# Wing angle above the body plane: BUTTERFLY_LIFT_MIN .. MAX rad (was 0.85 .. 1.65, barely visible from the side).
+		var lift := lerpf(BUTTERFLY_LIFT_MIN, BUTTERFLY_LIFT_MAX, beat)
 		(fly.get_child(0) as Node3D).rotation.x = lift
 		(fly.get_child(1) as Node3D).rotation.x = -lift
 

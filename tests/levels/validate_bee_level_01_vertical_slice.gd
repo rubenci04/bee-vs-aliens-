@@ -283,15 +283,17 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 56, "Event count wrong (GARDEN IDENTITY 04: 47 incl. 7 director moments, the human and 3 spider events)")
+	check(BeeLevel01Controller.EVENTS.size() == 38, "Event count wrong (LOTE 9: 38 incl. 7 director moments, the human and 3 spider events)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
 		var event: Dictionary = BeeLevel01Controller.EVENTS[i]
 		total += event["units"].size()
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: combat-zone waves included.
+			total += (zone_wave["units"] as Array).size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 108 and max_gap <= 16, "Unit count/pacing wrong (GARDEN IDENTITY 04: 97 incl. 29 popcorn and 3 spiders)")
+	check(total == 69 and max_gap <= 20, "Unit count/pacing wrong (LOTE 9: 69 incl. zones, 18 popcorn and 3 spiders; gaps <= 20 m)")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -396,7 +398,7 @@ func run() -> void:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
-	check(planned == 137 and spawned == planned, "Not all %d units spawned (%d) (LOTE 7: 108 in events + 29 in the 3 combat zones)" % [planned, spawned])
+	check(planned == 69 and spawned == planned, "Not all %d units spawned (%d) (LOTE 9: 53 in events + 16 in the 3 combat zones)" % [planned, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

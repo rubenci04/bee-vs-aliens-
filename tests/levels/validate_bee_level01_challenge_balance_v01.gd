@@ -245,8 +245,10 @@ func test_density() -> void:
 		biggest = maxi(biggest, threats)
 		if count >= 3:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
-	check(events.size() == 56, "Encounter count changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
-	check(total >= 82 and total <= 108, "Unit total %d outside 82-109 (LOTE 6) (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
+			total += (zone_wave["units"] as Array).size()
+	check(events.size() == 38, "Encounter count changed (LOTE 9: 38, was 56)")
+	check(total >= 55 and total <= 70, "Unit total %d outside 55-70 (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "An encounter has more than 4 threats")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 4.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:
@@ -255,9 +257,11 @@ func test_density() -> void:
 		var found := false
 		for event: Dictionary in events:
 			found = found or family in event["units"]
+			for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: some families only appear in a combat zone.
+				found = found or family in zone_wave["units"]
 		check(found, "Family missing from the timeline: " + family)
 	# The level-only HP table is untouched; only the two cadences changed, on level spawns.
-	check(_base_hp() == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "Level enemy HP changed (REBUILD 02 table)")
+	check(_base_hp() == {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80}, "Level enemy HP changed (LOTE 9 table)")
 	check(BeeLevel01Controller.LEVEL_TUNING.has("Probe") and BeeLevel01Controller.LEVEL_TUNING.has("EyeDrone"), "Level tuning table lost Probe/EyeDrone")
 	var probe_scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn") as PackedScene).instantiate()
 	var eye_scene := (load("res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()

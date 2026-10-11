@@ -49,6 +49,10 @@ const THREE_AT_ONCE_FROM := 96.0
 const FOUR_AT_ONCE_FROM := 240.0
 ## Popcorn drones alive at once (their own budget, outside the threat cap).
 const MAX_SWARM_ALIVE := 6
+## LOTE 9 — enemies alive at once, popcorn INCLUDED: MAX_ON_SCREEN on the route, MAX_ON_SCREEN_ARENA in a combat zone
+## (the threat cap above still limits the non-popcorn threats). Boss minions are outside this budget (MAX_BOSS_MINIONS).
+const MAX_ON_SCREEN := 4
+const MAX_ON_SCREEN_ARENA := 5
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 10
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
@@ -61,7 +65,9 @@ const DEPTH_TARGET_X := 3.4
 ## Scroll speed while a showcase Walker ("hold") is alive: it walks with Bee instead of being left behind.
 const HOLD_SCROLL := 1.0
 ## LOTE 7 — PACING: cruise scroll of Level 01 in m/s (was 2.0). Every place that resumed the scroll uses it.
-const LEVEL_SCROLL := 1.5
+## LOTE 9: 1.5 -> 1.25 m/s. With 69 units (was 137) the bot reached the UFO at 295 s; the slower cruise, ARENA_MIN_SECONDS
+## and a longer breather bring it back to the 5.5-6.5 min target.
+const LEVEL_SCROLL := 1.25
 ## NOCHE 01 · ETAPA 2: the Giant Human is switched off (code, scene and tests kept). Tests that cover it set
 ## `giant_human_enabled = true` before loading the level.
 const GIANT_HUMAN_ENABLED := false
@@ -81,7 +87,9 @@ const ARENA_SCROLL := 0.3
 const ARENA_WAVE_GAP := 1.2
 const ARENA_WAVE_MAX := 9.0
 const ARENA_MAX_SECONDS := 36.0
-const BREATHER_SECONDS := 6.0
+## LOTE 9: with 2 waves a zone could end in ~14 s: it now lasts at least this long (the scroll keeps creeping).
+const ARENA_MIN_SECONDS := 22.0
+const BREATHER_SECONDS := 7.0 # LOTE 9: 6 -> 7 s.
 ## BOSS V2: never more than this many minions alive; they fly out of the saucer in MINION_LAUNCH_SECONDS.
 const MAX_BOSS_MINIONS := 2
 const MINION_LAUNCH_SECONDS := 0.7
@@ -94,9 +102,20 @@ const MINION_LAUNCH_SECONDS := 0.7
 ##   MEDIUM   Probe 38->80, Turret 46->70, OrganicAlien 47->100
 ##   HEAVY    Walker 72->120 (a showcase Walker gets SHOWCASE_HP 150)
 ## "Dragonfly" is the HP of its alien IMPLANT (special fauna, unchanged).
-const LEVEL_HP = {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90,
-		"Mosquito": 36, "Ladybird": 130, "WaveDragonfly": 56, "Moth": 60, "Ant": 44, "StagBeetle": 110, "Snail": 100, "MushroomCannon": 60, "SeedCarrier": 240, "AlienFighter": 60}
-const SHOWCASE_HP := 150
+## LOTE 9 — TIME TO LIBERATE / DESTROY with Base and normal aim (reference fire: 3 taps/s of 10 HP; on an animal the
+## taps go body, implant (2x), body, miss = 30 effective DPS; on technology every tap hits at 1x = 30 DPS):
+##   ~0.7 s   Mosquito, Wasp 36                                 (firefly: decoration, not an enemy)
+##   1.5-2 s  Ladybird, Moth, MushroomCannon 70 · Ant, WaveDragonfly 64 · Spider 80 (~2.0 s) · Dragonfly 110: it comes
+##            head-on and its big implant sphere covers head + thorax, so its taps go implant, implant, implant, miss
+##   3-4 s    StagBeetle, Snail 120
+##   6-8 s    SeedCarrier 220
+##   tech     Speeder 40 (~1.0 s) · EyeDrone 50 (~1.3 s) · Probe, Turret, AlienFighter 70 (~2.0 s) · Walker 100 (~3.0 s),
+##            showcase Walker 130 (~4.0 s). Verified by tests/levels/validate_bee_balance_liberation_v04.gd.
+## BEFORE: Wasp 44, Probe 80, EyeDrone 40, Speeder 30, Walker 120 (showcase 150), Dragonfly 60, Spider 90, Ladybird 130,
+## WaveDragonfly 56, Moth 60, Ant 44, StagBeetle 110, Snail 100, MushroomCannon 60, SeedCarrier 240, AlienFighter 60.
+const LEVEL_HP = {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80,
+		"Mosquito": 36, "Ladybird": 70, "WaveDragonfly": 64, "Moth": 70, "Ant": 64, "StagBeetle": 120, "Snail": 120, "MushroomCannon": 70, "SeedCarrier": 220, "AlienFighter": 70}
+const SHOWCASE_HP := 130
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
 		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM",
 		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE", "AlienFighter": &"MEDIUM"}
@@ -162,91 +181,76 @@ const LEVEL_TUNING = {
 const ACT_STARTS := [0.0, 68.0, 140.0, 198.0, 340.0] # ACT 1 AWAKENING, 2 CONTROLLED GARDEN, 3 HUMAN TERRITORY, 4 ALIEN ESCALATION, 5 FIRST CONTACT
 ## EyeDrone fans are introduced from here on (before: aimed bursts only).
 const FAN_FROM_X := 96.0
+## LOTE 9 — QUALITY OVER QUANTITY: 69 units in the route (was 137 incl. popcorn / 104 without), every family still
+## appears (fewer times), 3 combat zones of 2 waves (were 3), and the landscape breathers stay. Moments, the X=254 and
+## X=340 gates, the X=296 gate, the checkpoints (X=190 / 281) and the day lights are unchanged. On screen at once:
+## MAX_ON_SCREEN (popcorn included) on the route, MAX_ON_SCREEN_ARENA in the zones. Removed: popcorn at 38/87/118/132/222,
+## 96 (eye + wasp column), 128 wave dragonfly, 194 ladybird, 198, 218 beetle, 228 depth rhombus, 238 walker escort,
+## 250 moth, 270, 274, 284, 308, 324; most formations lost one unit (see git history for the previous table).
 const EVENTS = [
 	# ACT 1 — AWAKENING (intensity 1 -> 2)
 	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
 	{"at": 8.0, "act": 1, "label": "JARDÍN · PRIMERA AVISPA", "units": ["Wasp"]},
 	{"at": 14.0, "act": 1, "label": "POPCORN · FILA ONDULANTE", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [4.2, 4.2, 4.2]},
 	{"at": 22.0, "act": 1, "label": "JARDÍN · PAREJA DESFASADA", "units": ["Wasp", "Wasp"], "formation": "pair", "delays": [0.0, 1.2], "y": [4.8, 2.8]},
-	{"at": 29.0, "act": 1, "label": "FORMACIÓN A · SONDA Y AVISPA", "units": ["Probe", "Wasp"], "formation": "escort", "delays": [0.0, 0.8]},
-	{"at": 38.0, "act": 1, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 2]},
-	{"at": 46.0, "act": 1, "label": "TRONCO · AVISPA, SONDA Y OJO", "units": ["Wasp", "Probe", "EyeDrone"], "formation": "staggered", "delays": [0.0, 0.6, 1.6], "y": [5.4, 3.6, 1.8]},
+	{"at": 36.0, "act": 1, "label": "FORMACIÓN A · PRIMERA SONDA", "units": ["Probe"], "y": [4.6]},
+	{"at": 46.0, "act": 1, "label": "TRONCO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "formation": "staggered", "delays": [0.0, 1.0], "y": [5.0, 2.2]},
 	# LOTE 6 — Codex GLB fauna (see docs/INFORME_LOTE_6.md): one new family per slot, never stacked on the heavy gates.
 	{"at": 51.0, "act": 1, "label": "MOSQUITO · PRIMER ERRÁTICO", "units": ["Mosquito"], "y": [4.2]},
-	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · PRIMERA SONDA", "units": ["Probe"], "y": [4.6], "depth": true},
+	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · SONDA", "units": ["Probe"], "y": [4.6], "depth": true},
 	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
-	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0], "depth": true},
+	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · PAREJA DE OJOS", "units": ["EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3], "y": [5.6, 3.0], "x": [0.0, 1.0], "depth": true},
 	{"at": 76.0, "act": 2, "label": "CARRIL · SPEEDER", "units": ["Speeder"], "y": [5.2]},
 	# NOCHE 01: the one-eyed purple organism left the normal events (it is now a UFO minion in phases 2-3).
 	{"at": 80.0, "act": 2, "label": "MARIQUITA · PRESENTACIÓN", "units": ["Ladybird"], "y": [4.0]},
-	{"at": 87.0, "act": 2, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.2, 2.2, 2.2], "shooters": [0, 2]},
 	# GARDEN IDENTITY 04 — the spider is presented alone (clean read of the column, the ring and the lock).
 	{"at": 91.0, "act": 2, "label": "ARAÑA · PRESENTACIÓN (CARRIL VERTICAL)", "units": ["Spider"], "x": [1.2]},
-	{"at": 96.0, "act": 2, "label": "COLUMNA · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 1.4], "y": [5.6, 3.0]},
 	{"at": 101.0, "act": 2, "label": "HORMIGA · SUELO", "units": ["Ant"]},
 	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"], "hold": true},
-	# LOTE 7 — COMBAT ZONE 1 (act 2): the host pair opens it, then 3 waves of known families in new combinations.
+	# LOTE 7 — COMBAT ZONE 1 (act 2): the host pair opens it, then (LOTE 9) 2 waves of known families.
 	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6],
 			"arena_label": "ZONA DE COMBATE · CLARO DEL JARDÍN", "arena": [
-		{"units": ["Mosquito", "Wasp", "Mosquito"], "delays": [0.0, 0.6, 1.4], "y": [5.2, 3.4, 2.0]},
-		{"units": ["Ant", "Spider", "EyeDrone"], "delays": [0.0, 0.8, 1.6], "x": [0.0, 1.4, 0.0], "y": [0.0, 0.0, 5.6]},
-		{"units": ["Swarm", "Swarm", "Swarm", "WaveDragonfly", "Probe"], "path": "arc_top", "shooters": [1], "delays": [0.0, 0.35, 0.7, 1.4, 2.4], "y": [5.6, 5.6, 5.6, 3.2, 5.0]},
+		{"units": ["Mosquito", "Wasp"], "delays": [0.0, 0.8], "y": [5.2, 3.0]},
+		{"units": ["Swarm", "Swarm", "Swarm", "WaveDragonfly"], "path": "arc_top", "shooters": [1], "delays": [0.0, 0.35, 0.7, 1.4], "y": [5.6, 5.6, 5.6, 3.2]},
 	]},
-	{"at": 118.0, "act": 2, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 2]},
 	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
-	{"at": 128.0, "act": 2, "label": "LIBÉLULA ONDULANTE · PRIMER BARRIDO", "units": ["WaveDragonfly"], "y": [3.6]},
-	{"at": 132.0, "act": 2, "label": "POPCORN · ANTES DEL GIGANTE", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.0, 5.0, 5.0], "shooters": [1]},
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
 	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": [], "moment": "human_aftermath"},
 	{"at": 152.0, "act": 3, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [5.6, 2.0]},
-	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA, OJO Y AVISPA", "units": ["Turret", "EyeDrone", "Wasp"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.6], "y": [-0.2, 6.0, 3.0]},
-	# GARDEN IDENTITY 04 — medium combination: a vertical column (spider) while a Wasp works the horizontal line.
-	{"at": 166.0, "act": 3, "label": "ARAÑA · COLUMNA Y AVISPA", "units": ["Spider", "Wasp"], "delays": [0.0, 1.6], "x": [0.6, 0.0], "y": [0.0, 3.0]},
+	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "formation": "top_bottom", "delays": [0.0, 1.2], "y": [-0.2, 4.6]},
+	# GARDEN IDENTITY 04 — the vertical column of the spider, now alone (LOTE 9).
+	{"at": 166.0, "act": 3, "label": "ARAÑA · COLUMNA", "units": ["Spider"], "x": [0.6]},
 	# LOTE 7 — COMBAT ZONE 2 (act 3, human territory).
-	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4],
+	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO Y SONDA", "units": ["EyeDrone", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.8], "y": [5.8, 2.6],
 			"arena_label": "ZONA DE COMBATE · HUELLAS DEL GIGANTE", "arena": [
-		{"units": ["StagBeetle", "Mosquito", "Mosquito"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 5.0, 2.2]},
-		{"units": ["Moth", "Swarm", "Swarm", "Swarm"], "path": "dive", "shooters": [0, 2], "delays": [0.0, 0.8, 1.1, 1.4], "y": [3.6, 5.6, 4.4, 5.6]},
-		{"units": ["Snail", "Moth", "Wasp"], "delays": [0.0, 0.8, 2.0], "y": [0.0, 5.2, 3.0]},
+		{"units": ["StagBeetle", "Mosquito"], "delays": [0.0, 0.8], "y": [0.0, 5.0]},
+		{"units": ["Moth", "Swarm", "Swarm", "Swarm"], "path": "dive", "shooters": [0, 2], "delays": [0.0, 0.8, 1.1, 1.4], "y": [4.4, 5.6, 4.4, 5.6]},
 	]},
-	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
+	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8], "y": [0.0, 5.6, 5.6, 5.6], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
-	{"at": 194.0, "act": 3, "label": "MARIQUITA BLINDADA", "units": ["Ladybird"], "y": [4.4]},
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
-	{"at": 198.0, "act": 4, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.6], "y": [5.6, 2.6]},
-	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret", "Probe"], "formation": "rock_turret", "delays": [0.0, 1.0], "y": [-0.2, 5.6]},
-	{"at": 214.0, "act": 4, "label": "SET PIECE B · LIBÉLULA EN FUEGO CRUZADO", "units": ["WaveDragonfly", "Probe", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.6, 1.2], "y": [3.6, 5.8, 2.2]},
-	{"at": 218.0, "act": 4, "label": "ESCARABAJO · EMBESTIDA BLINDADA", "units": ["StagBeetle"]},
-	{"at": 222.0, "act": 4, "label": "POPCORN · FILA ALTA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.2, 5.2, 5.2], "shooters": [0, 1, 2]},
-	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2], "depth": true},
+	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret"], "formation": "rock_turret", "y": [-0.2]},
+	{"at": 214.0, "act": 4, "label": "SET PIECE B · LIBÉLULA EN FUEGO CRUZADO", "units": ["WaveDragonfly", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.8], "y": [3.6, 5.8]},
 	# LOTE 7 — COMBAT ZONE 3 (act 4, alien escalation).
 	{"at": 233.0, "act": 4, "label": "CARACOL · ESCUPITAJO LENTO", "units": ["Snail"],
 			"arena_label": "ZONA DE COMBATE · DEFENSA ALIEN", "arena": [
-		{"units": ["Walker", "Moth"], "delays": [0.0, 1.2], "y": [0.0, 5.2]},
-		{"units": ["MushroomCannon", "WaveDragonfly", "Probe"], "delays": [0.0, 1.0, 2.0], "y": [0.0, 3.0, 5.4]},
-		{"units": ["Ladybird", "Ant", "EyeDrone"], "delays": [0.0, 0.8, 1.6], "y": [4.4, 0.0, 2.4]},
+		{"units": ["Walker", "EyeDrone"], "delays": [0.0, 1.2], "y": [0.0, 5.2]},
+		{"units": ["MushroomCannon", "Probe"], "delays": [0.0, 1.0], "y": [0.0, 5.4]},
 	]},
-	{"at": 238.0, "act": 4, "label": "WALKER · ESCOLTA", "units": ["Walker", "Probe"], "formation": "escort", "delays": [0.0, 0.8], "y": [0.0, 5.6]},
-	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 1, 2]},
-	{"at": 250.0, "act": 4, "label": "POLILLA · BOMBAS QUIETAS", "units": ["Moth"], "y": [5.0]},
-	{"at": 254.0, "act": 4, "label": "MARIQUITA BLINDADA · SONDA Y OJO", "units": ["Ladybird", "Probe", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 1.8]},
-	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA Y SONDA", "units": ["Dragonfly", "Probe"], "delays": [2.0, 3.0], "moment": "contaminated_garden"},
-	{"at": 270.0, "act": 4, "label": "OLA · OJO Y TORRETA", "units": ["EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 0.8]},
-	{"at": 274.0, "act": 4, "label": "HONGO CAÑÓN · DISPARO TELEGRAFIADO", "units": ["MushroomCannon", "Mosquito", "Mosquito"], "delays": [0.0, 1.2, 2.2], "y": [0.0, 3.4, 5.0]},
+	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 1, 2]},
+	{"at": 254.0, "act": 4, "label": "MARIQUITA BLINDADA · SONDA", "units": ["Ladybird", "Probe"], "hard": true, "delays": [0.0, 1.0]},
+	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA", "units": ["Dragonfly"], "delays": [2.0], "moment": "contaminated_garden"},
 	{"at": 278.0, "act": 4, "label": "POPCORN · PICADA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "dive", "path": "dive", "delays": [0.0, 0.3, 0.6], "y": [5.6, 4.4, 5.6], "shooters": [0, 1, 2]},
-	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "delays": [0.0, 0.8]},
-	{"at": 289.0, "act": 4, "label": "ATARDECER · SPEEDER Y CAZA ALIEN", "units": ["Speeder", "AlienFighter"], "formation": "pair", "delays": [0.0, 0.9], "y": [2.4, 5.4]},
-	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 0.8, 1.8]},
+	{"at": 289.0, "act": 4, "label": "ATARDECER · CAZA ALIEN", "units": ["AlienFighter"], "y": [5.4]},
+	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER Y AVISPA", "units": ["Walker", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 1.2]},
 	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": [], "moment": "bomb_reward"},
-	{"at": 308.0, "act": 4, "label": "OLA FINAL · SONDA", "units": ["Probe"], "y": [4.6]},
-	# GARDEN IDENTITY 04 — late, optional pressure in the longest act-4 gap (308 -> 324): the spider.s column over an Eye.s fans.
-	{"at": 315.0, "act": 4, "label": "ARAÑA · ÚLTIMA TELARAÑA", "units": ["Spider", "EyeDrone"], "delays": [0.0, 0.8], "x": [1.6, 0.0], "y": [0.0, 5.6]},
+	# GARDEN IDENTITY 04 — late, optional pressure: the last web of the spider.
+	{"at": 315.0, "act": 4, "label": "ARAÑA · ÚLTIMA TELARAÑA", "units": ["Spider"], "x": [1.6]},
 	# Optional mini-boss: not a hard gate, it leaves on its own like any soft unit (soft_pressure_seconds).
 	{"at": 319.5, "act": 4, "label": "SEMILLERO ALIEN · MINIJEFE OPCIONAL", "units": ["SeedCarrier"], "y": [4.4]},
-	{"at": 324.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4], "depth": true},
 	{"at": 330.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
-	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 3.0]},
+	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA Y AVISPA", "units": ["Walker", "Probe", "Wasp"], "hard": true, "delays": [0.0, 0.8, 2.2]},
 ]
 
 @export var show_debug_labels := false # Internal event names ("JARDÍN · AVISPA"...) only for development.
@@ -260,6 +264,8 @@ const EVENTS = [
 
 var event_index := 0 # Next threshold, not the number of killed encounters.
 var max_active_seen := 0
+var max_alive_route := 0 # LOTE 9: most enemies alive at once (popcorn included) outside / inside the combat zones.
+var max_alive_arena := 0
 var spawned_by_family: Dictionary = {}
 var active_units: Array[Node3D] = []
 var encounter_label := "JARDÍN · APRENDÉ A VOLAR"
@@ -421,7 +427,7 @@ func _update_arena(delta: float) -> void:
 			if next > 0:
 				_show_label("%s · %d/%d" % [_arena["label"], next + 1, waves.size()], 1.4)
 		return
-	if field_clear or timed_out:
+	if (field_clear and _clock - float(_arena["started"]) >= ARENA_MIN_SECONDS) or timed_out:
 		arena_log.append({"event": _arena["event"], "seconds": _clock - float(_arena["started"]), "waves": waves.size()})
 		_arena = {}
 		arenas_completed += 1
@@ -448,6 +454,13 @@ static func threat_cap(distance: float) -> int:
 		return 4
 	return 3 if distance >= THREE_AT_ONCE_FROM else 2
 
+## LOTE 9: enemies alive at once, popcorn included (MAX_ON_SCREEN / MAX_ON_SCREEN_ARENA).
+func on_screen_cap() -> int:
+	return MAX_ON_SCREEN_ARENA if in_arena() else MAX_ON_SCREEN
+
+func alive_count() -> int:
+	return active_units.size() + swarm_units.size()
+
 func _spawn_swarm_pending() -> void:
 	for unit in swarm_units.duplicate():
 		if not is_instance_valid(unit):
@@ -456,13 +469,14 @@ func _spawn_swarm_pending() -> void:
 			swarm_units.erase(unit)
 			escaped_count += 1
 			unit.queue_free()
-	while not _swarm_pending.is_empty() and _clock >= float(_swarm_pending[0]["due"]) and swarm_units.size() < MAX_SWARM_ALIVE:
+	while not _swarm_pending.is_empty() and _clock >= float(_swarm_pending[0]["due"]) and swarm_units.size() < MAX_SWARM_ALIVE \
+			and alive_count() < on_screen_cap():
 		_spawn(_swarm_pending.pop_front())
 
 func _spawn_pending() -> void:
 	_spawn_swarm_pending()
 	var cap := threat_cap(stage.distance)
-	while not _pending.is_empty() and active_units.size() < cap:
+	while not _pending.is_empty() and active_units.size() < cap and alive_count() < on_screen_cap():
 		if _clock < float(_pending[0]["due"]):
 			return
 		var request: Dictionary = _pending.pop_front()
@@ -562,6 +576,11 @@ func _spawn(request: Dictionary) -> void:
 		health.max_health = BeeGameSettings.scaled_hp(SHOWCASE_HP) # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
 		health.current_health = health.max_health
 	max_active_seen = maxi(max_active_seen, active_units.size())
+	if not bool(request.get("minion", false)):
+		if in_arena():
+			max_alive_arena = maxi(max_alive_arena, alive_count())
+		else:
+			max_alive_route = maxi(max_alive_route, alive_count())
 	if bool(request.get("minion", false)):
 		unit.set_meta("boss_minion", true)
 		CinematicDepthEntry.begin_from(unit, request["launch_from"], request["launch_slot"], _on_depth_arrived.bind(unit.get_instance_id()), MINION_LAUNCH_SECONDS)
