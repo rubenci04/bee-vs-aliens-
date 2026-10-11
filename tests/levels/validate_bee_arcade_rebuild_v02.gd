@@ -108,7 +108,7 @@ func test_static() -> void:
 			depth_events.append(event)
 			depth_units += units.size()
 			check(not bool(event.get("hard", false)), "Depth entries never open a hard gate")
-	check(total >= 82 and total <= 97, "Unit budget %d outside 82-97 (+ GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(total >= 82 and total <= 108, "Unit budget %d outside 82-109 (LOTE 6: +11 Codex fauna units) (+ GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(walkers.size() >= 4 and walkers.size() <= 5, "Walker appearances %d (want 4-5)" % walkers.size())
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")
@@ -318,7 +318,10 @@ func test_run() -> void:
 		max_swarm = maxi(max_swarm, wave.swarm_units.size())
 		peak = maxi(peak, get_nodes_in_group("alien_projectiles").size())
 		for shot in get_nodes_in_group("alien_projectiles"):
-			var attacker = (shot.get_node("Hitbox3D") as DamageHitbox3D).attacker
+			var shot_box := shot.get_node_or_null("Hitbox3D") as DamageHitbox3D # LOTE 6: mortar shells (alien_projectiles too) have no Hitbox3D child.
+			if shot_box == null:
+				continue
+			var attacker = shot_box.attacker
 			if attacker != null and is_instance_valid(attacker) and attacker != wave.boss and CinematicDepthEntry.is_in_depth(attacker):
 				depth_fired += 1
 		for unit in wave.active_units.duplicate():

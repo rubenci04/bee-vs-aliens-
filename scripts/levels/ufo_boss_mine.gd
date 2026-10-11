@@ -13,6 +13,8 @@ var fuse := 2.0
 var radius := 1.5
 var damage := 12
 var attacker: Node
+var model: PackedScene # LOTE 6: optional art for the body (moth bomb); the pulsing sphere is hidden when set.
+var watch: Node # LOTE 6: optional Bee; the mine is defused if it is defeated.
 var exploded := false
 var hit_bee := false
 var spawn_time := 0.0 # Seconds (engine ticks) when it was thrown; the boss test reads it.
@@ -34,6 +36,11 @@ func throw(from: Vector3, to: Vector3) -> void:
 	_to = Vector3(to.x, to.y, 0.0)
 	_body = BeeAttackVisuals.sphere(self, _from, 0.26, COLOR)
 	_body.name = "MineBody"
+	if model != null:
+		_body.mesh = null
+		var art := model.instantiate() as Node3D
+		art.scale = Vector3.ONE * 1.5
+		_body.add_child(art)
 
 
 ## Seconds until it explodes (travel + fuse) from now.
@@ -42,6 +49,9 @@ func time_to_blast() -> float:
 
 
 func _physics_process(delta: float) -> void:
+	if watch != null and is_instance_valid(watch) and bool(watch.get("is_defeated")) and not exploded:
+		defuse()
+		return
 	if exploded:
 		_blast_left -= delta
 		if _blast_left <= 0.0:

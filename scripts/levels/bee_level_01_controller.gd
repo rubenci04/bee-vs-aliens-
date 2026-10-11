@@ -16,6 +16,15 @@ const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
 const POWERUP_PICKUP = preload("res://scenes/bee_prototype/bee_powerup_pickup.tscn")
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 const SWARM = preload("res://scenes/levels/popcorn_drone.tscn")
+## LOTE 6 — Codex GLB fauna (scripts/levels/asset_fauna.gd): family name -> scene.
+const ASSET_FAUNA := {
+	"Mosquito": preload("res://scenes/levels/asset_fauna/mosquito.tscn"), "Ladybird": preload("res://scenes/levels/asset_fauna/ladybird.tscn"),
+	"WaveDragonfly": preload("res://scenes/levels/asset_fauna/dragonfly.tscn"), "Moth": preload("res://scenes/levels/asset_fauna/moth.tscn"),
+	"Ant": preload("res://scenes/levels/asset_fauna/ant.tscn"), "StagBeetle": preload("res://scenes/levels/asset_fauna/stag_beetle.tscn"),
+	"Snail": preload("res://scenes/levels/asset_fauna/snail.tscn"), "MushroomCannon": preload("res://scenes/levels/asset_fauna/mushroom.tscn"),
+	"SeedCarrier": preload("res://scenes/levels/asset_fauna/seed_carrier.tscn"),
+}
+const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
 ## Camera-relative X where a spider drops in from above the top edge when the event gives none (inside the screen).
@@ -56,10 +65,12 @@ const MINION_LAUNCH_SECONDS := 0.7
 ##   MEDIUM   Probe 38->80, Turret 46->70, OrganicAlien 47->100
 ##   HEAVY    Walker 72->120 (a showcase Walker gets SHOWCASE_HP 150)
 ## "Dragonfly" is the HP of its alien IMPLANT (special fauna, unchanged).
-const LEVEL_HP = {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}
+const LEVEL_HP = {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90,
+		"Mosquito": 36, "Ladybird": 130, "WaveDragonfly": 56, "Moth": 60, "Ant": 44, "StagBeetle": 110, "Snail": 100, "MushroomCannon": 60, "SeedCarrier": 240}
 const SHOWCASE_HP := 150
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
-		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM"}
+		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM",
+		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE"}
 # Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
 # (windup) are never touched; HP is global-unchanged. BEFORE (Arcade Pressure pass 01) -> AFTER (Combat Pattern pass 02):
 #   Wasp      2 passes, recovery 0.9 s            -> 3 passes, recovery 1.1 s, stalk 2.2/2.9/3.6 s on lanes (no simultaneous attacks)
@@ -127,6 +138,8 @@ const EVENTS = [
 	{"at": 29.0, "act": 1, "label": "FORMACIÓN A · SONDA Y AVISPA", "units": ["Probe", "Wasp"], "formation": "escort", "delays": [0.0, 0.8]},
 	{"at": 38.0, "act": 1, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 2]},
 	{"at": 46.0, "act": 1, "label": "TRONCO · AVISPA, SONDA Y OJO", "units": ["Wasp", "Probe", "EyeDrone"], "formation": "staggered", "delays": [0.0, 0.6, 1.6], "y": [5.4, 3.6, 1.8]},
+	# LOTE 6 — Codex GLB fauna (see docs/INFORME_LOTE_6.md): one new family per slot, never stacked on the heavy gates.
+	{"at": 51.0, "act": 1, "label": "MOSQUITO · PRIMER ERRÁTICO", "units": ["Mosquito"], "y": [4.2]},
 	{"at": 56.0, "act": 1, "label": "PROFUNDIDAD · PRIMERA SONDA", "units": ["Probe"], "y": [4.6], "depth": true},
 	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
 	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0], "depth": true},
@@ -136,10 +149,12 @@ const EVENTS = [
 	# GARDEN IDENTITY 04 — the spider is presented alone (clean read of the column, the ring and the lock).
 	{"at": 91.0, "act": 2, "label": "ARAÑA · PRESENTACIÓN (CARRIL VERTICAL)", "units": ["Spider"], "x": [1.2]},
 	{"at": 96.0, "act": 2, "label": "COLUMNA · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 1.4], "y": [5.6, 3.0]},
+	{"at": 101.0, "act": 2, "label": "HORMIGA · SUELO", "units": ["Ant"]},
 	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"], "hold": true},
 	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6]},
 	{"at": 118.0, "act": 2, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 2]},
 	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
+	{"at": 128.0, "act": 2, "label": "LIBÉLULA ONDULANTE · PRIMER BARRIDO", "units": ["WaveDragonfly"], "y": [3.6]},
 	{"at": 132.0, "act": 2, "label": "POPCORN · ANTES DEL GIGANTE", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.0, 5.0, 5.0], "shooters": [1]},
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
@@ -151,17 +166,22 @@ const EVENTS = [
 	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4]},
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
+	{"at": 194.0, "act": 3, "label": "MARIQUITA BLINDADA", "units": ["Ladybird"], "y": [4.4]},
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
 	{"at": 198.0, "act": 4, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.6], "y": [5.6, 2.6]},
 	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret", "Probe"], "formation": "rock_turret", "delays": [0.0, 1.0], "y": [-0.2, 5.6]},
 	{"at": 214.0, "act": 4, "label": "SET PIECE B · ORGANISMO EN FUEGO CRUZADO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.6, 1.2], "y": [3.6, 5.8, 2.2]},
+	{"at": 218.0, "act": 4, "label": "ESCARABAJO · EMBESTIDA BLINDADA", "units": ["StagBeetle"]},
 	{"at": 222.0, "act": 4, "label": "POPCORN · FILA ALTA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.2, 5.2, 5.2], "shooters": [0, 1, 2]},
 	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2], "depth": true},
+	{"at": 233.0, "act": 4, "label": "CARACOL · ESCUPITAJO LENTO", "units": ["Snail"]},
 	{"at": 238.0, "act": 4, "label": "WALKER · ESCOLTA", "units": ["Walker", "Probe"], "formation": "escort", "delays": [0.0, 0.8], "y": [0.0, 5.6]},
 	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 1, 2]},
+	{"at": 250.0, "act": 4, "label": "POLILLA · BOMBAS QUIETAS", "units": ["Moth"], "y": [5.0]},
 	{"at": 254.0, "act": 4, "label": "ORGANISMO · SONDA Y OJO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 1.8]},
 	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA Y SONDA", "units": ["Dragonfly", "Probe"], "delays": [2.0, 3.0], "moment": "contaminated_garden"},
 	{"at": 270.0, "act": 4, "label": "OLA · OJO Y TORRETA", "units": ["EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 0.8]},
+	{"at": 274.0, "act": 4, "label": "HONGO CAÑÓN · DISPARO TELEGRAFIADO", "units": ["MushroomCannon", "Mosquito", "Mosquito"], "delays": [0.0, 1.2, 2.2], "y": [0.0, 3.4, 5.0]},
 	{"at": 278.0, "act": 4, "label": "POPCORN · PICADA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "dive", "path": "dive", "delays": [0.0, 0.3, 0.6], "y": [5.6, 4.4, 5.6], "shooters": [0, 1, 2]},
 	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "delays": [0.0, 0.8]},
 	{"at": 289.0, "act": 4, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [2.4, 5.4]},
@@ -170,6 +190,8 @@ const EVENTS = [
 	{"at": 308.0, "act": 4, "label": "OLA FINAL · SONDA", "units": ["Probe"], "y": [4.6]},
 	# GARDEN IDENTITY 04 — late, optional pressure in the longest act-4 gap (308 -> 324): the spider.s column over an Eye.s fans.
 	{"at": 315.0, "act": 4, "label": "ARAÑA · ÚLTIMA TELARAÑA", "units": ["Spider", "EyeDrone"], "delays": [0.0, 0.8], "x": [1.6, 0.0], "y": [0.0, 5.6]},
+	# Optional mini-boss: not a hard gate, it leaves on its own like any soft unit (soft_pressure_seconds).
+	{"at": 319.5, "act": 4, "label": "SEMILLERO ALIEN · MINIJEFE OPCIONAL", "units": ["SeedCarrier"], "y": [4.4]},
 	{"at": 324.0, "act": 4, "label": "V · OJO Y DOS SONDAS", "units": ["EyeDrone", "Probe", "Probe"], "formation": "v", "delays": [0.0, 0.5, 0.5], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.4, 1.4], "depth": true},
 	{"at": 330.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
 	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA, TORRETA Y AVISPA", "units": ["Walker", "Probe", "Turret", "Wasp"], "hard": true, "delays": [0.0, 0.8, 1.6, 3.0]},
@@ -342,11 +364,12 @@ func _spawn(request: Dictionary) -> void:
 		"Dragonfly": scene = DRAGONFLY
 		"Swarm": scene = SWARM
 		"Spider": scene = SPIDER
+		"Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier": scene = ASSET_FAUNA[family]
 		_: return
 	var unit := scene.instantiate() as Node3D
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
 	get_node("../Enemies").add_child(unit)
-	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien", "Dragonfly", "Swarm"]
+	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien", "Dragonfly", "Swarm"] or family in ASSET_AIR
 	var height: float = [4.6, 2.6, 6.0][int(request["slot"]) % 3] if air else -0.2
 	if air and request.has("y"):
 		height = float(request["y"]) # Formation height.
@@ -354,7 +377,7 @@ func _spawn(request: Dictionary) -> void:
 		height = minf(height, BeeLevel01Framing.max_entity_y()) # Never above the visible top edge - margin.
 	# Moving enemies are born just past the right visible edge; the static turret stays on screen
 	# (a hard gate must always be clearable).
-	var spawn_offset := BeeLevel01Framing.ONSCREEN_SPAWN_X if family == "Turret" \
+	var spawn_offset := BeeLevel01Framing.ONSCREEN_SPAWN_X if family == "Turret" or family == "MushroomCannon" \
 			else BeeLevel01Framing.spawn_offset_x(BeeLevel01Framing.view_aspect(get_viewport()))
 	unit.global_position = Vector3(stage.camera.global_position.x + spawn_offset + float(request.get("x", 0.0)), height, 0)
 	if family == "Spider":
@@ -444,7 +467,7 @@ func _retire_soft_units(delta: float) -> void:
 			continue
 		# REBUILD 02: a ground unit left behind the left edge is out of play at once (it can never come back on its
 		# own and would hold the next gate with an empty screen).
-		var left_behind: bool = (unit is GroundWalkerEnemy or unit is GroundTurretEnemy) \
+		var left_behind: bool = (unit is GroundWalkerEnemy or unit is GroundTurretEnemy or (unit is AssetFauna and (unit as AssetFauna).is_ground())) \
 				and unit.global_position.x < stage.camera.global_position.x - BeeLevel01Framing.half_width_min(BeeLevel01Framing.DESIGN_ASPECT) - 0.8
 		if left_behind or _clock - float(unit.get_meta("level_born")) >= soft_pressure_seconds:
 			if not bool(unit.get_meta("level_retreat")):

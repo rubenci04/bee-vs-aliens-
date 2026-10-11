@@ -11,7 +11,7 @@ extends SceneTree
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const REVIEW := "res://dev/arcade_pressure_review/"
-const RANGED := ["Probe", "EyeDrone", "Turret", "Walker"]
+const RANGED := ["Probe", "EyeDrone", "Turret", "Walker", "Snail", "MushroomCannon", "SeedCarrier", "Moth"] # LOTE 6: Codex fauna that shoots / drops bombs.
 const SMALL_ROCKS := [72, 155, 241, 283, 345]
 const MEDIUM_ROCKS := [96, 307]
 const STRUCTURAL_ROCK := 205
@@ -413,18 +413,18 @@ func test_level() -> void:
 		var units: Array = event["units"]
 		total += units.size()
 		biggest = maxi(biggest, units.filter(func(f): return f != "Swarm").size()) # Popcorn is outside the threat cap.
-		if not units.is_empty():
+		if not units.is_empty() and not units.all(func(f): return BeeLevel01Controller.ASSET_FAUNA.has(f) and not (f in RANGED)): # LOTE 6: melee-only Codex fauna are extra variety, outside this ratio.
 			combat_events += 1
 			for family in units:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 47 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
-	check(total >= 82 and total <= 97, "Unit total %d outside 82-97 (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(events.size() == 56 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
+	check(total >= 82 and total <= 108, "Unit total %d outside 82-109 (LOTE 6) (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.75, "Too few encounters with a ranged threat (%d/%d)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.threat_cap(300.0) == 4 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
+	check(_base_hp() == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "HP changed")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.
 	arena(100.0)
@@ -480,3 +480,10 @@ func run() -> void:
 		await test_boss_and_complete()
 	print("BEE_ARCADE_PRESSURE_WORLD_INTERACTION_V01_OK")
 	quit(0)
+
+## LOTE 6: the original ten families keep their HP; the Codex fauna has its own table (validate_bee_asset_fauna_v01).
+func _base_hp() -> Dictionary:
+	var result := {}
+	for family in ["Wasp", "Probe", "EyeDrone", "Turret", "Speeder", "OrganicAlien", "Walker", "Dragonfly", "Swarm", "Spider"]:
+		result[family] = BeeLevel01Controller.LEVEL_HP[family]
+	return result

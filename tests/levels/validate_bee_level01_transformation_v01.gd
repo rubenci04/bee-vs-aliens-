@@ -112,6 +112,8 @@ func test_run() -> void:
 		var camera_x := stage.camera.global_position.x
 		for shot in get_nodes_in_group("alien_projectiles"):
 			var id := shot.get_instance_id()
+			if shot is AlienMortarShell:
+				continue # LOTE 6: the shell node itself rests at the origin (its parts are top-level); the turret fires it from on screen.
 			if not seen_shots.has(id):
 				seen_shots[id] = true
 				if absf((shot as Node3D).global_position.x - camera_x) > 7.0:

@@ -18,6 +18,9 @@ func _ready() -> void:
 	var ambient_fx := BeeLevel01AmbientFx.new() # VISUAL POLISH 02: GPU sparks, ground dust, dew glints, haze.
 	ambient_fx.name = "AmbientFx"
 	add_child(ambient_fx)
+	var asset_dressing := BeeLevel01AssetDressing.new() # LOTE 6: signal relays, garden litter, fireflies, night sky (Codex GLB assets).
+	asset_dressing.name = "AssetDressing"
+	add_child(asset_dressing)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 

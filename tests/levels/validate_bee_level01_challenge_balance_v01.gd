@@ -244,8 +244,8 @@ func test_density() -> void:
 		biggest = maxi(biggest, threats)
 		if count >= 3:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
-	check(events.size() == 47, "Encounter count changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
-	check(total >= 82 and total <= 97, "Unit total %d outside 82-97 (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
+	check(events.size() == 56, "Encounter count changed (GARDEN IDENTITY 04: 44 + 3 spider events)")
+	check(total >= 82 and total <= 108, "Unit total %d outside 82-109 (LOTE 6) (REBUILD 02 + GARDEN IDENTITY 04: 3 spiders and 2 escorts)" % total)
 	check(biggest <= 4, "An encounter has more than 4 threats")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 4.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:
@@ -254,7 +254,7 @@ func test_density() -> void:
 			found = found or family in event["units"]
 		check(found, "Family missing from the timeline: " + family)
 	# The level-only HP table is untouched; only the two cadences changed, on level spawns.
-	check(BeeLevel01Controller.LEVEL_HP.merged({}) == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "Level enemy HP changed (REBUILD 02 table)")
+	check(_base_hp() == {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90}, "Level enemy HP changed (REBUILD 02 table)")
 	check(BeeLevel01Controller.LEVEL_TUNING.has("Probe") and BeeLevel01Controller.LEVEL_TUNING.has("EyeDrone"), "Level tuning table lost Probe/EyeDrone")
 	var probe_scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn") as PackedScene).instantiate()
 	var eye_scene := (load("res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()
@@ -485,3 +485,10 @@ func run() -> void:
 		await test_boss()
 	print("BEE_LEVEL01_CHALLENGE_BALANCE_V01_OK")
 	quit(0)
+
+## LOTE 6: the original ten families keep their HP; the Codex fauna has its own table (validate_bee_asset_fauna_v01).
+func _base_hp() -> Dictionary:
+	var result := {}
+	for family in ["Wasp", "Probe", "EyeDrone", "Turret", "Speeder", "OrganicAlien", "Walker", "Dragonfly", "Swarm", "Spider"]:
+		result[family] = BeeLevel01Controller.LEVEL_HP[family]
+	return result
