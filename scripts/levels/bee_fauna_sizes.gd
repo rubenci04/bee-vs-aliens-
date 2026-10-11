@@ -9,6 +9,7 @@ const BEE_LENGTH := 1.18
 const SIZE := {
 	&"mosquito": 0.7, &"firefly": 0.6, &"ladybird": 0.9, &"ant": 1.1, &"stag_beetle": 1.5, &"snail": 1.3,
 	&"spider": 1.4, &"moth": 1.4, &"dragonfly": 2.0,
+	&"strider": 1.3, &"nymph": 1.2, &"perch": 2.2, # NOCHE 01 · ETAPA 4: lake prototype.
 }
 
 

@@ -9,6 +9,8 @@ extends "res://scripts/art/title_screen_v01.gd"
 const PLAY_TEXT := "Jugar Nivel 01"
 const ART_TEXT := "Colección de arte"
 const DIFFICULTY_PREFIX := "Dificultad: "
+const LAKE_TEXT := "Laguna (prototipo · debug)"
+const LAKE_SCENE := "res://scenes/levels/bee_level_02_lake.tscn"
 
 var difficulty_button: Button
 
@@ -37,6 +39,14 @@ func _make_ui() -> void:
 	play.get_parent().add_child(difficulty_button)
 	play.get_parent().move_child(difficulty_button, play.get_index() + 1)
 	difficulty_button.pressed.connect(_toggle_difficulty)
+	if debug_menu_enabled():
+		# NOCHE 01 · ETAPA 4: the Level 02 "Laguna" prototype, debug only (the normal flow stays Level 01).
+		var lake := play.duplicate(0) as Button
+		lake.name = "LakePrototypeButton"
+		lake.text = LAKE_TEXT
+		play.get_parent().add_child(lake)
+		play.get_parent().move_child(lake, difficulty_button.get_index() + 1)
+		lake.pressed.connect(_play_lake)
 	_refresh_difficulty()
 
 
@@ -53,3 +63,8 @@ func _toggle_difficulty() -> void:
 func _refresh_difficulty() -> void:
 	if difficulty_button != null:
 		difficulty_button.text = DIFFICULTY_PREFIX + BeeGameSettings.label()
+
+
+func _play_lake() -> void:
+	BeeGameSettings.from_title = true
+	get_tree().change_scene_to_file(LAKE_SCENE)
