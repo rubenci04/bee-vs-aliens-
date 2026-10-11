@@ -93,6 +93,7 @@ func wasp_trace() -> Dictionary:
 	arena(60.0)
 	bee.health.damage_blocked = true
 	var wasp := spawn("Wasp") as WaspEnemy
+	wasp.max_passes = 3 # LOTE 7: Level 01 keeps Wasps until CAMERA_TIME (99 passes); the 3-pass pattern itself is what is tested here.
 	check(wasp.arcade_mode, "Level 01 Wasp must use the arcade behaviour")
 	var timeline := {}   # state -> seconds
 	var order: Array = []
@@ -380,6 +381,7 @@ func test_rock_checkpoint() -> void:
 	# Broken before the checkpoint (72, 96, 155) stay broken; broken after it (241) are rebuilt on retry.
 	check(rock(72).is_destroyed and rock(96).is_destroyed and rock(155).is_destroyed and rock(241).is_destroyed, "Fixture rocks not broken")
 	stage.distance = 190.05
+	stage.checkpoint.checkpoint_active = false # LOTE 7: earlier sections jump to X=307, past the second checkpoint (281), which may already have been taken.
 	stage.checkpoint.activate_checkpoint()
 	var broken: Array = stage.checkpoint.snapshot["broken"]
 	check("FlightRock72" in broken and "FlightRock96" in broken and "FlightRock155" in broken and not ("FlightRock241" in broken), "Checkpoint snapshot of rocks wrong: " + str(broken))

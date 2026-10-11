@@ -56,7 +56,9 @@ func fresh(distance: float) -> void:
 
 func spider_spawn(x := 0.0) -> ControlledSpider:
 	wave._spawn({"family": "Spider", "slot": 0, "event": 0, "hard": false, "x": x})
-	return wave.active_units.back() as ControlledSpider
+	var spider := wave.active_units.back() as ControlledSpider
+	spider.attacks = 2 # LOTE 7: Level 01 keeps it until CAMERA_TIME (99 attacks); the 2-strike pattern is what is tested here.
+	return spider
 
 
 func run() -> void:

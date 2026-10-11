@@ -193,6 +193,8 @@ func test_run() -> void:
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS:
 		planned += (event["units"] as Array).size()
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 7: combat-zone waves.
+			planned += (zone_wave["units"] as Array).size()
 	check(spawned == planned, "Spawned %d of %d planned units" % [spawned, planned])
 	print("DIRECTOR_RUN complete=OK moments=%s acts=%s peak_shots=%d spawned=%d" % [str(moments_seen), str(acts_seen.keys()), peak, spawned])
 

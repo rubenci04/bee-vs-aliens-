@@ -19,6 +19,8 @@ const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const HITBOX_SCENE := preload("res://scenes/components/hitbox_3d.tscn")
 const BOMB_MODEL := preload("res://scenes/art_labs/assets_v10/moth_stationary_bomb.tscn")
 const WARN_COLOR := Color(1.0, 0.55, 0.15, 0.8)
+const FACE_MIN_SPEED := 0.5 # m/s (screen-relative for flyers) before the body turns to its motion.
+const FACE_SMOOTHING := 0.18 # s
 
 ## scene: art wrapper. mode: behaviour. ground: walks on the soil. scale: model scale. telegraph: warning seconds.
 ## damage: contact / shot damage. cycles: attacks before leaving. armored: extra shield below the implant.
@@ -80,6 +82,9 @@ var _has_implant := false
 var _device: Node3D
 var _token_held := false
 var _activated := false # State.IDLE is also the between-attacks phase, so activation has its own flag.
+var _move_vx := 0.0
+var _prev_rel_x := 0.0
+var _has_prev := false
 
 
 func _ready() -> void:
@@ -230,7 +235,7 @@ func _physics_process(delta: float) -> void:
 			_recover(delta, camera_x)
 		State.EXIT:
 			global_position += Vector3(-6.0 if not is_ground() else -3.0, 2.0 if not is_ground() else 0.0, 0.0) * delta
-	_face()
+	_face(delta, camera_x)
 
 
 func _enter(delta: float, camera_x: float) -> void:
@@ -528,16 +533,37 @@ func _exit_tree() -> void:
 
 # --- facing / feedback -----------------------------------------------------------------------------------------
 
-func _face() -> void:
+## LOTE 7 — ORIENTATION: every model looks along -X at yaw 0. It now faces WHERE IT MOVES: the screen-relative velocity for
+## flyers (what the player sees), the ground velocity for walkers, smoothed over FACE_SMOOTHING s so an erratic mosquito
+## does not flicker. Below FACE_MIN_SPEED (hovering, telegraph, static cannon) it faces its attack / Bee.
+func _face(delta: float, camera_x: float) -> void:
+	var reference_x := camera_x if not is_ground() else 0.0
+	var position_rel := global_position.x - reference_x
+	if _has_prev and delta > 0.0:
+		var raw := (position_rel - _prev_rel_x) / delta
+		_move_vx = lerpf(_move_vx, raw, clampf(delta / FACE_SMOOTHING, 0.0, 1.0))
+	_prev_rel_x = position_rel
+	_has_prev = true
 	var dx := 0.0
-	if state == State.ATTACK or state == State.TELEGRAPH:
-		dx = _lock_to.x - _lock_from.x if config["mode"] != &"cannon" else target.global_position.x - global_position.x
+	if absf(_move_vx) >= FACE_MIN_SPEED and config["mode"] != &"cannon":
+		dx = _move_vx
+	elif state == State.TELEGRAPH and config["mode"] != &"cannon":
+		dx = _lock_to.x - _lock_from.x
 	elif target != null:
 		dx = target.global_position.x - global_position.x
 	if absf(dx) > 0.15:
 		_facing = signf(dx)
 	rig.rotation.y = 0.0 if _facing < 0.0 else PI
 
+
+## +1 when the model looks towards +X, -1 towards -X (tests).
+func forward_x() -> float:
+	return -1.0 if is_zero_approx(rig.rotation.y) else 1.0
+
+
+## Screen-relative (flyers) / ground (walkers) horizontal speed used for the facing (tests).
+func move_vx() -> float:
+	return _move_vx
 
 func _on_health_changed(_current: int, _maximum: int, change: int) -> void:
 	if change < 0 and not liberated:
@@ -558,6 +584,8 @@ func _on_died() -> void:
 		if area is DamageHitbox3D:
 			(area as DamageHitbox3D).set_enabled(false)
 	liberated_now.emit(self)
+	_facing = -1.0
+	rig.rotation.y = 0.0 # It leaves towards -X (see the tweens below): it looks where it goes.
 	var at := _muzzle()
 	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 0.7)
 	BeeAudio.play(get_parent(), &"tech_death", at)

@@ -324,7 +324,8 @@ func test_wasp() -> void:
 	await clear_units()
 	arena(60.0)
 	var wasp := spawn("Wasp") as WaspEnemy
-	check(wasp.arcade_mode and wasp.max_passes == 3 and wasp.health.max_health == 44 and wasp.attack_damage == 10, "Wasp tuning / HP / damage")
+	check(wasp.arcade_mode and wasp.max_passes == 99 and wasp.health.max_health == 44 and wasp.attack_damage == 10, "Wasp tuning / HP / damage (LOTE 7: passes 99, retired at CAMERA_TIME)")
+	wasp.max_passes = 3 # The 3-pass pattern itself (the level keeps Wasps until CAMERA_TIME).
 	var order: Array = []
 	var dash_dirs: Array = []
 	var stalk_first := 0.0
@@ -479,6 +480,8 @@ func test_level() -> void:
 
 func test_checkpoint_and_complete() -> void:
 	stage.distance = 190.05
+	stage.checkpoint.checkpoint_active = false # LOTE 7: earlier sections may have passed the second checkpoint (281).
+	stage.checkpoint.second_checkpoint_active = false
 	stage.checkpoint.activate_checkpoint()
 	var old_stage := stage
 	stage.checkpoint.restart_level(false)

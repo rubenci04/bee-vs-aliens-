@@ -21,6 +21,10 @@ signal powerup_collected(kind: StringName)
 @export var auto_aim_range := 12.0
 @export_range(1.0, 179.0, 1.0) var auto_aim_cone_degrees := 80.0
 @export var muzzle_offset := Vector3(0.48, 0.0, 0.0)
+## LOTE 7 — FREE AIM: the mouse (or set_aim_point) aims in any direction of the X/Y plane. Without aiming input for
+## AIM_HOLD_SECONDS the weapon goes back to the usual auto-aim. Left click fires too (X still fires).
+@export var mouse_aim_enabled := true
+const AIM_HOLD_SECONDS := 2.5
 
 @export_category("Temporary powerups")
 @export var spread_max_shots := 32 # CHALLENGE & BALANCE PASS 01: 24 -> 32 bursts (still 3 pellets, no stacking).
@@ -55,6 +59,10 @@ var bomb_charges := 0
 var _melee_active_left := 0.0
 var _melee_cooldown_left := 0.0
 var _melee_tween: Tween
+var aim_point := Vector3.ZERO # World point under the crosshair (z = 0), valid while is_free_aiming().
+var _aim_left := 0.0
+var _aim_screen := Vector2.ZERO
+var _aim_from_screen := false
 
 
 func _ready() -> void:
@@ -81,7 +89,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, desired.x, rate * delta)
 	velocity.y = move_toward(velocity.y, desired.y, rate * delta)
 	velocity.z = 0.0
-	if absf(input.x) > 0.05:
+	if absf(input.x) > 0.05 and not is_free_aiming():
 		facing_x = signf(input.x)
 		visual_root.rotation.y = -facing_x * PI * 0.5
 		_place_melee_hitbox()
@@ -89,6 +97,7 @@ func _physics_process(delta: float) -> void:
 	position.x = clampf(position.x, flight_min.x, flight_max.x)
 	position.y = clampf(position.y, flight_min.y, flight_max.y)
 	position.z = 0.0
+	_update_free_aim(delta)
 	refresh_auto_aim()
 	if Input.is_action_just_pressed("throw_orange"):
 		fire()
@@ -133,9 +142,7 @@ func fire() -> BeeEnergyProjectile:
 	if is_defeated or projectile_scene == null:
 		return null
 	refresh_auto_aim()
-	var direction := Vector3(facing_x, 0.0, 0.0)
-	if current_auto_target != null:
-		direction = (_target_point(current_auto_target) - global_position).normalized()
+	var direction := aim_direction() # LOTE 7: free aim (mouse) first, then auto-aim, then straight ahead.
 	var projectile := _spawn_projectile(direction)
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
 	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle_spread" if spread_ammo > 0 else &"muzzle", direction)
@@ -157,7 +164,10 @@ func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyPr
 	if damage_override >= 0:
 		projectile.damage = damage_override
 	get_parent().add_child(projectile)
-	projectile.global_position = global_position + Vector3(facing_x * absf(muzzle_offset.x), muzzle_offset.y, 0.0)
+	if is_free_aiming():
+		projectile.global_position = global_position + direction.normalized() * absf(muzzle_offset.x) + Vector3(0.0, muzzle_offset.y, 0.0)
+	else:
+		projectile.global_position = global_position + Vector3(facing_x * absf(muzzle_offset.x), muzzle_offset.y, 0.0)
 	projectile.launch(direction, self)
 	return projectile
 
@@ -260,6 +270,9 @@ func _target_point(candidate: Node3D) -> Vector3:
 
 
 func _update_target_indicator() -> void:
+	if is_free_aiming():
+		target_indicator.hide() # The crosshair replaces the auto-aim marker while the player aims.
+		return
 	if current_auto_target == null:
 		target_indicator.hide()
 		return
@@ -288,3 +301,74 @@ func _on_died() -> void:
 	visual_root.scale = Vector3(1.0, 0.45, 1.0)
 	health_changed.emit(0, health.max_health)
 	defeated.emit()
+
+
+# --- LOTE 7: free aim -------------------------------------------------------------------------------------------------
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not mouse_aim_enabled or is_defeated:
+		return
+	if event is InputEventMouseMotion:
+		_aim_at_screen((event as InputEventMouseMotion).position)
+	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		_aim_at_screen((event as InputEventMouseButton).position)
+		fire()
+
+
+func _aim_at_screen(screen: Vector2) -> void:
+	_aim_screen = screen
+	_aim_from_screen = true
+	_aim_left = AIM_HOLD_SECONDS
+	_refresh_screen_aim()
+
+
+## The crosshair stays on the same screen spot while the camera scrolls: its world point is recomputed every frame.
+func _refresh_screen_aim() -> void:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var origin := camera.project_ray_origin(_aim_screen)
+	var normal := camera.project_ray_normal(_aim_screen)
+	if absf(normal.z) < 0.0001:
+		return
+	var t := -origin.z / normal.z # Flight plane z = 0.
+	aim_point = origin + normal * t
+
+
+## Aims at a world point (bot / tests / future gamepad). Counts as aiming input for AIM_HOLD_SECONDS.
+func set_aim_point(point: Vector3) -> void:
+	aim_point = Vector3(point.x, point.y, 0.0)
+	_aim_from_screen = false
+	_aim_left = AIM_HOLD_SECONDS
+
+
+func clear_aim() -> void:
+	_aim_left = 0.0
+
+
+func is_free_aiming() -> bool:
+	return _aim_left > 0.0
+
+
+## Direction of the next shot: free aim if active, else the auto-aim target, else straight ahead.
+func aim_direction() -> Vector3:
+	if is_free_aiming():
+		var delta := Vector3(aim_point.x - global_position.x, aim_point.y - global_position.y, 0.0)
+		if delta.length() > 0.05:
+			return delta.normalized()
+	if current_auto_target != null:
+		return (_target_point(current_auto_target) - global_position).normalized()
+	return Vector3(facing_x, 0.0, 0.0)
+
+
+func _update_free_aim(delta: float) -> void:
+	if _aim_left <= 0.0:
+		return
+	_aim_left = maxf(0.0, _aim_left - delta)
+	if _aim_from_screen:
+		_refresh_screen_aim()
+	var dx := aim_point.x - global_position.x
+	if absf(dx) > 0.3:
+		facing_x = signf(dx) # Bee looks where it aims.
+		visual_root.rotation.y = -facing_x * PI * 0.5
+		_place_melee_hitbox()

@@ -6,6 +6,10 @@ const HANDOFF := &"bee_level_01_checkpoint_handoff"
 const BOSS_ARENA_X := 340.5
 const DEBUG_KEY := KEY_F9
 @export var checkpoint_x := 190.0
+## LOTE 7: second checkpoint, in act 4 after the third combat zone and the contaminated flower (X=266), before the 296 gate.
+@export var second_checkpoint_x := 281.0
+var second_checkpoint_active := false
+var beacon_2: Node3D
 @export var protection_seconds := 1.25
 var checkpoint_active := false
 var snapshot: Dictionary = {}
@@ -28,7 +32,7 @@ func setup(value: BeeShmupStage) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	notice = label("CheckpointNotice", "", Vector2(430, 180), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
-	controls_hint = label("ControlsHint", "X DISPARO · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 165), 18)
+	controls_hint = label("ControlsHint", "X / CLIC DISPARO · MOUSE APUNTA · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 165), 18)
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
 	debug_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.2))
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) · NO ES EL JUEGO NORMAL", Vector2(330, 6), 20)
@@ -36,6 +40,12 @@ func setup(value: BeeShmupStage) -> void:
 	debug_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	debug_label.add_theme_constant_override("outline_size", 6)
 	create_beacon()
+	beacon_2 = beacon.duplicate() as Node3D
+	beacon_2.name = "CheckpointBeacon2"
+	stage.add_child(beacon_2)
+	beacon_2.position = Vector3(second_checkpoint_x, 0, -1.3)
+	for title: Label3D in beacon_2.find_children("*", "Label3D", true, false):
+		title.text = "CHECKPOINT 2"
 	controls_hint.show()
 	if get_tree().has_meta(HANDOFF):
 		snapshot = get_tree().get_meta(HANDOFF).duplicate(true)
@@ -109,6 +119,8 @@ func _process(delta: float) -> void:
 		return
 	if not checkpoint_active and stage.distance >= checkpoint_x and not stage.wave._waiting_for_human:
 		activate_checkpoint()
+	elif checkpoint_active and not second_checkpoint_active and stage.distance >= second_checkpoint_x and not stage.wave.in_arena():
+		activate_second_checkpoint()
 	_notice_left = maxf(0.0, _notice_left - delta)
 	notice.visible = _notice_left > 0.0
 	_hint_left = maxf(0.0, _hint_left - delta)
@@ -117,6 +129,9 @@ func _process(delta: float) -> void:
 		protection_left = maxf(0.0, protection_left - delta)
 		stage.bee.visual_root.visible = protection_left == 0.0 or int(protection_left * 10) % 2 == 0
 		stage.bee.health.damage_blocked = protection_left > 0.0
+
+func checkpoint_list() -> Array:
+	return [checkpoint_x, second_checkpoint_x]
 
 func available_names(parent_name: String) -> Array[String]:
 	var result: Array[String] = []
@@ -150,6 +165,21 @@ func activate_checkpoint() -> void:
 	notice.show()
 	BeeAudio.play(stage, &"spread_pickup", beacon.global_position + Vector3(0, 1.8, 0))
 
+
+## LOTE 7: second checkpoint (same rules as the first: HP back to at least 60 %, run state saved).
+func activate_second_checkpoint() -> void:
+	if second_checkpoint_active or stage.bee.is_defeated:
+		return
+	second_checkpoint_active = true
+	activation_count += 1
+	var bee := stage.bee
+	var minimum := ceili(bee.health.max_health * 0.6)
+	bee.health.restore_health(maxi(0, minimum - bee.health.current_health))
+	snapshot = _build_snapshot(second_checkpoint_x, Vector3(second_checkpoint_x, 5.4, 0), second_checkpoint_x, second_checkpoint_x)
+	notice.text = "CHECKPOINT 2"
+	_notice_left = 1.4
+	notice.show()
+	BeeAudio.play(stage, &"spread_pickup", beacon_2.global_position + Vector3(0, 1.8, 0))
 ## Snapshot of the current run state. `limit`: pollen / powerups / crates left of it count as already gone.
 func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_from: float) -> Dictionary:
 	var bee := stage.bee
@@ -201,6 +231,7 @@ func debug_jump_to_boss() -> void:
 func restore_snapshot() -> void:
 	checkpoint_active = true
 	activation_count = 1
+	second_checkpoint_active = float(snapshot["distance"]) >= second_checkpoint_x - 0.01
 	stage.distance = snapshot["distance"]
 	stage.elapsed_seconds = snapshot["elapsed"]
 	stage.pollen_count = snapshot["pollen"]

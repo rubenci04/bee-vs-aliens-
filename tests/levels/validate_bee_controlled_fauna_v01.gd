@@ -64,7 +64,9 @@ func arena(distance := 120.0) -> void:
 
 func spawn_dragonfly(slot := 0) -> ControlledDragonfly:
 	wave._spawn({"family": "Dragonfly", "slot": slot, "event": 0, "hard": false})
-	return wave.active_units.back() as ControlledDragonfly
+	var fly := wave.active_units.back() as ControlledDragonfly
+	fly.max_passes = 3 # LOTE 7: Level 01 keeps it until CAMERA_TIME (99 passes); the 3-pass pattern is what is tested here.
+	return fly
 
 func wait_state(fly: ControlledDragonfly, wanted: int, limit := 600) -> bool:
 	for i in limit:

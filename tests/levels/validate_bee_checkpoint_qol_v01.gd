@@ -122,7 +122,7 @@ func run() -> void:
 	stage.get_node("Powerups/BombRecharge").collect(bee)
 	stage.get_node("Destructibles/OrganicCrate").health.take_damage(9999)
 	bee.global_position = Vector3(295, 4, 0)
-	stage.distance = 295
+	stage.distance = 275 # LOTE 7: before the second checkpoint (281), so the defeat respawns at the first one.
 	stage._update_camera_and_bounds()
 	stage.wave.set_physics_process(true)
 	await frames(60)

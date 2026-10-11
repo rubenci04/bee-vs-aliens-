@@ -21,6 +21,10 @@ func _ready() -> void:
 	var asset_dressing := BeeLevel01AssetDressing.new() # LOTE 6: signal relays, garden litter, fireflies, night sky (Codex GLB assets).
 	asset_dressing.name = "AssetDressing"
 	add_child(asset_dressing)
+	var crosshair := BeeLevel01Crosshair.new() # LOTE 7: free-aim crosshair (mouse); auto-aim stays when there is no aiming input.
+	crosshair.name = "Crosshair"
+	crosshair.bee = bee
+	$CanvasLayer.add_child(crosshair)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 

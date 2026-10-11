@@ -53,6 +53,24 @@ const OVERLOAD_FROM_X := 150.0
 const DEPTH_TARGET_X := 3.4
 ## Scroll speed while a showcase Walker ("hold") is alive: it walks with Bee instead of being left behind.
 const HOLD_SCROLL := 1.0
+## LOTE 7 — PACING: cruise scroll of Level 01 in m/s (was 2.0). Every place that resumed the scroll uses it.
+const LEVEL_SCROLL := 1.5
+## Short roll to the sector end after the UFO (unchanged 2.0).
+const POST_BOSS_SCROLL := 2.0
+## LOTE 7 — "time on camera": minimum seconds a unit of each family stays in play (enters, settles, attacks) before the
+## director retires it (it never leaves on its own earlier: its own pass/attack counters are raised in LEVEL_TUNING).
+## Families not listed use soft_pressure_seconds. Popcorn (Swarm) is a crossing pattern by design and keeps its paths.
+const CAMERA_TIME := {"Wasp": 12.0, "Probe": 13.0, "EyeDrone": 13.0, "Speeder": 10.0, "OrganicAlien": 13.0, "Walker": 16.0,
+		"Turret": 14.0, "Dragonfly": 14.0, "Spider": 12.0, "Mosquito": 10.0, "Ladybird": 15.0, "WaveDragonfly": 12.0, "Moth": 13.0,
+		"Ant": 12.0, "StagBeetle": 14.0, "Snail": 15.0, "MushroomCannon": 13.0, "SeedCarrier": 22.0}
+## LOTE 7 — COMBAT ZONES ("arena" key in EVENTS): the scroll creeps at ARENA_SCROLL while the zone plays its waves one after
+## another (next wave when the field has been clear ARENA_WAVE_GAP s, or after ARENA_WAVE_MAX s), then a breather of
+## BREATHER_SECONDS with no new encounters lets the landscape scroll by. ARENA_MAX_SECONDS is a safety cap.
+const ARENA_SCROLL := 0.3
+const ARENA_WAVE_GAP := 1.2
+const ARENA_WAVE_MAX := 9.0
+const ARENA_MAX_SECONDS := 36.0
+const BREATHER_SECONDS := 6.0
 ## BOSS V2: never more than this many minions alive; they fly out of the saucer in MINION_LAUNCH_SECONDS.
 const MAX_BOSS_MINIONS := 2
 const MINION_LAUNCH_SECONDS := 0.7
@@ -104,7 +122,7 @@ const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Sp
 # COMBAT VARIETY 01 — one attack language per family (see docs/INFORME_LOTE_4.md): Wasp short fan of 3, EyeDrone vertical
 # laser sweep, Speeder ram, Turret mortar + puddle, Walker low horizontal burst, Probe split orb.
 const LEVEL_TUNING = {
-	"Wasp": {"arcade_mode": true, "max_passes": 3, "arcade_recovery": 1.1, "restalk_time": 0.85, "drift_amplitude": 0.8},
+	"Wasp": {"arcade_mode": true, "max_passes": 99, "arcade_recovery": 1.1, "restalk_time": 0.85, "drift_amplitude": 0.8},
 	"Probe": {"cooldown_time": 1.3, "burst_shots": 1, "split_orb": true, "burst_gap": 0.2, "short_recovery": 0.45, "bursts_per_cycle": 2, "move_speed": 3.0,
 			"advance_speed": 0.5, "reposition_speed": 1.2, "maximum_range": 8.5, "stay_on_screen": true},
 	"EyeDrone": {"cooldown_time": 1.1, "burst_shots": 4, "burst_gap": 0.2, "fan_every": 0, "laser_every": 1, "fan_count": 5, "fan_min_distance": 3.0, "fan_windup": 0.6,
@@ -112,6 +130,10 @@ const LEVEL_TUNING = {
 	"Turret": {"cooldown_time": 1.3, "fan_count": 3, "fan_step_degrees": 14.0, "mortar_mode": true},
 	"OrganicAlien": {"vary_height": true, "recovery_time": 0.6, "ranged_enabled": true},
 	"Speeder": {"lane_telegraph": true, "ram_mode": true},
+	# LOTE 7: Wasp passes 3 -> 99, Dragonfly passes 3 -> 99, Spider attacks 2 -> 99: they keep working the screen until
+	# their CAMERA_TIME instead of leaving after a fixed count (the director retires them).
+	"Dragonfly": {"max_passes": 99},
+	"Spider": {"attacks": 99},
 	"Walker": {"recovery_time": 0.6, "burst_shots": 4, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2, "low_burst": true},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).
@@ -151,7 +173,13 @@ const EVENTS = [
 	{"at": 96.0, "act": 2, "label": "COLUMNA · OJO Y AVISPA", "units": ["EyeDrone", "Wasp"], "formation": "vertical", "delays": [0.0, 1.4], "y": [5.6, 3.0]},
 	{"at": 101.0, "act": 2, "label": "HORMIGA · SUELO", "units": ["Ant"]},
 	{"at": 105.0, "act": 2, "label": "WALKER · PRESENTACIÓN", "units": ["Walker"], "hold": true},
-	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6]},
+	# LOTE 7 — COMBAT ZONE 1 (act 2): the host pair opens it, then 3 waves of known families in new combinations.
+	{"at": 112.0, "act": 2, "label": "CONTACTO · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.8], "y": [5.4, 2.6],
+			"arena_label": "ZONA DE COMBATE · CLARO DEL JARDÍN", "arena": [
+		{"units": ["Mosquito", "Wasp", "Mosquito"], "delays": [0.0, 0.6, 1.4], "y": [5.2, 3.4, 2.0]},
+		{"units": ["Ant", "Spider", "EyeDrone"], "delays": [0.0, 0.8, 1.6], "x": [0.0, 1.4, 0.0], "y": [0.0, 0.0, 5.6]},
+		{"units": ["Swarm", "Swarm", "Swarm", "WaveDragonfly", "Probe"], "path": "arc_top", "shooters": [1], "delays": [0.0, 0.35, 0.7, 1.4, 2.4], "y": [5.6, 5.6, 5.6, 3.2, 5.0]},
+	]},
 	{"at": 118.0, "act": 2, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 2]},
 	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
 	{"at": 128.0, "act": 2, "label": "LIBÉLULA ONDULANTE · PRIMER BARRIDO", "units": ["WaveDragonfly"], "y": [3.6]},
@@ -163,7 +191,13 @@ const EVENTS = [
 	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA, OJO Y AVISPA", "units": ["Turret", "EyeDrone", "Wasp"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.6], "y": [-0.2, 6.0, 3.0]},
 	# GARDEN IDENTITY 04 — medium combination: a vertical column (spider) while a Wasp works the horizontal line.
 	{"at": 166.0, "act": 3, "label": "ARAÑA · COLUMNA Y AVISPA", "units": ["Spider", "Wasp"], "delays": [0.0, 1.6], "x": [0.6, 0.0], "y": [0.0, 3.0]},
-	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4]},
+	# LOTE 7 — COMBAT ZONE 2 (act 3, human territory).
+	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4],
+			"arena_label": "ZONA DE COMBATE · HUELLAS DEL GIGANTE", "arena": [
+		{"units": ["StagBeetle", "Mosquito", "Mosquito"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 5.0, 2.2]},
+		{"units": ["OrganicAlien", "Swarm", "Swarm", "Swarm"], "path": "dive", "shooters": [0, 2], "delays": [0.0, 0.8, 1.1, 1.4], "y": [3.6, 5.6, 4.4, 5.6]},
+		{"units": ["Snail", "Moth", "Wasp"], "delays": [0.0, 0.8, 2.0], "y": [0.0, 5.2, 3.0]},
+	]},
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
 	{"at": 194.0, "act": 3, "label": "MARIQUITA BLINDADA", "units": ["Ladybird"], "y": [4.4]},
@@ -174,7 +208,13 @@ const EVENTS = [
 	{"at": 218.0, "act": 4, "label": "ESCARABAJO · EMBESTIDA BLINDADA", "units": ["StagBeetle"]},
 	{"at": 222.0, "act": 4, "label": "POPCORN · FILA ALTA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.2, 5.2, 5.2], "shooters": [0, 1, 2]},
 	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2], "depth": true},
-	{"at": 233.0, "act": 4, "label": "CARACOL · ESCUPITAJO LENTO", "units": ["Snail"]},
+	# LOTE 7 — COMBAT ZONE 3 (act 4, alien escalation).
+	{"at": 233.0, "act": 4, "label": "CARACOL · ESCUPITAJO LENTO", "units": ["Snail"],
+			"arena_label": "ZONA DE COMBATE · DEFENSA ALIEN", "arena": [
+		{"units": ["Walker", "Moth"], "delays": [0.0, 1.2], "y": [0.0, 5.2]},
+		{"units": ["MushroomCannon", "WaveDragonfly", "Probe"], "delays": [0.0, 1.0, 2.0], "y": [0.0, 3.0, 5.4]},
+		{"units": ["Ladybird", "Ant", "EyeDrone"], "delays": [0.0, 0.8, 1.6], "y": [4.4, 0.0, 2.4]},
+	]},
 	{"at": 238.0, "act": 4, "label": "WALKER · ESCOLTA", "units": ["Walker", "Probe"], "formation": "escort", "delays": [0.0, 0.8], "y": [0.0, 5.6]},
 	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 1, 2]},
 	{"at": 250.0, "act": 4, "label": "POLILLA · BOMBAS QUIETAS", "units": ["Moth"], "y": [5.0]},
@@ -231,9 +271,15 @@ var current_act := 1 # Internal act (1-5) of the last launched event; 5 = FIRST 
 var depth_entries := 0 # Cinematic depth entries started (dev/tests).
 var _holding := false
 var fauna_hint_shown := false
+var _arena: Dictionary = {} # LOTE 7: the combat zone in progress (empty = none).
+var _breather_until := 0.0
+var arenas_completed := 0
+var arena_log: Array[Dictionary] = [] # {event, seconds, waves} per finished zone (tests / report).
+var _label_token := 0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
+	stage.scroll_speed = LEVEL_SCROLL # LOTE 7: the scene keeps 2.0 for the POCs that share it.
 	BeeShmupFairness.live_shot_ceiling = LIVE_SHOT_CEILING
 	BeeShmupFairness.screen_bound_combat = true
 	BeeAttackTokens.enabled = true # REBUILD 03: one heavy pattern at a time.
@@ -255,13 +301,18 @@ func _physics_process(delta: float) -> void:
 	if _hard_gate:
 		if active_units.is_empty() and _pending.is_empty():
 			_hard_gate = false
-			stage.scroll_speed = 2.0
+			stage.scroll_speed = LEVEL_SCROLL
 		else:
 			_spawn_pending()
 			return
 	_spawn_pending()
 	if boss != null and is_instance_valid(boss):
 		boss.minions_alive = boss_minions().size() # BOSS V2: the saucer only summons when the field allows it.
+	if not _arena.is_empty():
+		_update_arena(delta)
+		return
+	if _clock < _breather_until:
+		return # LOTE 7: breather after a combat zone - landscape, no new encounter.
 	if event_index >= EVENTS.size():
 		if active_units.is_empty() and _pending.is_empty() and swarm_units.is_empty() and _swarm_pending.is_empty():
 			_advance_boss(delta) # Level complete only after the UFO is destroyed.
@@ -290,6 +341,13 @@ func _physics_process(delta: float) -> void:
 	_hard_gate = bool(event.get("hard", false))
 	if _hard_gate:
 		stage.scroll_speed = 0.0
+	_queue_units(event, launched_index, 0)
+	if event.has("arena"):
+		_begin_arena(event, launched_index)
+
+## Queues the units of an event (or of an arena wave). `slot_base` > 0 for arena waves: their slots never collide with
+## the host event's formation slots (tests read the planned height of slot N from the event).
+func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> void:
 	var units: Array = event["units"]
 	var depth := bool(event.get("depth", false))
 	var hold := bool(event.get("hold", false))
@@ -297,7 +355,7 @@ func _physics_process(delta: float) -> void:
 	for i in units.size():
 		var delays: Array = event.get("delays", [])
 		var due: float = float(delays[i]) if i < delays.size() else float(i) * group_delay
-		var request := {"family": str(units[i]), "slot": i, "event": launched_index, "due": _clock + due, "hard": _hard_gate}
+		var request := {"family": str(units[i]), "slot": slot_base + i, "event": launched_index, "due": _clock + due, "hard": _hard_gate}
 		for key in ["y", "x"]: # Formation data, optional per unit.
 			var values: Array = event.get(key, [])
 			if i < values.size():
@@ -314,6 +372,54 @@ func _physics_process(delta: float) -> void:
 		else:
 			_pending.append(request)
 	_spawn_pending()
+
+# --- LOTE 7: combat zones ------------------------------------------------------------------------------------------
+
+func _begin_arena(event: Dictionary, launched_index: int) -> void:
+	_arena = {"waves": event["arena"], "next": 0, "event": launched_index, "wave_clock": 0.0, "clear_for": 0.0, "started": _clock,
+			"label": str(event.get("arena_label", "ZONA DE COMBATE"))}
+	stage.scroll_speed = ARENA_SCROLL
+	_show_label(str(_arena["label"]), 2.2)
+
+func in_arena() -> bool:
+	return not _arena.is_empty()
+
+func _update_arena(delta: float) -> void:
+	var waves: Array = _arena["waves"]
+	var field_clear := _pending.is_empty() and active_units.is_empty() and _swarm_pending.is_empty()
+	_arena["wave_clock"] = float(_arena["wave_clock"]) + delta
+	_arena["clear_for"] = float(_arena["clear_for"]) + delta if field_clear else 0.0
+	var next := int(_arena["next"])
+	var timed_out := _clock - float(_arena["started"]) >= ARENA_MAX_SECONDS
+	if next < waves.size() and not timed_out:
+		if float(_arena["clear_for"]) >= ARENA_WAVE_GAP or float(_arena["wave_clock"]) >= ARENA_WAVE_MAX:
+			_queue_units(waves[next], int(_arena["event"]), 100 + next * 10)
+			_arena["next"] = next + 1
+			_arena["wave_clock"] = 0.0
+			_arena["clear_for"] = 0.0
+			if next > 0:
+				_show_label("%s · %d/%d" % [_arena["label"], next + 1, waves.size()], 1.4)
+		return
+	if field_clear or timed_out:
+		arena_log.append({"event": _arena["event"], "seconds": _clock - float(_arena["started"]), "waves": waves.size()})
+		_arena = {}
+		arenas_completed += 1
+		stage.scroll_speed = LEVEL_SCROLL
+		_breather_until = _clock + BREATHER_SECONDS
+		_show_label("ZONA DESPEJADA", 1.6)
+
+func _show_label(text: String, seconds: float) -> void:
+	player_label = text
+	_label_token += 1
+	get_tree().create_timer(seconds, false).timeout.connect(_clear_label.bind(_label_token)) # Bound method: dropped on reload.
+
+func _clear_label(token: int) -> void:
+	if token == _label_token and player_label != FAUNA_HINT:
+		player_label = ""
+
+## Seconds a unit of `family` stays in play before the director retires it (LOTE 7, CAMERA_TIME).
+func camera_time(family: String) -> float:
+	return float(CAMERA_TIME.get(family, soft_pressure_seconds))
 
 ## Threats alive at once at this point of the route (popcorn excluded).
 static func threat_cap(distance: float) -> int:
@@ -403,6 +509,8 @@ func _spawn(request: Dictionary) -> void:
 	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
 	for key in tuning:
 		unit.set(key, tuning[key])
+	if unit is AssetFauna:
+		(unit as AssetFauna).max_cycles = 99 # LOTE 7: stays until its CAMERA_TIME (was 3-5 attacks and away).
 	var slot := int(request["slot"])
 	if family == "Wasp":
 		# Different presence per Wasp and different hover lines, so two Wasps never attack in lockstep.
@@ -469,7 +577,7 @@ func _retire_soft_units(delta: float) -> void:
 		# own and would hold the next gate with an empty screen).
 		var left_behind: bool = (unit is GroundWalkerEnemy or unit is GroundTurretEnemy or (unit is AssetFauna and (unit as AssetFauna).is_ground())) \
 				and unit.global_position.x < stage.camera.global_position.x - BeeLevel01Framing.half_width_min(BeeLevel01Framing.DESIGN_ASPECT) - 0.8
-		if left_behind or _clock - float(unit.get_meta("level_born")) >= soft_pressure_seconds:
+		if left_behind or _clock - float(unit.get_meta("level_born")) >= camera_time(str(unit.name).get_slice("_", 0)):
 			if not bool(unit.get_meta("level_retreat")):
 				unit.set_meta("level_retreat", true)
 				unit.set_physics_process(false)
@@ -496,9 +604,13 @@ func _on_human_exited() -> void:
 		return
 	_waiting_for_human = false
 	warning.hide()
-	stage.scroll_speed = 2.0
+	stage.scroll_speed = LEVEL_SCROLL
 	encounter_label = "RUTA DESPEJADA · AVANZÁ →"
 	player_label = encounter_label
+
+## LOTE 7: the Level 01 cruise scroll (m/s); see LEVEL_SCROLL.
+func level_scroll() -> float:
+	return LEVEL_SCROLL
 
 func is_complete() -> bool:
 	return _complete
@@ -579,7 +691,7 @@ func _on_boss_defeated(_boss: UfoBoss01) -> void:
 	boss_defeated = true
 	boss = null
 	_complete = true
-	stage.scroll_speed = 2.0 # Short roll to the sector end, then SECTOR DESPEJADO.
+	stage.scroll_speed = POST_BOSS_SCROLL # Short roll to the sector end, then SECTOR DESPEJADO.
 	wave_completed.emit()
 
 func boss_active() -> bool:
@@ -605,13 +717,13 @@ func _update_hold() -> void:
 		if bool(unit.get_meta("level_hold", false)) and not bool(unit.get_meta("level_retreat", false)):
 			hold = true
 			break
-	if hold and not _holding and is_equal_approx(stage.scroll_speed, 2.0):
+	if hold and not _holding and is_equal_approx(stage.scroll_speed, LEVEL_SCROLL):
 		stage.scroll_speed = HOLD_SCROLL
 		_holding = true
 	elif not hold and _holding:
 		_holding = false
 		if is_equal_approx(stage.scroll_speed, HOLD_SCROLL):
-			stage.scroll_speed = 2.0
+			stage.scroll_speed = LEVEL_SCROLL
 
 # --- BOSS CHALLENGE V2 (REBUILD 03): minions ------------------------------------------------------------------
 

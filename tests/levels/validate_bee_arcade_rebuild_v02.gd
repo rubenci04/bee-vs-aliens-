@@ -250,7 +250,7 @@ func test_setpieces() -> void:
 	var walker := wave.active_units.back() as GroundWalkerEnemy
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
-	stage.scroll_speed = 2.0
+	stage.scroll_speed = BeeLevel01Controller.LEVEL_SCROLL # LOTE 7: cruise scroll 1.5 m/s.
 	for i in 60 * 3:
 		await physics_frame
 		bee.global_position = Vector3(stage.camera.global_position.x - 3.5, 5.5, 0)
@@ -258,13 +258,13 @@ func test_setpieces() -> void:
 	check(absf(walker.global_position.x - stage.camera.global_position.x) < 5.6, "The showcase Walker must stay on screen")
 	walker.health.take_damage(9999)
 	await frames(3)
-	check(is_equal_approx(stage.scroll_speed, 2.0), "Scroll must resume after the showcase")
+	check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL), "Scroll must resume after the showcase")
 	wave.set_physics_process(false)
 	await clear_units()
 	# The frog: hops behind the flight plane, lands with feedback, no collision, then leaves.
 	var frog_event := stage.get_node("ScaleEvent") as BeeLevel01ScaleEvent
 	arena(188.0)
-	stage.scroll_speed = 2.0
+	stage.scroll_speed = BeeLevel01Controller.LEVEL_SCROLL # LOTE 7: cruise scroll 1.5 m/s.
 	stage.set_physics_process(true)
 	wave.director_moment.emit(&"scale_event")
 	await frames(2)
@@ -349,11 +349,13 @@ func test_run() -> void:
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS:
 		planned += (event["units"] as Array).size()
+		for zone_wave: Dictionary in event.get("arena", []): # LOTE 7: combat-zone waves.
+			planned += (zone_wave["units"] as Array).size()
 	var spawned := 0
 	for family in wave.spawned_by_family:
 		spawned += int(wave.spawned_by_family[family])
 	check(spawned == planned, "Spawned %d of %d planned units" % [spawned, planned])
-	check(int(wave.spawned_by_family.get("Walker", 0)) == 5 and int(wave.spawned_by_family.get("OrganicAlien", 0)) == 3, "Walker/Organic presence wrong")
+	check(int(wave.spawned_by_family.get("Walker", 0)) == 6 and int(wave.spawned_by_family.get("OrganicAlien", 0)) == 4, "Walker/Organic presence wrong (LOTE 7: +1 each in the combat zones)")
 	check(depth_seen >= 8 and depth_fired == 0, "Depth entries: %d seen, %d shots from depth" % [depth_seen, depth_fired])
 	check(peak <= 14, "Projectile ceiling exceeded (%d)" % peak)
 	check(max_swarm <= BeeLevel01Controller.MAX_SWARM_ALIVE, "Popcorn budget exceeded")

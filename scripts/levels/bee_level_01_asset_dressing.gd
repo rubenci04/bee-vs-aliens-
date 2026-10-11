@@ -178,7 +178,8 @@ func _process(delta: float) -> void:
 		fireflies[i].global_position = Vector3(camera_x - 4.5 + 4.5 * float(i) + 1.4 * sin(_clock * 0.31 + phase),
 				2.2 + 0.9 * float(i % 2) + 0.7 * sin(_clock * 0.47 + phase * 1.7), -3.0 - 1.4 * float(i))
 		fireflies[i].visible = dusk > 0.02 # Not drawn (nor animated) before the evening starts.
-		fireflies[i].rotation.y = 0.0 if cos(_clock * 0.31 + phase) > 0.0 else PI
+		# LOTE 7: the model looks along -X; it now faces its drift (x grows while cos > 0 -> look +X).
+		fireflies[i].rotation.y = PI if cos(_clock * 0.31 + phase) > 0.0 else 0.0
 		var pulse := 0.5 + 0.5 * sin(_clock * 2.3 + phase * 3.0)
 		((_glows[i].material_override) as StandardMaterial3D).albedo_color.a = (0.12 + 0.5 * pulse) * dusk
 	var night := clampf(inverse_lerp(SKY_FADE_FROM, SKY_FADE_TO, distance), 0.0, 1.0)

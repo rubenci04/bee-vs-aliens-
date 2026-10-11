@@ -267,7 +267,7 @@ func run() -> void:
 	wave = stage.wave as BeeLevel01Controller
 	bee = stage.bee
 	check(wave != null and is_equal_approx(stage.sector_length, 360.0), "Level contract invalid")
-	check(is_equal_approx(stage.scroll_speed, 2.0), "Authored speed changed")
+	check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL), "Authored speed changed (LOTE 7: 1.5 m/s)")
 	check(stage.get_node("Pollen").get_child_count() == 17, "Pollen count changed")
 	check(stage.get_node("Powerups").get_child_count() == 5 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong") # REBUILD 02: + the pre-boss S+ capsule.
 	check(stage.get_node("Destructibles").get_child_count() == 8, "Eight crates missing")
@@ -294,7 +294,7 @@ func run() -> void:
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
-	stage.scroll_speed = 2.0
+	stage.scroll_speed = BeeLevel01Controller.LEVEL_SCROLL # LOTE 7: authored travel 1.5 m/s.
 	await test_log()
 	stage.set_physics_process(false)
 	wave.set_physics_process(false)
@@ -304,7 +304,7 @@ func run() -> void:
 	stage.distance = 0
 	stage._update_camera_and_bounds()
 	bee.global_position = Vector3(-2, 4, 0)
-	stage.scroll_speed = 2.0
+	stage.scroll_speed = BeeLevel01Controller.LEVEL_SCROLL
 	await test_human_collision()
 	bee.hurtbox.monitorable = false # Progression coverage is not an unattended survival playtest.
 	# Normal thresholds and frames drive every activation. Kills accelerate
@@ -371,7 +371,7 @@ func run() -> void:
 			bee.global_position.y = 7.0
 			bee.global_position.x = stage.distance - 5.1
 		elif not wave._hard_gate:
-			check(is_equal_approx(stage.scroll_speed, 2.0) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or stage.scroll_speed == 0.0, "Soft scroll changed speed") # HOLD_SCROLL: showcase Walker (REBUILD 02).
+			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true
@@ -388,7 +388,12 @@ func run() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
-	check(spawned == 108, "Not all 108 units spawned (LOTE 6: +11 Codex fauna; incl. 2 controlled dragonflies, 29 popcorn and 3 spiders)")
+	var planned := 0
+	for event: Dictionary in BeeLevel01Controller.EVENTS:
+		planned += (event["units"] as Array).size()
+		for zone_wave: Dictionary in event.get("arena", []):
+			planned += (zone_wave["units"] as Array).size()
+	check(planned == 137 and spawned == planned, "Not all %d units spawned (%d) (LOTE 7: 108 in events + 29 in the 3 combat zones)" % [planned, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -423,5 +428,5 @@ func run() -> void:
 	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
-	print("BEE_LEVEL_01_DENSITY_02_OK events=56 units=108 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
+	print("BEE_LEVEL_01_DENSITY_02_OK events=56 units=137 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")
 	quit(0)
