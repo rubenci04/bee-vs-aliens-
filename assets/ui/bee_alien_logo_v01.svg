@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="360" viewBox="0 0 1040 360">
+  <defs>
+    <path id="B" d="M0 0H59Q99 0 99 36Q99 62 79 69Q104 79 104 108Q104 140 59 140H0Z M28 25V57H55Q71 57 71 41Q71 25 55 25Z M28 82V115H58Q76 115 76 99Q76 82 58 82Z" fill-rule="evenodd"/>
+    <path id="E" d="M0 0H100V27H28V55H88V82H28V113H100V140H0Z"/>
+    <path id="A" d="M0 140L30 0H70L100 140H72L64 103H36L28 140Z M43 74H57L50 39Z" fill-rule="evenodd"/>
+    <path id="L" d="M0 0H28V112H100V140H0Z"/>
+    <path id="I" d="M0 0H100V25H64V115H100V140H0V115H36V25H0Z"/>
+    <path id="N" d="M0 0H28L72 91V0H100V140H72L28 49V140H0Z"/>
+    <clipPath id="body"><ellipse cx="153" cy="203" rx="88" ry="64"/></clipPath>
+  </defs>
+  <g stroke="#292218" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <ellipse cx="119" cy="103" rx="78" ry="32" transform="rotate(-36 119 103)" fill="#fff0ce"/>
+    <ellipse cx="172" cy="104" rx="71" ry="31" transform="rotate(-67 172 104)" fill="#dfd6b7"/>
+    <path d="M77 216L43 222L68 195Z" fill="#3d3425"/>
+    <ellipse cx="153" cy="203" rx="88" ry="64" fill="#e7a831"/>
+    <path d="M78 190Q146 259 234 194Q227 270 154 270Q83 262 78 190Z" fill="#c28522" stroke="none" clip-path="url(#body)"/>
+    <g clip-path="url(#body)" fill="#3d3425" stroke="none">
+      <path d="M95 136H120V271H95Z"/><path d="M151 136H176V271H151Z"/>
+    </g>
+    <ellipse cx="230" cy="187" rx="48" ry="50" fill="#f3c557"/>
+    <ellipse cx="250" cy="177" rx="20" ry="25" fill="#fff0ce"/>
+    <ellipse cx="258" cy="179" rx="8" ry="14" fill="#292218" stroke="none"/>
+    <path d="M219 141Q204 121 204 104M241 140Q252 117 266 112" fill="none"/>
+    <circle cx="202" cy="102" r="7" fill="#3d3425"/><circle cx="268" cy="111" r="7" fill="#3d3425"/>
+    <path d="M220 214Q235 227 252 211" fill="none" stroke-width="4"/>
+    <!-- Cyan/violet appear only on the external graphite technology module. -->
+    <path d="M114 150L102 179M171 151L180 181" fill="none" stroke="#373b43" stroke-width="10"/>
+    <ellipse cx="142" cy="145" rx="48" ry="22" fill="#373b43"/>
+    <ellipse cx="135" cy="143" rx="24" ry="9" fill="#38bfcb" stroke-width="4"/>
+    <circle cx="174" cy="143" r="6" fill="#9667bb" stroke-width="3"/>
+  </g>
+  <g transform="translate(348 36) scale(1.5)" fill="#8b611f" stroke="#292218" stroke-width="8" stroke-linejoin="round">
+    <use href="#B" transform="translate(0 6)"/><use href="#E" transform="translate(119 6)"/><use href="#E" transform="translate(237 6)"/>
+  </g>
+  <g transform="translate(348 36) scale(1.5)" fill="#f2c54e" stroke="#292218" stroke-width="4" stroke-linejoin="round">
+    <use href="#B"/><use href="#E" transform="translate(119 0)"/><use href="#E" transform="translate(237 0)"/>
+  </g>
+  <g transform="translate(348 260) scale(.92 .57)" fill="#f1e5c0" stroke="#292218" stroke-width="5" stroke-linejoin="round">
+    <use href="#A"/><use href="#L" transform="translate(117 0)"/><use href="#I" transform="translate(234 0)"/><use href="#E" transform="translate(351 0)"/><use href="#N" transform="translate(468 0)"/>
+  </g>
+</svg>

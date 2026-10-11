@@ -6,10 +6,21 @@ extends BeeShmupStage
 var elapsed_seconds := 0.0
 ## BOSS v2 (combat variety 01): during the NODO ALIEN fight the saucer changes side, so Bee may use the whole width.
 var boss_arena_wide := false
+var _victory_seconds := 0.0
 @onready var checkpoint: BeeCheckpointQoL = $CheckpointQoL
 
+## NOCHE 01 · ETAPA 2 — Codex toon items, shots and explosions (Level 01 only; the POCs keep the old ones).
+const TOON_POLLEN := preload("res://scenes/items/toon/pollen.tscn")
+const TOON_SPREAD := preload("res://scenes/items/toon/spread.tscn")
+const TOON_BOMB := preload("res://scenes/items/toon/bomb.tscn")
+const TOON_BEE_BOLT := preload("res://scenes/levels/bee_level_toon_bolt.tscn") # Codex toon bolt + the game hit rules.
+
 func _ready() -> void:
+	_swap_toon_pickups() # Before the stage connects the pickups' signals.
 	super._ready()
+	bee.projectile_scene = TOON_BEE_BOLT
+	BeeCombatVFX.toon_bursts = true
+	bee.health.damage_scale = BeeGameSettings.damage_taken_scale() # NOCHE 01: EASY = less damage taken.
 	checkpoint.setup(self)
 	for leftover in ["Ground", "GroundExtension"]: # POC boxes under the mulch slab (coplanar): never visible, never styled.
 		var poc_ground := get_node_or_null(leftover) as Node3D
@@ -65,6 +76,12 @@ func _physics_process(delta: float) -> void:
 		status.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() # NOCHE 01: freed animals n/N.
 		section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO"
 		_secure_victory()
+		if BeeGameSettings.from_title:
+			# NOCHE 01 · ETAPA 2: back to the title (Enter, or after RETURN_TO_TITLE_SECONDS); R still replays.
+			section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO · ENTER — MENÚ"
+			_victory_seconds += delta
+			if _victory_seconds >= BeeGameSettings.RETURN_TO_TITLE_SECONDS or Input.is_action_just_pressed("ui_accept"):
+				get_tree().change_scene_to_file(BeeGameSettings.TITLE_SCENE)
 		return
 	if not wave_clear_announced:
 		status.text = "HP %d/%d · POLEN %d/17" % [bee.health.current_health, bee.health.max_health, pollen_count]
@@ -77,3 +94,28 @@ func _secure_victory() -> void:
 		if node is AlienEnemyProjectile:
 			(node as AlienEnemyProjectile).hitbox.set_enabled(false)
 			node.queue_free()
+
+func _exit_tree() -> void:
+	BeeCombatVFX.toon_bursts = false # Static: never leak the Level 01 look into POCs or tests that load other scenes.
+
+## Same names, positions and settings (the checkpoint snapshot finds them by name); only the scene changes.
+func _swap_toon_pickups() -> void:
+	for pair in [["Pollen", true], ["Powerups", false]]:
+		var parent := get_node(str(pair[0]))
+		for old in parent.get_children():
+			var fresh: Node3D
+			if bool(pair[1]):
+				fresh = TOON_POLLEN.instantiate() as Node3D
+				fresh.set("heal_amount", old.get("heal_amount"))
+			else:
+				var is_bomb: bool = int(old.get("kind")) == BeePowerupPickup.Kind.BOMB
+				fresh = (TOON_BOMB if is_bomb else TOON_SPREAD).instantiate() as Node3D
+				fresh.set("kind", old.get("kind"))
+				fresh.set("overcharge", old.get("overcharge"))
+			var label := str(old.name)
+			var where := (old as Node3D).transform
+			parent.remove_child(old)
+			old.free()
+			fresh.name = label
+			fresh.transform = where
+			parent.add_child(fresh)

@@ -65,6 +65,11 @@ func run() -> void:
 	for crate: DestructibleObstacle3D in stage.get_node("Destructibles").get_children():
 		crates += 1
 		kinds[crate.item_kind] = true
+		if crate.item_kind >= 3:
+			# NOCHE 01 · ETAPA 2: Codex tuna tin / banana peel. Same HP and hurtbox; the solid collider hugs the lower model.
+			check(crate.visual_root.find_child("CodexItem", true, false) != null and crate.health.max_health == 24, "Codex litter crate wrong: " + str(crate.name))
+			check((crate.collider.shape as BoxShape3D).size.y <= 2.5 and ((crate.hurtbox.get_node("CollisionShape3D") as CollisionShape3D).shape as BoxShape3D).size.is_equal_approx(Vector3(1.5, 2.5, 1.2)), "Codex crate collider/hurtbox wrong: " + str(crate.name))
+			continue
 		var shape := crate.collider.shape as BoxShape3D
 		check(shape.size.is_equal_approx(Vector3(1.5, 2.5, 1.2)) and crate.collider.position.is_equal_approx(Vector3(0, 1.25, 0)), "Crate collider changed: " + str(crate.name))
 		check((crate.hurtbox.get_node("CollisionShape3D") as CollisionShape3D).shape == shape, "Crate hurtbox changed: " + str(crate.name))

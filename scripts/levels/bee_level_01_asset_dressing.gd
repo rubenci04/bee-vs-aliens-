@@ -15,6 +15,18 @@ const CANDY := preload("res://scenes/art_labs/assets_v06/wrapped_candy.tscn")
 const SHRUB := preload("res://scenes/art_labs/assets_v06/flowering_shrub.tscn")
 const SAPLING := preload("res://scenes/art_labs/assets_v06/garden_sapling.tscn")
 const FIREFLY := preload("res://scenes/art_labs/assets_v03/controlled_firefly.tscn")
+## NOCHE 01 · ETAPA 2 — Codex props (miniature world: Bee 1.18 m). All behind the flight plane, no collision.
+const GREEN_BOTTLE := preload("res://scenes/art_labs/ground_litter_v01/glass_bottle.tscn")
+const TUNA_TIN := preload("res://scenes/art_labs/ground_litter_v02/open_tuna_tin.tscn")
+const BANANA_PEEL := preload("res://scenes/art_labs/ground_litter_v02/banana_peel.tscn")
+const HOSE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_hose.tscn")
+const FENCE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_fence_module.tscn")
+const HOUSE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_distant_house.tscn")
+const PINE_CONE := preload("res://scenes/art_labs/pine_woods_v01/pine_cone.tscn")
+const TALL_PINE := preload("res://scenes/art_labs/pine_woods_v01/tall_pine.tscn")
+const UMBRELLA_PINE := preload("res://scenes/art_labs/pine_woods_v01/umbrella_pine.tscn")
+const HOLLOW_LOG := preload("res://scenes/art_labs/forest_floor_v01/hollow_fallen_log.tscn")
+const BELLFLOWER := preload("res://scenes/art_labs/forest_floor_v01/garden_bellflower.tscn")
 const MOON_MODEL := preload("res://assets/models/future_biomes_v07/sky_crescent_moon.glb")
 const STARS_MODEL := preload("res://assets/models/future_biomes_v07/sky_star_cluster.glb")
 
@@ -39,6 +51,20 @@ const LITTER := [
 	[CANDY, 83.0, -2.6, 1.7, 0.2, 0.0], [CANDY, 297.0, -3.0, 1.5, 3.4, 0.0],
 	[SHRUB, 12.0, -3.8, 3.2, 0.2, 0.0], [SHRUB, 137.0, -3.6, 3.5, 3.1, 0.0], [SHRUB, 212.0, -4.0, 3.0, 0.4, 0.0], [SHRUB, 325.0, -3.8, 3.3, 2.5, 0.0],
 	[SAPLING, 60.0, -8.0, 3.0, 0.5, 0.0], [SAPLING, 190.0, -9.0, 3.3, 2.0, 0.0], [SAPLING, 270.0, -8.5, 3.0, 4.1, 0.0],
+	# NOCHE 01 · ETAPA 2: the green bottle replaces the red one at the start; hose, fence, distant house, pine cones, pines,
+	# a hollow log with bellflowers, more daisy shrubs and trees.
+	[GREEN_BOTTLE, 41.0, -3.4, 6.0, 0.2, 0.0],
+	[TUNA_TIN, 171.0, -3.9, 3.2, 0.5, 0.0], [BANANA_PEEL, 63.0, -2.6, 2.0, 1.1, 0.0],
+	[HOSE, 96.0, -3.8, 4.0, 0.3, 0.0],
+	[HOLLOW_LOG, 126.0, -3.4, 2.5, 0.2, 0.0], [BELLFLOWER, 122.5, -3.0, 1.6, 0.1, 0.0], [BELLFLOWER, 129.5, -3.6, 1.4, 1.2, 0.0],
+	[BELLFLOWER, 31.0, -3.2, 1.5, 0.4, 0.0], [BELLFLOWER, 72.0, -3.4, 1.6, 2.0, 0.0], [BELLFLOWER, 205.0, -3.0, 1.5, 0.8, 0.0],
+	[SHRUB, 68.0, -3.9, 3.0, 1.3, 0.0], [SHRUB, 158.0, -4.1, 3.3, 0.6, 0.0],
+	[FENCE, 148.0, -18.0, 4.5, 0.0, 0.0], [FENCE, 157.0, -18.0, 4.5, 0.0, 0.0], [FENCE, 166.0, -18.0, 4.5, 0.0, 0.0], [FENCE, 175.0, -18.0, 4.5, 0.0, 0.0], [FENCE, 184.0, -18.0, 4.5, 0.0, 0.0],
+	[HOUSE, 176.0, -46.0, 11.0, 0.0, 0.0],
+	[PINE_CONE, 160.0, -2.8, 4.0, 0.7, 0.0], [PINE_CONE, 236.0, -3.0, 3.6, 2.1, 0.0],
+	[TALL_PINE, 250.0, -20.0, 8.0, 0.3, 0.0], [TALL_PINE, 268.0, -22.0, 8.5, 1.1, 0.0], [UMBRELLA_PINE, 286.0, -24.0, 7.0, 0.5, 0.0],
+	[TALL_PINE, 304.0, -21.0, 8.0, 2.4, 0.0], [TALL_PINE, 330.0, -22.0, 9.0, 0.9, 0.0], [UMBRELLA_PINE, 352.0, -25.0, 7.5, 1.7, 0.0],
+	[SAPLING, 104.0, -9.5, 3.2, 1.0, 0.0],
 ]
 
 var stage: BeeShmupStage
@@ -58,6 +84,7 @@ var _far_material: StandardMaterial3D
 func _ready() -> void:
 	stage = get_parent() as BeeShmupStage
 	_build_litter()
+	call_deferred("_hide_old_props")
 	_build_fireflies()
 	_build_sky()
 	call_deferred("_swap_pylons") # After the escalation node has created its pylons.
@@ -266,3 +293,14 @@ func _update_far_lights(camera_x: float, dusk: float) -> void:
 	if far_lights.emitting != on:
 		far_lights.emitting = on
 	_far_material.albedo_color.a = 0.85 * dusk
+
+
+## NOCHE 01 · ETAPA 2: the red soda bottle at the start is replaced by the Codex green bottle (node kept, hidden: other
+## scenes and tests still find it by name).
+func _hide_old_props() -> void:
+	var bottle := stage.find_child("GiantBottle", true, false) as Node3D
+	if bottle != null:
+		bottle.hide()
+	# The red/cream snack wrapper of the picnic (X=171) gives way to the Codex tuna tin (see LITTER).
+	for node in stage.find_children("wrapper_*", "Node3D", true, false):
+		(node as Node3D).hide()

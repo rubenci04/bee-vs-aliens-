@@ -8,6 +8,7 @@ var wave: BeeLevel01Controller
 var bee: BeePlayer
 
 func _initialize() -> void:
+	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -411,10 +412,10 @@ func run() -> void:
 	# Real Area3D collection after progression coverage, avoiding any change
 	# to the existing combat/geometry diagnostics above.
 	bee.set_physics_process(false)
-	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children():
+	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup):
 		bee.global_position = pickup.global_position
 		await frames(4)
-	check(stage.get_node("Powerups").get_child_count() == 0 and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == 3, "Level pickups cannot be collected") # REBUILD 02: the S+ capsule overcharges Spread.
+	check(stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup and not n.is_queued_for_deletion()).is_empty() and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == 3, "Level pickups cannot be collected (left %d, spread %d, bombs %d)" % [stage.get_node("Powerups").get_child_count(), bee.spread_ammo, bee.bomb_charges]) # REBUILD 02: the S+ capsule overcharges Spread.
 	bee.set_physics_process(true)
 	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)

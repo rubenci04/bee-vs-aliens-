@@ -184,9 +184,10 @@ static func build_alien_turtle() -> Node3D:
 
 func _human_aftermath() -> void:
 	var camera_x := stage.camera.global_position.x
-	for i in 4:
-		var x := camera_x - 4.5 + float(i) * 2.6
-		get_tree().create_timer(0.35 * float(i), false).timeout.connect(_dust.bind(Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2))))
+	if BeeLevel01Controller.giant_human_enabled: # NOCHE 01: no giant footsteps to settle when the human is off.
+		for i in 4:
+			var x := camera_x - 4.5 + float(i) * 2.6
+			get_tree().create_timer(0.35 * float(i), false).timeout.connect(_dust.bind(Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2))))
 	if beetle != null and is_instance_valid(beetle):
 		beetle.queue_free()
 	if not TURTLE_ENABLED:

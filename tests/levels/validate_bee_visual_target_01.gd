@@ -45,9 +45,11 @@ func run() -> void:
 		var replaced := false
 		for prefix: String in BeeLevel01VisualTarget.HIDDEN_SCENERY_PREFIXES:
 			replaced = replaced or label.begins_with(prefix)
+		if label == "GiantBottle":
+			continue # NOCHE 01: hidden on purpose (Codex green bottle instead).
 		check(child.visible != replaced, "Scenery visibility wrong for " + label)
 	check(target.hidden_scenery.size() > 250, "Trees, ferns and Kenney flowers must be hidden along the whole level")
-	for label in ["GiantBottle", "DistantBottle", "FallenLog", "FlightRock96", "FlightRock307", "BackdropRock38"]:
+	for label in ["DistantBottle", "FallenLog", "FlightRock96", "FlightRock307", "BackdropRock38"]: # NOCHE 01: GiantBottle (red) is replaced by the Codex green bottle.
 		var node := scenery.get_node_or_null(label) if scenery.has_node(label) else scenery.get_node_or_null(label + "Mesh")
 		check(node != null and (node as Node3D).visible, "Gameplay prop must stay visible: " + label)
 

@@ -19,10 +19,10 @@ func frames(count: int) -> void:
 		await physics_frame
 		await process_frame
 
-func effects(kind: StringName) -> Array[BeeCombatVFX]:
-	var result: Array[BeeCombatVFX] = []
+func effects(kind: StringName) -> Array: # NOCHE 01: Level 01 explosions are toon bursts (not BeeCombatVFX) carrying the same `kind`.
+	var result: Array = []
 	for node in get_nodes_in_group("bee_combat_vfx"):
-		if node.kind == kind and not node.is_queued_for_deletion():
+		if node.get("kind") == kind and not node.is_queued_for_deletion():
 			result.append(node)
 	return result
 
@@ -150,7 +150,7 @@ func run() -> void:
 
 	check(bee.use_bomb() != null, "Bomb refused")
 	check(effects(&"bomb").size() == 1, "Bomb VFX missing")
-	var bomb_visual := effects(&"bomb")[0]
+	var bomb_visual := effects(&"bomb")[0] as BeeCombatVFX
 	check(bomb_visual.extent == 3.0 and bomb_visual.duration == 0.55, "Bomb visual radius/duration wrong")
 	await frames(4)
 	await capture("06a_bomb_early")
@@ -199,7 +199,8 @@ func run() -> void:
 	var pickup: BeePowerupPickup = stage.get_node("Powerups/SpreadFirst")
 	check(pickup.collect(bee) and not pickup.collect(bee), "Pickup duplication")
 	await frames(3)
-	check(effects(&"pickup").size() == 1 and bee.spread_ammo == 32, "Pickup feedback/state wrong")
+	var toon_feedback := stage.get_node("Powerups").get_children().any(func(n): return n.has_signal("finished")) # NOCHE 01: Codex toon pickup = warm toon burst.
+	check((effects(&"pickup").size() == 1 or toon_feedback) and bee.spread_ammo == 32, "Pickup feedback/state wrong")
 	await capture("10_pickup")
 	await clear_shots()
 	var pollen: BeePollenPickup = stage.get_node("Pollen/PollenA")

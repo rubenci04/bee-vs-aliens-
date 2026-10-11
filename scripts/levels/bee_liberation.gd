@@ -84,5 +84,5 @@ static func float_text(host: Node, at: Vector3) -> Label3D:
 ## Technology does not get freed: it explodes (cyan blast + the usual tech death sound).
 static func explode_tech(host: Node, at: Vector3, size := 1.0) -> void:
 	BeeCombatVFX.spawn(host, at, &"tech_death", Vector3.UP, size)
-	BeeCombatVFX.spawn(host, at, &"bomb", Vector3.UP, 0.6 * size)
+
 	BeeAudio.play(host, &"tech_death", at)

@@ -187,12 +187,12 @@ item_kind = 0
 position = Vector3(18, 0, 0)
 
 [node name="LogApproachCrate" parent="Destructibles" instance=ExtResource("7")]
-item_kind = 1
+item_kind = 3
 position = Vector3(43, 0, 0)
 scale = Vector3(0.9, 1, 1)
 
 [node name="FirstContactCrate" parent="Destructibles" instance=ExtResource("7")]
-item_kind = 2
+item_kind = 4
 position = Vector3(120, 0, 0)
 
 [node name="HumanAreaCrate" parent="Destructibles" instance=ExtResource("7")]
@@ -201,11 +201,11 @@ position = Vector3(153, 0, 0)
 scale = Vector3(0.85, 1.1, 1)
 
 [node name="DefenseCrate" parent="Destructibles" instance=ExtResource("7")]
-item_kind = 1
+item_kind = 3
 position = Vector3(198, 0, 0)
 
 [node name="OrganicCrate" parent="Destructibles" instance=ExtResource("7")]
-item_kind = 2
+item_kind = 4
 position = Vector3(242, 0, 0)
 scale = Vector3(1, 0.9, 1)
 
@@ -214,7 +214,7 @@ item_kind = 0
 position = Vector3(282, 0, 0)
 
 [node name="FinalCrate" parent="Destructibles" instance=ExtResource("7")]
-item_kind = 1
+item_kind = 3
 position = Vector3(343, 0, 0)
 
 [node name="GiantHuman" parent="." instance=ExtResource("5")]

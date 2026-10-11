@@ -4,7 +4,7 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 
 ## Lista de tareas
 - [x] ETAPA 1 — Liberación y correcciones (`liberation-01`)
-- [ ] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
+- [x] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
 - [ ] ETAPA 3 — Pulido y legibilidad (`polish-03`)
 - [ ] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
 - [ ] ETAPA 5 — Preparar demo (`demo-prep-01`)
@@ -31,3 +31,18 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 - **Suite:** 72/72 PASS. Duración con el bot: UFO a los 387 s (6,5 min).
 - **Capturas:** `noche_turtle_{a,b}{,_zoom,_freed}.png`, `noche_liberation_{ant,mosquito,mushroom}.png`.
 - **Solo medido por tests (falta playtest):** sensación de la liberación, el tamaño nuevo de los animales y si el mosquito suave sigue siendo amenazante.
+
+## ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
+- **Humano gigante apagado:** `GIANT_HUMAN_ENABLED := false` (controlador). El nodo queda congelado y oculto, su evento se saltea sin detener el scroll y el momento posterior solo trae la tortuga (sin polvo de pisadas). No se borró código, escena ni tests: los tests que lo cubren lo vuelven a encender con `BeeLevel01Controller.giant_human_enabled = true`.
+- **Fuera:** la botella roja del comienzo (oculta, el nodo se conserva porque otros tests lo buscan por nombre), la **caja de cerillos** y el **paquete rojo/crema** (dos tipos de destructible: ahora son la **lata de atún** y la **cáscara de banana** de Codex, con la misma jugabilidad y la colisión ajustada al modelo más bajo) y el envoltorio rojo/crema del picnic (X=171).
+- **Assets de Codex agregados** (miniatura, todos detrás del plano de juego, sin colisión, mismo toon/contorno/rim por sus wrappers): botella verde (X=41), lata de atún, cáscara de banana, manguera, valla (5 módulos, X=148–184), casa de fondo lejano, piñas (`pine_cone`: "piña" = piña de pino), pinos altos y piñoneros (tramo final), tronco hueco con campanillas, más arbustos con margaritas y brotes de árbol.
+- **Toon de Codex en el Level 01** (los POC no cambian): disparo de Bee (`projectiles/toon/bee_bolt`), disparos alien (`alien_bolt`, también la fauna de Codex), pickups (polen, Spread, bomba; mismos nombres para el checkpoint) y explosiones (`BeeCombatVFX.toon_bursts`: las muertes de tecnología usan la explosión toon cian de Codex; la onda de la bomba de Bee y de las minas conserva el anillo original porque muestra el radio real de daño; impactos y fogonazos sin cambio; el disparo de Bee es una subclase propia del toon de Codex que mantiene las reglas de impacto del juego). **Curación:** el tarro de miel de Codex aparece antes del UFO si Bee tiene menos del 70 % de HP (`BOSS_HEAL_BELOW`).
+- **Caza alien** (`alien_needle_interceptor`): enemigo del atardecer (X=289, con un speeder; tecnología, explota). Patrulla arriba a la derecha, avisa con una línea 0,6 s y dispara un abanico de 3. HP 60. No integré el UFO con ruedas ni el águila.
+- **Título** (`scenes/game/bee_title_screen.tscn`, escena principal): reutiliza la pantalla de Codex **sin modificarla** (hereda su script). Jugar Nivel 01 · Dificultad · Salir; "Colección de arte" solo en modo debug (ejecutando desde el editor o con `--debug-art`). Al completar el nivel vuelve al título (Enter o 8 s); R sigue reiniciando. Si el nivel se abre directo (F6 o tests), no vuelve solo.
+- **Dificultad** (`scripts/game/bee_game_settings.gd`): FÁCIL = Bee recibe ×0,6 de daño, enemigos y UFO con ×0,75 de HP; NORMAL = igual que hoy.
+- **Opcional no hecho:** el chorro de regadera en el hueco del humano (sin humano, el hueco ya no es necesario; queda pendiente si se quiere como peligro propio).
+- **Archivos de Codex commiteados tal cual** (los que el juego referencia; calculado con `dev/asset_catalog/deps_closure.gd`): modelos y wrappers de las piezas de arriba, ítems/proyectiles/explosiones toon, pantalla de título, logo y shaders. Ninguno modificado.
+- **Tests:** nuevo `validate_bee_assets_cleanup_v02` (humano apagado, props, toon, caza alien, título, FÁCIL). Ajustados: los tests que cubren al humano lo vuelven a encender; la botella roja ya no se exige visible; los destructibles de Codex tienen su propia verificación (mismo HP y hurtbox, colisión más baja); los pickups toon de Codex dejan su destello como hijo de `Powerups` y su feedback es la explosión toon cálida.
+- **Suite:** 73/73 PASS.
+- **Capturas:** `noche2_x{36,96,124,176,300}.png`, `noche2_{bottle,toon_shots,fighter}.png`, `noche_title.png`.
+- **Falta playtest:** que la dificultad FÁCIL se sienta bien, si la casa/valla de fondo distraen (la Etapa 3 trabaja la legibilidad) y el flujo título → nivel → título en un build.

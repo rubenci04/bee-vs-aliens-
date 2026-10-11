@@ -13,8 +13,8 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 - Ramas (LOTE 3): no hay remoto configurado (solo commits locales). `master` quedó atrasada (04f11fa); el trabajo vigente es la cadena lineal `level01-garden-identity-04`, que ya incluye `polish-02` (rocas apoyadas, props de jardín, vida en el suelo, atardecer, audio ambiente/pasos/aleteo), `level01-arcade-rebuild-02`, `level01-threat-camera-boss-03` y `level01-transformation-01`. `camera-fp-spike` (parte de esa cadena) es un experimento aislado en `dev/camera_fp_spike/` con informe `docs/CAMERA_FP_SPIKE_REPORT.md` (recomendación: seguir en vista lateral; no es contenido de juego). Resumen del lote: `docs/INFORME_LOTE_3.md`.
 
 ## Rutas importantes
-- `project.godot` — main_scene: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (Level 01).
-- Level 01: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (F5 y F6 lo abren; los POC viejos se juegan con F6 sobre su escena).
+- `project.godot` — main_scene: `res://scenes/game/bee_title_screen.tscn` (título: Jugar Nivel 01 / Dificultad / Salir; NOCHE 01).
+- Level 01: `res://scenes/levels/bee_level_01_vertical_slice.tscn` (F5 abre el título; F6 sobre la escena abre el nivel directo; los POC viejos se juegan con F6 sobre su escena).
 - `scenes/bee_prototype/`, `scenes/levels/`, `scenes/decoration/`, `scenes/vfx/` — escenas.
 - `scripts/bee_prototype/` (player, enemigos, armas), `scripts/levels/` (controller, checkpoint QoL), `scripts/components/` (HealthComponent), `scripts/audio/`, `scripts/vfx/`.
 - `tests/bee_prototype/`, `tests/levels/` — suites `validate_*.gd`.
@@ -41,7 +41,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/levels/va
 godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_prototype/validate_<nombre>.gd
 ```
 - Sin `--headless` (con render) algunas suites guardan capturas PNG en `res://dev/<...>_review/`. Eso ESCRIBE archivos en `dev/`; avisar antes de correrlas así.
-- La suite completa son 49 validaciones (`validate_bee_liberation_v01` + `validate_bee_pacing_v01` + `validate_bee_free_aim_v01` + `validate_bee_fauna_facing_v01` + `validate_bee_second_checkpoint_v01` + `validate_bee_asset_fauna_v01` + `validate_bee_visual_polish_v02` + `validate_bee_combat_variety_v01` + `validate_bee_ufo_boss_nodo_v02` + 33 previas + `validate_bee_level01_arcade_director_v01`, `validate_bee_controlled_fauna_v01`, `validate_bee_level01_transformation_v01`, `validate_bee_arcade_rebuild_v02`, `validate_bee_threat_camera_boss_v03`, `validate_bee_garden_identity_v04` y `validate_bee_controlled_spider_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos. Contar como fallo también un `SCRIPT ERROR` aunque el código de salida sea 0.
+- La suite completa son 50 validaciones (`validate_bee_assets_cleanup_v02` + `validate_bee_liberation_v01` + `validate_bee_pacing_v01` + `validate_bee_free_aim_v01` + `validate_bee_fauna_facing_v01` + `validate_bee_second_checkpoint_v01` + `validate_bee_asset_fauna_v01` + `validate_bee_visual_polish_v02` + `validate_bee_combat_variety_v01` + `validate_bee_ufo_boss_nodo_v02` + 33 previas + `validate_bee_level01_arcade_director_v01`, `validate_bee_controlled_fauna_v01`, `validate_bee_level01_transformation_v01`, `validate_bee_arcade_rebuild_v02`, `validate_bee_threat_camera_boss_v03`, `validate_bee_garden_identity_v04` y `validate_bee_controlled_spider_v01`). Tras tocar algo, correr la suite relacionada y reportar el resultado real, incluidos los fallos. Contar como fallo también un `SCRIPT ERROR` aunque el código de salida sea 0.
 - Tras regenerar o reemplazar audio/modelos, reimportar (`godot --headless --path . --import`) antes de testear: con `--script` Godot usa el import cacheado del archivo anterior.
 - Los tests no miden si es divertido: el playtest del usuario manda.
 - Logs en `docs/bee_prototype/*.log` y `.godot/` están ignorados por git.

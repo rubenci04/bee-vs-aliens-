@@ -7,11 +7,19 @@ var direction := Vector3.RIGHT
 var extent := 1.0
 var duration := 0.24
 static var _materials: Dictionary = {}
+## NOCHE 01 · ETAPA 2: Level 01 switches this on: explosions use the Codex toon bursts (core + shock ring + fragments, no
+## bloom). POCs keep the old particles. Hits and muzzles are unchanged.
+static var toon_bursts := false
+## Only deaths: the "bomb" shockwave (Bee bomb, mines) keeps the old visual because its ring shows the real blast radius.
+const TOON_BURSTS := {&"tech_death": "res://scenes/vfx/bee_level_toon_burst.tscn"}
 static var _particle_meshes: Dictionary = {}
 static var _sphere_meshes: Dictionary = {}
 static var _ring_meshes: Dictionary = {}
 
 static func spawn(parent: Node3D, point: Vector3, effect: StringName, forward := Vector3.RIGHT, size := 1.0) -> BeeCombatVFX:
+	if toon_bursts and TOON_BURSTS.has(effect):
+		_spawn_toon_burst(parent, point, effect, size)
+		return null
 	var packed := load("res://scenes/vfx/combat_feedback_vfx.tscn") as PackedScene
 	var visual := packed.instantiate() as BeeCombatVFX
 	visual.kind = effect
@@ -222,3 +230,21 @@ func _burst(color: Color, amount: int, reach: float) -> void:
 	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(particles)
 	particles.restart()
+
+
+static func _spawn_toon_burst(parent: Node3D, point: Vector3, effect: StringName, size: float) -> void:
+	var burst := (load(str(TOON_BURSTS[effect])) as PackedScene).instantiate() as Node3D
+	burst.add_to_group("bee_combat_vfx")
+	burst.set("kind", effect)
+	burst.set("extent", size)
+	var host := parent
+	while host.get_parent() is Node3D:
+		host = host.get_parent()
+	var container := host.get_node_or_null("CombatVFX") as Node3D
+	if container == null:
+		container = Node3D.new()
+		container.name = "CombatVFX"
+		host.add_child(container)
+	burst.scale *= clampf(size, 0.3, 3.0) * (1.4 if effect == &"bomb" else 0.8)
+	container.add_child(burst)
+	burst.global_position = point

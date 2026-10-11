@@ -6,6 +6,7 @@ extends SceneTree
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 
 func _initialize() -> void:
+	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:

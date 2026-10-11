@@ -13,7 +13,7 @@ signal liberated_now(enemy: AssetFauna)
 enum State { IDLE, ENTER, WAIT, TELEGRAPH, ATTACK, RECOVER, EXIT, LIBERATED, DONE }
 
 const MIN_TELEGRAPH := 0.4
-const PROJECTILE := preload("res://scenes/bee_prototype/alien_enemy_projectile.tscn")
+const PROJECTILE := preload("res://scenes/projectiles/toon/alien_bolt.tscn") # NOCHE 01: Codex toon alien bolt.
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const HITBOX_SCENE := preload("res://scenes/components/hitbox_3d.tscn")
@@ -50,6 +50,10 @@ const KINDS := {
 			"telegraph": 0.6, "damage": 7, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail"},
 	&"mushroom": {"scene": "res://scenes/art_labs/assets_v10/controlled_mushroom_cannon.tscn", "mode": &"cannon", "ground": true, "scale": 1.0,
 			"telegraph": 0.7, "damage": 9, "cycles": 99, "speed": 0.0, "shot_speed": 6.0, "label": "MushroomCannon"},
+	# NOCHE 01 · ETAPA 2: the Codex alien interceptor (dusk enemy, technology: it explodes). Hovers high, warns with a line
+	# for 0.6 s and fires a fan of 3 toon bolts, then strafes to another spot.
+	&"fighter": {"scene": "res://scenes/art_labs/alien_ships_v02/alien_needle_interceptor.tscn", "mode": &"fighter", "ground": false, "scale": 0.62,
+			"telegraph": 0.6, "damage": 8, "cycles": 99, "speed": 4.5, "shot_speed": 7.0, "machine": true, "label": "AlienFighter"},
 	&"seed_carrier": {"scene": "res://scenes/art_labs/assets_v02/alien_seed_carrier.tscn", "mode": &"seeder", "ground": false, "scale": 1.15,
 			"telegraph": 0.8, "damage": 6, "cycles": 99, "speed": 2.0, "shot_speed": 3.6, "machine": true, "label": "SeedCarrier"},
 }
@@ -291,6 +295,9 @@ func _hover_point(camera_x: float) -> Vector3:
 			return Vector3(minf(bee.x + 3.0, camera_x + 4.6), 4.6 + 0.5 * sin(_clock * 0.9), 0.0)
 		&"seeder":
 			return Vector3(minf(bee.x + 4.6, camera_x + 4.8), clampf(bee.y + 1.0, 3.2, 5.6), 0.0)
+		&"fighter":
+			# Strafes along the top of the right half (a slow sine), always ahead of Bee.
+			return Vector3(camera_x + 3.4 + 1.4 * sin(_clock * 0.7), 5.0 + 0.7 * sin(_clock * 1.1), 0.0)
 		_:
 			return Vector3(bee.x + 3.0, ground_y, 0.0)
 
@@ -362,6 +369,9 @@ func _start_telegraph() -> void:
 			var dirc := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
 			_lock_to = global_position + Vector3(dirc * float(config["charge_speed"]) * float(config["charge_time"]), 0.0, 0.0)
 			_add_line(global_position + Vector3(0, 0.4, 0), _lock_to + Vector3(0, 0.4, 0), 0.5, Color(1.0, 0.55, 0.15, 0.25))
+		&"fighter":
+			_lock_to = bee
+			_add_line(global_position, bee, 0.08) # Thin aim line: where the fan will be centred.
 		&"bomber":
 			_add_ring(global_position + Vector3(0, -0.8, 0), float(config["radius"]))
 		_:
@@ -407,7 +417,7 @@ func _start_attack() -> void:
 		&"bomber":
 			_drop_bomb()
 			_left = 0.2
-		&"spitter", &"cannon", &"seeder":
+		&"spitter", &"cannon", &"seeder", &"fighter":
 			_fire()
 			_left = 0.25
 		_:
@@ -495,6 +505,9 @@ func _fire() -> void:
 	var step := 14.0
 	if mode == &"cannon":
 		count = 3
+	elif mode == &"fighter":
+		count = 3
+		step = 10.0
 	elif mode == &"seeder":
 		count = 3
 		step = 20.0

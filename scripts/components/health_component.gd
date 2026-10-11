@@ -14,7 +14,12 @@ func _ready() -> void:
 	current_health = max_health
 
 
+## NOCHE 01: incoming damage multiplier (Bee on EASY); 1.0 = unchanged. Never turns a hit into 0.
+var damage_scale := 1.0
+
 func take_damage(amount: int) -> int:
+	if damage_scale != 1.0 and amount > 0:
+		amount = maxi(1, roundi(float(amount) * damage_scale))
 	if damage_blocked or amount <= 0 or current_health <= 0:
 		return 0
 	var previous := current_health

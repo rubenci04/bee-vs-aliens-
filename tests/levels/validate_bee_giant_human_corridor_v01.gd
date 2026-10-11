@@ -11,6 +11,7 @@ var human: GiantHumanCrossingHazard
 var bee: BeePlayer
 
 func _initialize() -> void:
+	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:

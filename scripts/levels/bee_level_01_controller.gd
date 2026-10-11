@@ -23,10 +23,15 @@ const ASSET_FAUNA := {
 	"Ant": preload("res://scenes/levels/asset_fauna/ant.tscn"), "StagBeetle": preload("res://scenes/levels/asset_fauna/stag_beetle.tscn"),
 	"Snail": preload("res://scenes/levels/asset_fauna/snail.tscn"), "MushroomCannon": preload("res://scenes/levels/asset_fauna/mushroom.tscn"),
 	"SeedCarrier": preload("res://scenes/levels/asset_fauna/seed_carrier.tscn"),
+	"AlienFighter": preload("res://scenes/levels/asset_fauna/fighter.tscn"), # NOCHE 01 · ETAPA 2: Codex interceptor (dusk).
 }
 ## NOCHE 01 — animals (freed, never killed) counted for "LIBERADOS n/N"; everything else is technology and explodes.
 const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail"]
-const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier"]
+## NOCHE 01 · ETAPA 2: Level 01 enemies fire the Codex toon alien bolt (same AlienEnemyProjectile rules, new look).
+const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
+const BOSS_HEAL_BELOW := 0.7 # Fraction of max HP under which the honey jar appears before the UFO.
+const TOON_ALIEN_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
+const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
 ## Camera-relative X where a spider drops in from above the top edge when the event gives none (inside the screen).
@@ -57,6 +62,10 @@ const DEPTH_TARGET_X := 3.4
 const HOLD_SCROLL := 1.0
 ## LOTE 7 — PACING: cruise scroll of Level 01 in m/s (was 2.0). Every place that resumed the scroll uses it.
 const LEVEL_SCROLL := 1.5
+## NOCHE 01 · ETAPA 2: the Giant Human is switched off (code, scene and tests kept). Tests that cover it set
+## `giant_human_enabled = true` before loading the level.
+const GIANT_HUMAN_ENABLED := false
+static var giant_human_enabled := GIANT_HUMAN_ENABLED
 ## Short roll to the sector end after the UFO (unchanged 2.0).
 const POST_BOSS_SCROLL := 2.0
 ## LOTE 7 — "time on camera": minimum seconds a unit of each family stays in play (enters, settles, attacks) before the
@@ -64,7 +73,7 @@ const POST_BOSS_SCROLL := 2.0
 ## Families not listed use soft_pressure_seconds. Popcorn (Swarm) is a crossing pattern by design and keeps its paths.
 const CAMERA_TIME := {"Wasp": 12.0, "Probe": 13.0, "EyeDrone": 13.0, "Speeder": 10.0, "OrganicAlien": 13.0, "Walker": 16.0,
 		"Turret": 14.0, "Dragonfly": 14.0, "Spider": 12.0, "Mosquito": 10.0, "Ladybird": 15.0, "WaveDragonfly": 12.0, "Moth": 13.0,
-		"Ant": 12.0, "StagBeetle": 14.0, "Snail": 15.0, "MushroomCannon": 13.0, "SeedCarrier": 22.0}
+		"Ant": 12.0, "StagBeetle": 14.0, "Snail": 15.0, "MushroomCannon": 13.0, "SeedCarrier": 22.0, "AlienFighter": 12.0}
 ## LOTE 7 — COMBAT ZONES ("arena" key in EVENTS): the scroll creeps at ARENA_SCROLL while the zone plays its waves one after
 ## another (next wave when the field has been clear ARENA_WAVE_GAP s, or after ARENA_WAVE_MAX s), then a breather of
 ## BREATHER_SECONDS with no new encounters lets the landscape scroll by. ARENA_MAX_SECONDS is a safety cap.
@@ -86,11 +95,11 @@ const MINION_LAUNCH_SECONDS := 0.7
 ##   HEAVY    Walker 72->120 (a showcase Walker gets SHOWCASE_HP 150)
 ## "Dragonfly" is the HP of its alien IMPLANT (special fauna, unchanged).
 const LEVEL_HP = {"Wasp": 44, "Probe": 80, "EyeDrone": 40, "Turret": 70, "Speeder": 30, "OrganicAlien": 100, "Walker": 120, "Dragonfly": 60, "Swarm": 10, "Spider": 90,
-		"Mosquito": 36, "Ladybird": 130, "WaveDragonfly": 56, "Moth": 60, "Ant": 44, "StagBeetle": 110, "Snail": 100, "MushroomCannon": 60, "SeedCarrier": 240}
+		"Mosquito": 36, "Ladybird": 130, "WaveDragonfly": 56, "Moth": 60, "Ant": 44, "StagBeetle": 110, "Snail": 100, "MushroomCannon": 60, "SeedCarrier": 240, "AlienFighter": 60}
 const SHOWCASE_HP := 150
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
 		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM",
-		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE"}
+		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE", "AlienFighter": &"MEDIUM"}
 # Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
 # (windup) are never touched; HP is global-unchanged. BEFORE (Arcade Pressure pass 01) -> AFTER (Combat Pattern pass 02):
 #   Wasp      2 passes, recovery 0.9 s            -> 3 passes, recovery 1.1 s, stalk 2.2/2.9/3.6 s on lanes (no simultaneous attacks)
@@ -227,7 +236,7 @@ const EVENTS = [
 	{"at": 274.0, "act": 4, "label": "HONGO CAÑÓN · DISPARO TELEGRAFIADO", "units": ["MushroomCannon", "Mosquito", "Mosquito"], "delays": [0.0, 1.2, 2.2], "y": [0.0, 3.4, 5.0]},
 	{"at": 278.0, "act": 4, "label": "POPCORN · PICADA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "dive", "path": "dive", "delays": [0.0, 0.3, 0.6], "y": [5.6, 4.4, 5.6], "shooters": [0, 1, 2]},
 	{"at": 284.0, "act": 4, "label": "DEFENSAS · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "delays": [0.0, 0.8]},
-	{"at": 289.0, "act": 4, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [2.4, 5.4]},
+	{"at": 289.0, "act": 4, "label": "ATARDECER · SPEEDER Y CAZA ALIEN", "units": ["Speeder", "AlienFighter"], "formation": "pair", "delays": [0.0, 0.9], "y": [2.4, 5.4]},
 	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER, OJO Y AVISPA", "units": ["Walker", "EyeDrone", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 0.8, 1.8]},
 	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": [], "moment": "bomb_reward"},
 	{"at": 308.0, "act": 4, "label": "OLA FINAL · SONDA", "units": ["Probe"], "y": [4.6]},
@@ -284,6 +293,8 @@ var liberated_count := 0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
+	if not giant_human_enabled:
+		call_deferred("_switch_off_human") # The human node is ready after this one.
 	stage.scroll_speed = LEVEL_SCROLL # LOTE 7: the scene keeps 2.0 for the POCs that share it.
 	BeeShmupFairness.live_shot_ceiling = LIVE_SHOT_CEILING
 	BeeShmupFairness.screen_bound_combat = true
@@ -324,6 +335,11 @@ func _physics_process(delta: float) -> void:
 		return
 	var event: Dictionary = EVENTS[event_index]
 	if stage.distance < float(event["at"]) or not _pending.is_empty():
+		return
+	if bool(event.get("human", false)) and not giant_human_enabled:
+		# NOCHE 01 · ETAPA 2: the Giant Human is switched off (GIANT_HUMAN_ENABLED); its event is skipped, nothing waits.
+		event_index += 1
+		current_act = int(event.get("act", current_act))
 		return
 	# Hard gates/human never overlap surviving soft actors.
 	if (bool(event.get("hard", false)) or bool(event.get("human", false))) and not active_units.is_empty():
@@ -475,7 +491,7 @@ func _spawn(request: Dictionary) -> void:
 		"Dragonfly": scene = DRAGONFLY
 		"Swarm": scene = SWARM
 		"Spider": scene = SPIDER
-		"Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier": scene = ASSET_FAUNA[family]
+		"Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier", "AlienFighter": scene = ASSET_FAUNA[family]
 		_: return
 	var unit := scene.instantiate() as Node3D
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
@@ -511,8 +527,10 @@ func _spawn(request: Dictionary) -> void:
 		animals_total += 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance})
 	var health := unit.get_node("HealthComponent") as HealthComponent
-	health.max_health = int(LEVEL_HP[family])
+	health.max_health = BeeGameSettings.scaled_hp(int(LEVEL_HP[family])) # NOCHE 01: EASY lowers enemy HP.
 	health.current_health = health.max_health
+	if unit.get("projectile_scene") is PackedScene:
+		unit.set("projectile_scene", TOON_ALIEN_BOLT)
 	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
 	for key in tuning:
 		unit.set(key, tuning[key])
@@ -541,8 +559,8 @@ func _spawn(request: Dictionary) -> void:
 		get_tree().create_timer(3.5, false).timeout.connect(_clear_fauna_hint) # Bound method: dropped if the level reloads.
 	if bool(request.get("hold", false)) and family == "Walker":
 		unit.set_meta("level_hold", true) # Showcase: the scroll slows while it lives, so it stays on screen.
-		health.max_health = SHOWCASE_HP # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
-		health.current_health = SHOWCASE_HP
+		health.max_health = BeeGameSettings.scaled_hp(SHOWCASE_HP) # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
+		health.current_health = health.max_health
 	max_active_seen = maxi(max_active_seen, active_units.size())
 	if bool(request.get("minion", false)):
 		unit.set_meta("boss_minion", true)
@@ -673,6 +691,7 @@ func _advance_boss(delta: float) -> void:
 func _start_boss() -> void:
 	boss = UFO_BOSS.instantiate() as UfoBoss01
 	boss.name = "UfoBoss01"
+	boss.max_hp = BeeGameSettings.scaled_hp(boss.max_hp) # NOCHE 01: EASY lowers the UFO HP too (before _ready reads it).
 	get_node("../Enemies").add_child(boss)
 	boss.defeated.connect(_on_boss_defeated)
 	boss.phase_changed.connect(_on_boss_phase)
@@ -780,6 +799,12 @@ func _on_boss_summon(family: StringName, count: int) -> void:
 ## UFO BOSS 01: a Bomb pickup appears in the arena during the last silence (only when Bee is low on charges, so dying and
 ## retrying never farms bombs). The level's last pollen (PollenM) sits just before the arena at X=338.4.
 func _spawn_boss_supplies() -> void:
+	if bee.health.current_health < int(bee.health.max_health * BOSS_HEAL_BELOW):
+		# NOCHE 01 · ETAPA 2: the Codex honey jar (healing) before the UFO when Bee is hurt.
+		var jar := TOON_HEALING.instantiate() as Node3D
+		jar.name = "BossHealing"
+		stage.add_child(jar)
+		jar.global_position = Vector3(stage.camera.global_position.x - 1.6, 4.4, 0.0)
 	if bee.bomb_charges >= 2:
 		return
 	var pickup := POWERUP_PICKUP.instantiate() as BeePowerupPickup
@@ -787,3 +812,9 @@ func _spawn_boss_supplies() -> void:
 	pickup.kind = BeePowerupPickup.Kind.BOMB
 	stage.add_child(pickup) # Not under "Powerups": that node is the level's fixed pickup set.
 	pickup.global_position = Vector3(stage.camera.global_position.x - 0.5, 3.2, 0.0)
+
+## NOCHE 01 · ETAPA 2: the Giant Human is off (GIANT_HUMAN_ENABLED): frozen, hidden, no hitbox, never starts.
+func _switch_off_human() -> void:
+	if is_instance_valid(human):
+		human.freeze()
+		human.hide()
