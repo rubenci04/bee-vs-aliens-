@@ -249,6 +249,8 @@ func test_density() -> void:
 	check(biggest <= 4, "An encounter has more than 4 threats")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 4.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:
+		if family == "OrganicAlien":
+			continue # NOCHE 01: UFO minion only.
 		var found := false
 		for event: Dictionary in events:
 			found = found or family in event["units"]
@@ -463,7 +465,7 @@ func test_boss() -> void:
 		bee.global_position.y = 7.0
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO" and wave.boss_defeated, "Level Complete missing after the boss died")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing after the boss died")
 	await capture("03_level_complete.png")
 	print("CHALLENGE_LEVEL_COMPLETE OK")
 

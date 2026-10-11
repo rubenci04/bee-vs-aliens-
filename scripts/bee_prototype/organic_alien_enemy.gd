@@ -233,6 +233,7 @@ func _on_died() -> void:
 	remove_from_group("bee_auto_aim_targets")
 	set_physics_process(false)
 	_play_clip("Death")
+	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0, 0.6, 0), &"bomb", Vector3.UP, 0.7) # NOCHE 01: the boss minion explodes (it is not a freed animal).
 	defeated.emit(self)
 	var death_time := maxf(0.8, _animation_player.current_animation_length if _animation_player != null else 0.8)
 	var fade := create_tween()

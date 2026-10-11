@@ -62,7 +62,7 @@ func _physics_process(delta: float) -> void:
 	if bee.is_defeated:
 		return
 	if sector_complete:
-		status.text = "SECTOR DESPEJADO"
+		status.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() # NOCHE 01: freed animals n/N.
 		section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO"
 		_secure_victory()
 		return

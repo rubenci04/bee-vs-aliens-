@@ -159,7 +159,8 @@ func activate_checkpoint() -> void:
 		"hp": bee.health.current_health, "spread": bee.spread_ammo, "bomb": bee.bomb_charges,
 		"pollen": stage.pollen_count, "pollen_available": available_names("Pollen"),
 		"powerups_available": available_names("Powerups"), "broken": broken,
-		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true)}
+		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true),
+		"animals": stage.wave.animals_total, "liberated": stage.wave.liberated_count}
 	notice.text = "CHECKPOINT"
 	_notice_left = 1.4
 	notice.show()
@@ -194,7 +195,8 @@ func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_
 		"hp": bee.health.current_health, "spread": bee.spread_ammo, "bomb": bee.bomb_charges,
 		"pollen": stage.pollen_count, "pollen_available": available_names("Pollen"),
 		"powerups_available": available_names("Powerups"), "broken": broken, "keep_from": keep_from,
-		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true)}
+		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true),
+		"animals": stage.wave.animals_total, "liberated": stage.wave.liberated_count}
 
 ## UFO BOSS 01: called by the director the moment the boss fight starts. Retrying after a defeat respawns here (not at
 ## X=190) with the same minimum HP as the normal checkpoint (60 %).
@@ -246,6 +248,8 @@ func restore_snapshot() -> void:
 	bee.weapon_state_changed.emit()
 	stage.get_node("CanvasLayer/WeaponsHUD").taught = snapshot["taught"].duplicate(true)
 	stage.wave.resume_after_checkpoint(stage.distance)
+	stage.wave.animals_total = int(snapshot.get("animals", 0)) # NOCHE 01: freed-animal tally survives the respawn.
+	stage.wave.liberated_count = int(snapshot.get("liberated", 0))
 	for pair in [["Pollen", "pollen_available"], ["Powerups", "powerups_available"]]:
 		for item in stage.get_node(pair[0]).get_children():
 			if item.position.x < float(snapshot.get("keep_from", checkpoint_x)) or str(item.name) not in snapshot[pair[1]]:

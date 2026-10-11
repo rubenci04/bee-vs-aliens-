@@ -2,6 +2,9 @@ class_name WaspEnemy
 extends CharacterBody3D
 
 signal defeated(enemy: WaspEnemy)
+## NOCHE 01: a Level 01 (implanted) Wasp is FREED, not killed: emitted when the implant breaks (it then flies off).
+signal liberated_now(enemy: WaspEnemy)
+const LEAVE_SECONDS := 3.0
 
 enum State { IDLE, CHASE, WINDUP, ATTACK, RECOVERY, DEAD, STALK, DASH, EXIT, STING, OVERLOAD, KAMIKAZE }
 
@@ -73,6 +76,7 @@ var _stalk_cap := 0.0
 var _dash_dir := Vector3.LEFT
 var _dash_length := 6.0
 var implant: WaspImplant
+var liberated := false
 var sting_count := 0
 var overload_count := 0
 var exploded := false
@@ -279,9 +283,29 @@ func _on_died() -> void:
 	attack_hitbox.set_enabled(false)
 	telegraph.hide()
 	hurtbox.set_deferred("monitorable", false)
+	if implant != null:
+		_liberate()
+		return
 	visual_root.hide()
 	set_physics_process(false)
 	defeated.emit(self)
+
+
+## NOCHE 01 — the implant is shot out: the Wasp is freed (warm colours, "LIBERADO") and flies off relaxed, harmless.
+func _liberate() -> void:
+	liberated = true
+	add_to_group("bee_liberated")
+	set_physics_process(false)
+	liberated_now.emit(self)
+	BeeLiberation.free_animal(get_parent(), visual_root, implant, implant.global_position)
+	facing_x = -1.0
+	visual_root.rotation.y = PI * 0.5 # Looks where it flies (-X).
+	visual_root.scale = Vector3.ONE
+	var away := create_tween()
+	away.tween_property(self, "global_position", global_position + Vector3(-7.0, 3.0, 0.0), LEAVE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	away.tween_callback(func():
+		visual_root.hide()
+		defeated.emit(self))
 
 # --- Arcade mode (Level 01) ----------------------------------------------------------------------
 

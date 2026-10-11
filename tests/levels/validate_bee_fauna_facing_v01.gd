@@ -99,7 +99,7 @@ func test_fireflies() -> void:
 		var x := bug.global_position.x
 		var dx := x - prev
 		prev = x
-		if absf(dx) < 0.004:
+		if absf(dx) < 0.004 or absf(dx) > 1.0: # NOCHE 01: >1 m in a frame = it wrapped back to the right edge.
 			continue
 		var forward := 1.0 if absf(bug.rotation.y - PI) < 0.01 else -1.0
 		check(forward == signf(dx), "Firefly faces away from its drift (dx %.3f, yaw %.2f)" % [dx, bug.rotation.y])

@@ -15,11 +15,18 @@ extends Node3D
 ## Asset: Quaternius Spider (CC0, assets/external/ASSET_PROVENANCE.md).
 
 signal defeated(enemy: ControlledSpider)
+## NOCHE 01: emitted when the implant breaks (the spider is freed, not killed).
+signal liberated_now(enemy: ControlledSpider)
 
 enum State { IDLE, ENTER, HANG, TELEGRAPH, DROP, HOLD, RETRACT, REPOSITION, EXIT, FREED }
 
 const MODEL := preload("res://assets/external/approved/fauna/quaternius/Easy Animated Enemy Pack - Jan 2019/FBX/Spider.fbx")
-const MODEL_SCALE := 0.34 ## ~2 m leg span: bigger than Bee, smaller than the Walker
+## NOCHE 01: size relative to Bee (BeeFaunaSizes "spider" 1.4). SPIDER_LENGTH_AT_034 = measured body length at the old scale 0.34.
+const SPIDER_LENGTH_AT_034 := 2.02 # Body (legs spread) only, without silk / implant.
+const SIZE_FACTOR := 1.4 * 1.18 / SPIDER_LENGTH_AT_034 # = BeeFaunaSizes.target_length(&"spider") / SPIDER_LENGTH_AT_034
+const MODEL_SCALE := 0.34 * SIZE_FACTOR
+## NOCHE 01: a freed spider climbs its thread out of the top edge, relaxed, in FREED_SECONDS.
+const FREED_SECONDS := 1.8
 const MODEL_ROTATION := Vector3(deg_to_rad(90.0), 0.0, 0.0) ## hanging head-down, belly to the camera, legs spread
 const SILK := Color(0.93, 0.93, 0.88, 0.75)
 
@@ -182,11 +189,12 @@ func _physics_process(delta: float) -> void:
 				_leave(camera)
 				return
 		State.FREED:
-			var t := 1.0 - clampf(_state_left / 0.7, 0.0, 1.0)
+			var t := 1.0 - clampf(_state_left / FREED_SECONDS, 0.0, 1.0)
 			y = lerpf(_from_y, BeeLevel01Framing.top_y() + 2.2, t * t)
 			if _state_left <= 0.0:
 				hide()
 				set_physics_process(false)
+				defeated.emit(self) # NOCHE 01: released only once it has climbed away.
 	# The web line rides with the camera; the spider slides along it.
 	if current_state in [State.HANG, State.TELEGRAPH, State.REPOSITION]:
 		_rel_x = move_toward(_rel_x, _goal_rel_x, follow_speed * delta)
@@ -266,7 +274,7 @@ func _on_died() -> void:
 	if current_state == State.FREED:
 		return
 	_from_y = global_position.y
-	_enter(State.FREED, 0.7)
+	_enter(State.FREED, FREED_SECONDS)
 	contact.set_enabled(false)
 	hurtbox.set_deferred("monitorable", false)
 	remove_from_group("bee_auto_aim_targets")
@@ -276,7 +284,9 @@ func _on_died() -> void:
 	if implant != null:
 		implant.set_mode(&"off")
 	_play(&"Walk")
-	defeated.emit(self)
+	add_to_group("bee_liberated")
+	liberated_now.emit(self)
+	BeeLiberation.free_animal(get_parent(), _model, implant, implant.global_position if implant != null else global_position)
 
 
 func _play(clip: StringName) -> void:
@@ -305,8 +315,11 @@ func _build_visual() -> void:
 	BeeToonStyle.apply(_model, true, BeeToonStyle.OUTLINE_ACTOR)
 	implant = WaspImplant.new()
 	implant.name = "Implant"
-	implant.position = Vector3(0.0, 0.18, 0.32) # On the abdomen, towards the camera.
-	implant.scale = Vector3.ONE * 1.4
+	implant.position = Vector3(0.0, 0.18, 0.32) * SIZE_FACTOR # On the abdomen, towards the camera.
+	implant.scale = Vector3.ONE * 1.4 * maxf(SIZE_FACTOR, 0.8)
+	# Hit areas follow the smaller body (shapes are per-scene sub-resources: absolute values, never compounded).
+	((get_node("Hurtbox3D/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius = 0.7 * maxf(SIZE_FACTOR, 0.75)
+	((get_node("ContactHitbox/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius = 0.55 * SIZE_FACTOR
 	visual_root.add_child(implant)
 	if _thread_mesh == null:
 		_thread_mesh = CylinderMesh.new()

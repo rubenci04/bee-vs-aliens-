@@ -381,11 +381,13 @@ func run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level did not complete")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
 	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= 4, "Progression/max active wrong")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	for family in BeeLevel01Controller.LEVEL_HP:
+		if family == "OrganicAlien":
+			continue # NOCHE 01: UFO minion only (the harness destroys the UFO at once).
 		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
 		spawned += int(wave.spawned_by_family[family])
 	var planned := 0
@@ -401,7 +403,7 @@ func run() -> void:
 				times.append(float(entry["time"]))
 		for i in range(1, times.size()):
 			check(times[i] - times[i-1] >= 0.19, "Group spawned in the same frame") # REBUILD 02: formations keep their authored spacing (>= 0.2 s).
-	check(captured.has("triple") and captured.has("organic") and captured.has("walker") and captured.has("final"), "Review encounter coverage incomplete")
+	check(captured.has("triple") and captured.has("walker") and captured.has("final"), "Review encounter coverage incomplete (NOCHE 01: no organism capture - it is a UFO minion now)")
 	var mean_ms := frame_sum / maxf(float(frame_count), 1.0)
 	var escaped := wave.escaped_count
 	var max_active := wave.max_active_seen

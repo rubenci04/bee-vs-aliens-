@@ -461,7 +461,7 @@ func test_boss_and_complete() -> void:
 		bee.global_position.y = 7.0
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO" and wave.boss_defeated, "Level Complete missing after the boss died")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing after the boss died")
 	print("ARCADE_LEVEL_COMPLETE OK (UFO 500 HP)")
 
 func run() -> void:

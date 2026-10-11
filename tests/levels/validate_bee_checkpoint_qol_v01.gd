@@ -199,7 +199,7 @@ func run() -> void:
 		await process_frame
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Completion after checkpoint respawn failed")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Completion after checkpoint respawn failed")
 	for entry in stage.wave.spawn_history:
 		check(entry.event >= checkpoint_event(), "Earlier encounter regenerated")
 	await capture("08_final_unaffected")

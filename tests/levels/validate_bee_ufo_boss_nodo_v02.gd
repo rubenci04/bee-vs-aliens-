@@ -184,7 +184,7 @@ func run() -> void:
 		await frames(1)
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "SECTOR DESPEJADO did not appear after the explosion")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "SECTOR DESPEJADO did not appear after the explosion")
 	await frames(5)
 	check(bee.health.damage_blocked, "Bee must be invulnerable after the win")
 	var hp_win := bee.health.current_health

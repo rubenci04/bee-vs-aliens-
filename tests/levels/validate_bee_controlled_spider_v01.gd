@@ -131,7 +131,9 @@ func run() -> void:
 	spider.health.take_damage(9999)
 	await frames(2)
 	check(spider.current_state == ControlledSpider.State.FREED and not spider.contact.enabled and not spider.is_in_group("bee_auto_aim_targets"), "Freed spider still dangerous/targetable")
-	check(defeated_count[0] == 1 and not wave.active_units.has(spider), "Freed spider still counted / defeated not emitted once")
+	check(defeated_count[0] == 0 and not wave.active_units.has(spider), "Freed spider still counted (NOCHE 01: defeated comes after its climb)")
+	await frames(int(ControlledSpider.FREED_SECONDS * 60.0) + 5)
+	check(defeated_count[0] == 1, "defeated must be emitted once, after the freed spider climbed away")
 	await frames(48) # FREED lasts 0.7 s; the director releases the node at 1.0 s.
 	check(not is_instance_valid(spider) or not spider.visible, "Freed spider did not leave the frame")
 	# --- 4. level placement: three appearances, soft, within caps ---------------------------------------------------

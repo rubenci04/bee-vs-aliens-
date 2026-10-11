@@ -146,7 +146,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level Complete missing")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing")
 	check(acts.size() == 5, "Not every act was reached: " + str(acts.keys()))
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Director moments out of order: " + str(moments))
 	check(heights_checked >= 10 and heights_ok == heights_checked, "Formation heights not applied (%d/%d)" % [heights_ok, heights_checked])

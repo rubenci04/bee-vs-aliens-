@@ -113,11 +113,7 @@ func test_static() -> void:
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")
 	check(walkers.back() == 340.0 and walkers.filter(func(x): return x >= 254.0).size() >= 2, "Walker needs late-game encounters")
-	check(organics.size() == 3, "OrganicAlien appearances %d (want 3)" % organics.size())
-	var first_organic: Dictionary = events.filter(func(e): return "OrganicAlien" in e["units"])[0]
-	check((first_organic["units"] as Array).size() == 1 and organics[0] < 140.0, "The first OrganicAlien must be a clean presentation")
-	var crossfire: Dictionary = events.filter(func(e): return "OrganicAlien" in e["units"])[1]
-	check("Probe" in crossfire["units"] or "EyeDrone" in crossfire["units"], "Organic set piece B needs aimed fire around it")
+	check(organics.is_empty(), "NOCHE 01: the purple organism is a UFO minion only (%d normal appearances)" % organics.size())
 	check(swarm_groups >= 6 and swarm_shooters >= 8 and paths.size() >= 4, "Popcorn variety too low (%d groups, %d shooters, paths %s)" % [swarm_groups, swarm_shooters, str(paths.keys())])
 	check(depth_events.size() >= 4 and depth_events.filter(func(e): return (e["units"] as Array).size() >= 3).size() >= 2, "Need >= 4 depth entries incl. >= 2 formations")
 	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Threat cap 2/3/4 (REBUILD 03 thresholds 96 / 240)")
@@ -344,7 +340,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level Complete missing")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing")
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments out of order: " + str(moments))
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS:
@@ -355,7 +351,7 @@ func test_run() -> void:
 	for family in wave.spawned_by_family:
 		spawned += int(wave.spawned_by_family[family])
 	check(spawned == planned, "Spawned %d of %d planned units" % [spawned, planned])
-	check(int(wave.spawned_by_family.get("Walker", 0)) == 6 and int(wave.spawned_by_family.get("OrganicAlien", 0)) == 4, "Walker/Organic presence wrong (LOTE 7: +1 each in the combat zones)")
+	check(int(wave.spawned_by_family.get("Walker", 0)) == 6 and int(wave.spawned_by_family.get("OrganicAlien", 0)) <= 2, "Walker/Organic presence wrong (LOTE 7: +1 Walker in the zones; NOCHE 01: organism only as UFO minion)")
 	check(depth_seen >= 8 and depth_fired == 0, "Depth entries: %d seen, %d shots from depth" % [depth_seen, depth_fired])
 	check(peak <= 14, "Projectile ceiling exceeded (%d)" % peak)
 	check(max_swarm <= BeeLevel01Controller.MAX_SWARM_ALIVE, "Popcorn budget exceeded")

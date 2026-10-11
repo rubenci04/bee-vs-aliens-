@@ -19,9 +19,11 @@ var stage: BeeShmupStage
 var wave: BeeLevel01Controller
 var bee: BeePlayer
 var report_only := false
+var trace := false
 
 func _initialize() -> void:
 	report_only = "report" in OS.get_cmdline_user_args()
+	trace = "trace" in OS.get_cmdline_user_args()
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -64,6 +66,11 @@ func run() -> void:
 	for frame in 60 * 900:
 		await physics_frame
 		var t := stage.get("elapsed_seconds") as float
+		if trace and frame % 900 == 0:
+			var names := []
+			for u in wave.active_units:
+				names.append(str(u.name) if is_instance_valid(u) else "freed")
+			print("TRACE t=%.0f d=%.1f ev=%d arena=%s boss=%s units=%s pending=%d" % [t, stage.distance, wave.event_index, wave.in_arena(), str(wave.boss.state) if wave.boss != null and is_instance_valid(wave.boss) else "-", str(names), wave._pending.size()])
 		act_times[wave.current_act] = act_times.get(wave.current_act, t)
 		for x in checkpoints.checkpoint_list():
 			if stage.distance >= float(x) and not seen_checkpoints.has(x):

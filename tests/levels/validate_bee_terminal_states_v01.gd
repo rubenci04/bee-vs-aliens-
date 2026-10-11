@@ -64,7 +64,7 @@ func run() -> void:
 		if stage.sector_complete:
 			break
 		await frames(1)
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO", "Level did not complete")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
 	check("R — JUGAR DE NUEVO" in stage.section_label.text, "Replay prompt missing")
 	await frames(3)
 	check(not is_instance_valid(shot) or shot.is_queued_for_deletion(), "Enemy shot survived victory")

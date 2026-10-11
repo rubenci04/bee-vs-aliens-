@@ -1,0 +1,33 @@
+# INFORME NOCHE 01 — trabajo autónomo
+
+Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, encadenada sobre la anterior, y se cierra con la suite completa verde, commit y push.
+
+## Lista de tareas
+- [x] ETAPA 1 — Liberación y correcciones (`liberation-01`)
+- [ ] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
+- [ ] ETAPA 3 — Pulido y legibilidad (`polish-03`)
+- [ ] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
+- [ ] ETAPA 5 — Preparar demo (`demo-prep-01`)
+
+## Decisiones tomadas sin poder preguntar (interpretación más razonable)
+- **Assets de Codex sin trackear:** "no tocar" lo interpreto como no modificarlos ni borrarlos. Cuando una etapa necesita usarlos (Etapa 2), commiteo **tal cual** los archivos que el juego referencia, como en el respaldo del Lote 6, para que la rama sea jugable desde origin.
+- **Sonido de liberación:** reutilizo el tintineo del polen ya aprobado (`audio/sfx/real/pollen.wav`, Kenney CC0), más agudo (×1,45), con el cue nuevo `liberate`. La explosión de tecnología es el `tech_death` de siempre. No agregué archivos de audio (así no hay licencias nuevas que revisar).
+- **Luciérnaga:** no es enemigo (es decoración); "liberarla" no aplica. Las de primer plano ya son animales libres (sin implante).
+- **Tortuga:** era un adorno del momento posterior al humano gigante. Ahora tiene un implante en el lomo: si le disparás, se libera y cuenta en LIBERADOS (es un bonus: si no le disparás, se va igual y cuenta como no liberada).
+- **LIBERADOS n/N:** N = animales controlados que aparecieron en la partida (incluida la tortuga); n = los que liberaste. Se guarda en el checkpoint.
+- **Organismo morado:** lo reemplacé en los eventos normales por otras familias (X=80 mariquita, X=214 libélula ondulante, X=254 mariquita blindada (gate duro: un blindado de suelo lo trababa), zona 2 polilla) y aparece en el jefe cada 2 invocaciones de las fases 2 y 3, solo.
+
+## ETAPA 1 — Liberación y correcciones (`liberation-01`) — HECHA
+- **Liberación** (`scripts/levels/bee_liberation.gd`, helper común): al llegar a 0 el implante, este tira chispas y una mini explosión cian y se oculta; el cuerpo pasa a colores cálidos (sin brillo alien); salen destellos dorados, un "LIBERADO" flotante (1,3 s) y un tintineo suave. El animal deja de atacar, no tiene hitbox activa y se aleja relajado `LEAVE_SECONDS` 3 s (volando arriba-izquierda o caminando). Sale de las amenazas al instante (el progreso de eventos no cambia) y cuenta en **"SECTOR DESPEJADO · LIBERADOS n/N"**. Lo usan: avispa, mosquito, mariquita, libélula (procedural y ondulante), polilla, hormiga, escarabajo, caracol, araña y tortuga.
+- **Tecnología que explota** (igual que antes): sonda, ojo, speeder, torreta, walker, semillero, UFO y drones. **Hongo cañón:** explota solo el cañón (el dispositivo) y el hongo queda quieto, sin daño y con colores cálidos hasta que el scroll lo deja atrás. Caza alien: Etapa 2.
+- **Organismo morado:** fuera de los eventos normales; el UFO lo invoca solo cada `ORGANIC_EVERY` 2 invocaciones (fases 2 y 3, en lugar de drones/sondas). Explota.
+- **Escalas** (`scripts/levels/bee_fauna_sizes.gd`, `SIZE` relativo a Bee = 1,0; `BEE_LENGTH` 1,18 m medido): mosquito 0,7 · luciérnaga 0,6 · mariquita 0,9 · hormiga 1,1 (antes 2,2) · escarabajo 1,5 (antes 2,4) · caracol 1,3 (antes 1,9) · araña 1,4 · polilla 1,4 · libélula 2,0. Cada animal calcula su escala desde su propio largo medido; las hitboxes salen del tamaño final.
+- **Mosquito suave:** dirección con aceleración gradual (`MOSQUITO_ACCEL` 6 m/s²) y oscilación senoidal lenta (`MOSQUITO_DRIFT`); frena suave al telegrafiar y la embestida sigue siendo solo con telegrafía. Medido: máx. 1,8 m/s y 6 m/s² mientras flota.
+- **Luciérnagas:** las de primer plano (modelo real, 0,6× Bee) derivan por el mundo hacia −X y miran hacia ahí. Las del fondo ahora son **puntos de luz difusos** (partículas GPU sin gravedad), no cuerpos.
+- **Tortuga** (`bee_aftermath_turtle.gd`): caparazón con 16 placas hexagonales, cabeza con ojo, cuatro patas, cola, toon/contorno/rim y colores de jardín. 2 iteraciones (`noche_turtle_a*` → `noche_turtle_b*`): en la primera las placas de arriba quedaban hundidas en la cúpula. Bandera `TURTLE_ENABLED`.
+- **Sonidos:** cue `liberate` = el tintineo aprobado del polen (Kenney Interface CC0) más agudo; la explosión es el `tech_death` de siempre.
+- **Ajuste por la liberación:** el gate duro de X=254 tenía al organismo; lo reemplacé por la mariquita, porque un blindado de suelo (caracol) dejaba el gate sin poder cerrarse.
+- **Tests:** nuevo `validate_bee_liberation_v01` (no muere, no daña, se aleja, cuenta; tecnología explota; hongo; escalas medidas; mosquito suave; luciérnagas de fondo; tortuga). Ajustados: audio (alias), araña (`defeated` llega al terminar de trepar), rebuild/vertical slice/challenge (el organismo ya no está en los eventos), orientación (las luciérnagas reaparecen a la derecha), textos "SECTOR DESPEJADO · …".
+- **Suite:** 72/72 PASS. Duración con el bot: UFO a los 387 s (6,5 min).
+- **Capturas:** `noche_turtle_{a,b}{,_zoom,_freed}.png`, `noche_liberation_{ant,mosquito,mushroom}.png`.
+- **Solo medido por tests (falta playtest):** sensación de la liberación, el tamaño nuevo de los animales y si el mosquito suave sigue siendo amenazante.

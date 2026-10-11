@@ -265,7 +265,9 @@ func _liberate() -> void:
 	var at := implant.global_position
 	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 0.6)
 	BeeAudio.play(get_parent(), &"tech_death", at)
-	BeeAudio.play(get_parent(), &"pollen", at, 1.1)
+	BeeAudio.play(get_parent(), &"liberate", at, BeeLiberation.CHIME_PITCH) # NOCHE 01: shared liberation chime + "LIBERADO".
+	BeeLiberation.float_text(get_parent(), at + Vector3(0, 0.6, 0.2))
+	add_to_group("bee_liberated")
 	# The device cracks off and falls; the glow dies.
 	_set_core(0.0)
 	var device := implant.create_tween().set_parallel(true)

@@ -21,6 +21,15 @@ const BOMB_MODEL := preload("res://scenes/art_labs/assets_v10/moth_stationary_bo
 const WARN_COLOR := Color(1.0, 0.55, 0.15, 0.8)
 const FACE_MIN_SPEED := 0.5 # m/s (screen-relative for flyers) before the body turns to its motion.
 const FACE_SMOOTHING := 0.18 # s
+## NOCHE 01 — liberation: a freed animal leaves relaxed for LEAVE_SECONDS (walking or flying off to the left).
+const LEAVE_SECONDS := 3.0
+## NOCHE 01 — smooth mosquito: slow sine drift (amplitude m, rate rad/s) and gradual acceleration (m/s²).
+const MOSQUITO_SPEED := 3.6
+const MOSQUITO_ACCEL := 6.0
+const MOSQUITO_DRIFT := Vector2(1.1, 0.8)
+const MOSQUITO_DRIFT_RATE := Vector2(0.9, 0.65)
+const LEAVE_GROUND_SPEED := 1.8
+const LEAVE_AIR_SPEED := 2.4
 
 ## scene: art wrapper. mode: behaviour. ground: walks on the soil. scale: model scale. telegraph: warning seconds.
 ## damage: contact / shot damage. cycles: attacks before leaving. armored: extra shield below the implant.
@@ -75,13 +84,14 @@ var _lock_from := Vector3.ZERO
 var _lock_to := Vector3.ZERO
 var _warn: Array[Node] = []
 var _tele_started := 0.0
-var _jitter_left := 0.0
-var _jitter := Vector3.ZERO
 var _implant_center := Vector3.ZERO
 var _has_implant := false
 var _device: Node3D
 var _token_held := false
 var _activated := false # State.IDLE is also the between-attacks phase, so activation has its own flag.
+var spent := false # NOCHE 01: mushroom cannon after its cannon blew up (stays, harmless).
+var model_scale := 1.0 # Final scale of the model (BeeFaunaSizes for animals, KINDS "scale" for the rest).
+var _velocity := Vector3.ZERO # Steering velocity (smooth mosquito).
 var _move_vx := 0.0
 var _prev_rel_x := 0.0
 var _has_prev := false
@@ -130,12 +140,17 @@ func _build() -> void:
 	rig.name = "Rig"
 	add_child(rig)
 	visual = (load(str(config["scene"])) as PackedScene).instantiate() as Node3D
-	visual.scale = Vector3.ONE * float(config["scale"])
+	visual.scale = Vector3.ONE
 	rig.add_child(visual)
+	model_scale = float(config["scale"])
+	if BeeFaunaSizes.SIZE.has(kind):
+		# NOCHE 01: size relative to Bee (BeeFaunaSizes), from the model's own measured length.
+		model_scale = BeeFaunaSizes.target_length(kind) / maxf(_bounds(visual, rig).size.x, 0.01)
+	visual.scale = Vector3.ONE * model_scale
 	_device = visual.find_child("AlienControlDevice", true, false) as Node3D
 	var bounds := _bounds(visual, rig)
 	var center := bounds.get_center()
-	var radius := 0.5 * float(config["scale"])
+	var radius := 0.5 * model_scale
 	if _device != null:
 		_has_implant = true
 		var device_bounds := _bounds(_device, rig)
@@ -173,7 +188,7 @@ func _build() -> void:
 	var shape := CollisionShape3D.new()
 	shape.name = "CollisionShape3D"
 	var sphere := SphereShape3D.new()
-	sphere.radius = 0.5 if not is_ground() else 0.7
+	sphere.radius = clampf(bounds.size.x * 0.3, 0.3, 0.75) # NOCHE 01: follows the animal size (BeeFaunaSizes).
 	shape.shape = sphere
 	attack_hitbox.add_child(shape)
 	attack_hitbox.position = Vector3(0.0, center.y, 0.0)
@@ -215,6 +230,12 @@ static func _bounds(root: Node3D, space: Node3D) -> AABB:
 
 func _physics_process(delta: float) -> void:
 	_clock += delta
+	if spent:
+		var cam := get_viewport().get_camera_3d()
+		if cam != null and global_position.x < cam.global_position.x - 11.0:
+			spent = false
+			_finish() # Out of the screen: the harmless mushroom leaves play.
+		return
 	if liberated or target == null:
 		return
 	if target.is_defeated and state != State.EXIT:
@@ -247,6 +268,10 @@ func _enter(delta: float, camera_x: float) -> void:
 		var arrived := _walk_to(_hover.x, float(config["speed"]) if float(config["speed"]) > 0.0 else 2.0, delta)
 		if arrived or global_position.x < camera_x + 5.5:
 			_begin(State.IDLE, idle_time)
+	elif config["mode"] == &"dash":
+		_steer(_hover, MOSQUITO_SPEED, delta) # NOCHE 01: smooth entry too.
+		if global_position.distance_to(_hover) < 0.6:
+			_begin(State.IDLE, idle_time)
 	else:
 		global_position = global_position.move_toward(_hover, 5.5 * delta)
 		if global_position.distance_to(_hover) < 0.4:
@@ -275,12 +300,8 @@ func _idle(delta: float, camera_x: float) -> void:
 	var speed := float(config["speed"])
 	match config["mode"]:
 		&"dash":
-			# Erratic: a new random hover point every ~0.3 s, reached fast.
-			_jitter_left -= delta
-			if _jitter_left <= 0.0:
-				_jitter_left = 0.3
-				_jitter = Vector3(randf_range(-1.6, 1.6), randf_range(-1.4, 1.4), 0.0)
-			global_position = global_position.move_toward(_hover + _jitter, speed * delta)
+			# NOCHE 01: smooth flight - a slow sine drift around its hover point, reached with gradual acceleration.
+			_steer(_hover + _mosquito_drift(), MOSQUITO_SPEED, delta)
 		&"cannon":
 			pass # Static: its position is part of the garden.
 		_:
@@ -349,14 +370,16 @@ func _start_telegraph() -> void:
 
 func _telegraph(delta: float) -> void:
 	_left -= delta
+	if config["mode"] == &"dash":
+		_steer(_lock_from, MOSQUITO_SPEED, delta) # Brakes softly onto the start of its warning line.
 	var progress := 1.0 - clampf(_left / maxf(float(config["telegraph"]), MIN_TELEGRAPH), 0.0, 1.0)
 	var flare := 1.0 + 0.12 * sin(progress * PI * 3.0) + 0.1 * progress
-	visual.scale = Vector3.ONE * float(config["scale"]) * flare # Whole animal swells: readable on any silhouette.
+	visual.scale = Vector3.ONE * model_scale * flare # Whole animal swells: readable on any silhouette.
 	if config["mode"] == &"lunge" or config["mode"] == &"charge":
 		rig.rotation.z = (0.25 if config["mode"] == &"lunge" else -0.12) * progress * -_facing # Rears up / lowers its head.
 	if _left <= 0.0:
 		telegraphs.append(BeeAttackTokens.now() - _tele_started)
-		visual.scale = Vector3.ONE * float(config["scale"])
+		visual.scale = Vector3.ONE * model_scale
 		rig.rotation.z = 0.0
 		_clear_warn()
 		_start_attack()
@@ -410,6 +433,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 			global_position = global_position.move_toward(_lock_to, speed * delta)
 
 	if _left <= 0.0:
+		if mode == &"dash":
+			_velocity = (_lock_to - _lock_from).normalized() * MOSQUITO_SPEED # Glides out of the dash.
 		attack_hitbox.set_enabled(false)
 		_release_token()
 		cycles_done += 1
@@ -425,7 +450,10 @@ func _recover(delta: float, camera_x: float) -> void:
 		var back := _hover
 		if config["mode"] == &"wave":
 			back.x = camera_x + 5.4
-		global_position = global_position.move_toward(back, maxf(float(config["speed"]), 3.0) * 1.4 * delta)
+		if config["mode"] == &"dash":
+			_steer(back + _mosquito_drift(), MOSQUITO_SPEED, delta) # Eases out of its dash instead of snapping back.
+		else:
+			global_position = global_position.move_toward(back, maxf(float(config["speed"]), 3.0) * 1.4 * delta)
 	_left -= delta
 	if _left <= 0.0:
 		_begin(State.IDLE, idle_time)
@@ -440,7 +468,7 @@ func _cancel_attack() -> void:
 	attack_hitbox.set_enabled(false)
 	_clear_warn()
 	_release_token()
-	visual.scale = Vector3.ONE * float(config["scale"])
+	visual.scale = Vector3.ONE * model_scale
 	rig.rotation.z = 0.0
 
 
@@ -568,8 +596,8 @@ func move_vx() -> float:
 func _on_health_changed(_current: int, _maximum: int, change: int) -> void:
 	if change < 0 and not liberated:
 		var tween := create_tween()
-		tween.tween_property(visual, "scale", Vector3.ONE * float(config["scale"]) * 1.08, 0.05)
-		tween.tween_property(visual, "scale", Vector3.ONE * float(config["scale"]), 0.08)
+		tween.tween_property(visual, "scale", Vector3.ONE * model_scale * 1.08, 0.05)
+		tween.tween_property(visual, "scale", Vector3.ONE * model_scale, 0.08)
 
 
 func _on_died() -> void:
@@ -583,26 +611,37 @@ func _on_died() -> void:
 	for area: Area3D in find_children("*", "Area3D", true, false):
 		if area is DamageHitbox3D:
 			(area as DamageHitbox3D).set_enabled(false)
+		area.set_deferred("monitorable", false) # No contact damage and no more hits after the implant breaks.
 	liberated_now.emit(self)
-	_facing = -1.0
-	rig.rotation.y = 0.0 # It leaves towards -X (see the tweens below): it looks where it goes.
 	var at := _muzzle()
-	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 0.7)
-	BeeAudio.play(get_parent(), &"tech_death", at)
 	if bool(config.get("machine", false)):
+		# Technology explodes (NOCHE 01: unchanged rule).
+		BeeLiberation.explode_tech(get_parent(), at, 1.0)
 		var boom := create_tween()
 		boom.tween_property(self, "scale", Vector3.ONE * 0.1, 0.35)
 		boom.tween_callback(_finish)
 		return
+	if config["mode"] == &"cannon":
+		# NOCHE 01: only the alien cannon blows up; the mushroom stays where it grows, intact and harmless.
+		BeeLiberation.explode_tech(get_parent(), at, 0.6)
+		if visual.has_method("release_control"):
+			visual.call("release_control")
+		BeeLiberation.warm_colours(visual)
+		spent = true
+		return # Leaves play (defeated) once the scroll has left it behind: see _physics_process.
+	add_to_group("bee_liberated")
 	if visual.has_method("release_control"):
 		visual.call("release_control")
-	BeeAudio.play(get_parent(), &"pollen", at, 1.1)
-	BeeCombatVFX.spawn(get_parent(), global_position, &"pollen", Vector3.UP, 1.0)
+	BeeLiberation.free_animal(get_parent(), visual, _device, at)
+	_facing = -1.0
+	rig.rotation.y = 0.0 # It leaves towards -X: it looks where it goes.
 	var away := create_tween()
 	if is_ground():
-		away.tween_property(self, "global_position", global_position + Vector3(-5.0, 0.0, 0.0), 1.8).set_trans(Tween.TRANS_SINE)
+		# Walks off, relaxed (a little slower than its attack, with a soft bob from the tween's sine).
+		away.tween_property(self, "global_position", global_position + Vector3(-LEAVE_GROUND_SPEED * LEAVE_SECONDS, 0.0, 0.0), LEAVE_SECONDS)
 	else:
-		away.tween_property(self, "global_position", global_position + Vector3(-6.0, 4.0, 0.0), 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		# Flies off up and to the left in a lazy arc.
+		away.tween_property(self, "global_position", global_position + Vector3(-LEAVE_AIR_SPEED * LEAVE_SECONDS, 3.2, 0.0), LEAVE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	away.tween_callback(_finish)
 
 
@@ -611,3 +650,18 @@ func _finish() -> void:
 	hide()
 	set_physics_process(false)
 	defeated.emit(self)
+
+
+# --- NOCHE 01: smooth mosquito flight -------------------------------------------------------------------------------
+
+func _mosquito_drift() -> Vector3:
+	return Vector3(sin(_clock * MOSQUITO_DRIFT_RATE.x) * MOSQUITO_DRIFT.x, sin(_clock * MOSQUITO_DRIFT_RATE.y + 1.3) * MOSQUITO_DRIFT.y, 0.0)
+
+
+## Velocity steering: accelerates gradually (MOSQUITO_ACCEL) towards `goal`, never faster than `max_speed`.
+func _steer(goal: Vector3, max_speed: float, delta: float) -> void:
+	var desired := (goal - global_position) * 1.6
+	desired.z = 0.0
+	desired = desired.limit_length(max_speed)
+	_velocity = _velocity.move_toward(desired, MOSQUITO_ACCEL * delta)
+	global_position += _velocity * delta

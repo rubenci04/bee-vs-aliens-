@@ -21,8 +21,8 @@ func run() -> void:
 		var selected := BeeAudio.stream_for(cue) as AudioStreamWAV
 		if not check(selected != null and selected.loop_mode == AudioStreamWAV.LOOP_DISABLED and selected.get_length() <= 0.75, "Invalid selected clip " + str(cue)):
 			return
-		if cue in BeeAudio.REAL_CUES:
-			if not check(selected != placeholder and selected.resource_path == "res://audio/sfx/real/%s.wav" % cue, "External mapping not used " + str(cue)):
+		if cue in BeeAudio.REAL_CUES or BeeAudio.REAL_ALIAS.has(cue): # NOCHE 01: aliases reuse another approved real clip.
+			if not check(selected != placeholder and selected.resource_path == "res://audio/sfx/real/%s.wav" % BeeAudio.REAL_ALIAS.get(cue, cue), "External mapping not used " + str(cue)):
 				return
 			# Godot may compress the imported resource as QOA; validate the source PCM.
 			var raw := AudioStreamWAV.load_from_file(ProjectSettings.globalize_path(selected.resource_path))

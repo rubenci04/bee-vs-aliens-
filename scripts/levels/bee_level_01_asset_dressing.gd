@@ -24,6 +24,13 @@ const SKY_FADE_FROM := 255.0 # Level distance where the night sky starts to appe
 const SKY_FADE_TO := 310.0 # ...and where it is fully visible.
 const FIREFLY_COUNT := 3
 const FIREFLY_FADE_FROM := 150.0
+## NOCHE 01 — foreground fireflies: world drift (m/s, towards -X), wrap distance from the camera, depths (behind the plane).
+const FIREFLY_DRIFT := 0.8
+const FIREFLY_WRAP := 8.5
+const FIREFLY_Z := [-1.8, -2.4, -2.1]
+## Far fireflies are only soft light points (no body), so they are never mistaken for wasps.
+const FAR_LIGHTS := 16
+const FIREFLY_MODEL_LENGTH := 1.293 # controlled_firefly.glb body length at scale 1 (catalogue).
 
 ## [scene, x, z, scale, yaw (rad), tilt (rad, z axis)]. All z < 0: behind the flight plane.
 const LITTER := [
@@ -43,6 +50,9 @@ var stars: Array[Node3D] = []
 var _glows: Array[MeshInstance3D] = []
 var _sky_materials: Array[StandardMaterial3D] = []
 var _clock := 0.0
+var _firefly_x: Dictionary = {}
+var far_lights: GPUParticles3D
+var _far_material: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -101,7 +111,7 @@ func _build_fireflies() -> void:
 	for i in FIREFLY_COUNT:
 		var bug := FIREFLY.instantiate() as Node3D
 		bug.name = "Firefly%d" % i
-		bug.scale = Vector3.ONE * 0.9
+		bug.scale = Vector3.ONE * BeeFaunaSizes.target_length(&"firefly") / FIREFLY_MODEL_LENGTH # NOCHE 01: 0.6 x Bee.
 		add_child(bug)
 		if bug.has_method("release_control"):
 			bug.call("release_control") # A free animal: no alien device.
@@ -123,6 +133,7 @@ func _build_fireflies() -> void:
 		bug.add_child(glow)
 		fireflies.append(bug)
 		_glows.append(glow)
+	_build_far_lights(disc)
 
 
 # --- sky --------------------------------------------------------------------------------------------------------
@@ -175,13 +186,18 @@ func _process(delta: float) -> void:
 	var dusk := clampf(inverse_lerp(FIREFLY_FADE_FROM, 290.0, distance), 0.0, 1.0)
 	for i in fireflies.size():
 		var phase := float(i) * 2.1
-		fireflies[i].global_position = Vector3(camera_x - 4.5 + 4.5 * float(i) + 1.4 * sin(_clock * 0.31 + phase),
-				2.2 + 0.9 * float(i % 2) + 0.7 * sin(_clock * 0.47 + phase * 1.7), -3.0 - 1.4 * float(i))
-		fireflies[i].visible = dusk > 0.02 # Not drawn (nor animated) before the evening starts.
-		# LOTE 7: the model looks along -X; it now faces its drift (x grows while cos > 0 -> look +X).
-		fireflies[i].rotation.y = PI if cos(_clock * 0.31 + phase) > 0.0 else 0.0
+		# NOCHE 01: foreground fireflies (the real model, near the flight plane) drift through the WORLD towards -X with a
+		# soft bob, so they always look where they go (model forward = -X); far ones are light points (see _far_lights).
+		var bug := fireflies[i]
+		if not _firefly_x.has(i) or _firefly_x[i] < camera_x - FIREFLY_WRAP:
+			_firefly_x[i] = camera_x + FIREFLY_WRAP - (0.0 if _firefly_x.has(i) else FIREFLY_WRAP * 2.0 * float(i) / float(FIREFLY_COUNT))
+		_firefly_x[i] = float(_firefly_x[i]) - FIREFLY_DRIFT * delta
+		bug.global_position = Vector3(float(_firefly_x[i]), 2.0 + 1.0 * float(i % 2) + 0.45 * sin(_clock * 0.9 + phase * 1.7), FIREFLY_Z[i % FIREFLY_Z.size()])
+		bug.visible = dusk > 0.02 # Not drawn (nor animated) before the evening starts.
+		bug.rotation.y = 0.0 # Moving towards -X, the way the model looks.
 		var pulse := 0.5 + 0.5 * sin(_clock * 2.3 + phase * 3.0)
 		((_glows[i].material_override) as StandardMaterial3D).albedo_color.a = (0.12 + 0.5 * pulse) * dusk
+	_update_far_lights(camera_x, dusk)
 	var night := clampf(inverse_lerp(SKY_FADE_FROM, SKY_FADE_TO, distance), 0.0, 1.0)
 	var visible_now := night > 0.01
 	moon.visible = visible_now
@@ -195,3 +211,58 @@ func _process(delta: float) -> void:
 	_pin(moon, camera, Vector2(0.74, 0.2), 0.2, 1.44, drift)
 	_pin(stars[0], camera, Vector2(0.3, 0.12), 0.2, 1.23, drift * 0.5)
 	_pin(stars[1], camera, Vector2(0.62, 0.07), 0.14, 1.23, drift * 0.7)
+
+
+# --- NOCHE 01: far fireflies = soft light points -----------------------------------------------------------------
+
+func _build_far_lights(disc: Texture2D) -> void:
+	var process := ParticleProcessMaterial.new()
+	process.gravity = Vector3.ZERO
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process.emission_box_extents = Vector3(11.0, 1.8, 3.0)
+	process.direction = Vector3(-1, 0.2, 0)
+	process.spread = 60.0
+	process.initial_velocity_min = 0.05
+	process.initial_velocity_max = 0.25
+	var curve := Curve.new() # Glow in and out: a twinkle, no motion to read as a body.
+	curve.add_point(Vector2(0.0, 0.0))
+	curve.add_point(Vector2(0.5, 1.0))
+	curve.add_point(Vector2(1.0, 0.0))
+	var curve_texture := CurveTexture.new()
+	curve_texture.curve = curve
+	process.scale_curve = curve_texture
+	process.scale_min = 0.6
+	process.scale_max = 1.0
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.32, 0.32)
+	_far_material = StandardMaterial3D.new()
+	_far_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_far_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_far_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_far_material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	_far_material.albedo_texture = disc
+	_far_material.albedo_color = Color(1.0, 0.9, 0.45, 0.0)
+	_far_material.disable_receive_shadows = true
+	quad.material = _far_material
+	far_lights = GPUParticles3D.new()
+	far_lights.name = "FarFireflyLights"
+	far_lights.amount = FAR_LIGHTS
+	far_lights.lifetime = 3.2
+	far_lights.preprocess = 3.2
+	far_lights.local_coords = false
+	far_lights.process_material = process
+	far_lights.draw_pass_1 = quad
+	far_lights.visibility_aabb = AABB(Vector3(-14, -4, -5), Vector3(28, 8, 10))
+	far_lights.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	far_lights.emitting = false
+	add_child(far_lights)
+
+
+func _update_far_lights(camera_x: float, dusk: float) -> void:
+	if far_lights == null:
+		return
+	far_lights.global_position = Vector3(camera_x + 1.0, 2.6, -9.5)
+	var on := dusk > 0.02
+	if far_lights.emitting != on:
+		far_lights.emitting = on
+	_far_material.albedo_color.a = 0.85 * dusk

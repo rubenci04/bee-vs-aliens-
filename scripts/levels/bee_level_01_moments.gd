@@ -15,6 +15,9 @@ extends Node3D
 const CAN_X := 6.0
 const CAN_Z := -3.6
 const BEETLE_SECONDS := 9.0
+## NOCHE 01: the aftermath turtle (BeeAftermathTurtle). Flag to remove it if it ever reads badly; scale ~1.7 x Bee long.
+const TURTLE_ENABLED := true
+const TURTLE_SCALE := 1.0
 const POWER_HINT := "¡PREPARATE! · SPREAD+"
 
 @export var stage_path: NodePath = ^".."
@@ -186,11 +189,17 @@ func _human_aftermath() -> void:
 		get_tree().create_timer(0.35 * float(i), false).timeout.connect(_dust.bind(Vector3(x, 0.25, -1.4 - 0.4 * float(i % 2))))
 	if beetle != null and is_instance_valid(beetle):
 		beetle.queue_free()
-	beetle = build_alien_turtle()
-	var shell := beetle.get_node("Body") as Node3D
-	BeeToonStyle.apply(beetle, true)
-	beetle.scale = Vector3.ONE * 1.5
+	if not TURTLE_ENABLED:
+		return
+	# NOCHE 01: the rebuilt garden turtle (hexagonal plates, eye, four legs) with an implant: shooting it frees it.
+	var turtle := BeeAftermathTurtle.new()
+	beetle = turtle
+	var shell := turtle.body
+	beetle.scale = Vector3.ONE * TURTLE_SCALE
 	add_child(beetle)
+	if stage.wave.has_method("register_extra_animal"):
+		stage.wave.register_extra_animal()
+		turtle.liberated_now.connect(func(_t): stage.wave.note_extra_liberated())
 	beetle.position = Vector3(camera_x + 7.0, -0.15, -1.6)
 	beetle.rotation.y = PI # Walks towards -X.
 	var walk := beetle.create_tween()

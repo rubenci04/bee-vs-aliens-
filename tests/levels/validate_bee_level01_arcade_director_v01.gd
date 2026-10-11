@@ -182,7 +182,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text == "SECTOR DESPEJADO" and wave.boss_defeated, "Level Complete missing")
+	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing")
 	check(wave.event_index == BeeLevel01Controller.EVENTS.size(), "Not every event ran")
 	check(moments_seen == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
 	check(acts_seen.has(1) and acts_seen.has(2) and acts_seen.has(3) and acts_seen.has(4) and acts_seen.has(5), "Acts not all reached: " + str(acts_seen.keys()))
@@ -276,7 +276,7 @@ func test_moments() -> void:
 	check(moments.beetle != null and is_instance_valid(moments.beetle), "No aftermath beetle")
 	var beetle_x := moments.beetle.global_position.x
 	await frames(60)
-	check(moments.beetle.global_position.x < beetle_x - 0.5 and moments.beetle.find_children("*", "Area3D", true, false).is_empty(), "The beetle must walk and be harmless")
+	check(moments.beetle.global_position.x < beetle_x - 0.5 and moments.beetle.find_children("*", "DamageHitbox3D", true, false).is_empty(), "The turtle must walk and be harmless (NOCHE 01: it has a hurtbox on its implant, never a hitbox)")
 	# Bomb reward pulse right after the Walker gate.
 	stage.distance = 299.0
 	stage._update_camera_and_bounds()

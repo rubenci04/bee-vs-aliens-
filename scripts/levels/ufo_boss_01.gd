@@ -68,6 +68,8 @@ const X_EDGE := 2.9
 const SUMMON_SECONDS := 1.0
 const MINION_COOLDOWN := {State.PHASE_2: 9.0, State.PHASE_3: 12.0}
 const MAX_MINIONS := {State.PHASE_2: 2, State.PHASE_3: 1}
+## NOCHE 01: every ORGANIC_EVERY-th summon (phases 2 and 3) brings the purple one-eyed organism instead of drones/probes.
+const ORGANIC_EVERY := 2
 const PHASE_TUNING := {
 	State.PHASE_1: [1.3, 4.6, 1.05, 0.5, 0.7],
 	State.PHASE_2: [1.4, 4.4, 1.1, 0.5, 0.65],
@@ -359,7 +361,11 @@ func _attack(delta: float) -> void:
 				_core.scale = Vector3.ONE
 				_set_glow(1.0)
 				var family := &"EyeDrone" if state == State.PHASE_2 else &"Probe"
-				summon_requested.emit(family, maxi(int(MAX_MINIONS.get(state, 0)) - minions_alive, 0))
+				var count := maxi(int(MAX_MINIONS.get(state, 0)) - minions_alive, 0)
+				if summons % ORGANIC_EVERY == ORGANIC_EVERY - 1:
+					family = &"OrganicAlien" # NOCHE 01: the purple one-eyed organism only lives here now (alone; it explodes).
+					count = mini(count, 1)
+				summon_requested.emit(family, count)
 				summons += 1
 				_summon_cooldown = float(MINION_COOLDOWN.get(state, 12.0))
 				_attack_step = &"cooldown"

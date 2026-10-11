@@ -19,6 +19,7 @@ const CUES := {
 	&"spread_pickup": ["pickups/spread", -21.0, 1, true],
 	&"bomb_pickup": ["pickups/bomb", -19.0, 1, true],
 	&"pollen": ["pickups/pollen", -26.0, 0, true],
+	&"liberate": ["pickups/pollen", -19.0, 1, true], # NOCHE 01: a freed animal (the approved pollen chime, played higher).
 	&"human_warning": ["environment/human_warning", -14.0, 4, true],
 	&"human_step": ["environment/human_step", -21.0, 2, true],
 	&"human_step_b": ["environment/human_step", -21.0, 2, true],
@@ -35,6 +36,8 @@ const CUES := {
 const MAX_VOICES := 16
 const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c", &"ufo_charge",
 		&"organic_death", &"wasp_overload", &"walker_charge", &"organic_charge", &"spider_telegraph", &"spider_drop", &"spider_retract"]
+## NOCHE 01: cues that reuse another real (approved) recording instead of a file of their own.
+const REAL_ALIAS := {&"liberate": &"pollen"}
 const REAL_GAIN_DB := {&"spread_pickup": -3.0, &"bomb_pickup": -3.0, &"pollen": -3.0}
 ## GARDEN IDENTITY 04: small per-play variation so repeated cues (30 deaths in a level) never sound identical.
 ## cue -> [pitch spread (+-), volume spread in dB (+-)]. Base/spread keep their own +-2.5 % pitch.
@@ -48,8 +51,8 @@ static func stream_for(cue: StringName) -> AudioStream:
 		push_error("Unknown Bee sound: " + str(cue))
 		return null
 	var path := "res://audio/sfx/%s.wav" % CUES[cue][0]
-	var selected := "res://audio/sfx/real/%s.wav" % cue
-	if use_real_assets and cue in REAL_CUES and ResourceLoader.exists(selected):
+	var selected := "res://audio/sfx/real/%s.wav" % REAL_ALIAS.get(cue, cue)
+	if use_real_assets and (cue in REAL_CUES or REAL_ALIAS.has(cue)) and ResourceLoader.exists(selected):
 		path = selected
 	if not _streams.has(path):
 		_streams[path] = load(path) as AudioStream

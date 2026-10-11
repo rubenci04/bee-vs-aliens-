@@ -24,6 +24,8 @@ const ASSET_FAUNA := {
 	"Snail": preload("res://scenes/levels/asset_fauna/snail.tscn"), "MushroomCannon": preload("res://scenes/levels/asset_fauna/mushroom.tscn"),
 	"SeedCarrier": preload("res://scenes/levels/asset_fauna/seed_carrier.tscn"),
 }
+## NOCHE 01 — animals (freed, never killed) counted for "LIBERADOS n/N"; everything else is technology and explodes.
+const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail"]
 const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
@@ -166,7 +168,8 @@ const EVENTS = [
 	# ACT 2 — CONTROLLED GARDEN (2 -> 3)
 	{"at": 68.0, "act": 2, "label": "PROFUNDIDAD · V DE OJOS", "units": ["EyeDrone", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.3, 0.3], "y": [4.4, 5.8, 3.0], "x": [0.0, 1.0, 1.0], "depth": true},
 	{"at": 76.0, "act": 2, "label": "CARRIL · SPEEDER", "units": ["Speeder"], "y": [5.2]},
-	{"at": 80.0, "act": 2, "label": "ORGANISMO · PRESENTACIÓN", "units": ["OrganicAlien"], "y": [4.0], "depth": true},
+	# NOCHE 01: the one-eyed purple organism left the normal events (it is now a UFO minion in phases 2-3).
+	{"at": 80.0, "act": 2, "label": "MARIQUITA · PRESENTACIÓN", "units": ["Ladybird"], "y": [4.0]},
 	{"at": 87.0, "act": 2, "label": "POPCORN · FILA BAJA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [2.2, 2.2, 2.2], "shooters": [0, 2]},
 	# GARDEN IDENTITY 04 — the spider is presented alone (clean read of the column, the ring and the lock).
 	{"at": 91.0, "act": 2, "label": "ARAÑA · PRESENTACIÓN (CARRIL VERTICAL)", "units": ["Spider"], "x": [1.2]},
@@ -195,7 +198,7 @@ const EVENTS = [
 	{"at": 172.0, "act": 3, "label": "FORMACIÓN B · OJO, TORRETA Y DOS SONDAS", "units": ["EyeDrone", "Turret", "Probe", "Probe"], "formation": "top_bottom", "delays": [0.0, 0.6, 1.4, 2.4],
 			"arena_label": "ZONA DE COMBATE · HUELLAS DEL GIGANTE", "arena": [
 		{"units": ["StagBeetle", "Mosquito", "Mosquito"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 5.0, 2.2]},
-		{"units": ["OrganicAlien", "Swarm", "Swarm", "Swarm"], "path": "dive", "shooters": [0, 2], "delays": [0.0, 0.8, 1.1, 1.4], "y": [3.6, 5.6, 4.4, 5.6]},
+		{"units": ["Moth", "Swarm", "Swarm", "Swarm"], "path": "dive", "shooters": [0, 2], "delays": [0.0, 0.8, 1.1, 1.4], "y": [3.6, 5.6, 4.4, 5.6]},
 		{"units": ["Snail", "Moth", "Wasp"], "delays": [0.0, 0.8, 2.0], "y": [0.0, 5.2, 3.0]},
 	]},
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm", "Wasp"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8, 3.0], "y": [0.0, 5.6, 5.6, 5.6, 3.8], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
@@ -204,7 +207,7 @@ const EVENTS = [
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
 	{"at": 198.0, "act": 4, "label": "DEFENSAS · SONDA Y OJO", "units": ["Probe", "EyeDrone"], "delays": [0.0, 0.6], "y": [5.6, 2.6]},
 	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret", "Probe"], "formation": "rock_turret", "delays": [0.0, 1.0], "y": [-0.2, 5.6]},
-	{"at": 214.0, "act": 4, "label": "SET PIECE B · ORGANISMO EN FUEGO CRUZADO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.6, 1.2], "y": [3.6, 5.8, 2.2]},
+	{"at": 214.0, "act": 4, "label": "SET PIECE B · LIBÉLULA EN FUEGO CRUZADO", "units": ["WaveDragonfly", "Probe", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.6, 1.2], "y": [3.6, 5.8, 2.2]},
 	{"at": 218.0, "act": 4, "label": "ESCARABAJO · EMBESTIDA BLINDADA", "units": ["StagBeetle"]},
 	{"at": 222.0, "act": 4, "label": "POPCORN · FILA ALTA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [5.2, 5.2, 5.2], "shooters": [0, 1, 2]},
 	{"at": 228.0, "act": 4, "label": "PROFUNDIDAD · ROMBO", "units": ["Probe", "EyeDrone", "EyeDrone"], "formation": "v", "delays": [0.0, 0.25, 0.25], "y": [4.2, 5.8, 2.6], "x": [0.0, 1.2, 1.2], "depth": true},
@@ -218,7 +221,7 @@ const EVENTS = [
 	{"at": 238.0, "act": 4, "label": "WALKER · ESCOLTA", "units": ["Walker", "Probe"], "formation": "escort", "delays": [0.0, 0.8], "y": [0.0, 5.6]},
 	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO ALTO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_top", "delays": [0.0, 0.35, 0.7], "y": [5.8, 5.8, 5.8], "shooters": [0, 1, 2]},
 	{"at": 250.0, "act": 4, "label": "POLILLA · BOMBAS QUIETAS", "units": ["Moth"], "y": [5.0]},
-	{"at": 254.0, "act": 4, "label": "ORGANISMO · SONDA Y OJO", "units": ["OrganicAlien", "Probe", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 1.8]},
+	{"at": 254.0, "act": 4, "label": "MARIQUITA BLINDADA · SONDA Y OJO", "units": ["Ladybird", "Probe", "EyeDrone"], "hard": true, "delays": [0.0, 0.8, 1.8]},
 	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA Y SONDA", "units": ["Dragonfly", "Probe"], "delays": [2.0, 3.0], "moment": "contaminated_garden"},
 	{"at": 270.0, "act": 4, "label": "OLA · OJO Y TORRETA", "units": ["EyeDrone", "Turret"], "formation": "wave", "delays": [0.0, 0.8]},
 	{"at": 274.0, "act": 4, "label": "HONGO CAÑÓN · DISPARO TELEGRAFIADO", "units": ["MushroomCannon", "Mosquito", "Mosquito"], "delays": [0.0, 1.2, 2.2], "y": [0.0, 3.4, 5.0]},
@@ -276,6 +279,8 @@ var _breather_until := 0.0
 var arenas_completed := 0
 var arena_log: Array[Dictionary] = [] # {event, seconds, waves} per finished zone (tests / report).
 var _label_token := 0
+var animals_total := 0 # NOCHE 01: controlled animals that appeared (incl. the turtle, see register_extra_animal).
+var liberated_count := 0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -502,6 +507,8 @@ func _spawn(request: Dictionary) -> void:
 	else:
 		active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1
+	if family in ANIMAL_FAMILIES:
+		animals_total += 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance})
 	var health := unit.get_node("HealthComponent") as HealthComponent
 	health.max_health = int(LEVEL_HP[family])
@@ -703,6 +710,18 @@ func _clear_fauna_hint() -> void:
 
 func _on_unit_liberated(unit: Node3D) -> void:
 	active_units.erase(unit)
+	if str(unit.name).get_slice("_", 0) in ANIMAL_FAMILIES:
+		liberated_count += 1
+
+## NOCHE 01: animals outside the event table (the turtle of the aftermath moment).
+func register_extra_animal() -> void:
+	animals_total += 1
+
+func note_extra_liberated() -> void:
+	liberated_count += 1
+
+func liberation_text() -> String:
+	return "LIBERADOS %d/%d" % [liberated_count, animals_total]
 
 func _release_unit(id: int) -> void:
 	var unit := instance_from_id(id) as Node
