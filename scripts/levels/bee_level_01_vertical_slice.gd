@@ -32,6 +32,9 @@ func _ready() -> void:
 	var asset_dressing := BeeLevel01AssetDressing.new() # LOTE 6: signal relays, garden litter, fireflies, night sky (Codex GLB assets).
 	asset_dressing.name = "AssetDressing"
 	add_child(asset_dressing)
+	var readability := BeeLevel01Readability.new() # NOCHE 01 · ETAPA 3: clean central corridor (after the decoration).
+	readability.name = "Readability"
+	add_child(readability)
 	var crosshair := BeeLevel01Crosshair.new() # LOTE 7: free-aim crosshair (mouse); auto-aim stays when there is no aiming input.
 	crosshair.name = "Crosshair"
 	crosshair.bee = bee

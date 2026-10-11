@@ -19,6 +19,9 @@ const GROUND_Y := -0.2
 const MIDGROUND_CLEAR_Z := 2.5
 const FOREGROUND_MIN_Z := 4.5
 const FLOWER_MAX_Z := -6.5
+## NOCHE 01 · ETAPA 3 — readability: no tall grass blade between this depth and the flight plane (the central corridor stays
+## clean for Bee and the enemies). Blades drawn closer are mirrored behind it.
+const CORRIDOR_CLEAR_Z := -5.0
 const CHUNK_WIDTH := 32.0
 ## Foreground geometry must project onto the Z=0 plane at or below this height, i.e. under
 ## crates, pollen and Bee's lowest flight height (0.7 m).
@@ -173,6 +176,8 @@ func _build_giant_stems(x0: float, x1: float) -> void:
 		x += _rng.randf_range(1.2, 2.8)
 		var z := _rng.randf_range(-9.0, -MIDGROUND_CLEAR_Z - 0.3)
 		var height := _rng.randf_range(4.0, 10.0)
+		if z > CORRIDOR_CLEAR_Z:
+			z = 2.0 * CORRIDOR_CLEAR_Z - z # NOCHE 01 · ETAPA 3: tall blades leave the band next to the flight plane (mirrored back; same RNG draws).
 		if i % 3 == 2 and height >= 6.0:
 			_flower_stem(Vector3(x, GROUND_Y, FLOWER_MAX_Z + (z + 2.8) * 0.65), height, i)
 			if height < 7.5:

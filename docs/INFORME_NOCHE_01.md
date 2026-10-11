@@ -5,7 +5,7 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 ## Lista de tareas
 - [x] ETAPA 1 — Liberación y correcciones (`liberation-01`)
 - [x] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
-- [ ] ETAPA 3 — Pulido y legibilidad (`polish-03`)
+- [x] ETAPA 3 — Pulido y legibilidad (`polish-03`)
 - [ ] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
 - [ ] ETAPA 5 — Preparar demo (`demo-prep-01`)
 
@@ -46,3 +46,24 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 - **Suite:** 73/73 PASS.
 - **Capturas:** `noche2_x{36,96,124,176,300}.png`, `noche2_{bottle,toon_shots,fighter}.png`, `noche_title.png`.
 - **Falta playtest:** que la dificultad FÁCIL se sienta bien, si la casa/valla de fondo distraen (la Etapa 3 trabaja la legibilidad) y el flujo título → nivel → título en un build.
+
+## ETAPA 3 — Pulido y legibilidad (`polish-03`)
+- **Corredor central limpio** (`scripts/levels/bee_level_01_readability.gd`): todo prop decorativo que suba a la franja de vuelo (y 1,6–6,4 m) más cerca que z = −5 del plano de juego se corre hacia atrás, con la misma X y el mismo tamaño (39 props de Codex y del jardín doméstico). El pasto alto procedural tampoco queda en esa franja (`CORRIDOR_CLEAR_Z` en `bee_level_01_visual_target.gd`: las hojas que salían más cerca se espejan hacia atrás; la secuencia aleatoria aprobada no cambia). La basura baja del suelo se queda donde estaba. El brote de árbol de X=104 (llenaba el centro) quedó más chico y más lejos; también la valla y la casa de fondo.
+- **Contraste:** los contornos de Bee y de los enemigos (ancho de actor) toman solo el 15 % del tono de la luz (`ACTOR_OUTLINE_TINT`), así quedan casi negros en el día, el dorado y el atardecer violeta. Los props mantienen el contorno teñido. El cian de los implantes de la fauna de Codex sube a `IMPLANT_GLOW` 1,1 (estaba en 0,65).
+- **Cian solo para tecnología alien:** test con auditoría automática de colores. La baliza del checkpoint era cian y ahora es color miel (`BEACON_COLOR`). Todo el cian restante está en enemigos, implantes, pilones/relés, el dispositivo contaminado o crecimientos alien. El violeta queda como secundario (antenas, puntas).
+- **Rendimiento** (1152×648, Arc B580, mismo banco que los lotes 5–6; el cuadro está topado a 10 ms por el monitor):
+
+| X | CPU render antes | CPU render después | draw calls antes → después |
+|---|---|---|---|
+| 10 | 1,31 ms | 1,38 ms | 376 → 394 |
+| 100 | 1,51 | 1,32 | 358 → 340 |
+| 176 | 2,20 | 2,03 | 787 → 849 |
+| 250 | 2,30 | 1,82 | 801 → 821 |
+| 300 | 2,32 | 1,95 | 857 → 855 |
+| 355 | 2,22 | 1,82 | 775 → 789 |
+| **promedio** | **1,98** | **1,72** | — |
+
+GPU sin cambios (~2,0 ms, ruido ±0,4).
+- **Capturas:** antes `noche3before_x{10,100,176,250,300,355}.png`, después `noche3after_x…`, más `noche3_{x100,x176,x300,sunset_actor}.png`.
+- **Falta playtest:** si el corredor quedó demasiado vacío o si falta "jungla" en algunos tramos (es fácil de ajustar con `CORRIDOR_Z`).
+- **Tests:** nuevo `validate_bee_readability_v03` (corredor, contornos al atardecer, brillo de implantes, auditoría de cian). **Suite:** 74/74 PASS.

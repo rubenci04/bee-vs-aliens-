@@ -5,6 +5,7 @@ const HANDOFF := &"bee_level_01_checkpoint_handoff"
 ## UFO BOSS 01: the fight has its own checkpoint (taken when the boss starts) and a debug jump (F9) straight to it.
 const BOSS_ARENA_X := 340.5
 const DEBUG_KEY := KEY_F9
+const BEACON_COLOR := Color(0.96, 0.7, 0.22)
 @export var checkpoint_x := 190.0
 ## LOTE 7: second checkpoint, in act 4 after the third combat zone and the contaminated flower (X=266), before the 296 gate.
 @export var second_checkpoint_x := 281.0
@@ -68,7 +69,7 @@ func create_beacon() -> void:
 	stage.add_child(beacon)
 	beacon.position = Vector3(checkpoint_x, 0, -1.3)
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.15, 0.85, 0.78)
+	material.albedo_color = BEACON_COLOR # NOCHE 01 · ETAPA 3: honey, not cyan (cyan is alien technology only).
 	var post := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(0.18, 1.7, 0.18)

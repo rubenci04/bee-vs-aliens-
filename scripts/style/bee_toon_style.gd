@@ -29,6 +29,9 @@ static var _outline_materials: Dictionary = {} # width -> ShaderMaterial
 ## BeeLevel01LightProgression; every outline material (shared by width) is updated together.
 const OUTLINE_BASE := Color(0.035, 0.022, 0.015)
 const OUTLINE_TINT_STRENGTH := 0.6
+## NOCHE 01 · ETAPA 3: actors (Bee, enemies: outline width >= OUTLINE_ACTOR) take only this much of the light tint, so their
+## outline stays near-black against the warm day and the violet sunset (props keep OUTLINE_TINT_STRENGTH).
+const ACTOR_OUTLINE_TINT := 0.15
 static var outline_color := OUTLINE_BASE
 static var _cache: Dictionary = {}
 
@@ -125,12 +128,13 @@ static func shared_outline(width: float) -> ShaderMaterial:
 		var material := ShaderMaterial.new()
 		material.shader = OUTLINE
 		material.set_shader_parameter("width", width)
-		material.set_shader_parameter("outline_color", outline_color)
+		material.set_shader_parameter("outline_color", outline_color if width < OUTLINE_ACTOR else OUTLINE_BASE)
 		_outline_materials[width] = material
 	return _outline_materials[width]
 
 
 static func set_outline_tint(tint: Color) -> void:
 	outline_color = OUTLINE_BASE.lerp(tint, OUTLINE_TINT_STRENGTH)
-	for material: ShaderMaterial in _outline_materials.values():
-		material.set_shader_parameter("outline_color", outline_color)
+	var actor_color := OUTLINE_BASE.lerp(tint, ACTOR_OUTLINE_TINT)
+	for width: float in _outline_materials:
+		(_outline_materials[width] as ShaderMaterial).set_shader_parameter("outline_color", actor_color if width >= OUTLINE_ACTOR else outline_color)

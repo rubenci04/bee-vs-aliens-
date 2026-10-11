@@ -23,6 +23,8 @@ const FACE_MIN_SPEED := 0.5 # m/s (screen-relative for flyers) before the body t
 const FACE_SMOOTHING := 0.18 # s
 ## NOCHE 01 — liberation: a freed animal leaves relaxed for LEAVE_SECONDS (walking or flying off to the left).
 const LEAVE_SECONDS := 3.0
+## NOCHE 01 · ETAPA 3: emission energy of the cyan implant parts (Codex wrappers cap it at 0.65 for Compatibility).
+const IMPLANT_GLOW := 1.1
 ## NOCHE 01 — smooth mosquito: slow sine drift (amplitude m, rate rad/s) and gradual acceleration (m/s²).
 const MOSQUITO_SPEED := 3.6
 const MOSQUITO_ACCEL := 6.0
@@ -152,6 +154,15 @@ func _build() -> void:
 		model_scale = BeeFaunaSizes.target_length(kind) / maxf(_bounds(visual, rig).size.x, 0.01)
 	visual.scale = Vector3.ONE * model_scale
 	_device = visual.find_child("AlienControlDevice", true, false) as Node3D
+	if _device != null:
+		# NOCHE 01 · ETAPA 3: a brighter cyan implant (the shot target) reads against every light of the level.
+		for mesh: MeshInstance3D in _device.find_children("*", "MeshInstance3D", true, false):
+			for surface in mesh.mesh.get_surface_count():
+				var glow := mesh.get_active_material(surface) as ShaderMaterial
+				if glow != null and glow.get_shader_parameter("emission_energy") != null and float(glow.get_shader_parameter("emission_energy")) > 0.0:
+					var own := glow.duplicate() as ShaderMaterial
+					own.set_shader_parameter("emission_energy", IMPLANT_GLOW)
+					mesh.set_surface_override_material(surface, own)
 	var bounds := _bounds(visual, rig)
 	var center := bounds.get_center()
 	var radius := 0.5 * model_scale
