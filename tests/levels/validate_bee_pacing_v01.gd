@@ -70,6 +70,8 @@ func run() -> void:
 	var seen_checkpoints := {}
 	var retired_seen := {}
 	var tracked_hitboxes := {}
+	var frog_damage := [0]
+	var frog_tracked := false
 	var quiet_start := 0.0
 	var early_retire: Array[String] = []
 	var stopped := 0.0 # Seconds with the scroll stopped (hard gates, the human, holds at 0).
@@ -174,7 +176,15 @@ func run() -> void:
 				var walker := unit is GroundWalkerEnemy or unit is GroundTurretEnemy or (unit is AssetFauna and (unit as AssetFauna).is_ground())
 				if not walker and age < wave.camera_time(family) - 0.2:
 					early_retire.append("%s %.1fs" % [unit.name, age])
-		var threats := (wave.active_units + wave.swarm_units).filter(_visible_threat).size()
+		var actors := wave.active_units + wave.swarm_units
+		var frog := stage.get_node("ScaleEvent").frog as Node3D
+		if is_instance_valid(frog):
+			actors.append(frog)
+			if not frog_tracked:
+				frog_tracked = true
+				(frog as BeeGardenToadEncounter)._tongue_box.hit_confirmed.connect(func(hurt, amount):
+					if hurt.owner_entity == bee: frog_damage[0] += amount)
+		var threats := actors.filter(_visible_threat).size()
 		if threats == 0 and boss_at < 0.0:
 			if run_quiet == 0.0:
 				quiet_start = t
@@ -198,9 +208,11 @@ func run() -> void:
 	print("PACING scroll stopped=%.0fs slowed=%.0fs spawned=%d escaped(retired)=%d shots=%d zones=%s" % [stopped, slowed, spawned, wave.escaped_count, bee.shots_fired, str(wave.arena_log)])
 	print("PACING boss_entry=%.1fs (%.1f min) complete=%.1fs (%.1f min) distance_scroll=%.1f m/s quiet_total=%.0fs longest_quiet=%.1fs" % [
 			boss_at, boss_at / 60.0, complete_at, complete_at / 60.0, stage.scroll_speed, quiet, longest_quiet])
+	print("PACING frog_damage=", frog_damage[0])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
-		check(lost[0] >= 25 and lost[0] <= 45, "Normal route HP lost %d outside 25-45" % lost[0])
+		check(lost[0] - frog_damage[0] >= 25 and lost[0] - frog_damage[0] <= 45, "Ordinary route damage outside 25-45 after separating frog damage")
+		check(lost[0] <= 45 + BeeGardenToadEncounter.MODERATE_DAMAGE * 3, "Frog adds too much route damage")
 		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the UFO %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
 		check(complete_at > boss_at, "Level must complete after the UFO")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())

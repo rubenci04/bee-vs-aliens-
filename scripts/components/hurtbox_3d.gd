@@ -60,6 +60,8 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 	if owner_entity is BeePlayer:
 		var pressure := hitbox.bee_damage_scale
 		amount = maxi(1, roundi(float(amount) * pressure)) if amount > 0 else 0
+	if owner_entity != null and owner_entity.has_method("limit_hull_damage") and health_component == owner_entity.get("health"):
+		amount = int(owner_entity.call("limit_hull_damage", amount, hitbox))
 	var applied := health_component.take_damage(amount)
 	if applied > 0:
 		hits_taken += 1

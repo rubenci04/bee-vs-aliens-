@@ -350,7 +350,7 @@ func test_presentation() -> void:
 			first = false
 		frog_box = box
 		touched = touched or box.intersects(bottle_box)
-	check(not touched and frog_event.landings >= 4 and frog_box.end.z < -3.0, "The frog intersects the bottle or never hops (landings %d)" % frog_event.landings)
+	check(not touched and frog_event.landings >= 4 and is_zero_approx(frog_event.frog.global_position.z), "The frog intersects the bottle or never hops (landings %d)" % frog_event.landings)
 	stage.scroll_speed = 0.0
 	print("V03_PRESENTATION leaves=mesh frog_start=%.1f landings=%d bottle_clear=OK" % [start_rel, frog_event.landings])
 

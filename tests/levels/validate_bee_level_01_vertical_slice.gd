@@ -374,7 +374,7 @@ func run() -> void:
 			bee.global_position.y = 7.0
 			bee.global_position.x = stage.distance - 5.1
 		elif not wave._hard_gate:
-			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
+			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL * BeeGardenToadEncounter.SCROLL_FACTOR) or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true

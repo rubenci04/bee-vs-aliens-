@@ -1,7 +1,7 @@
 class_name UfoBoss01
 extends Node3D
 ## BEE UFO BOSS 01 — FIRST CONTACT. Level 01 climax: the first alien ship Bee sees.
-## Simple state machine: APPROACH -> PHASE_1 -> PHASE_2 -> PHASE_3 -> DEATH (TRANSITION in between).
+## Five combat phases, transitions, then the existing death cinematic.
 ## Gameplay stays on the Z=0 plane; only the approach uses visual depth (it flies in from far Z).
 ## Everything is built in code (no external UFO asset) with Style C toon materials.
 
@@ -11,31 +11,37 @@ signal projectile_fired(projectile: AlienEnemyProjectile, pattern: StringName)
 ## BOSS CHALLENGE V2 (REBUILD 03): the level director spawns `count` minions of `family` launched from the saucer.
 signal summon_requested(family: StringName, count: int)
 
-enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, TRANSITION, DEATH, DONE }
+enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, PHASE_5, TRANSITION, DEATH, DONE }
 
 const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
 const PROJECTILE_GROUP := &"ufo_boss_projectiles"
 const DISPLAY_NAME := "NODO ALIEN"
 
-## LOTE 9 · ETAPA C — a real final fight (playtest: "too easy, even on Normal"). Target with Base and ~60 % aim: 70-90 s.
+## LOTE 9 · ETAPA C — a real final fight (playtest: "too easy, even on Normal"). LOTE 10 target: 75-100 s with Base and sustained Spread.
 ##   PHASE 1  100-70 %  faster aimed bursts (4 shots, 0.11 s apart) and an aimed fan every third attack
 ##   PHASE 2   70-40 %  cyan SHIELD (no damage) powered by SHIELD_NODES orbiting nodes; it throws mines meanwhile. Breaking
 ##                      every node drops the shield for SHIELD_WINDOW s (damage x WINDOW_DAMAGE_SCALE), then it reforms
-##   PHASE 3   40-15 %  tractor beam every other attack, faster mines, a side change every SIDE_SWITCH[PHASE_3] s
-##   PHASE 4  < 15 %    FURY: red core, combined pattern (beam + mines together, fans, long bursts), faster side changes
+##   PHASE 3   40-25 %  tractor beam every other attack, faster mines, a side change every SIDE_SWITCH[PHASE_3] s
+##   PHASE 4   25-15 %    FURY: red core, combined pattern (beam + mines together, fans, long bursts), faster side changes
+##   PHASE 5  <15 % OVERLOAD: violet core, denser movement, line drones; shared sustained hull DPS budget.
 ## Every damaging attack is announced >= MIN_TELEGRAPH s before it can hurt (see `hazards`).
 ## BEFORE: 500 HP, 3 phases (66 / 33 %), bomb 32 (6 % of its life), shortest fight ~25 s with dodging.
 @export var max_hp := 1200
 const PHASE_2_RATIO := 0.70
 const PHASE_3_RATIO := 0.40
-const PHASE_4_RATIO := 0.15
+const PHASE_4_RATIO := 0.25
+const PHASE_5_RATIO := 0.15
+const HULL_DPS_RATIO := 0.0143
+const HULL_BURST := 14.0
+const EASY_HULL_DPS_RATIO := 0.0125
+const OVERLOAD_COLOR := Color(0.65, 0.24, 1.0)
 ## The Alien Bomb takes this fraction of the max HP (was its normal 32 damage = 6 %).
 const BOMB_FRACTION := 0.08
 ## Phase 2 shield: nodes on the first raise / on every later raise, node HP, open window and reform warning (s).
 const SHIELD_NODES := 3
 const SHIELD_NODES_AGAIN := 2
 const SHIELD_NODE_HP := 16
-const SHIELD_WINDOW := 5.0
+const SHIELD_WINDOW := 24.0
 const SHIELD_REFORM := 1.2
 const WINDOW_DAMAGE_SCALE := 2.0
 const SHIELD_RADIUS := 2.9
@@ -54,24 +60,24 @@ const CENTER_Y := 3.6
 const CROSS_SECONDS := 1.5
 const CROSS_LIFT := 1.8
 const SIDE_SWITCH_P3 := 4.5 # LOTE 9: 6.5 -> 4.5 s.
-const SIDE_SWITCH := {State.PHASE_3: SIDE_SWITCH_P3, State.PHASE_4: 3.5}
+const SIDE_SWITCH := {State.PHASE_3: SIDE_SWITCH_P3, State.PHASE_4: 3.5, State.PHASE_5: 3.0}
 ## BOSS v2 MINES: thrown from the core, they fly TRAVEL s to their spot, hang still with a shrinking warning ring and
 ## explode in MINE_RADIUS (radius drawn the whole time). LOTE 9: phase 3 faster (1.5 -> 1.25 s), phase 4 with the beam.
-const MINE_COUNT := {State.PHASE_2: 2, State.PHASE_3: 3, State.PHASE_4: 2}
-const MINE_FUSE := {State.PHASE_2: 2.0, State.PHASE_3: 1.25, State.PHASE_4: 1.1}
+const MINE_COUNT := {State.PHASE_2: 2, State.PHASE_3: 3, State.PHASE_4: 2, State.PHASE_5: 2}
+const MINE_FUSE := {State.PHASE_2: 2.0, State.PHASE_3: 1.25, State.PHASE_4: 1.1, State.PHASE_5: 1.1}
 const MINE_RADIUS := 1.5
-const MINE_DAMAGE := 5 # LOTE 9: 12 -> 5 (more mines, longer fight; see the damage budget below).
+const MINE_DAMAGE := 4 # LOTE 10: stronger bullets and new hull attacks share the damage budget.
 const MINE_SPREAD := 2.4 # m between neighbouring mines (one lands on Bee's spot, the rest beside it)
 const MINE_TELEGRAPH := 0.5 # core swell before the throw
 ## Every damage source the boss owns must be announced at least this long before it can hurt (tests read `hazards`).
-const MIN_TELEGRAPH := 0.4
+const MIN_TELEGRAPH := 0.42
 const TRANSITION_SECONDS := 0.9
 ## Visual root scale: ring radius ~2.7 m (5.4 m wide). A full 6 m would cover Bee's flight window in the preset E frame.
 const VISUAL_SCALE := 1.6
 ## PHASE 3 TRACTOR BEAM: a vertical column on the ground line, marked 1 s before, 15 damage once per exposure.
 const BEAM_TELEGRAPH := 1.0
 ## LOTE 9: the beam warns a little shorter later on (still >= MIN_TELEGRAPH).
-const BEAM_TELEGRAPH_BY_PHASE := {State.PHASE_3: 0.85, State.PHASE_4: 0.7}
+const BEAM_TELEGRAPH_BY_PHASE := {State.PHASE_3: 0.85, State.PHASE_4: 0.7, State.PHASE_5: 0.65}
 const BEAM_ACTIVE := 0.8
 const BEAM_WIDTH := 1.5
 const BEAM_DAMAGE := 8 # LOTE 9: 15 -> 8.
@@ -84,38 +90,39 @@ const BEAM_TOP_Y := 7.3
 ## (X amplitude per phase) plus, from phase 2, a slow approach / retreat. Never chases Bee and never leaves the band
 ## [X_MIN, half width - X_EDGE] in front of the camera, so the left of the screen is always an escape route.
 ## BOSS v2: wider bands - |x| in [X_MIN, half width - X_EDGE] on its side, vertical amplitude per phase in PHASE_TUNING.
-const MOVE_X := {State.PHASE_1: 1.4, State.PHASE_2: 1.6, State.PHASE_3: 1.8, State.PHASE_4: 2.0}
-const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1, State.PHASE_4: 1.2}
+const MOVE_X := {State.PHASE_1: 1.4, State.PHASE_2: 1.6, State.PHASE_3: 1.8, State.PHASE_4: 2.0, State.PHASE_5: 2.0}
+const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1, State.PHASE_4: 1.2, State.PHASE_5: 1.2}
 const X_MIN := 1.2
 const X_EDGE := 2.9
 ## Minions: phase 2 launches 2 EyeDrones (then again whenever none is left, every MINION_COOLDOWN s); phase 3 launches
 ## a single Probe only when the screen is clean enough. While summoning the saucer does not attack (~1 s).
 const SUMMON_SECONDS := 1.0
 ## LOTE 9: phase 2 has the shield nodes instead; minions come in phase 3 only.
-const MINION_COOLDOWN := {State.PHASE_3: 12.0}
-const MAX_MINIONS := {State.PHASE_3: 1}
+const MINION_COOLDOWN := {State.PHASE_3: 12.0, State.PHASE_5: 10.0}
+const MAX_MINIONS := {State.PHASE_3: 1, State.PHASE_5: 1}
 ## NOCHE 01: every ORGANIC_EVERY-th summon brings the purple one-eyed organism instead of a probe.
 const ORGANIC_EVERY := 2
 ## [bob amplitude, bob period, cooldown, aimed telegraph, fan telegraph]. LOTE 9: shorter cooldowns, phase 4.
 const PHASE_TUNING := {
-	State.PHASE_1: [1.3, 4.6, 0.8, 0.45, 0.6],
+	State.PHASE_1: [1.3, 4.6, 1.1, 0.45, 0.6],
 	State.PHASE_2: [1.4, 4.4, 1.0, 0.5, 0.6],
-	State.PHASE_3: [1.5, 3.4, 0.7, 0.45, 0.5],
-	State.PHASE_4: [1.6, 3.0, 0.55, 0.42, 0.45],
+	State.PHASE_3: [1.5, 3.4, 0.9, 0.45, 0.5],
+	State.PHASE_4: [1.6, 3.0, 0.8, 0.42, 0.45],
+	State.PHASE_5: [1.6, 2.7, 0.75, 0.42, 0.45],
 }
 const AIMED_SHOTS := 3
 const AIMED_INTERVAL := 0.14
 const AIMED_SPEED := 6.2 # Fallback; per phase see AIMED_SPEED_BY_PHASE.
 ## LOTE 9: faster, longer aimed bursts (phase 1 was 3 shots at 6.8 m/s, 0.14 s apart).
-const AIMED_SPEED_BY_PHASE := {State.PHASE_1: 7.8, State.PHASE_2: 7.2, State.PHASE_3: 7.8, State.PHASE_4: 8.4}
-const AIMED_SHOTS_BY_PHASE := {State.PHASE_1: 4, State.PHASE_2: 3, State.PHASE_3: 4, State.PHASE_4: 5}
-const AIMED_INTERVAL_BY_PHASE := {State.PHASE_1: 0.11, State.PHASE_2: 0.14, State.PHASE_3: 0.12, State.PHASE_4: 0.1}
+const AIMED_SPEED_BY_PHASE := {State.PHASE_1: 7.8, State.PHASE_2: 7.2, State.PHASE_3: 7.8, State.PHASE_4: 8.4, State.PHASE_5: 8.4}
+const AIMED_SHOTS_BY_PHASE := {State.PHASE_1: 4, State.PHASE_2: 3, State.PHASE_3: 4, State.PHASE_4: 5, State.PHASE_5: 5}
+const AIMED_INTERVAL_BY_PHASE := {State.PHASE_1: 0.11, State.PHASE_2: 0.14, State.PHASE_3: 0.12, State.PHASE_4: 0.1, State.PHASE_5: 0.1}
 const FAN_SHOTS := 5
 const FAN_STEP_DEGREES := 17.0 # 5 shots over 68°: gaps of ~1.7 m at Bee's distance.
 const FAN_SPEED := 4.8
 ## LOTE 9 damage budget: a longer fight with denser bursts; a half-dodging player should lose ~40-60 HP on NORMAL
 ## (validate_bee_boss_fight_v04). Many small shots, heavier telegraphed mines / beam. BEFORE: shot 8, mine 12, beam 15, hull 12.
-const SHOT_DAMAGE := 2
+const SHOT_DAMAGE := 3
 const CONTACT_DAMAGE := 10
 
 const COLORS := {
@@ -189,6 +196,9 @@ var shield_absorbed := 0
 var bombs_taken := 0
 var fight_seconds := 0.0 # From PHASE_1 to DEATH.
 var _fury_material: StandardMaterial3D
+var _hull_tokens := HULL_BURST
+var assault: BeeUfoAssault
+var honey_spawned := 0
 
 
 func _ready() -> void:
@@ -208,6 +218,8 @@ func _ready() -> void:
 	_build_health_bar()
 	_build_beam()
 	_build_shield()
+	assault = BeeUfoAssault.new()
+	add_child(assault)
 	_hover = AudioStreamPlayer3D.new()
 	_hover.name = "HoverLoop"
 	var source := load("res://audio/sfx/real/ufo_hover.wav") as AudioStreamWAV
@@ -243,7 +255,7 @@ func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 
 
 func is_active() -> bool:
-	return state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.TRANSITION]
+	return state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.PHASE_5, State.TRANSITION]
 
 
 ## LOTE 9: what the Alien Bomb does to the saucer (BeeAlienBomb asks the entity it hits).
@@ -284,6 +296,7 @@ func freeze() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (EASY_HULL_DPS_RATIO if BeeGameSettings.difficulty == BeeGameSettings.EASY else HULL_DPS_RATIO) * delta)
 	_state_time += delta
 	match state:
 		State.APPROACH:
@@ -294,14 +307,14 @@ func _physics_process(delta: float) -> void:
 			_set_glow(lerpf(3.0, 1.0, t))
 			if t >= 1.0:
 				_enter_fight()
-		State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4:
+		State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.PHASE_5:
 			fight_seconds += delta
 			_move(delta)
 			_attack(delta)
 			_refresh_contact(delta)
 			if state == State.PHASE_2:
 				_update_shield(delta)
-			if state == State.PHASE_4:
+			if state in [State.PHASE_4, State.PHASE_5]:
 				_fury_pulse()
 		State.TRANSITION:
 			fight_seconds += delta
@@ -334,12 +347,18 @@ func _enter_fight() -> void:
 func _change_state(value: int) -> void:
 	state = value
 	_state_time = 0.0
-	if value in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4] and not (value in phases_seen):
+	if value in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.PHASE_5] and not (value in phases_seen):
 		phases_seen.append(value)
 		if value == State.PHASE_2:
 			_raise_shield() # LOTE 9: phase 2 opens with the shield up.
 		elif value == State.PHASE_4:
 			_enter_fury()
+	if value in [State.PHASE_3, State.PHASE_5]:
+		_drop_honey()
+	if value == State.PHASE_5:
+		var mat := _core.get_surface_override_material(0) as ShaderMaterial
+		mat.set_shader_parameter("albedo", OVERLOAD_COLOR)
+		mat.set_shader_parameter("emission", OVERLOAD_COLOR)
 	phase_changed.emit(state)
 
 
@@ -348,6 +367,8 @@ func _tuning() -> Array:
 
 
 func _move(delta: float) -> void:
+	if assault != null and assault.busy and assault.kind == &"ram":
+		return
 	var tuning := _tuning()
 	_bob_time += delta
 	var phase: int = state if state != State.TRANSITION else _next_state
@@ -396,6 +417,8 @@ func _cross(delta: float, cam_x: float, y: float) -> void:
 
 
 func _refresh_contact(delta: float) -> void:
+	if assault != null and assault.busy:
+		return
 	if crossing:
 		return
 	# The contact hitbox hits once per enable; re-arm it so touching the hull keeps hurting.
@@ -408,6 +431,8 @@ func _refresh_contact(delta: float) -> void:
 # --- attacks ----------------------------------------------------------------------------------
 
 func _attack(delta: float) -> void:
+	if assault != null and assault.busy:
+		return
 	if crossing:
 		return # No attack while it changes side.
 	if SIDE_SWITCH.has(state): # LOTE 9: phase 3 every 4.5 s, phase 4 every 3.5 s.
@@ -418,7 +443,7 @@ func _attack(delta: float) -> void:
 			return
 	_attack_left -= delta
 	var tuning := _tuning()
-	if state == State.PHASE_3: # LOTE 9: minions in phase 3 only (phase 2 has its shield nodes).
+	if state in [State.PHASE_3, State.PHASE_5]: # LOTE 10: line drones in phase 3 only (phase 2 has its shield nodes).
 		_summon_cooldown -= delta
 	match _attack_step:
 		&"summon":
@@ -431,9 +456,7 @@ func _attack(delta: float) -> void:
 				_set_glow(1.0)
 				var family := &"Probe"
 				var count := maxi(int(MAX_MINIONS.get(state, 0)) - minions_alive, 0)
-				if summons % ORGANIC_EVERY == ORGANIC_EVERY - 1:
-					family = &"OrganicAlien" # NOCHE 01: the purple one-eyed organism only lives here now (alone; it explodes).
-					count = mini(count, 1)
+
 				summon_requested.emit(family, count)
 				summons += 1
 				_summon_cooldown = float(MINION_COOLDOWN.get(state, 12.0))
@@ -626,12 +649,12 @@ func clear_mines() -> void:
 
 func current_phase_number() -> int:
 	var phase: int = _next_state if state == State.TRANSITION else state
-	return clampi(phase - State.PHASE_1 + 1, 1, 4)
+	return clampi(phase - State.PHASE_1 + 1, 1, 5)
 
 
 func _update_phase_label() -> void:
 	if _phase_label != null:
-		_phase_label.text = "FASE %d / 4" % current_phase_number() if current_phase_number() < 4 else "FASE 4 / 4 · FURIA"
+		_phase_label.text = "FASE %d / 5" % current_phase_number() if current_phase_number() < 5 else "FASE 5 / 5 · SOBRECARGA"
 
 
 # --- tractor beam (phase 3) --------------------------------------------------------------------
@@ -766,11 +789,13 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		var punch := create_tween()
 		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE * 1.05, 0.05)
 		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE, 0.08)
-	if not (state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4]) or current <= 0:
+	if not (state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.PHASE_5]) or current <= 0:
 		return
 	var ratio := float(current) / float(maximum)
 	var wanted: int = State.PHASE_1
-	if ratio <= PHASE_4_RATIO:
+	if ratio <= PHASE_5_RATIO:
+		wanted = State.PHASE_5
+	elif ratio <= PHASE_4_RATIO:
 		wanted = State.PHASE_4
 	elif ratio <= PHASE_3_RATIO:
 		wanted = State.PHASE_3
@@ -811,6 +836,7 @@ func _die() -> void:
 	hurtbox.set_deferred("monitorable", false)
 	remove_from_group("bee_auto_aim_targets")
 	_cancel_beam()
+	assault.cancel()
 	_clear_shield()
 	_set_charge(0.0)
 	clear_projectiles() # No unfair hit after the win.
@@ -1024,7 +1050,7 @@ func _build_health_bar() -> void:
 	_bar.add_theme_stylebox_override("background", back)
 	box.add_child(_bar)
 	# BOSS v2: phase ticks at 66 % and 33 % and the current phase under the bar.
-	for ratio in [PHASE_2_RATIO, PHASE_3_RATIO, PHASE_4_RATIO]:
+	for ratio in [PHASE_2_RATIO, PHASE_3_RATIO, PHASE_4_RATIO, PHASE_5_RATIO]:
 		var tick := ColorRect.new()
 		tick.color = Color(1.0, 1.0, 1.0, 0.85)
 		tick.size = Vector2(2, 14)
@@ -1150,7 +1176,7 @@ func _raise_shield() -> void:
 		shield_nodes.append(node)
 	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.6)
 	if _phase_label != null:
-		_phase_label.text = "FASE 2 / 4 · ESCUDO: ROMPÉ LOS NODOS"
+		_phase_label.text = "FASE 2 / 5 · ESCUDO: ROMPÉ LOS NODOS"
 
 
 func _on_node_destroyed(node: UfoShieldNode) -> void:
@@ -1174,7 +1200,7 @@ func _drop_shield() -> void:
 	shrink.tween_property(_shield_visual, "scale", Vector3(1.3, 0.8, 1.3), 0.12)
 	shrink.tween_callback(func(): _shield_visual.visible = false)
 	if _phase_label != null:
-		_phase_label.text = "FASE 2 / 4 · ¡ESCUDO ABAJO!"
+		_phase_label.text = "FASE 2 / 5 · ¡ESCUDO ABAJO!"
 
 
 func _update_shield(delta: float) -> void:
@@ -1230,7 +1256,7 @@ func _enter_fury() -> void:
 	BeeCameraShake.kick(self, 0.06, 0.4)
 	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.5)
 	if _phase_label != null:
-		_phase_label.text = "FASE 4 / 4 · FURIA"
+		_phase_label.text = "FASE 4 / 5 · FURIA"
 
 
 func _fury_pulse() -> void:
@@ -1239,7 +1265,7 @@ func _fury_pulse() -> void:
 
 
 func is_fury() -> bool:
-	return state == State.PHASE_4
+	return state in [State.PHASE_4, State.PHASE_5]
 
 
 func _exit_tree() -> void:
@@ -1247,3 +1273,21 @@ func _exit_tree() -> void:
 		if is_instance_valid(node):
 			node.queue_free()
 	shield_nodes.clear()
+
+
+## Token budget applies after the shield-window multiplier. Bombs retain exactly 8%, outside the gun budget.
+func limit_hull_damage(amount: int, source: DamageHitbox3D) -> int:
+	if source is BeeAlienBomb:
+		return roundi(float(amount) / health.damage_scale)
+	if health.damage_blocked:
+		return 0
+	var permitted := mini(roundi(amount * health.damage_scale), floori(_hull_tokens))
+	var raw := floori(permitted / health.damage_scale)
+	_hull_tokens -= roundi(raw * health.damage_scale)
+	return raw
+
+func _drop_honey() -> void:
+	var item := preload("res://scenes/items/toon/healing.tscn").instantiate() as Node3D
+	get_parent().add_child(item)
+	item.global_position = Vector3(camera.global_position.x - side * 3.8, 4.0, 0)
+	honey_spawned += 1

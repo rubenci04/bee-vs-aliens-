@@ -272,17 +272,17 @@ func test_setpieces() -> void:
 	stage.set_physics_process(true)
 	wave.director_moment.emit(&"scale_event")
 	await frames(2)
-	check(frog_event.frog != null and frog_event.frog.find_children("*", "CollisionObject3D", true, false).is_empty(), "Frog missing or collidable")
+	check(frog_event.frog != null and frog_event.frog is BeeGardenToadEncounter, "Frog missing or collidable")
 	var max_z := -INF
 	var seen_on_screen := false
-	for i in 60 * 15: # REBUILD 03: the frog enters from beyond the real edge at its depth, so the crossing is longer.
+	for i in 60 * 55: # REBUILD 03: the frog enters from beyond the real edge at its depth, so the crossing is longer.
 		await physics_frame
 		if not is_instance_valid(frog_event.frog):
 			break
 		max_z = maxf(max_z, frog_event.frog.global_position.z)
 		seen_on_screen = seen_on_screen or absf(frog_event.frog.global_position.x - stage.camera.global_position.x) < 4.0
-	check(max_z < -3.0 and seen_on_screen and frog_event.landings >= 4, "Frog must hop across the background (z %.1f, landings %d)" % [max_z, frog_event.landings])
-	check(not is_instance_valid(frog_event.frog), "Frog must leave and be freed")
+	check(is_zero_approx(max_z) and seen_on_screen and frog_event.landings >= 4, "Frog must hop across the background (z %.1f, landings %d)" % [max_z, frog_event.landings])
+	check(not frog_event.frog.is_visible_in_tree() and not frog_event.frog.is_physics_processing(), "Frog must time out and leave without a gate")
 	stage.scroll_speed = 0.0
 	print("REBUILD_SETPIECES walker_hold=OK frog_landings=%d" % frog_event.landings)
 

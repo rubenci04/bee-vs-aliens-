@@ -442,6 +442,7 @@ func test_boss() -> void:
 	await frames(2)
 	for entry in [[0.3, true], [-0.3, true], [1.0, true], [1.6, false], [-1.5, false]]: # Boss doubled in size (batch 4): offsets scaled.
 		boss.health.current_health = boss.health.max_health
+		boss._hull_tokens = UfoBoss01.HULL_BURST # Geometry fixture freezes physics, so recharge explicitly between isolated shots.
 		bee.global_position = Vector3(boss.global_position.x - 3.0, boss.global_position.y + float(entry[0]), 0)
 		bee.facing_x = 1.0
 		var pellet := bee._spawn_projectile(Vector3.RIGHT)
@@ -457,8 +458,10 @@ func test_boss() -> void:
 		var base := await dps(gap, false)
 		var spread := await dps(gap, true, "02_spread_vs_ufo.png" if gap == 3.0 else "")
 		report.append("%.0fm base=%.1f spread=%.1f" % [gap, base, spread])
+		var cap := boss.max_hp * UfoBoss01.HULL_DPS_RATIO + UfoBoss01.HULL_BURST / 8.0
+		check(maxf(base, spread) <= cap, "Eight-second hull DPS exceeds the sustained budget")
 		if gap == 3.0:
-			check(spread >= base * 1.2, "Spread at 3 m should beat Base (%.1f vs %.1f)" % [spread, base])
+			check(spread >= base * 0.9 and spread <= base * 1.1, "Hull budget must keep close-range Spread comparable to Base (%.1f vs %.1f)" % [spread, base])
 		else:
 			check(spread >= base * 0.75, "Spread at 6 m is clearly worse than Base (%.1f vs %.1f)" % [spread, base])
 	print("CHALLENGE_BOSS_SPREAD ", " | ".join(report))

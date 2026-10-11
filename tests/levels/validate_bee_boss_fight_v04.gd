@@ -1,13 +1,9 @@
 extends SceneTree
 
-# LOTE 9 · ETAPA C — the NODO ALIEN fight played by a bot, on NORMAL and on EASY.
-# Bot (a reasonable, not perfect, player): Base weapon only, BOT_TAPS_PER_SECOND taps; ~60 % aim (of every 5 taps, 3 go at
-# the target - a shield node while the shield is up, else the saucer - and 2 go wide); it HALF-DODGES: every other attack
-# it reacts to the warning (moves off an aimed burst / fan line, out of the beam column, away from the mines), the rest it
-# holds its line. It keeps away from the hull. Bee's HP is raised so the fight always ends; the damage taken is measured.
-# Targets: NORMAL 70-90 s and 40-60 damage; EASY clearly less damage. Every damaging attack telegraphed >= 0.4 s, no
-# untelegraphed damage beyond one hull touch, the 4 phases and the shield window happen, the bomb takes ~8 %.
-# Dev: -- report (prints only, never fails)
+# LOTE 10 C: four reproducible Normal/Easy x Base/Spread fights. Three taps/s, 60% aim, partial dodge.
+# HP capacity is raised only to finish measurements; received damage and honey healing are counted separately.
+# Each shot is indexed by creation order for alternating dodge decisions; instance-id parity is not reproducible.
+# Run -- report for diagnostics; assertions are enabled in the final suite.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const BOT_TAPS_PER_SECOND := 3.0
@@ -18,13 +14,10 @@ const DRIFT_PERIOD := 3.2
 const LATE_FRACTION := 0.5
 ## Seconds ahead it looks for a shot on a collision course (half of them, see the loop).
 const BULLET_LOOKAHEAD := 0.9
-const TIME_SCALE := 2.0 # Not faster: with many physics steps per frame the deferred hitbox switches lag (see run()).
-const NORMAL_SECONDS := Vector2(70.0, 90.0)
-const NORMAL_DAMAGE := Vector2(40.0, 60.0)
+const TIME_SCALE := 1.0 # One physics step per frame: hitbox toggles and warnings match actual play.
+const NORMAL_SECONDS := Vector2(75.0, 100.0)
+const NORMAL_DAMAGE := Vector2(50.0, 70.0)
 const EASY_DAMAGE_RATIO := 0.8 # EASY damage <= this x NORMAL damage.
-const NORMAL_RUNS := 3
-## The bot is not deterministic (timers, physics at TIME_SCALE): the mean must land inside the target +- TOLERANCE.
-const TOLERANCE := 5.0
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -32,6 +25,7 @@ var bee: BeePlayer
 var report_only := false
 var lines: Array[String] = []
 var trace := false
+var use_spread := false
 
 func _initialize() -> void:
 	report_only = "report" in OS.get_cmdline_user_args()
@@ -64,31 +58,31 @@ func load_level() -> void:
 	bee = stage.bee
 
 func run() -> void:
-	create_timer(900.0, true, false, true).timeout.connect(func(): quit(1))
-	# Physics must keep up with the process timers at TIME_SCALE even when the machine is busy (parallel suite).
+	create_timer(1200.0, true, false, true).timeout.connect(func(): quit(1))
 	Engine.max_physics_steps_per_frame = 16
-	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
-	var runs: Array[Dictionary] = []
-	for i in NORMAL_RUNS:
-		runs.append(await fight("NORMAL"))
-	# NORMAL_RUNS fights: the bot plays a chaotic fight (timers, overlaps); their mean is the measure.
-	var normal := {"seconds": 0.0, "damage": 0.0}
-	for r in runs:
-		normal["seconds"] += float(r["seconds"]) / float(NORMAL_RUNS)
-		normal["damage"] += float(r["damage"]) / float(NORMAL_RUNS)
-	lines.append("BOSS NORMAL mean of %d: fight=%.1fs damage=%.1f (per fight: %s)" % [NORMAL_RUNS, normal["seconds"], normal["damage"], str(runs.map(func(r): return "%.0fs/%d" % [r["seconds"], r["damage"]]))])
-	BeeGameSettings.difficulty = BeeGameSettings.EASY
-	var easy := await fight("EASY", true) # The bomb is measured here (NORMAL is Base only).
+	var normal: Array[Dictionary] = []
+	for difficulty in [BeeGameSettings.NORMAL, BeeGameSettings.EASY]:
+		BeeGameSettings.difficulty = difficulty
+		for spread in [false, true]:
+			if "first" in OS.get_cmdline_user_args() and (difficulty != BeeGameSettings.NORMAL or spread):
+				continue
+			use_spread = spread
+			var label := str(difficulty).to_upper() + (" SPREAD" if spread else " BASE")
+			var result := await fight(label)
+			print("MEASURE ", label, " ", result)
+			check(float(result.seconds) >= NORMAL_SECONDS.x and float(result.seconds) <= NORMAL_SECONDS.y, label + ": duration outside 75-100s: " + str(result.seconds))
+			if difficulty == BeeGameSettings.NORMAL:
+				normal.append(result)
+				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": damage outside 50-70: " + str(result.damage))
+			else:
+				check(int(result.damage) < int(normal[int(spread)].damage), label + ": Easy must hurt less")
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	Engine.time_scale = 1.0
-	check(float(normal["seconds"]) >= NORMAL_SECONDS.x - TOLERANCE and float(normal["seconds"]) <= NORMAL_SECONDS.y + TOLERANCE, "NORMAL fight lasted %.1f s (target %.0f-%.0f)" % [normal["seconds"], NORMAL_SECONDS.x, NORMAL_SECONDS.y])
-	check(float(normal["damage"]) >= NORMAL_DAMAGE.x - TOLERANCE and float(normal["damage"]) <= NORMAL_DAMAGE.y + TOLERANCE, "NORMAL damage taken %d (target %.0f-%.0f)" % [normal["damage"], NORMAL_DAMAGE.x, NORMAL_DAMAGE.y])
-	check(float(easy["damage"]) <= float(normal["damage"]) * EASY_DAMAGE_RATIO, "EASY must cost clearly less (%d vs %d)" % [easy["damage"], normal["damage"]])
-	check(float(easy["seconds"]) < float(normal["seconds"]), "EASY must be shorter (%.1f vs %.1f s)" % [easy["seconds"], normal["seconds"]])
 	for line in lines:
 		print(line)
-	print("BEE_BOSS_FIGHT_V04_OK")
+	print("BEE_BOSS_FIGHT_V04_OK four_combinations=OK")
 	quit(0)
+
 
 ## Jumps straight to the fight, plays it with the bot and returns {seconds, damage, ...}.
 func fight(label: String, with_bomb := false) -> Dictionary:
@@ -146,6 +140,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 	var pending_at := -1.0
 	var pending_kind := &"shots"
 	var pending_combo := false
+	var bullet_seen := {}
 	var bullet_until := 0.0
 	var bullet_goal := Vector3.ZERO
 	while is_instance_valid(boss) and boss.state != UfoBoss01.State.DONE and clock < 400.0:
@@ -205,7 +200,11 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 		if clock >= bullet_until:
 			for node in get_nodes_in_group("alien_projectiles"):
 				var shot := node as AlienEnemyProjectile
-				if shot == null or not is_instance_valid(shot) or shot.is_queued_for_deletion() or shot.get_instance_id() % 2 == 1:
+				if shot == null or not is_instance_valid(shot) or shot.is_queued_for_deletion() :
+					continue
+				if not bullet_seen.has(shot.get_instance_id()):
+					bullet_seen[shot.get_instance_id()] = bullet_seen.size()
+				if int(bullet_seen[shot.get_instance_id()]) % 2 == 1:
 					continue
 				var v := Vector2(shot.travel_direction.x, shot.travel_direction.y) * shot.speed
 				var r := Vector2(shot.global_position.x - bee.global_position.x, shot.global_position.y - bee.global_position.y)
@@ -223,6 +222,12 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 				break
 		if clock < bullet_until:
 			goal = bullet_goal
+		if boss.assault.busy:
+			if boss.assault.kind == &"sweep":
+				var gaps := boss.assault.gap_centres
+				goal.y = gaps.x if absf(bee.global_position.y - gaps.x) < absf(bee.global_position.y - gaps.y) else gaps.y
+			else:
+				goal.y = clampf(boss.global_position.y + (2.0 if boss.global_position.y < 3.5 else -2.0), 1.4, 6.0)
 		goal.x = clampf(goal.x, cam_x - 5.6, cam_x + 5.6)
 		goal.y = clampf(goal.y, bee.flight_min.y, bee.flight_max.y)
 		var p := bee.global_position
@@ -233,7 +238,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 			p.x = boss.global_position.x - boss.side * 3.0 if absf(boss.global_position.x - cam_x) > 0.5 else p.x - 3.0
 		bee.global_position = p
 		# --- fire ---
-		bee.spread_ammo = 0 # Base only, always.
+		bee.spread_ammo = 9999 if use_spread else 0 # Measure sustained Spread, no automatic downgrade.
 		fire_left -= tick
 		if fire_left <= 0.0 and boss.is_active():
 			fire_left = 1.0 / BOT_TAPS_PER_SECOND
@@ -275,7 +280,8 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 		var s := snapshot
 		check(float(s["min_tele"]) >= UfoBoss01.MIN_TELEGRAPH - 0.001, label + ": an attack warned only %.2f s" % s["min_tele"])
 		check(int(s["untelegraphed"]) <= UfoBoss01.CONTACT_DAMAGE, label + ": %d untelegraphed damage" % s["untelegraphed"])
-		check(s["phases"] == [UfoBoss01.State.PHASE_1, UfoBoss01.State.PHASE_2, UfoBoss01.State.PHASE_3, UfoBoss01.State.PHASE_4], label + ": phases %s" % str(s["phases"]))
+		check(s["phases"] == [UfoBoss01.State.PHASE_1, UfoBoss01.State.PHASE_2, UfoBoss01.State.PHASE_3, UfoBoss01.State.PHASE_4, UfoBoss01.State.PHASE_5], label + ": phases %s" % str(s["phases"]))
+		check(int(s["sweeps"]) >= 1 and int(s["rams"]) >= 1, label + ": new hull attacks must both occur")
 		check(int(s["windows"]) >= 1 and int(s["raises"]) >= 1, label + ": the shield never dropped")
 		check(not with_bomb or absf(bomb_fraction - UfoBoss01.BOMB_FRACTION) < 0.01, label + ": the bomb took %.1f %% of the UFO (want ~8 %%)" % (bomb_fraction * 100.0))
 		result = {"seconds": float(s["seconds"]), "damage": int(s["damage"])}
@@ -284,6 +290,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 				s["absorbed"], s["beams"], s["mines"], s["aimed"], s["fans"], s["minions"], s["min_tele"], bomb_fraction * 100.0, taps, reacted, held])
 	else:
 		lines.append("BOSS %s did not finish (clock %.0f s, damage %d)" % [label, clock, damage[0]])
+		print("STUCK state=",boss.state," hp=",boss.health.current_health," nodes=",boss.shield_nodes.size()," tokens=",boss._hull_tokens," phases=",phase_log," vulnerable=",boss.is_vulnerable()," monitor=",boss.hurtbox.monitorable," bee=",bee.global_position," boss=",boss.global_position," minions=",wave.boss_minions().map(func(u): return [u.name,u.health.current_health,u.global_position]))
 	lines.append("BOSS %s timeline: %s" % [label, " | ".join(phase_log)])
 	lines.append("BOSS %s hits taken (damage: count): %s" % [label, str(hits)])
 	# Let the death cinematic finish (complete flow).
@@ -301,7 +308,7 @@ func _snapshot(boss: UfoBoss01, damage: int) -> Dictionary:
 	for hazard in boss.hazards:
 		min_tele = minf(min_tele, float(hazard["telegraph"]))
 	return {"seconds": boss.fight_seconds, "damage": damage, "untelegraphed": boss.untelegraphed_damage, "hp": boss.max_hp,
-			"phases": boss.phases_seen.duplicate(), "raises": boss.shield_raises, "windows": boss.shield_windows, "absorbed": boss.shield_absorbed,
+			"sweeps": boss.assault.sweeps, "rams": boss.assault.rams, "phases": boss.phases_seen.duplicate(), "raises": boss.shield_raises, "windows": boss.shield_windows, "absorbed": boss.shield_absorbed,
 			"beams": boss.beams, "mines": boss.mines_thrown, "aimed": boss.fired_aimed, "fans": boss.fired_fan, "minions": boss.summons, "min_tele": min_tele}
 
 

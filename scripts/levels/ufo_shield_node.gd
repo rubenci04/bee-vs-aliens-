@@ -10,7 +10,7 @@ const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const CORE_RADIUS := 0.24
 const HIT_RADIUS := 0.6
-const ORBIT_SPEED := 0.8 # rad/s of the sweep along its arc.
+const ORBIT_SPEED := 1.6 # rad/s of the sweep along its arc.
 ## The nodes guard the side of the saucer that faces Bee: each one sweeps +-ARC_SWEEP rad around its slot on that arc.
 const ARC_SWEEP := 0.35
 const COLOR := Color(0.2, 0.95, 1.0)

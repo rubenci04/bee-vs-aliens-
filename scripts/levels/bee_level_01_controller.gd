@@ -237,8 +237,8 @@ const EVENTS = [
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8], "y": [0.0, 5.6, 5.6, 5.6], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
-	{"at": 196.0, "act": 3, "label": "PATRULLA · JARDÍN", "units": ["Probe"], "y": [5.2]},
-	{"at": 204.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Ladybird"], "y": [4.2]},
+	{"at": 194.0, "act": 3, "label": "PATRULLA · JARDÍN", "units": ["Probe"], "y": [5.2]},
+	{"at": 202.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Ladybird"], "y": [4.2]},
 	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret"], "formation": "rock_turret", "y": [-0.2]},
 	{"at": 214.0, "act": 4, "label": "SET PIECE B · LIBÉLULA EN FUEGO CRUZADO", "units": ["WaveDragonfly", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.8], "y": [3.6, 5.8]},
 	# LOTE 7 — COMBAT ZONE 3 (act 4, alien escalation).
@@ -847,6 +847,9 @@ func _on_boss_summon(family: StringName, count: int) -> void:
 				"launch_from": gate[0], "launch_slot": free_slot})
 		if not active_units.is_empty():
 			active_units.back().set("laser_every", 0)
+			active_units.back().set("split_orb", false)
+			active_units.back().set("burst_shots", 1)
+			active_units.back().set("windup_time", UfoBoss01.MIN_TELEGRAPH)
 		minion_gates_used.append(minion_gate_index - 1)
 
 ## UFO BOSS 01: a Bomb pickup appears in the arena during the last silence (only when Bee is low on charges, so dying and

@@ -189,7 +189,7 @@ func run() -> void:
 	var phase3_peak := peak_projectiles
 
 	# 7b. LOTE 9 — Phase 4 (fury) under 15 %: beam and mines together, red core, faster side changes.
-	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.1))
+	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.2))
 	check(await wait_state(UfoBoss01.State.PHASE_4, 150), "Phase 4 not reached")
 	var combo_seen := false
 	for i in 900:
@@ -200,6 +200,9 @@ func run() -> void:
 	check(combo_seen and boss.is_fury(), "Phase 4 must combine the beam and mines")
 	check(boss.phases_seen == [UfoBoss01.State.PHASE_1, UfoBoss01.State.PHASE_2, UfoBoss01.State.PHASE_3, UfoBoss01.State.PHASE_4], "The 4 phases must happen in order (%s)" % str(boss.phases_seen))
 
+	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.1))
+	check(await wait_state(UfoBoss01.State.PHASE_5, 150), "Overload phase 5 not reached")
+	check(boss.is_active() and boss.current_phase_number() == 5 and boss.honey_spawned == 2, "Overload/honey interphases missing")
 	# 8. Damage feedback reuses HitFlash.
 	var flashes := boss.hit_flash.activation_count
 	boss.health.take_damage(5)
