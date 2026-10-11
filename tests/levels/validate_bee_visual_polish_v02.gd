@@ -10,6 +10,8 @@ extends SceneTree
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const EXEMPT := ["Halo"] # Emissive rings of the S+ capsule: intentionally unshaded.
+## LOTE 9: item beacons, plasma shots and the hostile cyan core are glows by design (unshaded, no toon).
+const EXEMPT_PARENTS := ["ItemBeacon", "PlasmaBall", "HostileGlow"]
 const BEE_VISUAL_SCALE: float = preload("res://scripts/bee_prototype/bee_visual.gd").VISUAL_SCALE
 
 func _initialize() -> void:
@@ -31,7 +33,7 @@ func run() -> void:
 	var toon := 0
 	var offenders: Array[String] = []
 	for node: MeshInstance3D in stage.find_children("*", "MeshInstance3D", true, false):
-		if node.mesh == null or not node.is_visible_in_tree() or str(node.name) in EXEMPT:
+		if node.mesh == null or not node.is_visible_in_tree() or str(node.name) in EXEMPT or str(node.get_parent().name) in EXEMPT_PARENTS:
 			continue
 		for surface in node.mesh.get_surface_count():
 			var material: Material = node.get_surface_override_material(surface)

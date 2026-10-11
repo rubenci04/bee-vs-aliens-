@@ -79,3 +79,42 @@ Test: `tests/levels/validate_bee_balance_liberation_v04.gd` (regla 1×/2×, auto
   entradas): `arcade_rebuild_v02`, `arcade_director_v01`, `pressure_world_interaction_v01`, `vertical_slice`,
   `challenge_balance_v01`, `combat_patterns_v02`, `threat_camera_boss_v03`, `asset_fauna_v01`, `controlled_fauna_v01`, `pacing_v01`.
 - **Suite:** 76/76 PASS.
+
+## ETAPA B — Disparos, ítems y legibilidad (`balance-04b`)
+### 1. Disparos
+- `scripts/vfx/bee_shot_palette.gd` (`BeeShotPalette`): **Bee** dispara una **bola de plasma redonda**: núcleo blanco
+  (`BEE_SHOT_CORE`), halo dorado (`BEE_SHOT_COLOR` #ffb829) y estela corta de 0,12 s. La flecha toon de Codex queda oculta
+  (no se modificó). **Enemigos**: orbe frío, núcleo cian pálido, halo cian (`ENEMY_SHOT_COLOR` #2eebff) y borde violeta
+  (`ENEMY_SHOT_RIM`), estela cian corta; los del OVNI son 1,3× más grandes (`BOSS_SHOT_SIZE`). Separación de tono entre los
+  dos bandos: 146°.
+- Se aplica a **todo** proyectil enemigo del Level 01 y de la laguna (sonda, ojo, torreta, walker, avispa, popcorn, organismo,
+  fauna de Codex, OVNI) al entrar al árbol (`node_added` conectado al nivel): no se tocó ninguna escena reutilizable ni los POC.
+  Colisión, daño y velocidad sin cambios.
+### 2. Cian = hostil
+- `IMPLANT_GLOW` de la fauna de Codex 1,1 → 1,6 (se leía poco al atardecer).
+- `scripts/vfx/bee_hostile_glow.gd` (`BeeHostileGlow`): al aparecer, si una unidad no tiene un brillo cian legible
+  (`MIN_GLOW` 0,9) se le agrega un núcleo cian pulsante donde está su hurtbox. Lo necesitaron el **dron ojo, la torreta, el
+  speeder, el walker, el semillero y el caza alien** (sus modelos texturizados no tenían cian propio).
+- **La mira** se vuelve cian, crece, late y enmarca al hostil con corchetes cuando apunta a menos de 1,1 m de un enemigo
+  (`BeeLevel01Crosshair.HOSTILE`, `HOVER_RADIUS`). El marcador de auto-aim ya era cian.
+### 3. Ítems
+- **La bomba da 3 bombas** (`bomb_pickup_charges` 3) hasta el tope `max_bomb_charges` **5** (antes +1 hasta 3). Con el tope
+  lleno el ítem queda en el suelo.
+- `scripts/vfx/bee_item_beacon.gd` (`BeeItemBeacon`): todo ítem del nivel (polen, Spread, bomba, curación, también los que
+  aparecen después) lleva halo pulsante saturado, anillo de color con **contorno blanco** y una **columna de luz** suave.
+  Colores lejos del ocre y del cian: **polen lima** #c7ff38, **Spread azul** #4d75ff, **bomba roja** #ff294d,
+  **curación verde** #4dff6b.
+### 4. Suministro antes del jefe
+- `PREBOSS_SUPPLY` (`bee_level_01_vertical_slice.gd`): una bomba (+3) en X=337 y un tarro de miel en X=338,8, justo antes del
+  gate de X=340. Se sigue sumando la ayuda dinámica que ya había durante el "último silencio".
+### 5. Tests
+- Nuevo `tests/levels/validate_bee_items_shots_v04.gd`: plasma de Bee (núcleo, halo, estela corta, flecha oculta), orbe enemigo
+  y del OVNI, separación de colores, brillo cian de las 19 familias al atardecer, mira, +3 bombas y tope 5 (y el ítem queda),
+  balizas en todos los ítems con halo que late, **contraste de color contra el suelo** (distancia RGB ≥ 0,45 y ≥ 30° de tono
+  contra los 3 ocres del suelo) y entre ítems (≥ 45°), suministro previo al jefe.
+- Medido: brillo cian al atardecer por familia = avispa 1,80 · sonda 1,91 · libélula 2,21 · araña 0,94 · fauna de Codex
+  1,17-1,76 · el resto con el núcleo agregado 1,40 (mínimo exigido 0,9). Contraste contra el suelo: polen 0,60 / 43° ·
+  Spread 0,81 / 162° · bomba 0,50 / 39° · curación 0,66 / 97°.
+- Ajustados: `combat_vfx_v01` (estela corta), `weapons_powerups_v01` (+3 / tope 5), `checkpoint_qol_v01` (+3),
+  `vertical_slice` (recolección con tope), `visual_polish_v02` (balizas y plasma son brillos sin toon a propósito).
+- **Suite:** 77/77 PASS.

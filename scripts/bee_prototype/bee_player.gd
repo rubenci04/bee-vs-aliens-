@@ -32,7 +32,9 @@ const AIM_HOLD_SECONDS := 2.5
 @export var spread_overcharge_bonus := 16 # ARCADE REBUILD 02: extra bursts from the pre-boss S+ capsule.
 @export var spread_damage_ratio := 0.8 # CHALLENGE & BALANCE PASS 01: 0.6 -> 0.8 (6 -> 8 per pellet); vs the UFO at >=5 m Spread was 0.68x Base.
 @export var starting_bomb_charges := 0
-@export var max_bomb_charges := 3
+## LOTE 9: a bomb pickup gives bomb_pickup_charges bombs, up to max_bomb_charges (was +1 up to 3).
+@export var max_bomb_charges := 5
+@export var bomb_pickup_charges := 3
 @export var bomb_radius := 3.0
 @export var bomb_damage := 32
 const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
@@ -195,7 +197,7 @@ func collect_spread_overcharge() -> bool:
 func collect_bomb() -> bool:
 	if is_defeated or bomb_charges >= max_bomb_charges:
 		return false
-	bomb_charges += 1
+	bomb_charges = mini(bomb_charges + bomb_pickup_charges, max_bomb_charges)
 	weapon_state_changed.emit()
 	powerup_collected.emit(&"bomb")
 	return true

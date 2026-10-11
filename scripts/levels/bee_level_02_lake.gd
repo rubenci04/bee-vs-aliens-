@@ -23,6 +23,10 @@ func _ready() -> void:
 		pickup.queue_free()
 	super._ready()
 	bee.projectile_scene = TOON_BEE_BOLT
+	get_tree().node_added.connect(_on_node_added_lote9, CONNECT_DEFERRED) # LOTE 9: enemy orbs + item beacons.
+	for item in find_children("*", "Area3D", true, false):
+		if item is BeePowerupPickup or item is BeePollenPickup:
+			BeeItemBeacon.attach(item)
 	bee.health.damage_scale = BeeGameSettings.damage_taken_scale()
 	BeeCombatVFX.toon_bursts = true
 	var crosshair := BeeLevel01Crosshair.new()
@@ -73,3 +77,13 @@ func _physics_process(delta: float) -> void:
 func _process(_delta: float) -> void:
 	if (bee.is_defeated or sector_complete) and Input.is_action_just_pressed("restart"):
 		get_tree().reload_current_scene()
+
+
+## LOTE 9: every enemy shot of this level is dressed as the cold cyan / violet orb (BeeShotPalette) and every item that
+## appears later (boss supplies, rewards) gets its beacon (BeeItemBeacon).
+func _on_node_added_lote9(node: Variant) -> void:
+	if not is_instance_valid(node):
+		return # Freed before the deferred call (a shot that hit at once).
+	BeeShotPalette.on_node_added(node)
+	if (node is BeePowerupPickup or node is BeePollenPickup) and (node as Node).is_inside_tree():
+		BeeItemBeacon.attach(node)

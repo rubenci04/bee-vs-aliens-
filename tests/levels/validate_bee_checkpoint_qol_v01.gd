@@ -179,7 +179,7 @@ func run() -> void:
 	# Repeat future collection/death: no charge/pollen accumulation across retries.
 	stage.get_node("Powerups/BombRecharge").collect(bee)
 	stage.get_node("Pollen/PollenI").collect(bee)
-	check(bee.bomb_charges == 1 and stage.pollen_count == 2, "Future pickups wrong: bomb=%d pollen=%d" % [bee.bomb_charges, stage.pollen_count])
+	check(bee.bomb_charges == bee.bomb_pickup_charges and stage.pollen_count == 2, "Future pickups wrong: bomb=%d pollen=%d (LOTE 9: a bomb pickup gives 3)" % [bee.bomb_charges, stage.pollen_count])
 	bee.health.take_damage(9999)
 	await press("restart")
 	check(bee.bomb_charges == 0 and stage.pollen_count == 1, "Bomb/pollen farming exploit")

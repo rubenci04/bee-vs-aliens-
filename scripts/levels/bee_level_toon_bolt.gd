@@ -15,3 +15,8 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 	STYLE.impact(get_parent(), global_position, IMPACT)
 	hitbox.set_enabled(false)
 	queue_free()
+
+
+func _ready() -> void:
+	super._ready()
+	BeeShotPalette.dress_bee(self) # LOTE 9: round gold plasma ball with a white core and a short trail (was a toon bolt).

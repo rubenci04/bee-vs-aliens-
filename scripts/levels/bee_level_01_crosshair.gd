@@ -11,9 +11,16 @@ const DOT := Color(0.35, 1.0, 1.0) # Same cyan as the weapon HUD.
 const OUTLINE_WIDTH := 6.0
 const RING_WIDTH := 2.6
 const TICK := 7.0
+## LOTE 9 — cyan means hostile: over an enemy / implant (within HOVER_RADIUS m of the aim point) the ring turns cyan,
+## grows and pulses, and lock brackets frame the target.
+const HOSTILE := Color(0.25, 1.0, 1.0)
+const HOVER_RADIUS := 1.1
+const HOVER_GROW := 1.3
 
 var bee: BeePlayer
 var _cursor_hidden := false
+var hovered: Node3D # LOTE 9: the hostile under the crosshair (null = none).
+var _t := 0.0
 
 
 func _ready() -> void:
@@ -23,12 +30,33 @@ func _ready() -> void:
 	hide()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_t += delta
 	var aiming := bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused and bee.is_free_aiming()
 	visible = aiming
 	_set_cursor_hidden(aiming)
+	hovered = hostile_at(bee.aim_point) if aiming else null
 	if aiming:
 		queue_redraw()
+
+
+## The live hostile closest to `point` within HOVER_RADIUS (X/Y plane), or null.
+func hostile_at(point: Vector3) -> Node3D:
+	var best: Node3D
+	var best_d := HOVER_RADIUS
+	for node in get_tree().get_nodes_in_group("bee_auto_aim_targets"):
+		var target := node as Node3D
+		if target == null or not target.is_visible_in_tree():
+			continue
+		var at: Vector3 = target.call("auto_aim_point") if target.has_method("auto_aim_point") else target.global_position
+		var hurtbox := target.get_node_or_null("Hurtbox3D") as Node3D
+		var d := Vector2(point.x - at.x, point.y - at.y).length()
+		if hurtbox != null:
+			d = minf(d, Vector2(point.x - hurtbox.global_position.x, point.y - hurtbox.global_position.y).length())
+		if d < best_d:
+			best_d = d
+			best = target
+	return best
 
 
 func aim_screen_point() -> Vector2:
@@ -40,15 +68,31 @@ func aim_screen_point() -> Vector2:
 
 func _draw() -> void:
 	var c := aim_screen_point()
-	draw_arc(c, RADIUS, 0.0, TAU, 32, OUTLINE, OUTLINE_WIDTH, true)
-	draw_arc(c, RADIUS, 0.0, TAU, 32, RING, RING_WIDTH, true)
+	var hostile := hovered != null and is_instance_valid(hovered)
+	var colour := HOSTILE if hostile else RING
+	var radius := RADIUS * (HOVER_GROW + 0.08 * sin(_t * TAU * 2.0) if hostile else 1.0)
+	draw_arc(c, radius, 0.0, TAU, 32, OUTLINE, OUTLINE_WIDTH, true)
+	draw_arc(c, radius, 0.0, TAU, 32, colour, RING_WIDTH, true)
 	for direction in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-		var from: Vector2 = c + direction * (RADIUS + 3.0)
-		var to: Vector2 = c + direction * (RADIUS + 3.0 + TICK)
+		var from: Vector2 = c + direction * (radius + 3.0)
+		var to: Vector2 = c + direction * (radius + 3.0 + TICK)
 		draw_line(from, to, OUTLINE, OUTLINE_WIDTH - 1.0, true)
-		draw_line(from, to, RING, RING_WIDTH, true)
+		draw_line(from, to, colour, RING_WIDTH, true)
 	draw_circle(c, 3.6, OUTLINE)
 	draw_circle(c, 2.2, DOT)
+	if hostile:
+		# Lock brackets around the hostile itself (where its cyan implant / core is).
+		var camera := get_viewport().get_camera_3d()
+		if camera != null:
+			var at: Vector3 = hovered.call("auto_aim_point") if hovered.has_method("auto_aim_point") else hovered.global_position
+			var p := camera.unproject_position(at)
+			var s := 22.0
+			for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				var k: Vector2 = p + corner * s
+				draw_line(k, k - Vector2(corner.x * 9.0, 0.0), OUTLINE, 5.0, true)
+				draw_line(k, k - Vector2(0.0, corner.y * 9.0), OUTLINE, 5.0, true)
+				draw_line(k, k - Vector2(corner.x * 9.0, 0.0), HOSTILE, 2.4, true)
+				draw_line(k, k - Vector2(0.0, corner.y * 9.0), HOSTILE, 2.4, true)
 
 
 func _set_cursor_hidden(hidden: bool) -> void:

@@ -14,14 +14,24 @@ const TOON_POLLEN := preload("res://scenes/items/toon/pollen.tscn")
 const TOON_SPREAD := preload("res://scenes/items/toon/spread.tscn")
 const TOON_BOMB := preload("res://scenes/items/toon/bomb.tscn")
 const TOON_BEE_BOLT := preload("res://scenes/levels/bee_level_toon_bolt.tscn") # Codex toon bolt + the game hit rules.
+const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
+## LOTE 9 · ETAPA B — supply right before the X=340 last-defence gate: a bomb pickup (+3 bombs) and a honey jar (heals
+## when hurt). [x, y] per item; it is part of the level (a respawn at the X=281 checkpoint finds it again; the boss
+## checkpoint is past it, so it can never be farmed).
+const PREBOSS_SUPPLY := {"bomb": Vector2(337.0, 3.8), "healing": Vector2(338.8, 2.6)}
 
 func _ready() -> void:
 	_swap_toon_pickups() # Before the stage connects the pickups' signals.
 	super._ready()
 	bee.projectile_scene = TOON_BEE_BOLT
+	get_tree().node_added.connect(_on_node_added_lote9, CONNECT_DEFERRED) # LOTE 9: enemy orbs + item beacons.
+	for item in find_children("*", "Area3D", true, false):
+		if item is BeePowerupPickup or item is BeePollenPickup:
+			BeeItemBeacon.attach(item)
 	BeeCombatVFX.toon_bursts = true
 	bee.health.damage_scale = BeeGameSettings.damage_taken_scale() # NOCHE 01: EASY = less damage taken.
 	checkpoint.setup(self)
+	_place_preboss_supply()
 	for leftover in ["Ground", "GroundExtension"]: # POC boxes under the mulch slab (coplanar): never visible, never styled.
 		var poc_ground := get_node_or_null(leftover) as Node3D
 		if poc_ground != null:
@@ -122,3 +132,30 @@ func _swap_toon_pickups() -> void:
 			fresh.name = label
 			fresh.transform = where
 			parent.add_child(fresh)
+
+
+## LOTE 9: every enemy shot of this level is dressed as the cold cyan / violet orb (BeeShotPalette) and every item that
+## appears later (boss supplies, rewards) gets its beacon (BeeItemBeacon).
+func _on_node_added_lote9(node: Variant) -> void:
+	if not is_instance_valid(node):
+		return # Freed before the deferred call (a shot that hit at once).
+	BeeShotPalette.on_node_added(node)
+	if (node is BeePowerupPickup or node is BeePollenPickup) and (node as Node).is_inside_tree():
+		BeeItemBeacon.attach(node)
+
+## LOTE 9 · ETAPA B: the pre-boss supply (PREBOSS_SUPPLY), skipped when the level resumes past it.
+func _place_preboss_supply() -> void:
+	if distance > float(PREBOSS_SUPPLY["healing"].x):
+		return
+	var group := Node3D.new()
+	group.name = "PreBossSupply"
+	add_child(group)
+	var bomb := TOON_BOMB.instantiate() as Node3D
+	bomb.name = "SupplyBomb"
+	bomb.set("kind", BeePowerupPickup.Kind.BOMB)
+	group.add_child(bomb)
+	bomb.global_position = Vector3(PREBOSS_SUPPLY["bomb"].x, PREBOSS_SUPPLY["bomb"].y, 0.0)
+	var jar := TOON_HEALING.instantiate() as Node3D
+	jar.name = "SupplyHealing"
+	group.add_child(jar)
+	jar.global_position = Vector3(PREBOSS_SUPPLY["healing"].x, PREBOSS_SUPPLY["healing"].y, 0.0)

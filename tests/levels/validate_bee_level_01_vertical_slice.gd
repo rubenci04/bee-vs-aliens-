@@ -415,9 +415,11 @@ func run() -> void:
 	# to the existing combat/geometry diagnostics above.
 	bee.set_physics_process(false)
 	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup):
+		if pickup.kind == BeePowerupPickup.Kind.BOMB:
+			bee.bomb_charges = 0 # LOTE 9: +3 per pickup up to 5: a full Bee leaves the pickup for later (by design).
 		bee.global_position = pickup.global_position
 		await frames(4)
-	check(stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup and not n.is_queued_for_deletion()).is_empty() and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == 3, "Level pickups cannot be collected (left %d, spread %d, bombs %d)" % [stage.get_node("Powerups").get_child_count(), bee.spread_ammo, bee.bomb_charges]) # REBUILD 02: the S+ capsule overcharges Spread.
+	check(stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup and not n.is_queued_for_deletion()).is_empty() and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == bee.bomb_pickup_charges, "Level pickups cannot be collected (left %d, spread %d, bombs %d)" % [stage.get_node("Powerups").get_child_count(), bee.spread_ammo, bee.bomb_charges]) # REBUILD 02: the S+ capsule overcharges Spread.
 	bee.set_physics_process(true)
 	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)

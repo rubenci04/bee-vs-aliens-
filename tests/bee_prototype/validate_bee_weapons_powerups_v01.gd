@@ -150,9 +150,9 @@ func run() -> void:
 	await frames(3)
 	await capture("04_bomb_pickup")
 	await touch_pickup("Powerups/BombFirst")
-	check(bee.bomb_charges == 2 and "BOMB x2" in hud.get_node("State").text, "Bomb pickup/HUD wrong")
+	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
 	check("C — USE" in hud.get_node("Hint").text, "Bomb hint missing")
-	check(bee.collect_bomb() and bee.bomb_charges == 3 and not bee.collect_bomb(), "Charge cap failed")
+	check(bee.collect_bomb() and bee.bomb_charges == 5 and not bee.collect_bomb(), "Charge cap failed (LOTE 9: cap 5)")
 	var capped := PICKUP.instantiate() as BeePowerupPickup
 	capped.kind = BeePowerupPickup.Kind.BOMB
 	stage.add_child(capped)
@@ -167,7 +167,7 @@ func run() -> void:
 	Input.action_press("bee_bomb")
 	await frames(2)
 	Input.action_release("bee_bomb")
-	check(bee.bomb_charges == 2 and "BOMB x2" in hud.get_node("State").text, "C/HUD did not consume exactly one")
+	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "C/HUD did not consume exactly one (LOTE 9: 5 -> 4)")
 	await capture("05_bomb_activation")
 	bee.set_physics_process(false)
 	await frames(25)
@@ -233,6 +233,7 @@ func run() -> void:
 	inactive.queue_free()
 	decoration.queue_free()
 	await frames(25)
+	bee.bomb_charges = 1 # LOTE 9: down to the last bomb (the cap is 5 now, the test used 3 before).
 	check(bee.use_bomb() != null and bee.bomb_charges == 0 and bee.use_bomb() == null, "Empty charge handling failed")
 	await frames(30)
 

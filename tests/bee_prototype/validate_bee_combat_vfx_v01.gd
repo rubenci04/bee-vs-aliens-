@@ -113,7 +113,7 @@ func run() -> void:
 	check(base.damage == 10 and base.speed == 14 and is_equal_approx(base.hitbox.get_node("CollisionShape3D").shape.radius, 0.12), "Projectile gameplay altered")
 	await capture("01_base_muzzle")
 	await frames(8)
-	check(base.trail.lifetime == 0.18 and not base.trail.local_coords and base.trail.emitting, "Trail missing/incorrect")
+	check(is_equal_approx(base.trail.lifetime, BeeShotPalette.BEE_TRAIL_SECONDS) and not base.trail.local_coords and base.trail.emitting, "Trail missing/incorrect (LOTE 9: short plasma trail)")
 	await capture("02_projectile_trail")
 	await clear_shots()
 

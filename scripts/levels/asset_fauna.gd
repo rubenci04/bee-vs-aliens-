@@ -24,7 +24,7 @@ const FACE_SMOOTHING := 0.18 # s
 ## NOCHE 01 — liberation: a freed animal leaves relaxed for LEAVE_SECONDS (walking or flying off to the left).
 const LEAVE_SECONDS := 3.0
 ## NOCHE 01 · ETAPA 3: emission energy of the cyan implant parts (Codex wrappers cap it at 0.65 for Compatibility).
-const IMPLANT_GLOW := 1.1
+const IMPLANT_GLOW := 1.6 # LOTE 9: 1.1 -> 1.6, the implant must read as hostile cyan at dusk too.
 ## LOTE 9: largest implant hit sphere (m).
 const IMPLANT_RADIUS_MAX := 0.62
 ## LOTE 9: weak-point line radius on the body area (m), from the implant size; small animals (mosquito) need the low end.

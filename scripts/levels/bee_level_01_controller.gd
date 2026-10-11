@@ -537,6 +537,7 @@ func _spawn(request: Dictionary) -> void:
 	else:
 		active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1
+	BeeHostileGlow.ensure.call_deferred(unit) # LOTE 9: every enemy shows a cyan glow (EyeDrone had none).
 	if family in ANIMAL_FAMILIES:
 		animals_total += 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance})
