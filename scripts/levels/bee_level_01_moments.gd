@@ -269,7 +269,7 @@ func _clear_power_hint() -> void:
 
 # --- impact surfaces ---------------------------------------------------------------------------------------
 
-## Real solids in Bee's plane stop shots (the projectile spark + hit sound); they never break.
+## Real solids in Bee's plane stop shots until their finite HP is depleted.
 func _attach_impact_surfaces() -> void:
 	# The giant bottle has no collider (Bee flies through it), so it does not stop shots either: only real solids do.
 	var log := stage.get_node_or_null("LogObstacle") as Node3D
@@ -277,7 +277,10 @@ func _attach_impact_surfaces() -> void:
 		for part in ["LogTop", "LogBottom"]:
 			var shell := log.get_node_or_null(part) as CollisionShape3D
 			if shell != null and shell.shape is BoxShape3D:
-				impact_surfaces.append(ImpactSurface.attach(self, part + "Impact", BoxShape3D.new(), (shell.shape as BoxShape3D).size, shell.global_position))
+				var surface := ImpactSurface.attach(self, part + "Impact", BoxShape3D.new(), (shell.shape as BoxShape3D).size, shell.global_position)
+				surface.solid_shape = shell
+				impact_surfaces.append(surface)
+				surface.broken.connect(_on_log_broken)
 
 
 # --- vegetation reaction (cheap) ----------------------------------------------------------------------------
@@ -312,3 +315,17 @@ func _step_legs(legs: Array, t: float) -> void:
 		if is_instance_valid(leg):
 			leg.position.x = float([0.38, 0.38, -0.38, -0.38][i]) + swing * (1.0 if i == 0 or i == 3 else -1.0)
 			leg.position.y = 0.1 + maxf(0.0, sin(t * TAU + (0.0 if i == 0 or i == 3 else PI))) * 0.05
+
+func _on_log_broken() -> void:
+	for surface: ImpactSurface in impact_surfaces:
+		surface.is_destroyed = true
+		surface.health.current_health = 0
+		surface.hurtbox.set_deferred("collision_layer", 0)
+		surface.hurtbox.set_deferred("monitorable", false)
+	for shape: CollisionShape3D in stage.get_node("LogObstacle").get_children():
+		shape.set_deferred("disabled", true)
+	var dressing := stage.get_node_or_null("AssetDressing")
+	if dressing != null:
+		for prop: Node3D in dressing.litter:
+			if prop.scene_file_path.ends_with("hollow_fallen_log.tscn"):
+				prop.hide()

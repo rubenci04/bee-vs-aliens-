@@ -209,7 +209,7 @@ func test_liberation() -> void:
 # --- hint, checkpoint and restart ---------------------------------------------------------------------------
 
 func test_checkpoint() -> void:
-	# Real flow to the first appearance: alone, with the one-off hint.
+	# Real flow to the first appearance: one dragonfly with its hint, alongside the new patrols.
 	stage.distance = 120.0
 	stage._update_camera_and_bounds()
 	wave.event_index = 0
@@ -227,7 +227,8 @@ func test_checkpoint() -> void:
 				fly = unit
 		if fly != null:
 			break
-	check(fly != null and wave.active_units.size() == 1, "The first dragonfly must arrive alone")
+	check(fly != null and wave.active_units.filter(func(unit): return unit is ControlledDragonfly).size() == 1, "The first encounter must introduce exactly one dragonfly")
+	check(wave.alive_count() <= BeeLevel01Controller.MAX_ON_SCREEN, "Dragonfly escort exceeds route cap")
 	check(wave.player_label == BeeLevel01Controller.FAUNA_HINT, "One-off hint missing")
 	fly.health.take_damage(9999)
 	await frames(10)
@@ -254,7 +255,7 @@ func test_checkpoint() -> void:
 	await reloaded(old2)
 	bind(current_scene)
 	check(wave.event_index == 0 and not wave.fauna_hint_shown, "Full restart must restore the first dragonfly and its hint")
-	print("FAUNA_CHECKPOINT alone=OK hint=OK no_farming=OK restart=OK")
+	print("FAUNA_CHECKPOINT introduction=OK escort_cap=OK hint=OK no_farming=OK restart=OK")
 
 func run() -> void:
 	create_timer(420.0, true, false, true).timeout.connect(func(): quit(1))

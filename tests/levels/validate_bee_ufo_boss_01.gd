@@ -142,7 +142,8 @@ func run() -> void:
 	var hp := boss.health.current_health
 	var live_before := boss.live_projectiles().size()
 	check(bee.use_bomb() != null, "Bomb refused")
-	await frames(4)
+	bee.active_bomb.detonate()
+	await frames(18)
 	check(hp - boss.health.current_health == roundi(boss.max_hp * UfoBoss01.BOMB_FRACTION), "LOTE 9: the bomb must take BOMB_FRACTION of the UFO (%d)" % (hp - boss.health.current_health))
 	check(boss.live_projectiles().size() >= mini(live_before, 1) or live_before == 0, "Bomb must not cancel boss projectiles")
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)

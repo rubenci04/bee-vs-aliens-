@@ -110,7 +110,7 @@ func test_run() -> void:
 		await physics_frame
 		bee.global_position = Vector3(stage.distance - 4.8, 7.0, 0)
 		acts[wave.current_act] = true
-		var cap := BeeLevel01Controller.threat_cap(stage.distance)
+		var cap := BeeLevel01Controller.MAX_ON_SCREEN_ARENA if wave.in_arena() else BeeLevel01Controller.threat_cap(stage.distance)
 		check(wave.active_units.size() <= cap, "Threat cap exceeded")
 		var camera_x := stage.camera.global_position.x
 		for shot in get_nodes_in_group("alien_projectiles"):

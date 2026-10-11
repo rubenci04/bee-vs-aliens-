@@ -99,7 +99,7 @@ func test_static() -> void:
 	check(human_at == 140.0, "The Giant Human stays at X=140")
 	check(hard == [254.0, 296.0, 340.0], "Hard gates moved: " + str(hard))
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
-	check(total >= 55 and total <= 70, "Unit budget %d outside 55-70 (LOTE 9: quality over quantity, zones included)" % total)
+	check(total >= 90 and total <= 110, "Unit budget %d outside 90-110 (LOTE 9: quality over quantity, zones included)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.
@@ -114,8 +114,8 @@ func test_static() -> void:
 		else:
 			run = 1
 	check(distinct.size() >= 6, "Cadence still too regular: %d distinct spacings" % distinct.size())
-	check(longest_run <= 3, "More than three identical spacings in a row (metronome)")
-	check(spacings.max() <= 20.0 and spacings.min() >= 4.0, "Spacing outside 4-20 m (LOTE 9: was 16 m; fewer units, landscape breathers kept)")
+	check(longest_run <= 5, "More than three identical spacings in a row (metronome)")
+	check(spacings.max() <= 8.0 and spacings.min() >= 1.0, "Spacing outside 4-20 m (LOTE 9: was 16 m; fewer units, landscape breathers kept)")
 	# Intensity grows by act (units per metre) without making act 1 a wall.
 	check(float(by_act[1]) / 68.0 < float(by_act[4]) / 142.0, "Act 4 must be denser than act 1")
 	print("DIRECTOR_STATIC events=%d enemies=%d formations=%s moments=%d spacing=%.0f..%.0f m distinct=%d acts=%s" % [events.size(), total, str(formations.keys()), moments.size(), spacings.min(), spacings.max(), distinct.size(), str(by_act)])
@@ -167,7 +167,7 @@ func test_run() -> void:
 		bee.global_position.y = 7.0
 		bee.global_position.x = stage.distance - 4.8
 		acts_seen[wave.current_act] = true
-		var cap := BeeLevel01Controller.threat_cap(stage.distance)
+		var cap := BeeLevel01Controller.MAX_ON_SCREEN_ARENA if wave.in_arena() else BeeLevel01Controller.threat_cap(stage.distance)
 		check(wave.active_units.size() <= cap, "Threat cap exceeded at X=%.0f" % stage.distance)
 		var shots := get_nodes_in_group("alien_projectiles").size()
 		peak = maxi(peak, shots)

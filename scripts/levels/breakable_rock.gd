@@ -2,10 +2,9 @@ class_name BreakableRock
 extends StaticBody3D
 ## ARCADE PRESSURE + WORLD INTERACTION PASS 01. A garden rock of Level 01 that Bee's weapons
 ## (Base, Spread, Bomb) can break. It reuses the existing destructible vocabulary: HealthComponent,
-## Hurtbox3D, HitFlash3D, the "crate" cue and combat VFX; no new system, no drops.
+## Hurtbox3D, HitFlash3D, the "crate" cue and combat VFX; occasional pickups reuse existing items.
 ## The scenery builds the body, the collider and the mesh (unchanged geometry); `arm()` adds the rest.
-## A structural rock has so much HP that it never breaks, but still takes hits (flash, dust, impact),
-## so shots never vanish silently against a visible surface.
+## The formerly structural rock now breaks at 96 HP; all combat-plane solids release their collision.
 ## Enemy fire and attacks share the "alien" team on purpose: they neither damage a rock nor use it as cover.
 
 signal destroyed(rock: BreakableRock)
@@ -13,7 +12,7 @@ signal destroyed(rock: BreakableRock)
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const FLASH_SCENE := preload("res://scenes/components/hit_flash_3d.tscn")
-const STRUCTURAL_HP := 100000
+const STRUCTURAL_HP := 96
 
 var health: HealthComponent
 var hurtbox: DamageHurtbox3D
@@ -23,7 +22,7 @@ var structural := false
 
 
 func arm(max_hp: int, is_structural: bool) -> void:
-	structural = is_structural
+	structural = false # Every combat-plane rock can now break.
 	collider = get_node("CollisionShape3D") as CollisionShape3D
 	health = HEALTH_SCENE.instantiate() as HealthComponent
 	health.name = "HealthComponent"
@@ -58,6 +57,7 @@ func _on_died() -> void:
 	is_destroyed = true
 	BeeAudio.play(get_parent(), &"crate", _centre())
 	BeeCombatVFX.spawn(get_parent(), _centre(), &"rock_break", Vector3.UP, _size())
+	BeeObstacleDrops.spawn(get_parent(), _centre(), int(global_position.x))
 	_remove()
 	destroyed.emit(self)
 
@@ -74,6 +74,7 @@ func _remove() -> void:
 		mesh.hide()
 	collision_layer = 0
 	collider.set_deferred("disabled", true)
+	hurtbox.set_deferred("collision_layer", 0)
 	hurtbox.set_deferred("monitorable", false)
 
 

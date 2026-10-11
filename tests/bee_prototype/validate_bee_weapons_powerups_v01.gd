@@ -168,9 +168,15 @@ func run() -> void:
 	await frames(2)
 	Input.action_release("bee_bomb")
 	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "C/HUD did not consume exactly one (LOTE 9: 5 -> 4)")
+	check("C — DETONAR" in hud.get_node("State").text, "Flight HUD must offer remote detonation")
+	await frames(1)
+	Input.action_press("bee_bomb")
+	await frames(2)
+	Input.action_release("bee_bomb")
+	check(bee.bomb_charges == 4 and bee.active_bomb.warning_left >= 0.0, "Second C must start detonation without spending stock")
 	await capture("05_bomb_activation")
 	bee.set_physics_process(false)
-	await frames(25)
+	await frames(100)
 
 	# All seven enemy families, one crate, a far enemy, inactive enemy,
 	# duplicate hurtbox and unrelated health recipient in the same query.
@@ -213,7 +219,8 @@ func run() -> void:
 	var own_hp := bee.health.current_health
 	var bomb := bee.use_bomb()
 	check(bomb != null and bomb.radius == 3.0 and bomb.damage == 32, "Bomb configuration wrong")
-	await frames(5)
+	bomb.detonate()
+	await frames(18)
 	for i in units.size():
 		check(units[i].get_node("HealthComponent").current_health == maxi(0, before_hp[i] - 32), "Bomb damage/dedup failed for family " + str(i))
 	check(units[6].get_node("HealthComponent").current_health > 0, "Walker killed by one Bomb")
@@ -234,7 +241,7 @@ func run() -> void:
 	decoration.queue_free()
 	await frames(25)
 	bee.bomb_charges = 1 # LOTE 9: down to the last bomb (the cap is 5 now, the test used 3 before).
-	check(bee.use_bomb() != null and bee.bomb_charges == 0 and bee.use_bomb() == null, "Empty charge handling failed")
+	check(bee.use_bomb() != null and bee.bomb_charges == 0 and bee.use_bomb() == bee.active_bomb, "Empty stock must still allow remote detonation")
 	await frames(30)
 
 	# Comparable local render samples: same three real active enemy AIs.

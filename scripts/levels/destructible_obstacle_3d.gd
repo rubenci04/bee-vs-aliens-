@@ -10,7 +10,7 @@ signal destroyed(obstacle: DestructibleObstacle3D)
 @onready var visual_root: Node3D = $VisualRoot
 
 ## Garden litter that replaces the old wooden crate: 0 crushed can, 1 giant matchbox, 2 snack bag.
-## Purely visual: the collider, hurtbox and HP above are unchanged.
+## Uses the existing collider, hurtbox and HP; low banana peels are nonblocking decoration.
 ## NOCHE 01 · ETAPA 2: 3 open tuna tin, 4 banana peel (Codex models) replace the matchbox and the red/cream snack bag;
 ## their collider and hurtbox are fitted to the new, lower model (the old ones keep the crate box).
 @export_enum("Crushed can", "Matchbox", "Snack bag", "Tuna tin", "Banana peel") var item_kind := 0
@@ -20,6 +20,11 @@ var is_destroyed := false
 
 func _ready() -> void:
 	health.died.connect(_on_died)
+	if item_kind == 4: # Low peel: decoration, never a projectile sponge or flight obstacle.
+		body.collision_layer = 0
+		collider.set_deferred("disabled", true)
+		hurtbox.set_deferred("collision_layer", 0)
+		hurtbox.set_deferred("monitorable", false)
 	if CODEX_ITEMS.has(item_kind):
 		_build_codex_item()
 	else:
@@ -32,9 +37,11 @@ func _on_died() -> void:
 	is_destroyed = true
 	BeeAudio.play(get_parent(), &"crate", global_position + Vector3(0, 1.1, 0))
 	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0, 1.1, 0), &"crate")
+	BeeObstacleDrops.spawn(get_parent(), global_position + Vector3(0, 1, 0), int(global_position.x))
 	visual_root.hide()
 	body.collision_layer = 0
 	collider.set_deferred("disabled", true)
+	hurtbox.set_deferred("collision_layer", 0)
 	hurtbox.set_deferred("monitorable", false)
 	destroyed.emit(self)
 

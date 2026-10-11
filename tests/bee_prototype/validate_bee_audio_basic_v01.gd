@@ -141,7 +141,11 @@ func run() -> void:
 	wasp.queue_free()
 	bee.melee_hitbox.set_enabled(false)
 	await clear_shots()
-	check(bee.use_bomb() != null and count(&"bomb") == 1, "Bomb cue missing")
+	var flying_bomb := bee.use_bomb()
+	check(flying_bomb != null and count(&"bomb") == 0, "Bomb must not play explosion audio on launch")
+	flying_bomb.detonate()
+	await frames(16)
+	check(count(&"bomb") == 1, "Bomb explosion cue missing after its warning")
 	await clear_shots()
 	for pair in [[BeeLevel01Controller.PROBE, &"tech_death"], [BeeLevel01Controller.WASP, &"organic_death"], [BeeLevel01Controller.WALKER, &"tech_death"]]:
 		var enemy := unit(pair[0], bee.global_position + Vector3(2, 0, 0))

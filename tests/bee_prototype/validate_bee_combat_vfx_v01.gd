@@ -149,6 +149,8 @@ func run() -> void:
 	await clear_shots()
 
 	check(bee.use_bomb() != null, "Bomb refused")
+	bee.active_bomb.detonate()
+	await frames(16)
 	check(effects(&"bomb").size() == 1, "Bomb VFX missing")
 	var bomb_visual := effects(&"bomb")[0] as BeeCombatVFX
 	check(bomb_visual.extent == 3.0 and bomb_visual.duration == 0.55, "Bomb visual radius/duration wrong")

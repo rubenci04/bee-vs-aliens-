@@ -283,7 +283,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 38, "Event count wrong (LOTE 9: 38 incl. 7 director moments, the human and 3 spider events)")
+	check(BeeLevel01Controller.EVENTS.size() == 59, "Event count wrong (LOTE 10: 59 events)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
@@ -293,7 +293,7 @@ func run() -> void:
 			total += (zone_wave["units"] as Array).size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 69 and max_gap <= 20, "Unit count/pacing wrong (LOTE 9: 69 incl. zones, 18 popcorn and 3 spiders; gaps <= 20 m)")
+	check(total == 107 and max_gap <= 8, "Unit count/pacing wrong (LOTE 10: 107 units, gaps <= 8 m)")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -332,7 +332,7 @@ func run() -> void:
 			frame_count += 1
 		peak_nodes = maxi(peak_nodes, int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		fps_min = minf(fps_min, Performance.get_monitor(Performance.TIME_FPS))
-		check(wave.active_units.size() <= BeeLevel01Controller.threat_cap(stage.distance), "Concurrency cap exceeded")
+		check(wave.active_units.size() <= (BeeLevel01Controller.MAX_ON_SCREEN_ARENA if wave.in_arena() else BeeLevel01Controller.threat_cap(stage.distance)), "Concurrency cap exceeded")
 		check(wave.swarm_units.size() <= BeeLevel01Controller.MAX_SWARM_ALIVE, "Popcorn budget exceeded")
 		check(not bee.is_defeated, "Progression harness Bee defeated")
 		# Keep test Bee away from attacks; combat itself remains covered by family tests.
@@ -398,7 +398,7 @@ func run() -> void:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
-	check(planned == 69 and spawned == planned, "Not all %d units spawned (%d) (LOTE 9: 53 in events + 16 in the 3 combat zones)" % [planned, spawned])
+	check(planned == 107 and spawned == planned, "Not all %d units spawned (%d) (LOTE 10: route and combat-zone units included)" % [planned, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

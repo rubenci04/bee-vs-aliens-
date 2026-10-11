@@ -13,7 +13,8 @@ func _ready() -> void:
 
 func refresh() -> void:
 	var weapon := "SPREAD x%d" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
-	$State.text = "%s · BOMB x%d · C BOMB" % [weapon, bee.bomb_charges]
+	var action := "C — DETONAR" if is_instance_valid(bee.active_bomb) else "C — BOMBA"
+	$State.text = "%s · BOMB x%d · %s" % [weapon, bee.bomb_charges, action]
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):

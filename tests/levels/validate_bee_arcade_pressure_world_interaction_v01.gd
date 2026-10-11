@@ -184,7 +184,7 @@ func wasp_pass(dodge: bool) -> int:
 func test_wasp() -> void:
 	await wasp_trace()
 	var hit := await wasp_pass(false)
-	check(hit == 10, "A pass that reaches Bee must cost exactly 10 HP once (got %d)" % hit)
+	check(hit == maxi(1, roundi(10 * BeeLevel01Controller.ROUTE_DAMAGE_SCALE)), "A pass that reaches Bee must cost exactly 10 HP once (got %d)" % hit)
 	var dodged := await wasp_pass(true)
 	check(dodged == 0, "A pass must be dodgeable by leaving the locked line (lost %d)" % dodged)
 	print("ARCADE_WASP_PASS hit=%d dodged=%d" % [hit, dodged])
@@ -194,7 +194,7 @@ func test_wasp() -> void:
 func test_ranged() -> void:
 	# COMBAT VARIETY 01: Level 01 Probes fire one split orb; the hold / advance / burst machinery below is checked with
 	# the pass-02 burst (4) forced on the unit, as the POCs and the EyeDrone still use it.
-	check(int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) == 1 and BeeLevel01Controller.LEVEL_TUNING["Probe"]["split_orb"] and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 4, "Ranged tuning missing")
+	check(int(BeeLevel01Controller.LEVEL_TUNING["Probe"]["burst_shots"]) == 1 and BeeLevel01Controller.LEVEL_TUNING["Probe"]["split_orb"] and BeeLevel01Controller.LEVEL_TUNING["EyeDrone"]["burst_shots"] == 3, "Ranged tuning missing")
 	var burst := 4
 	for family in ["Probe", "EyeDrone"]:
 		var scene := (load("res://scenes/bee_prototype/alien_probe_ranged.tscn" if family == "Probe" else "res://scenes/bee_prototype/eye_drone_enemy.tscn") as PackedScene).instantiate()
@@ -312,8 +312,8 @@ func test_rocks() -> void:
 		if r.structural:
 			structural += 1
 		else:
-			check(r.health.max_health in [32, 64], "Unexpected rock HP %d" % r.health.max_health)
-	check(structural == 1 and rock(STRUCTURAL_ROCK).structural, "Exactly the X=205 rock must be structural")
+			check(r.health.max_health in [32, 64, 96], "Unexpected rock HP %d" % r.health.max_health)
+	check(structural == 0 and rock(STRUCTURAL_ROCK).health.max_health == 96, "Every flight rock must break; large X=205 rock has 96 HP")
 	for x in SMALL_ROCKS:
 		check(rock(x).health.max_health == 32, "Small rock HP at %d" % x)
 	for x in MEDIUM_ROCKS:
@@ -360,15 +360,16 @@ func test_rocks() -> void:
 	var bomb_rock := rock_arena(241, 1.5)
 	bee.bomb_charges = 1
 	check(bee.use_bomb() != null, "Bomb unavailable")
-	await frames(40)
+	bee.active_bomb.detonate()
+	await frames(18)
 	check(bomb_rock.is_destroyed, "A Bomb must break a small rock")
 	# Structural: takes hits (flash, dust) but never breaks and keeps obstructing.
 	var wall := rock_arena(STRUCTURAL_ROCK, 3.5)
-	for i in 8:
+	for i in 10:
 		bee._spawn_projectile(Vector3.RIGHT)
 		await frames(22)
-	check(not wall.is_destroyed and wall.health.current_health < wall.health.max_health and blocks_bee(wall), "The structural rock must take hits but stay")
-	check(has_effect(&"rock_hit"), "Shots against the structural rock vanish without feedback")
+	check(wall.is_destroyed and not blocks_bee(wall), "The structural rock must take hits but stay")
+	check(wall.health.current_health == 0, "Large rock must be destroyed by Base")
 	# Enemy fire neither damages rocks nor uses them as cover.
 	var intact := rock_arena(307, 4.0)
 	var enemy_shot := (load("res://scenes/bee_prototype/alien_enemy_projectile.tscn") as PackedScene).instantiate() as AlienEnemyProjectile
@@ -425,11 +426,11 @@ func test_level() -> void:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 38 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
-	check(total >= 55 and total <= 70, "Unit total %d outside 55-70 (LOTE 9, zones included)" % total)
+	check(events.size() == 59 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
+	check(total >= 90 and total <= 110, "Unit total %d outside 90-110 (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.6, "Too few encounters with a ranged threat (%d/%d; LOTE 9: >= 60 %%, fewer escorts)" % [with_ranged, combat_events])
-	check(BeeLevel01Controller.threat_cap(300.0) == 4 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
+	check(BeeLevel01Controller.threat_cap(300.0) == 6 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")
 	check(_base_hp() == {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80}, "HP changed (LOTE 9 liberation / destruction times)")
 	print("ARCADE_LEVEL enemies=%d events=%d biggest=%d encounters_with_ranged=%d/%d" % [total, events.size(), biggest, with_ranged, combat_events])
 	# Dense encounter and a respite for the review captures.

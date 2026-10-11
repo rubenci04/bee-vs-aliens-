@@ -57,6 +57,9 @@ func fresh(distance: float) -> void:
 func spider_spawn(x := 0.0) -> ControlledSpider:
 	wave._spawn({"family": "Spider", "slot": 0, "event": 0, "hard": false, "x": x})
 	var spider := wave.active_units.back() as ControlledSpider
+	for child in spider.get_children():
+		if child is BeeImplantShooter:
+			child.set_physics_process(false) # Isolate the web/body pattern; supplemental fire has its own test.
 	spider.attacks = 2 # LOTE 7: Level 01 keeps it until CAMERA_TIME (99 attacks); the 2-strike pattern is what is tested here.
 	return spider
 
@@ -105,7 +108,7 @@ func run() -> void:
 			stats["targetable"] = spider.is_in_group("bee_auto_aim_targets")
 		wave._retire_soft_units(1.0 / 60.0)
 	check(telegraphs_checked == 2 and stats["strikes"] == 2 and stats["telegraphs"] == 2, "Expected exactly two telegraphed strikes (got %d/%d)" % [stats["telegraphs"], stats["strikes"]])
-	check(stats["hits"] == 1 and bee.health.current_health == hp_before - int(stats["damage"]), "First strike must hit once (14), the low lane must be safe (hits=%d hp=%d)" % [stats["hits"], bee.health.current_health])
+	check(stats["hits"] == 1 and bee.health.current_health == hp_before - maxi(1, roundi(int(stats["damage"]) * BeeLevel01Controller.ROUTE_DAMAGE_SCALE)), "First strike must hit once (14), the low lane must be safe (hits=%d hp=%d)" % [stats["hits"], bee.health.current_health])
 	check(float(stats["deepest"]) >= float(stats["min_y"]) - 0.001, "Body went below the low-lane limit")
 	check(bool(stats["escaped"]) and not bool(stats.get("targetable", true)) and (not is_instance_valid(spider) or not wave.active_units.has(spider)), "Spider did not leave after two attacks")
 	check(not bool(stats["token"]), "Spider kept the heavy-pattern token")
@@ -164,7 +167,7 @@ func run() -> void:
 	var spider_seen := false
 	for i in 60 * 12:
 		await physics_frame
-		check(wave.active_units.size() <= BeeLevel01Controller.threat_cap(stage.distance), "Threat cap exceeded near the spider")
+		check(wave.active_units.size() <= (BeeLevel01Controller.MAX_ON_SCREEN_ARENA if wave.in_arena() else BeeLevel01Controller.threat_cap(stage.distance)), "Threat cap exceeded near the spider")
 		for unit in wave.active_units:
 			spider_seen = spider_seen or unit is ControlledSpider
 	check(spider_seen, "Director did not launch the act-3 spider")

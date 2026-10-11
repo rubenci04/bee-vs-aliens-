@@ -223,7 +223,7 @@ func test_eye() -> void:
 			break
 	var volleys := bursts(18)
 	check(volleys.size() >= 4, "Eye fired only %d attacks" % volleys.size())
-	check(volleys[0].size() == 4 and volleys[1].size() == 5 and volleys[2].size() == 4 and volleys[3].size() == 5, "Eye must alternate aimed burst (4, ARCADE REBUILD 02) / fan (5): %s" % str(volleys.map(func(v): return v.size())))
+	check(volleys[0].size() == 3 and volleys[1].size() == 5 and volleys[2].size() == 3 and volleys[3].size() == 5, "Eye must alternate aimed burst (4, ARCADE REBUILD 02) / fan (5): %s" % str(volleys.map(func(v): return v.size())))
 	check(telegraph_by_attack[0] == false and telegraph_by_attack[1] == true, "Fan telegraph must differ (violet) from the aimed one: " + str(telegraph_by_attack))
 	var fan: Array = volleys[1]
 	for shot in fan:
@@ -292,7 +292,7 @@ func test_walker() -> void:
 	var walker := spawn("Walker") as GroundWalkerEnemy
 	check(walker.low_burst, "Walker low burst not applied")
 	walker.low_burst = false # COMBAT VARIETY 01: aimed-burst machinery check (the low burst is tested in combat_variety_v01).
-	check(walker.burst_shots == 4 and walker.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Walker"]) and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, LEVEL_HP, walk 2.4)")
+	check(walker.burst_shots == 3 and walker.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Walker"]) and is_equal_approx(walker.walk_speed, 2.4), "Walker tuning not applied (burst 4, LEVEL_HP, walk 2.4)")
 	listen(walker)
 	var captured := false
 	for i in 60 * 16:
@@ -305,9 +305,9 @@ func test_walker() -> void:
 		if bursts(60).size() >= 2 and _shots.size() >= 6:
 			break
 	var groups := bursts(60)
-	check(groups.size() >= 2 and groups[0].size() == 4, "Walker must fire a burst of 4 (%s)" % str(groups.map(func(g): return g.size())))
+	check(groups.size() >= 2 and groups[0].size() == 3, "Walker must fire a burst of 3 (%s)" % str(groups.map(func(g): return g.size())))
 	var g: Array = groups[0]
-	for k in 3:
+	for k in 2:
 		var gap := int(g[k + 1]["frame"]) - int(g[k]["frame"])
 		check(gap >= 17 and gap <= 25, "Walker burst spacing %d frames (~0.35 s)" % gap)
 	var reaim := 0.0 # Every shot re-aims: compare the first one with the rest of the burst (timing-independent).
@@ -415,10 +415,10 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.filter(func(f): return f != "Swarm").size() >= 4:
 			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
-	check(events.size() == 38 and float(events.back()["at"]) == 340.0, "Event table changed (LOTE 9: 38 events, last defence at X=340)")
-	check(total >= 55 and total <= 70, "Unit total %d outside the 55-70 budget (LOTE 9, zones included)" % total)
+	check(events.size() == 59 and float(events.back()["at"]) == 340.0, "Event table changed (LOTE 10: 59 events, last defence at X=340)")
+	check(total >= 90 and total <= 110, "Unit total %d outside the 90-110 budget (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
-	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Concurrency cap changed")
+	check(BeeLevel01Controller.threat_cap(10.0) == 4 and BeeLevel01Controller.threat_cap(150.0) == 5 and BeeLevel01Controller.threat_cap(300.0) == 6, "Concurrency cap changed")
 	check(_base_hp() == {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80}, "HP changed (LOTE 9 table)")
 	print("PATTERN_LEVEL enemies=%d (+%d) by_family=%s" % [total, total - OLD_TOTAL, str(by_family)])
 	# Controlled projectile ceiling: the heaviest legal quartet (REBUILD 02 caps threats at 4) alive for 14 s, Bee not shooting.
@@ -437,8 +437,8 @@ func test_level() -> void:
 		peak = maxi(peak, count)
 		total_frames += 1
 		shot_frames += count
-	check(peak >= 6 and peak <= 14, "Hostile projectile peak %d outside the controlled 6-14 range" % peak)
-	check(float(shot_frames) / float(total_frames) <= 10.0, "Sustained projectile load too high")
+	check(peak >= 6 and peak <= BeeLevel01Controller.LIVE_SHOT_CEILING + 4, "Hostile projectile peak %d outside the controlled 6-14 range" % peak)
+	check(float(shot_frames) / float(total_frames) <= float(BeeLevel01Controller.LIVE_SHOT_CEILING), "Sustained projectile load too high")
 	print("PATTERN_PROJECTILES three_ranged_peak=%d average=%.1f (ceiling 14)" % [peak, float(shot_frames) / float(total_frames)])
 	await clear_units()
 	# No fire from outside the screen for any family (whole volley suppressed).

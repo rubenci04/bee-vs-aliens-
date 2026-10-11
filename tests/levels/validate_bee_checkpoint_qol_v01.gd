@@ -154,7 +154,8 @@ func run() -> void:
 	check(stage.has_node("Pollen/PollenI") and stage.has_node("Powerups/BombRecharge"), "Future pickups missing")
 	var old_crate = stage.get_node("Destructibles/GardenCrate")
 	var new_crate = stage.get_node("Destructibles/OrganicCrate")
-	check(old_crate.is_destroyed and old_crate.collider.disabled and not new_crate.is_destroyed and not new_crate.collider.disabled, "Destructibles/colliders restoration")
+	check(old_crate.is_destroyed and old_crate.collider.disabled and not new_crate.is_destroyed, "Destructibles restoration")
+	check(new_crate.item_kind == 4 and new_crate.collider.disabled and new_crate.body.collision_layer == 0 and new_crate.hurtbox.collision_layer == 0, "Restored small peel must remain nonblocking decoration")
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = bee.get_node("CollisionShape3D").shape
 	query.transform = bee.global_transform

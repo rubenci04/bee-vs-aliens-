@@ -10,6 +10,7 @@ signal hit_confirmed(hurtbox: DamageHurtbox3D, applied_damage: int)
 
 var attacker: Node
 var enabled := false
+var bee_damage_scale := 1.0 # Copied on activation so orphaned projectiles keep the level damage budget.
 var _hit_targets: Dictionary = {}
 var hit_healths: Dictionary = {} # LOTE 9: HealthComponent ids already damaged since the last enable (see DamageHurtbox3D).
 ## LOTE 9: area damage (the Alien Bomb) is not a direct hit: implants / weak points take it at 1x.
@@ -26,6 +27,7 @@ func set_enabled(value: bool) -> void:
 	enabled = value
 	set_deferred("monitoring", value)
 	if value:
+		bee_damage_scale = float(attacker.get_meta("incoming_bee_damage_scale", 1.0)) if is_instance_valid(attacker) else bee_damage_scale
 		_hit_targets.clear()
 		hit_healths.clear()
 

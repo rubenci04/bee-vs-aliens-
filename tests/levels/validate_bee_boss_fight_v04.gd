@@ -260,12 +260,15 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 		# One bomb on the vulnerable saucer (measured, then the fight goes on with Base only).
 		if with_bomb and not bomb_checked and boss.state == UfoBoss01.State.PHASE_1 and boss.fight_seconds > 3.0:
 			bomb_checked = true
-			var before := boss.health.current_health
 			bee.bomb_charges = 1
 			bee.global_position = boss.global_position - Vector3(boss.side * 2.0, 0.0, 0.0)
-			bee.use_bomb()
-			await frames(3)
-			bomb_fraction = float(before - boss.health.current_health) / float(boss.max_hp)
+			var applied := [0]
+			var bomb := bee.use_bomb()
+			bomb.hit_confirmed.connect(func(hurt, amount):
+				if hurt.health_component == boss.health: applied[0] += amount)
+			bomb.detonate()
+			await frames(18)
+			bomb_fraction = float(applied[0]) / float(boss.max_hp)
 			bee.global_position = Vector3(cam_x - boss.side * 3.6, 3.4, 0.0)
 	var result := {"seconds": INF, "damage": damage[0]}
 	if not snapshot.is_empty():

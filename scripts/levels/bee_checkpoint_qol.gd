@@ -150,6 +150,9 @@ func activate_checkpoint() -> void:
 	var minimum := ceili(bee.health.max_health * 0.6)
 	bee.health.restore_health(maxi(0, minimum - bee.health.current_health))
 	var broken: Array[String] = []
+	for surface: ImpactSurface in get_tree().get_nodes_in_group("bee_destructibles"):
+		if stage.is_ancestor_of(surface) and surface.is_destroyed:
+			broken.append(str(surface.name))
 	for crate in stage.get_node("Destructibles").get_children():
 		if crate.position.x < checkpoint_x and crate.is_destroyed:
 			broken.append(str(crate.name))
@@ -186,6 +189,9 @@ func activate_second_checkpoint() -> void:
 func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_from: float) -> Dictionary:
 	var bee := stage.bee
 	var broken: Array[String] = []
+	for surface: ImpactSurface in get_tree().get_nodes_in_group("bee_destructibles"):
+		if stage.is_ancestor_of(surface) and surface.is_destroyed:
+			broken.append(str(surface.name))
 	for crate in stage.get_node("Destructibles").get_children():
 		if crate.position.x < limit and crate.is_destroyed:
 			broken.append(str(crate.name))
@@ -268,6 +274,9 @@ func restore_snapshot() -> void:
 	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
 		if stage.is_ancestor_of(rock) and str(rock.name) in snapshot["broken"]:
 			rock.restore_broken()
+	for surface: ImpactSurface in get_tree().get_nodes_in_group("bee_destructibles"):
+		if stage.is_ancestor_of(surface) and str(surface.name) in snapshot["broken"]:
+			surface.restore_broken()
 	debug_active = bool(snapshot.get("debug", false))
 	boss_checkpoint_count = int(snapshot.get("boss_attempts", 0))
 	debug_label.visible = debug_active

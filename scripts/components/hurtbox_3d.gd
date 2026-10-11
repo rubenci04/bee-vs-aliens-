@@ -56,6 +56,10 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 	var amount := hitbox.damage
 	if multiplier != 1.0 and amount > 0:
 		amount = maxi(1, roundi(float(amount) * multiplier))
+	# Level-only pressure budget belongs to the firing implant, including its delayed hazards.
+	if owner_entity is BeePlayer:
+		var pressure := hitbox.bee_damage_scale
+		amount = maxi(1, roundi(float(amount) * pressure)) if amount > 0 else 0
 	var applied := health_component.take_damage(amount)
 	if applied > 0:
 		hits_taken += 1

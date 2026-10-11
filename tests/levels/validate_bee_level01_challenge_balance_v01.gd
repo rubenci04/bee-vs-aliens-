@@ -249,8 +249,8 @@ func test_density() -> void:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
 			total += (zone_wave["units"] as Array).size()
-	check(events.size() == 38, "Encounter count changed (LOTE 9: 38, was 56)")
-	check(total >= 55 and total <= 70, "Unit total %d outside 55-70 (LOTE 9, zones included)" % total)
+	check(events.size() == 59, "Encounter count changed (LOTE 9: 38, was 56)")
+	check(total >= 90 and total <= 110, "Unit total %d outside 90-110 (LOTE 9, zones included)" % total)
 	check(biggest <= 4, "An encounter has more than 4 threats")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 4.0, "Timeline thresholds changed")
 	for family in BeeLevel01Controller.LEVEL_HP:

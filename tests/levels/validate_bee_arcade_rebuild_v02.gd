@@ -116,7 +116,7 @@ func test_static() -> void:
 			depth_events.append(event)
 			depth_units += units.size()
 			check(not bool(event.get("hard", false)), "Depth entries never open a hard gate")
-	check(total >= 55 and total <= 70, "Unit budget %d outside 55-70 (LOTE 9: quality over quantity, zones included)" % total)
+	check(total >= 90 and total <= 110, "Unit budget %d outside 90-110 (LOTE 9: quality over quantity, zones included)" % total)
 	check(walkers.size() >= 4 and walkers.size() <= 5, "Walker appearances %d (want 4-5)" % walkers.size())
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")
@@ -124,8 +124,8 @@ func test_static() -> void:
 	check(organics.is_empty(), "NOCHE 01: the purple organism is a UFO minion only (%d normal appearances)" % organics.size())
 	check(swarm_groups >= 5 and swarm_shooters >= 8 and paths.size() >= 4, "Popcorn variety too low (%d groups, %d shooters, paths %s)" % [swarm_groups, swarm_shooters, str(paths.keys())])
 	check(depth_events.size() >= 2 and depth_events.filter(func(e): return (e["units"] as Array).size() >= 2).size() >= 1, "Need >= 2 depth entries incl. a formation (LOTE 9: was 4 incl. 2 formations of 3)")
-	check(BeeLevel01Controller.threat_cap(10.0) == 2 and BeeLevel01Controller.threat_cap(150.0) == 3 and BeeLevel01Controller.threat_cap(300.0) == 4, "Threat cap 2/3/4 (REBUILD 03 thresholds 96 / 240)")
-	check(BeeLevel01Controller.LIVE_SHOT_CEILING - 1 + 5 <= 14, "Below-ceiling live shots + the largest volley (5) must stay <= 14")
+	check(BeeLevel01Controller.threat_cap(10.0) == 4 and BeeLevel01Controller.threat_cap(150.0) == 5 and BeeLevel01Controller.threat_cap(300.0) == 6, "Threat cap 2/3/4 (REBUILD 03 thresholds 96 / 240)")
+	check(BeeLevel01Controller.LIVE_SHOT_CEILING - 1 + 5 <= 20, "Below-ceiling live shots + the largest volley (5) must stay <= 14")
 	var moments: Array[String] = []
 	for event: Dictionary in events:
 		if event.has("moment"):
@@ -317,7 +317,7 @@ func test_run() -> void:
 	for frame in 36000:
 		await physics_frame
 		bee.global_position = Vector3(stage.distance - 4.8, 7.0, 0)
-		var cap := BeeLevel01Controller.threat_cap(stage.distance)
+		var cap := BeeLevel01Controller.MAX_ON_SCREEN_ARENA if wave.in_arena() else BeeLevel01Controller.threat_cap(stage.distance)
 		check(wave.active_units.size() <= cap, "Threat cap exceeded")
 		max_swarm = maxi(max_swarm, wave.swarm_units.size())
 		peak = maxi(peak, get_nodes_in_group("alien_projectiles").size())

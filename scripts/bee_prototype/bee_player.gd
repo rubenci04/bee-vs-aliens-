@@ -58,6 +58,7 @@ var melee_count := 0
 var is_defeated := false
 var spread_ammo := 0
 var bomb_charges := 0
+var active_bomb: BeeAlienBomb
 var _melee_active_left := 0.0
 var _melee_cooldown_left := 0.0
 var _melee_tween: Tween
@@ -106,6 +107,8 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("debug_attack"):
 		start_melee()
 	if Input.is_action_just_pressed("bee_bomb"):
+		if mouse_aim_enabled and not is_instance_valid(active_bomb):
+			_aim_at_screen(get_viewport().get_mouse_position())
 		use_bomb()
 
 
@@ -204,11 +207,17 @@ func collect_bomb() -> bool:
 
 
 func use_bomb() -> BeeAlienBomb:
+	if is_defeated:
+		return null
+	if is_instance_valid(active_bomb):
+		active_bomb.detonate()
+		return active_bomb
 	if is_defeated or bomb_charges <= 0:
 		return null
 	var bomb := BOMB_SCENE.instantiate() as BeeAlienBomb
 	get_parent().add_child(bomb)
 	bomb.global_position = global_position
+	active_bomb = bomb
 	bomb.activate(self, bomb_radius, bomb_damage)
 	bomb_charges -= 1
 	weapon_state_changed.emit()
@@ -295,6 +304,10 @@ func _on_died() -> void:
 	if is_defeated:
 		return
 	is_defeated = true
+	if is_instance_valid(active_bomb):
+		active_bomb.queue_free()
+		active_bomb = null
+		weapon_state_changed.emit()
 	BeeAudio.play(get_parent(), &"bee_defeat")
 	velocity = Vector3.ZERO
 	current_auto_target = null

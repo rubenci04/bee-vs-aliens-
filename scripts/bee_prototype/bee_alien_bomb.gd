@@ -1,26 +1,92 @@
 class_name BeeAlienBomb
 extends DamageHitbox3D
 
-# One instantaneous query. The expanding ring is feedback, not ongoing damage.
+## One flying bomb; warning precedes one deduplicated area query.
+const FLIGHT_SECONDS := 1.2
+const MAX_RANGE := 14.0
+const WARNING_SECONDS := 0.24
+const CONTACT_RADIUS := 0.24
+const MODEL := preload("res://scenes/art_labs/pickups_toon_v01/pickup_bomb.tscn")
+const MODEL_SCALE := 0.35
 var radius := 3.0
 var discharge_done := false
 var damaged_entities := 0
+var direction := Vector3.RIGHT
+var travelled := 0.0
+var flight_left := FLIGHT_SECONDS
+var warning_left := -1.0
+var source_player: BeePlayer
 
 func activate(source: BeePlayer, area_radius: float, amount: int) -> void:
 	attacker = source
+	source_player = source
 	team_id = &"bee"
 	damage = amount
 	radius = area_radius
-	ignores_weak_points = true # LOTE 9: area damage, never a 2x implant hit.
+	direction = source.aim_direction().normalized()
+	ignores_weak_points = true
 	enabled = true
-	call_deferred("_discharge")
-	BeeAudio.play(get_parent(), &"bomb")
-	$Pulse.hide() # Replaced by the reusable composite; damage remains here.
-	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, radius)
-	BeeCameraShake.kick(self, 0.07, 0.24) # ARCADE REBUILD 02: the one weapon that may shake the screen.
-	var tween := create_tween()
-	tween.tween_interval(0.4)
-	tween.tween_callback(queue_free)
+	$Pulse.show()
+	$Pulse.scale = Vector3.ONE * CONTACT_RADIUS
+	var core := MODEL.instantiate() as Node3D
+	core.name = "FlightModel"
+	core.scale = Vector3.ONE * MODEL_SCALE
+	add_child(core)
+
+func detonate() -> void:
+	if warning_left >= 0.0 or discharge_done:
+		return
+	warning_left = WARNING_SECONDS
+	$Pulse.scale = Vector3.ONE * radius
+
+func _physics_process(delta: float) -> void:
+	if discharge_done:
+		return
+	if warning_left >= 0.0:
+		warning_left -= delta
+		if warning_left <= 0.0:
+			_discharge()
+			BeeAudio.play(get_parent(), &"bomb")
+			BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, radius)
+			BeeCameraShake.kick(self, 0.07, 0.24)
+			hide()
+			if is_instance_valid(source_player):
+				source_player.active_bomb = null
+				source_player.weapon_state_changed.emit()
+			get_tree().create_timer(0.4).timeout.connect(queue_free)
+		return
+	var step := minf(MAX_RANGE - travelled, MAX_RANGE / FLIGHT_SECONDS * delta)
+	var next := global_position + direction * step
+	var ray := PhysicsRayQueryParameters3D.create(global_position, next, 3)
+	ray.collide_with_areas = true
+	ray.exclude = [source_player.get_rid(), source_player.hurtbox.get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(ray)
+	for ignored in 16:
+		if hit.is_empty():
+			break
+		var hurt := hit.collider as DamageHurtbox3D
+		if hurt == null or can_damage(hurt):
+			break
+		ray.exclude = ray.exclude + [hurt.get_rid()]
+		hit = get_world_3d().direct_space_state.intersect_ray(ray)
+	global_position = hit.position if not hit.is_empty() else next
+	travelled += step
+	flight_left -= delta
+	var shape := SphereShape3D.new()
+	shape.radius = CONTACT_RADIUS
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = global_transform
+	query.collision_mask = 3
+	query.collide_with_areas = true
+	query.exclude = ray.exclude
+	var contact := not hit.is_empty()
+	for result in get_world_3d().direct_space_state.intersect_shape(query, 32):
+		var hurt := result.collider as DamageHurtbox3D
+		if hurt == null or can_damage(hurt):
+			contact = true
+	if contact or travelled >= MAX_RANGE or flight_left <= 0.0:
+		detonate()
 
 func can_damage(hurtbox: DamageHurtbox3D) -> bool:
 	if not super.can_damage(hurtbox):
@@ -28,6 +94,8 @@ func can_damage(hurtbox: DamageHurtbox3D) -> bool:
 	var entity := hurtbox.owner_entity
 	if not is_instance_valid(entity):
 		return false
+	if entity.is_in_group("bee_destructibles"):
+		return not entity.is_destroyed
 	if entity is BreakableRock:
 		return not entity.is_destroyed
 	if entity is DestructibleObstacle3D:

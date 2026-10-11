@@ -89,13 +89,13 @@ func _route_checks() -> void:
 				for family in wave_def["units"]:
 					units += 1
 					families[str(family)] = true
-			check((event["arena"] as Array).size() == 2, "Combat zone at X=%s must have 2 waves" % event["at"])
-	check(units <= 70, "Route units %d > 70" % units)
+			check((event["arena"] as Array).size() == 3, "Combat zone at X=%s must have 3 waves" % event["at"])
+	check(units >= 90 and units <= 110, "Route units %d outside 90-110" % units)
 	for family in ["Wasp", "Probe", "EyeDrone", "Turret", "Speeder", "Walker", "Dragonfly", "Swarm", "Spider", "Mosquito", "Ladybird",
 			"WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier", "AlienFighter"]:
 		check(families.has(family), "Family %s vanished from the route" % family)
 	check(zones == 3, "Three combat zones (%d)" % zones)
-	check(BeeLevel01Controller.MAX_ON_SCREEN == 4 and BeeLevel01Controller.MAX_ON_SCREEN_ARENA == 5, "On-screen caps must be 4 / 5")
+	check(BeeLevel01Controller.MAX_ON_SCREEN == 6 and BeeLevel01Controller.MAX_ON_SCREEN_ARENA == 8, "On-screen caps must be 6 / 8")
 	var gate := BeeLevel01Controller.EVENTS.filter(func(e): return is_equal_approx(float(e["at"]), 254.0))
 	check(gate.size() == 1 and bool(gate[0].get("hard", false)), "The X=254 hard gate must stay")
 	var checkpoints := stage.get_node("CheckpointQoL") as BeeCheckpointQoL
@@ -208,7 +208,8 @@ func _bomb_is_1x() -> void:
 	stage.add_child(bomb)
 	bomb.global_position = fauna.hurtbox.global_position
 	bomb.activate(bee, 3.0, 32)
-	await frames(3)
+	bomb.detonate()
+	await frames(18)
 	check(before - health.current_health == 32, "The bomb must hit an animal once at 1x (took %d)" % (before - health.current_health))
 	lines.append("BALANCE bomb on an animal: %d (1x, once even over body + implant)" % (before - health.current_health))
 	_clear()

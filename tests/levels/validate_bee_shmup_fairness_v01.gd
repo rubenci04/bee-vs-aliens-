@@ -162,10 +162,12 @@ func run() -> void:
 	var shot := PROJECTILE.instantiate() as AlienEnemyProjectile
 	stage.add_child(shot)
 	shot.global_position = bee.global_position + Vector3(1.5, 0, 0)
+	shot.speed = 0.0 # Isolate cancellation from a later collision with Bee.
 	shot.launch(Vector3.LEFT, null)
 	bee.collect_bomb()
 	check(bee.use_bomb() != null, "Bomb refused")
-	await frames(6)
+	bee.active_bomb.detonate()
+	await frames(18)
 	check(is_instance_valid(shot) and not shot.is_queued_for_deletion(), "Bomb must not cancel enemy projectiles (decision A)")
 	shot.queue_free()
 

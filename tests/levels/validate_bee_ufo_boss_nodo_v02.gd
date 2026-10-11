@@ -117,7 +117,8 @@ func run() -> void:
 	bee.global_position = Vector3(boss.global_position.x - 2.4, boss.global_position.y, 0)
 	await frames(1)
 	check(bee.use_bomb() != null, "Bomb refused")
-	await frames(4)
+	bee.active_bomb.detonate()
+	await frames(18)
 	check(hp - boss.health.current_health == roundi(boss.max_hp * UfoBoss01.BOMB_FRACTION), "LOTE 9: the bomb must take %d %% of the UFO (%d)" % [roundi(UfoBoss01.BOMB_FRACTION * 100.0), hp - boss.health.current_health])
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)
 
