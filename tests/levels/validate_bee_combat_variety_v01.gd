@@ -14,6 +14,8 @@ extends SceneTree
 # With a rendering window it saves captures in res://dev/visual_target/ (lote4_*.png).
 # Dev filter: -- only=wasp|eye|speeder|turret|walker|probe|boss
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const OUT := "res://dev/visual_target/"
 const UNTELEGRAPHED_CAP := 24 # Max hull-contact damage on Bee in the scripted fight (two touches; Bee flies like a player).
@@ -247,7 +249,7 @@ func test_boss() -> void:
 		if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1:
 			boss = wave.boss
 			break
-	check(boss != null and boss.max_hp == 500, "Boss did not start (HP 500)")
+	check(boss != null and boss.max_hp == BOSS_HP, "Boss did not start (HP %d)" % BOSS_HP)
 	check(boss.side == 1.0 and boss.global_position.x > stage.camera.global_position.x, "First attempt enters from the right")
 	check(stage.get("boss_arena_wide") == true, "Bee must get the whole width in the boss arena")
 	await capture("boss_phase1_right")
@@ -261,8 +263,12 @@ func test_boss() -> void:
 			await frames(1)
 			bee.health.current_health = bee.health.max_health
 			bee.global_position = bee.global_position.move_toward(Vector3(stage.camera.global_position.x - boss.side * 4.0, 2.4 + sin(float(i) / 50.0) * 1.6, 0), 7.0 / 60.0) # Flies like a player (7 m/s), no teleports.
+		if p == UfoBoss01.State.PHASE_3:
+			for node in boss.shield_nodes.duplicate(): # LOTE 9: break the shield nodes first (phase 2 shield).
+				node.health.take_damage(9999)
+			await frames(2)
 		var before := boss.side
-		boss.health.take_damage(boss.health.current_health - int(boss.max_hp * (0.6 if p == UfoBoss01.State.PHASE_2 else 0.3)))
+		boss.health.take_damage(ceili(float(boss.health.current_health - int(boss.max_hp * (0.6 if p == UfoBoss01.State.PHASE_2 else 0.3))) / boss.health.damage_scale)) # LOTE 9: the open shield window doubles damage.
 		check(boss.crossing and boss.side == -before, "Phase change must cross to the other side")
 		check(await boss_phase(boss, p, 200), "Phase %d not reached" % (p - UfoBoss01.State.PHASE_1 + 1))
 		phase_switch_x.append(signf(boss.global_position.x - stage.camera.global_position.x))
@@ -293,7 +299,7 @@ func test_boss() -> void:
 	var gates := {}
 	for g in wave.minion_gates_used:
 		gates[g % 3] = true
-	check(gates.size() >= 2, "Drones must come from several points (%s)" % str(gates.keys()))
+	check(not wave.minion_gates_used.is_empty() and gates.size() >= mini(2, wave.minion_gates_used.size()), "Minions must come from several points (%s; LOTE 9: phase 3 only, one at a time)" % str(gates.keys()))
 	report.append("boss hazards=%d kinds=%s untelegraphed=%d dmg_taken=%d switches=%d gates=%s" % [boss.hazards.size(), str(kinds.keys()), boss.untelegraphed_damage, taken[0], boss.side_switches, str(gates.keys())])
 	# Retry: Bee dies in the fight -> respawn at the start, the boss now enters from the LEFT.
 	bee.health.damage_blocked = false
@@ -307,12 +313,15 @@ func test_boss() -> void:
 		if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1:
 			second = wave.boss
 			break
-	check(second != null and second.side == -1.0 and second.global_position.x < stage.camera.global_position.x and second.health.current_health == 500, "Retry must enter from the left with full HP")
+	check(second != null and second.side == -1.0 and second.global_position.x < stage.camera.global_position.x and second.health.current_health == BOSS_HP, "Retry must enter from the left with full HP")
 	await capture("boss_retry_left")
 	# Victory: mines defused, nothing hurts afterwards.
 	second.health.take_damage(second.health.current_health - int(second.max_hp * 0.6))
 	await boss_phase(second, UfoBoss01.State.PHASE_2, 200)
 	await wait_for(func(): return second.mines_thrown >= 1, 900)
+	for node in second.shield_nodes.duplicate(): # LOTE 9: the phase 2 shield blocks damage until its nodes break.
+		node.health.take_damage(9999)
+	await frames(2)
 	second.health.take_damage(99999)
 	await frames(2)
 	check(second.live_mines().is_empty(), "Mines must be defused when the boss dies")

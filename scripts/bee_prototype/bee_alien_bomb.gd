@@ -55,7 +55,13 @@ func _discharge() -> void:
 		if _hit_targets.has(id):
 			continue
 		_hit_targets[id] = true
+		# LOTE 9: an entity may scale the bomb on its main health (the NODO ALIEN takes BOMB_FRACTION of its life).
+		var base_damage := damage
+		var entity := hurtbox.owner_entity
+		if entity.has_method("bomb_damage_for") and entity.get("health") == hurtbox.health_component:
+			damage = int(entity.call("bomb_damage_for", base_damage))
 		var applied := hurtbox.receive_hit(self)
+		damage = base_damage
 		if applied > 0:
 			damaged_entities += 1
 			hit_confirmed.emit(hurtbox, applied)

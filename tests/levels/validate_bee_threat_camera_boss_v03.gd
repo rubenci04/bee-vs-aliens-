@@ -12,6 +12,8 @@ extends SceneTree
 #   presentation  the frog never intersects the distant bottle and enters from off screen; leaves are leaf meshes
 # Dev filter: -- only=camera|wasp|organic|walker|roles|boss|presentation
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 
 var stage: BeeShmupStage
@@ -255,7 +257,7 @@ func boss_fight() -> UfoBoss01:
 
 func test_boss() -> void:
 	var boss := await boss_fight()
-	check(boss != null and boss.max_hp == 500, "Boss missing or HP changed")
+	check(boss != null and boss.max_hp == BOSS_HP, "Boss missing or HP changed")
 	var cam_x := stage.camera.global_position.x
 	var xs: Array[float] = []
 	for i in 60 * 6:
@@ -263,32 +265,37 @@ func test_boss() -> void:
 		xs.append(boss.global_position.x - cam_x)
 	check(xs.max() - xs.min() >= 0.8 and xs.min() >= UfoBoss01.X_MIN - 0.01, "Phase 1 must drift visibly inside its band (%.2f..%.2f)" % [xs.min(), xs.max()])
 	check(wave.boss_minions().is_empty(), "No minions in phase 1")
-	# Phase 2: summon (no attack while summoning), at most 2 minions.
+	# LOTE 9 · Phase 2: the cyan shield and its nodes (no minions); the saucer still moves more than in phase 1.
 	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.6))
 	var summon_seen := false
 	var attacked_while_summoning := false
 	var max_minions := 0
 	var xs2: Array[float] = []
-	for i in 60 * 12:
+	for i in 60 * 8:
 		bee.global_position.y = 3.6 + sin(float(i) / 60.0 * 2.0) * 1.0
 		await physics_frame
 		if boss.state == UfoBoss01.State.PHASE_2:
 			xs2.append(boss.global_position.x - cam_x)
+	check(boss.shield_up and boss.shield_nodes.size() == UfoBoss01.SHIELD_NODES and wave.boss_minions().is_empty(), "Phase 2: shield up with its nodes, no minions")
+	check(xs2.max() - xs2.min() > xs.max() - xs.min(), "Phase 2 must move more than phase 1")
+	# Phase 3: summons (no attack while summoning), at most one minion.
+	for node in boss.shield_nodes.duplicate():
+		node.health.take_damage(9999)
+	await frames(2)
+	boss.health.take_damage(ceili(float(boss.health.current_health - int(boss.max_hp * 0.3)) / boss.health.damage_scale)) # LOTE 9: the open shield window doubles damage.
+	for i in 60 * 16:
+		bee.global_position.y = 3.6 + sin(float(i) / 60.0 * 2.0) * 1.0
+		await physics_frame
 		if str(boss._attack_step) == "summon":
 			summon_seen = true
 			attacked_while_summoning = attacked_while_summoning or boss._attack_step in [&"telegraph", &"burst"]
 		max_minions = maxi(max_minions, wave.boss_minions().size())
-	check(summon_seen and boss.summons >= 1, "Phase 2 must summon minions")
-	check(max_minions >= 1 and max_minions <= BeeLevel01Controller.MAX_BOSS_MINIONS, "Minion cap broken (%d)" % max_minions)
+		check(wave.boss_minions().size() <= BeeLevel01Controller.MAX_BOSS_MINIONS, "Minion cap broken in phase 3")
+	check(summon_seen and boss.summons >= 1, "Phase 3 must summon minions")
+	check(max_minions >= 1 and max_minions <= int(UfoBoss01.MAX_MINIONS[UfoBoss01.State.PHASE_3]), "Minion cap broken (%d)" % max_minions)
 	check(not attacked_while_summoning, "The saucer must not attack while summoning")
-	check(xs2.max() - xs2.min() > xs.max() - xs.min(), "Phase 2 must move more than phase 1")
 	for minion in wave.boss_minions():
 		check(minion.has_meta("boss_minion") and bool(minion.get_meta("level_hard")), "Minions never retreat on their own")
-	# Phase 3: at most one minion.
-	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.3))
-	for i in 60 * 10:
-		await physics_frame
-		check(wave.boss_minions().size() <= BeeLevel01Controller.MAX_BOSS_MINIONS, "Minion cap broken in phase 3")
 	# Completion: minions fall with the ship, then Level Complete.
 	var summons := boss.summons
 	boss.health.take_damage(99999)

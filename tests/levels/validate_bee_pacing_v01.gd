@@ -102,6 +102,7 @@ func run() -> void:
 				goal_y = clampf(unit.global_position.y + 0.3, 1.2, 6.2)
 		if wave.boss != null and is_instance_valid(wave.boss) and wave.boss.is_active():
 			goal_y = clampf(wave.boss.global_position.y, 1.5, 6.0)
+			anchor_x = stage.camera.global_position.x - wave.boss.side * 3.6 # LOTE 9: the free side, off the hull and the shield.
 		var p := bee.global_position
 		p.x = move_toward(p.x, clampf(anchor_x, bee.flight_min.x, bee.flight_max.x), BOT_SPEED * tick)
 		p.y = move_toward(p.y, clampf(goal_y, bee.flight_min.y, bee.flight_max.y), BOT_SPEED * tick)
@@ -173,6 +174,8 @@ func _nearest_target() -> Variant:
 		var target := node as Node3D
 		if target == null or not target.is_visible_in_tree() or not BeeShmupFairness.is_on_screen(target, -0.4):
 			continue
+		if target is UfoBoss01 and (target as UfoBoss01).shield_up:
+			continue # LOTE 9: the shield is up - shoot its nodes.
 		if target.has_method("is_active") and not bool(target.call("is_active")):
 			continue
 		var hurtbox := target.get_node_or_null("Hurtbox3D") as Node3D

@@ -9,6 +9,8 @@ extends SceneTree
 #   checkpoint  resume in act 3 after X=190 without the first dragonfly, Giant Human or earlier moments
 # Dev filter: -- only=escalation|run|checkpoint
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 
 var stage: BeeShmupStage
@@ -142,7 +144,7 @@ func test_run() -> void:
 		if wave._waiting_for_human:
 			bee.global_position = Vector3(stage.distance - 5.1, 7.0, 0)
 		if wave.boss != null and wave.boss.is_active():
-			check(wave.boss.max_hp == 500, "UFO HP changed")
+			check(wave.boss.max_hp == BOSS_HP, "UFO HP changed")
 			wave.boss.health.take_damage(99999)
 		if stage.sector_complete:
 			break

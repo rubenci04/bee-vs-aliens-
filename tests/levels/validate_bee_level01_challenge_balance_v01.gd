@@ -9,6 +9,8 @@ extends SceneTree
 #     worse than Base against it; Level Complete still only after the kill.
 # With a renderer it saves captures in res://dev/level01_challenge_review/.
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const REVIEW := "res://dev/level01_challenge_review/"
 const CORRIDOR_HEIGHTS := [2.6, 3.0, 3.4, 3.8, 4.0]
@@ -409,7 +411,7 @@ func test_boss() -> void:
 			break
 	boss = wave.boss
 	check(boss != null and boss.state == UfoBoss01.State.PHASE_1, "Boss did not reach phase 1")
-	check(boss.max_hp == 500 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "Boss HP/approach changed (out of scope)")
+	check(boss.max_hp == BOSS_HP and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "Boss HP/approach changed (out of scope)")
 	# The hurtbox lives inside the visible saucer.
 	var shape_node := boss.hurtbox.get_node("CollisionShape3D") as CollisionShape3D
 	# The saucer spins about Y: use radial extents (rotation-proof) and the exact vertical extents.

@@ -9,6 +9,8 @@ extends SceneTree
 # With a renderer it saves captures in res://dev/arcade_pressure_review/.
 # Dev filter: -- only=wasp|ranged|rocks|level
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const REVIEW := "res://dev/arcade_pressure_review/"
 const RANGED := ["Probe", "EyeDrone", "Turret", "Walker", "Snail", "MushroomCannon", "SeedCarrier", "Moth"] # LOTE 6: Codex fauna that shoots / drops bombs.
@@ -455,7 +457,7 @@ func test_boss_and_complete() -> void:
 		if wave.boss != null and wave.boss.state == UfoBoss01.State.PHASE_1:
 			break
 	var boss := wave.boss
-	check(boss != null and boss.max_hp == 500 and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "UFO Boss changed")
+	check(boss != null and boss.max_hp == BOSS_HP and is_equal_approx(UfoBoss01.APPROACH_SECONDS, 3.2), "UFO Boss changed")
 	check(not stage.sector_complete, "Level complete before the boss died")
 	boss.health.take_damage(boss.health.max_health)
 	for i in 900:
@@ -464,7 +466,7 @@ func test_boss_and_complete() -> void:
 		if stage.sector_complete:
 			break
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing after the boss died")
-	print("ARCADE_LEVEL_COMPLETE OK (UFO 500 HP)")
+	print("ARCADE_LEVEL_COMPLETE OK (UFO %d HP)" % BOSS_HP)
 
 func run() -> void:
 	create_timer(560.0, true, false, true).timeout.connect(func(): quit(1))

@@ -4,6 +4,8 @@ extends SceneTree
 # death cleanup, level completion only after the kill, checkpoint retry and full restart.
 # With a rendering window it also saves review captures in res://dev/ufo_boss_01_review/.
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const REVIEW := "res://dev/ufo_boss_01_review/"
 
@@ -102,18 +104,18 @@ func run() -> void:
 	check(shots.is_empty() and get_nodes_in_group(UfoBoss01.PROJECTILE_GROUP).is_empty(), "UFO fired during the approach")
 	check(boss.state == UfoBoss01.State.PHASE_1 and is_zero_approx(boss.global_position.z), "UFO did not enter the play plane")
 	await capture("03_ufo_enters_plane")
-	check(boss.is_vulnerable() and boss.health_bar_visible() and boss.health.current_health == boss.max_hp and boss.max_hp == 500, "Fight did not start correctly")
+	check(boss.is_vulnerable() and boss.health_bar_visible() and boss.health.current_health == boss.max_hp and boss.max_hp == BOSS_HP, "Fight did not start correctly")
 	var visible_half := BeeShmupFairness.visible_half_width(stage.camera, boss.global_position, BeeLevel01Framing.view_aspect(root))
 	check(absf(boss.global_position.x - stage.camera.global_position.x) < visible_half - 1.5, "UFO arena position off screen")
 
-	# 3. Phase 1: aimed bursts of 3 at Bee's position at the moment of each shot, straight lines.
+	# 3. Phase 1 (LOTE 9): fast aimed bursts of 4 at Bee's position at the moment of each shot + an aimed fan every third attack.
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)
 	for i in 420:
 		await frames(1)
 		bee.global_position.y = 2.2 + sin(float(i) / 40.0) * 1.2 # Moving Bee: aim must follow the fire moment.
 	check(stage.distance == start_distance and wave.active_units.is_empty(), "Arena lock broken during the fight")
 	var aimed := shots.filter(func(s: Dictionary): return s["pattern"] == &"aimed")
-	check(aimed.size() >= 6 and shots.size() == aimed.size(), "Phase 1 must only fire aimed bursts (%d shots)" % shots.size())
+	check(aimed.size() >= 6 and shots.all(func(s: Dictionary): return s["pattern"] == &"aimed" or s["pattern"] == &"fan") and boss.mines_thrown == 0 and boss.beams == 0, "Phase 1 must only fire aimed bursts and aimed fans (%d shots)" % shots.size())
 	for s in aimed:
 		var wanted := Vector3(s["bee"].x - s["origin"].x, s["bee"].y - s["origin"].y, 0).normalized()
 		check((s["direction"] as Vector3).angle_to(wanted) < deg_to_rad(4.0), "Aimed shot not aimed at Bee's position at fire time")
@@ -141,11 +143,11 @@ func run() -> void:
 	var live_before := boss.live_projectiles().size()
 	check(bee.use_bomb() != null, "Bomb refused")
 	await frames(4)
-	check(hp - boss.health.current_health == bee.bomb_damage, "Bomb must deal its normal damage to the UFO")
+	check(hp - boss.health.current_health == roundi(boss.max_hp * UfoBoss01.BOMB_FRACTION), "LOTE 9: the bomb must take BOMB_FRACTION of the UFO (%d)" % (hp - boss.health.current_health))
 	check(boss.live_projectiles().size() >= mini(live_before, 1) or live_before == 0, "Bomb must not cancel boss projectiles")
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)
 
-	# 6. Phase 2 at 66 %: transition = crossing to the other side, then MINES alternating with aimed bursts (BOSS v2).
+	# 6. Phase 2 at 70 %: crossing to the other side, then the SHIELD (nodes) while MINES alternate with aimed bursts (LOTE 9).
 	shots.clear()
 	var side_before := boss.side
 	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.6))
@@ -161,12 +163,17 @@ func run() -> void:
 			await frames(40)
 			await capture("05_phase2_mines")
 	check(boss.mines_thrown >= 2 and shots.any(func(s: Dictionary): return s["pattern"] == &"aimed"), "Phase 2 must alternate mines and aimed bursts (%d mines)" % boss.mines_thrown)
+	check(boss.shield_up and not boss.is_vulnerable() and boss.health.take_damage(50) == 0 and boss.shield_nodes.size() == UfoBoss01.SHIELD_NODES, "Phase 2: shielded, nodes up, no damage")
+	for node in boss.shield_nodes.duplicate():
+		node.health.take_damage(9999)
+	await frames(2)
+	check(not boss.shield_up and boss.shield_window_open() and boss.is_vulnerable() and boss.shield_windows == 1, "Breaking every node must open the vulnerability window")
 
-	# 7. Phase 3 at 33 %: faster movement, beam + faster mines + aimed, frequent side changes, moderate projectiles.
+	# 7. Phase 3 at 40 %: faster movement, beam + faster mines + aimed, frequent side changes, moderate projectiles.
 	shots.clear()
 	peak_projectiles = 0
 	var switches_before := boss.side_switches
-	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.3))
+	boss.health.take_damage(ceili(float(boss.health.current_health - int(boss.max_hp * 0.3)) / boss.health.damage_scale)) # LOTE 9: the open shield window doubles damage.
 	check(await wait_state(UfoBoss01.State.PHASE_3, 150), "Phase 3 not reached")
 	check(float(UfoBoss01.PHASE_TUNING[UfoBoss01.State.PHASE_3][1]) < float(UfoBoss01.PHASE_TUNING[UfoBoss01.State.PHASE_1][1]), "Phase 3 must move faster")
 	var phase3_captured := false
@@ -179,6 +186,18 @@ func run() -> void:
 	check(boss.side_switches - switches_before >= 2, "Phase 3 must change side often (%d)" % (boss.side_switches - switches_before))
 	check(peak_projectiles >= 3 and peak_projectiles <= 15, "Peak boss projectiles out of range (%d)" % peak_projectiles)
 	var phase3_peak := peak_projectiles
+
+	# 7b. LOTE 9 — Phase 4 (fury) under 15 %: beam and mines together, red core, faster side changes.
+	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.1))
+	check(await wait_state(UfoBoss01.State.PHASE_4, 150), "Phase 4 not reached")
+	var combo_seen := false
+	for i in 900:
+		await frames(1)
+		if boss._pattern == &"combo" and boss._attack_step == &"beam_tele" and boss.live_mines().size() >= 1:
+			combo_seen = true
+			break
+	check(combo_seen and boss.is_fury(), "Phase 4 must combine the beam and mines")
+	check(boss.phases_seen == [UfoBoss01.State.PHASE_1, UfoBoss01.State.PHASE_2, UfoBoss01.State.PHASE_3, UfoBoss01.State.PHASE_4], "The 4 phases must happen in order (%s)" % str(boss.phases_seen))
 
 	# 8. Damage feedback reuses HitFlash.
 	var flashes := boss.hit_flash.activation_count
@@ -202,7 +221,7 @@ func run() -> void:
 	while is_instance_valid(boss) and death_frames < 400:
 		await frames(1)
 		death_frames += 1
-	check(not is_instance_valid(boss) and death_frames / 60.0 >= 1.5 and death_frames / 60.0 <= 3.2, "Death sequence lasted %.2f s" % (death_frames / 60.0))
+	check(not is_instance_valid(boss) and death_frames / 60.0 >= UfoBoss01.death_seconds() - 0.3 and death_frames / 60.0 <= UfoBoss01.death_seconds() + 0.8, "Death sequence lasted %.2f s (LOTE 9: longer cinematic, %.2f s)" % [death_frames / 60.0, UfoBoss01.death_seconds()])
 	check(wave.boss_defeated and wave.is_complete(), "Boss death did not complete the wave")
 	for i in 600:
 		await frames(1)

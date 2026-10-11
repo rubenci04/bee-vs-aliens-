@@ -11,16 +11,38 @@ signal projectile_fired(projectile: AlienEnemyProjectile, pattern: StringName)
 ## BOSS CHALLENGE V2 (REBUILD 03): the level director spawns `count` minions of `family` launched from the saucer.
 signal summon_requested(family: StringName, count: int)
 
-enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, TRANSITION, DEATH, DONE }
+enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, TRANSITION, DEATH, DONE }
 
 const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
 const PROJECTILE_GROUP := &"ufo_boss_projectiles"
 const DISPLAY_NAME := "NODO ALIEN"
 
-## UFO BOSS 01: HP 500 (was 400 in the first NODO pass, which Base fire melted in ~12 s): ~15 s of continuous Base fire (33 dps), ~25 s with dodging.
-@export var max_hp := 500
-const PHASE_2_RATIO := 0.66
-const PHASE_3_RATIO := 0.33
+## LOTE 9 · ETAPA C — a real final fight (playtest: "too easy, even on Normal"). Target with Base and ~60 % aim: 70-90 s.
+##   PHASE 1  100-70 %  faster aimed bursts (4 shots, 0.11 s apart) and an aimed fan every third attack
+##   PHASE 2   70-40 %  cyan SHIELD (no damage) powered by SHIELD_NODES orbiting nodes; it throws mines meanwhile. Breaking
+##                      every node drops the shield for SHIELD_WINDOW s (damage x WINDOW_DAMAGE_SCALE), then it reforms
+##   PHASE 3   40-15 %  tractor beam every other attack, faster mines, a side change every SIDE_SWITCH[PHASE_3] s
+##   PHASE 4  < 15 %    FURY: red core, combined pattern (beam + mines together, fans, long bursts), faster side changes
+## Every damaging attack is announced >= MIN_TELEGRAPH s before it can hurt (see `hazards`).
+## BEFORE: 500 HP, 3 phases (66 / 33 %), bomb 32 (6 % of its life), shortest fight ~25 s with dodging.
+@export var max_hp := 1200
+const PHASE_2_RATIO := 0.70
+const PHASE_3_RATIO := 0.40
+const PHASE_4_RATIO := 0.15
+## The Alien Bomb takes this fraction of the max HP (was its normal 32 damage = 6 %).
+const BOMB_FRACTION := 0.08
+## Phase 2 shield: nodes on the first raise / on every later raise, node HP, open window and reform warning (s).
+const SHIELD_NODES := 3
+const SHIELD_NODES_AGAIN := 2
+const SHIELD_NODE_HP := 16
+const SHIELD_WINDOW := 5.0
+const SHIELD_REFORM := 1.2
+const WINDOW_DAMAGE_SCALE := 2.0
+const SHIELD_RADIUS := 2.9
+## The nodes guard the arc of the saucer that faces Bee: total spread (rad) of their slots.
+const SHIELD_ARC := 1.9
+const SHIELD_COLOR := Color(0.25, 0.95, 1.0, 0.22)
+const FURY_COLOR := Color(1.0, 0.25, 0.2)
 
 const APPROACH_SECONDS := 3.2
 const START_OFFSET := Vector3(4.0, 2.4, -38.0) # Far in depth, up and to the side (x mirrored by `side`).
@@ -31,13 +53,14 @@ const CENTER_Y := 3.6
 ## flies high, does not attack and its hull does not hurt. Bee may use the whole width during the fight.
 const CROSS_SECONDS := 1.5
 const CROSS_LIFT := 1.8
-const SIDE_SWITCH_P3 := 6.5
+const SIDE_SWITCH_P3 := 4.5 # LOTE 9: 6.5 -> 4.5 s.
+const SIDE_SWITCH := {State.PHASE_3: SIDE_SWITCH_P3, State.PHASE_4: 3.5}
 ## BOSS v2 MINES: thrown from the core, they fly TRAVEL s to their spot, hang still with a shrinking warning ring and
-## explode in MINE_RADIUS (radius drawn the whole time). Phase 2: 2 mines, 2.0 s fuse. Phase 3: 3 mines, 1.5 s fuse.
-const MINE_COUNT := {State.PHASE_2: 2, State.PHASE_3: 3}
-const MINE_FUSE := {State.PHASE_2: 2.0, State.PHASE_3: 1.5}
+## explode in MINE_RADIUS (radius drawn the whole time). LOTE 9: phase 3 faster (1.5 -> 1.25 s), phase 4 with the beam.
+const MINE_COUNT := {State.PHASE_2: 2, State.PHASE_3: 3, State.PHASE_4: 2}
+const MINE_FUSE := {State.PHASE_2: 2.0, State.PHASE_3: 1.25, State.PHASE_4: 1.1}
 const MINE_RADIUS := 1.5
-const MINE_DAMAGE := 12
+const MINE_DAMAGE := 5 # LOTE 9: 12 -> 5 (more mines, longer fight; see the damage budget below).
 const MINE_SPREAD := 2.4 # m between neighbouring mines (one lands on Bee's spot, the rest beside it)
 const MINE_TELEGRAPH := 0.5 # core swell before the throw
 ## Every damage source the boss owns must be announced at least this long before it can hurt (tests read `hazards`).
@@ -47,9 +70,11 @@ const TRANSITION_SECONDS := 0.9
 const VISUAL_SCALE := 1.6
 ## PHASE 3 TRACTOR BEAM: a vertical column on the ground line, marked 1 s before, 15 damage once per exposure.
 const BEAM_TELEGRAPH := 1.0
+## LOTE 9: the beam warns a little shorter later on (still >= MIN_TELEGRAPH).
+const BEAM_TELEGRAPH_BY_PHASE := {State.PHASE_3: 0.85, State.PHASE_4: 0.7}
 const BEAM_ACTIVE := 0.8
 const BEAM_WIDTH := 1.5
-const BEAM_DAMAGE := 15
+const BEAM_DAMAGE := 8 # LOTE 9: 15 -> 8.
 const BEAM_GROUND_Y := -0.2
 const BEAM_TOP_Y := 7.3
 
@@ -59,33 +84,39 @@ const BEAM_TOP_Y := 7.3
 ## (X amplitude per phase) plus, from phase 2, a slow approach / retreat. Never chases Bee and never leaves the band
 ## [X_MIN, half width - X_EDGE] in front of the camera, so the left of the screen is always an escape route.
 ## BOSS v2: wider bands - |x| in [X_MIN, half width - X_EDGE] on its side, vertical amplitude per phase in PHASE_TUNING.
-const MOVE_X := {State.PHASE_1: 1.4, State.PHASE_2: 1.6, State.PHASE_3: 1.8}
-const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1}
+const MOVE_X := {State.PHASE_1: 1.4, State.PHASE_2: 1.6, State.PHASE_3: 1.8, State.PHASE_4: 2.0}
+const APPROACH_X := {State.PHASE_1: 0.0, State.PHASE_2: 0.8, State.PHASE_3: 1.1, State.PHASE_4: 1.2}
 const X_MIN := 1.2
 const X_EDGE := 2.9
 ## Minions: phase 2 launches 2 EyeDrones (then again whenever none is left, every MINION_COOLDOWN s); phase 3 launches
 ## a single Probe only when the screen is clean enough. While summoning the saucer does not attack (~1 s).
 const SUMMON_SECONDS := 1.0
-const MINION_COOLDOWN := {State.PHASE_2: 9.0, State.PHASE_3: 12.0}
-const MAX_MINIONS := {State.PHASE_2: 2, State.PHASE_3: 1}
-## NOCHE 01: every ORGANIC_EVERY-th summon (phases 2 and 3) brings the purple one-eyed organism instead of drones/probes.
+## LOTE 9: phase 2 has the shield nodes instead; minions come in phase 3 only.
+const MINION_COOLDOWN := {State.PHASE_3: 12.0}
+const MAX_MINIONS := {State.PHASE_3: 1}
+## NOCHE 01: every ORGANIC_EVERY-th summon brings the purple one-eyed organism instead of a probe.
 const ORGANIC_EVERY := 2
+## [bob amplitude, bob period, cooldown, aimed telegraph, fan telegraph]. LOTE 9: shorter cooldowns, phase 4.
 const PHASE_TUNING := {
-	State.PHASE_1: [1.3, 4.6, 1.05, 0.5, 0.7],
-	State.PHASE_2: [1.4, 4.4, 1.1, 0.5, 0.65],
-	State.PHASE_3: [1.5, 3.4, 0.85, 0.45, 0.55],
+	State.PHASE_1: [1.3, 4.6, 0.8, 0.45, 0.6],
+	State.PHASE_2: [1.4, 4.4, 1.0, 0.5, 0.6],
+	State.PHASE_3: [1.5, 3.4, 0.7, 0.45, 0.5],
+	State.PHASE_4: [1.6, 3.0, 0.55, 0.42, 0.45],
 }
 const AIMED_SHOTS := 3
 const AIMED_INTERVAL := 0.14
 const AIMED_SPEED := 6.2 # Fallback; per phase see AIMED_SPEED_BY_PHASE.
-## Balance pass (fixes 01): aimed bursts get faster and, in phase 3, longer. Phase 1 = pure aimed, phase 2 = fans + drones, phase 3 = beam + 4-shot bursts.
-const AIMED_SPEED_BY_PHASE := {State.PHASE_1: 6.8, State.PHASE_2: 7.2, State.PHASE_3: 7.6}
-const AIMED_SHOTS_BY_PHASE := {State.PHASE_1: 3, State.PHASE_2: 3, State.PHASE_3: 4}
+## LOTE 9: faster, longer aimed bursts (phase 1 was 3 shots at 6.8 m/s, 0.14 s apart).
+const AIMED_SPEED_BY_PHASE := {State.PHASE_1: 7.8, State.PHASE_2: 7.2, State.PHASE_3: 7.8, State.PHASE_4: 8.4}
+const AIMED_SHOTS_BY_PHASE := {State.PHASE_1: 4, State.PHASE_2: 3, State.PHASE_3: 4, State.PHASE_4: 5}
+const AIMED_INTERVAL_BY_PHASE := {State.PHASE_1: 0.11, State.PHASE_2: 0.14, State.PHASE_3: 0.12, State.PHASE_4: 0.1}
 const FAN_SHOTS := 5
 const FAN_STEP_DEGREES := 17.0 # 5 shots over 68°: gaps of ~1.7 m at Bee's distance.
 const FAN_SPEED := 4.8
-const SHOT_DAMAGE := 8
-const CONTACT_DAMAGE := 12
+## LOTE 9 damage budget: a longer fight with denser bursts; a half-dodging player should lose ~40-60 HP on NORMAL
+## (validate_bee_boss_fight_v04). Many small shots, heavier telegraphed mines / beam. BEFORE: shot 8, mine 12, beam 15, hull 12.
+const SHOT_DAMAGE := 2
+const CONTACT_DAMAGE := 10
 
 const COLORS := {
 	"hull": Color(0.56, 0.6, 0.66), "ring": Color(0.3, 0.33, 0.4), "panel": Color(0.2, 0.22, 0.27),
@@ -142,6 +173,22 @@ var _cross_from := 0.0
 var _cross_t := 0.0
 var _side_timer := 0.0
 var _phase_label: Label
+var _beam_tele_total := BEAM_TELEGRAPH
+## LOTE 9 · ETAPA C
+var phases_seen: Array[int] = [] # Phases entered in this fight (tests).
+var shield_up := false
+var shield_raises := 0
+var shield_windows := 0 # Times the shield dropped after its nodes were broken.
+var shield_nodes: Array[UfoShieldNode] = []
+var _shield_step := &"off" # off | up | window | reform
+var _shield_left := 0.0
+var _shield_visual: MeshInstance3D
+var _shield_area: DamageHurtbox3D
+var _shield_health: HealthComponent
+var shield_absorbed := 0
+var bombs_taken := 0
+var fight_seconds := 0.0 # From PHASE_1 to DEATH.
+var _fury_material: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -160,6 +207,7 @@ func _ready() -> void:
 	_build_visual()
 	_build_health_bar()
 	_build_beam()
+	_build_shield()
 	_hover = AudioStreamPlayer3D.new()
 	_hover.name = "HoverLoop"
 	var source := load("res://audio/sfx/real/ufo_hover.wav") as AudioStreamWAV
@@ -195,7 +243,13 @@ func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 
 
 func is_active() -> bool:
-	return state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.TRANSITION]
+	return state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4, State.TRANSITION]
+
+
+## LOTE 9: what the Alien Bomb does to the saucer (BeeAlienBomb asks the entity it hits).
+func bomb_damage_for(_base: int) -> int:
+	bombs_taken += 1
+	return maxi(1, roundi(float(max_hp) * BOMB_FRACTION))
 
 
 func is_defeated() -> bool:
@@ -216,6 +270,9 @@ func _start_offset() -> Vector3:
 
 ## Bee defeated: everything stops in place (the scene is reloaded by R).
 func freeze() -> void:
+	for node in shield_nodes:
+		if is_instance_valid(node):
+			node.set_physics_process(false)
 	set_physics_process(false)
 	_cancel_beam()
 	for mine in live_mines():
@@ -237,11 +294,17 @@ func _physics_process(delta: float) -> void:
 			_set_glow(lerpf(3.0, 1.0, t))
 			if t >= 1.0:
 				_enter_fight()
-		State.PHASE_1, State.PHASE_2, State.PHASE_3:
+		State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4:
+			fight_seconds += delta
 			_move(delta)
 			_attack(delta)
 			_refresh_contact(delta)
+			if state == State.PHASE_2:
+				_update_shield(delta)
+			if state == State.PHASE_4:
+				_fury_pulse()
 		State.TRANSITION:
+			fight_seconds += delta
 			_move(delta) # BOSS v2: the phase change is a crossing to the other side (see _begin_cross).
 			var pulse := sin(clampf(_state_time / CROSS_SECONDS, 0.0, 1.0) * PI)
 			_core.scale = Vector3.ONE * (1.0 + 0.5 * pulse)
@@ -271,6 +334,12 @@ func _enter_fight() -> void:
 func _change_state(value: int) -> void:
 	state = value
 	_state_time = 0.0
+	if value in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4] and not (value in phases_seen):
+		phases_seen.append(value)
+		if value == State.PHASE_2:
+			_raise_shield() # LOTE 9: phase 2 opens with the shield up.
+		elif value == State.PHASE_4:
+			_enter_fury()
 	phase_changed.emit(state)
 
 
@@ -341,15 +410,15 @@ func _refresh_contact(delta: float) -> void:
 func _attack(delta: float) -> void:
 	if crossing:
 		return # No attack while it changes side.
-	if state == State.PHASE_3:
+	if SIDE_SWITCH.has(state): # LOTE 9: phase 3 every 4.5 s, phase 4 every 3.5 s.
 		_side_timer -= delta
 		if _side_timer <= 0.0 and _attack_step == &"cooldown": # Never in the middle of a pattern.
-			_side_timer = SIDE_SWITCH_P3
+			_side_timer = float(SIDE_SWITCH[state])
 			_begin_cross()
 			return
 	_attack_left -= delta
 	var tuning := _tuning()
-	if state == State.PHASE_2 or state == State.PHASE_3:
+	if state == State.PHASE_3: # LOTE 9: minions in phase 3 only (phase 2 has its shield nodes).
 		_summon_cooldown -= delta
 	match _attack_step:
 		&"summon":
@@ -360,7 +429,7 @@ func _attack(delta: float) -> void:
 			if _attack_left <= 0.0:
 				_core.scale = Vector3.ONE
 				_set_glow(1.0)
-				var family := &"EyeDrone" if state == State.PHASE_2 else &"Probe"
+				var family := &"Probe"
 				var count := maxi(int(MAX_MINIONS.get(state, 0)) - minions_alive, 0)
 				if summons % ORGANIC_EVERY == ORGANIC_EVERY - 1:
 					family = &"OrganicAlien" # NOCHE 01: the purple one-eyed organism only lives here now (alone; it explodes).
@@ -377,7 +446,10 @@ func _attack(delta: float) -> void:
 				BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.7)
 			elif _attack_left <= 0.0:
 				_pattern = _choose_pattern()
-				if _pattern == &"beam":
+				if _pattern == &"beam" and not live_mines().is_empty():
+					_attack_left = 0.2 # LOTE 9: in phase 3 the beam never closes a lane while mines still hang (fury does it on purpose).
+					return
+				if _pattern == &"beam" or _pattern == &"combo":
 					_start_beam()
 					return
 				if _pattern == &"mines":
@@ -425,7 +497,7 @@ func _attack(delta: float) -> void:
 			if _attack_left <= 0.0:
 				_fire_aimed()
 				_burst_left -= 1
-				_attack_left = AIMED_INTERVAL
+				_attack_left = float(AIMED_INTERVAL_BY_PHASE.get(state, AIMED_INTERVAL))
 				if _burst_left <= 0:
 					_attack_step = &"cooldown"
 					_attack_left = float(tuning[2])
@@ -442,18 +514,14 @@ func _wants_summon() -> bool:
 
 func _choose_pattern() -> StringName:
 	match state:
-		State.PHASE_1:
-			return &"aimed"
-		State.PHASE_2: # BOSS v2: mines alternate with aimed bursts (drones come on their own timer).
+		State.PHASE_1: # LOTE 9: fast aimed bursts, an aimed fan every third attack.
+			return &"fan_aimed" if attacks_started % 3 == 2 else &"aimed"
+		State.PHASE_2: # Mines alternate with aimed bursts while the shield nodes orbit.
 			return &"mines" if attacks_started % 2 == 1 else &"aimed"
-		_: # BOSS v2: beam -> faster mines -> 4-shot burst, and a side change every SIDE_SWITCH_P3 s.
-			match attacks_started % 3:
-				0:
-					return &"beam"
-				1:
-					return &"mines"
-				_:
-					return &"aimed"
+		State.PHASE_3: # LOTE 9: the tractor beam every other attack (was every third).
+			return [&"beam", &"aimed", &"beam", &"mines"][attacks_started % 4]
+		_: # PHASE 4 fury: beam + mines together, then fans and long bursts.
+			return [&"combo", &"fan_aimed", &"aimed"][attacks_started % 3]
 
 
 func _muzzle_for_aimed() -> Vector3:
@@ -558,12 +626,12 @@ func clear_mines() -> void:
 
 func current_phase_number() -> int:
 	var phase: int = _next_state if state == State.TRANSITION else state
-	return clampi(phase - State.PHASE_1 + 1, 1, 3)
+	return clampi(phase - State.PHASE_1 + 1, 1, 4)
 
 
 func _update_phase_label() -> void:
 	if _phase_label != null:
-		_phase_label.text = "FASE %d / 3" % current_phase_number()
+		_phase_label.text = "FASE %d / 4" % current_phase_number() if current_phase_number() < 4 else "FASE 4 / 4 · FURIA"
 
 
 # --- tractor beam (phase 3) --------------------------------------------------------------------
@@ -641,12 +709,15 @@ func _start_beam() -> void:
 	_beam_mark.scale = Vector3(0.3, 1.0, 0.3)
 	_beam_mark.visible = true
 	_attack_step = &"beam_tele"
-	_attack_left = BEAM_TELEGRAPH
+	_beam_tele_total = float(BEAM_TELEGRAPH_BY_PHASE.get(state, BEAM_TELEGRAPH))
+	_attack_left = _beam_tele_total
 	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.5)
+	if _pattern == &"combo":
+		_throw_mines() # LOTE 9 fury: mines (their own TRAVEL + fuse warning) while the beam column is marked.
 
 
 func _update_beam_telegraph() -> void:
-	var progress := clampf(1.0 - _attack_left / BEAM_TELEGRAPH, 0.0, 1.0)
+	var progress := clampf(1.0 - _attack_left / _beam_tele_total, 0.0, 1.0)
 	_set_charge(progress)
 	var s := lerpf(0.3, 1.0, progress)
 	_beam_mark.scale = Vector3(s, 1.0, s)
@@ -655,7 +726,7 @@ func _update_beam_telegraph() -> void:
 
 
 func _fire_beam() -> void:
-	hazards.append({"kind": &"beam", "telegraph": BEAM_TELEGRAPH})
+	hazards.append({"kind": &"beam", "telegraph": _beam_tele_total})
 	_set_charge(0.0)
 	_beam_column.visible = false
 	_beam_mark.visible = false
@@ -695,13 +766,22 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		var punch := create_tween()
 		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE * 1.05, 0.05)
 		punch.tween_property(visual_root, "scale", Vector3.ONE * VISUAL_SCALE, 0.08)
-	if not (state in [State.PHASE_1, State.PHASE_2, State.PHASE_3]) or current <= 0:
+	if not (state in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4]) or current <= 0:
 		return
 	var ratio := float(current) / float(maximum)
-	var wanted := State.PHASE_3 if ratio <= PHASE_3_RATIO else (State.PHASE_2 if ratio <= PHASE_2_RATIO else State.PHASE_1)
+	var wanted: int = State.PHASE_1
+	if ratio <= PHASE_4_RATIO:
+		wanted = State.PHASE_4
+	elif ratio <= PHASE_3_RATIO:
+		wanted = State.PHASE_3
+	elif ratio <= PHASE_2_RATIO:
+		wanted = State.PHASE_2
+	wanted = mini(wanted, state + 1) # LOTE 9: one phase at a time (a big hit never skips a phase).
 	if wanted > state:
 		_next_state = wanted
-		_summon_cooldown = 1.6 if wanted == State.PHASE_2 else 3.0
+		_summon_cooldown = 3.0
+		if state == State.PHASE_2:
+			_clear_shield() # LOTE 9: leaving phase 2 the shield and its nodes go.
 		transitions += 1
 		_set_charge(0.0)
 		_cancel_beam()
@@ -713,6 +793,15 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		_update_phase_label()
 
 
+## LOTE 9 · ETAPA C — death cinematic: DEATH_SPARKS chained blasts while it falls (DEATH_SPARK_GAP s apart) with a growing
+## light, then a double main explosion with a white screen flash, and DEATH_AFTERGLOW s before SECTOR DESPEJADO.
+## BEFORE: 4 sparks 0.3 s apart + one explosion (~2.3 s).
+const DEATH_SPARKS := 8
+const DEATH_SPARK_GAP := 0.22
+const DEATH_AFTERGLOW := 1.3
+const DEATH_FLASH := Color(1.0, 0.97, 0.85, 0.75)
+
+
 func _die() -> void:
 	if is_defeated():
 		return
@@ -722,6 +811,7 @@ func _die() -> void:
 	hurtbox.set_deferred("monitorable", false)
 	remove_from_group("bee_auto_aim_targets")
 	_cancel_beam()
+	_clear_shield()
 	_set_charge(0.0)
 	clear_projectiles() # No unfair hit after the win.
 	clear_mines()
@@ -730,33 +820,78 @@ func _die() -> void:
 	set_physics_process(false)
 	hit_flash.flash()
 	BeeAudio.play(get_parent(), &"tech_death", global_position)
+	var fall_seconds := DEATH_SPARKS * DEATH_SPARK_GAP + 0.4
 	var fall := create_tween().set_parallel(true)
-	fall.tween_property(self, "global_position", global_position + Vector3(0.6, -2.4, 0.0), 2.2).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
-	fall.tween_property(visual_root, "rotation:z", 0.55, 2.2)
-	fall.tween_method(_set_glow, 2.5, 0.0, 2.0)
+	fall.tween_property(self, "global_position", global_position + Vector3(0.6, -2.4, 0.0), fall_seconds).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	fall.tween_property(visual_root, "rotation:z", 0.75, fall_seconds)
+	fall.tween_method(_set_glow, 2.5, 4.0, fall_seconds) # It burns brighter while it breaks apart.
 	fall.tween_property(_hover, "volume_db", -60.0, 1.2)
+	var light := OmniLight3D.new()
+	light.name = "DeathLight"
+	light.light_color = Color(0.6, 0.95, 1.0)
+	light.omni_range = 9.0
+	light.light_energy = 0.0
+	light.shadow_enabled = false
+	add_child(light)
+	fall.tween_property(light, "light_energy", 6.0, fall_seconds)
 	_death_tween = create_tween()
-	for i in 4:
+	for i in DEATH_SPARKS:
 		_death_tween.tween_callback(_spark.bind(i))
-		_death_tween.tween_interval(0.3)
+		_death_tween.tween_interval(DEATH_SPARK_GAP)
 	_death_tween.tween_callback(_main_explosion)
-	_death_tween.tween_interval(1.1)
+	_death_tween.tween_interval(0.35)
+	_death_tween.tween_callback(_second_explosion)
+	_death_tween.tween_interval(DEATH_AFTERGLOW)
 	_death_tween.tween_callback(_finish)
 
 
+## Seconds from the killing blow to `defeated` (tests).
+static func death_seconds() -> float:
+	return DEATH_SPARKS * DEATH_SPARK_GAP + 0.35 + DEATH_AFTERGLOW
+
+
 func _spark(index: int) -> void:
-	var offset := Vector3([-0.9, 0.8, -0.3, 0.5][index], [0.2, -0.1, 0.35, -0.25][index], 0.4)
-	BeeCombatVFX.spawn(get_parent(), global_position + offset, &"tech_death", Vector3.RIGHT, 0.8)
+	var angle := float(index) * 2.4
+	var offset := Vector3(cos(angle) * (0.6 + 0.12 * index), sin(angle) * 0.4, 0.4)
+	BeeCombatVFX.spawn(get_parent(), global_position + offset, &"tech_death", Vector3.RIGHT, 0.8 + 0.08 * index)
 	BeeAudio.play(get_parent(), &"tech_hit", global_position + offset, 0.8)
-	BeeCameraShake.kick(self, 0.03, 0.15)
+	BeeCameraShake.kick(self, 0.03 + 0.005 * index, 0.15)
 
 
 func _main_explosion() -> void:
-	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, 3.8)
-	BeeCombatVFX.spawn(get_parent(), global_position, &"heavy_death", Vector3.RIGHT, 3.2) # REBUILD 03: layered blast.
-	BeeCameraShake.kick(self, 0.12, 0.6)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"bomb", Vector3.RIGHT, 4.6)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"heavy_death", Vector3.RIGHT, 3.8) # REBUILD 03: layered blast.
+	BeeCameraShake.kick(self, 0.14, 0.7)
 	_play_long("res://audio/sfx/real/ufo_death.wav", "UfoDeath", -9.0)
 	visual_root.hide()
+	_screen_flash()
+	var light := get_node_or_null("DeathLight") as OmniLight3D
+	if light != null:
+		light.light_energy = 12.0
+		create_tween().tween_property(light, "light_energy", 0.0, DEATH_AFTERGLOW + 0.3)
+
+
+func _second_explosion() -> void:
+	for side in [-1.0, 1.0]:
+		BeeCombatVFX.spawn(get_parent(), global_position + Vector3(side * 1.4, 0.3, 0.3), &"bomb", Vector3.RIGHT, 2.6)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"tech_death", Vector3.UP, 2.4)
+	BeeCameraShake.kick(self, 0.08, 0.4)
+
+
+## A short white flash over the whole screen (the brightest moment of the level).
+func _screen_flash() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "DeathFlash"
+	layer.layer = 6
+	get_parent().add_child(layer)
+	var rect := ColorRect.new()
+	rect.color = DEATH_FLASH
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(rect)
+	var fade := layer.create_tween()
+	fade.tween_property(rect, "color:a", 0.0, 0.7)
+	fade.tween_callback(layer.queue_free)
 
 
 func _finish() -> void:
@@ -889,7 +1024,7 @@ func _build_health_bar() -> void:
 	_bar.add_theme_stylebox_override("background", back)
 	box.add_child(_bar)
 	# BOSS v2: phase ticks at 66 % and 33 % and the current phase under the bar.
-	for ratio in [PHASE_2_RATIO, PHASE_3_RATIO]:
+	for ratio in [PHASE_2_RATIO, PHASE_3_RATIO, PHASE_4_RATIO]:
 		var tick := ColorRect.new()
 		tick.color = Color(1.0, 1.0, 1.0, 0.85)
 		tick.size = Vector2(2, 14)
@@ -930,3 +1065,185 @@ func _play_long(path: String, label: String, volume_db: float) -> void:
 	player.add_child(lifetime)
 	if DisplayServer.get_name() != "headless":
 		player.play()
+
+
+# --- LOTE 9 · ETAPA C: phase 2 shield ------------------------------------------------------------------------------
+
+const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
+const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
+
+
+func _build_shield() -> void:
+	_shield_visual = MeshInstance3D.new()
+	_shield_visual.name = "ShieldBubble"
+	var bubble := SphereMesh.new()
+	bubble.radius = SHIELD_RADIUS
+	bubble.height = SHIELD_RADIUS * 2.0
+	bubble.radial_segments = 24
+	bubble.rings = 12
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = SHIELD_COLOR
+	material.emission_enabled = true
+	material.emission = Color(SHIELD_COLOR, 1.0)
+	material.emission_energy_multiplier = 0.6
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.render_priority = 40
+	bubble.material = material
+	_shield_visual.mesh = bubble
+	_shield_visual.scale = Vector3(1.0, 0.62, 1.0) # A flat dome around the flat saucer.
+	_shield_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_shield_visual.visible = false
+	add_child(_shield_visual)
+	# Shots on the shield are absorbed with a neutral puff (endless health that never drops).
+	_shield_health = HEALTH_SCENE.instantiate() as HealthComponent
+	_shield_health.name = "ShieldHealth"
+	_shield_health.max_health = 1000000
+	add_child(_shield_health)
+	_shield_health.health_changed.connect(_on_shield_hit)
+	_shield_area = HURTBOX_SCENE.instantiate() as DamageHurtbox3D
+	_shield_area.name = "ShieldHurtbox"
+	_shield_area.team_id = &"alien"
+	_shield_area.health_component_path = NodePath("../ShieldHealth")
+	_shield_area.owner_entity_path = NodePath("..")
+	_shield_area.set_meta("neutral_hit", true)
+	var shape := CollisionShape3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = SHIELD_RADIUS * 0.92
+	shape.shape = sphere
+	shape.scale = Vector3(1.0, 0.62, 1.0)
+	_shield_area.add_child(shape)
+	_shield_area.monitorable = false
+	add_child(_shield_area)
+
+
+func _on_shield_hit(_current: int, _maximum: int, change: int) -> void:
+	if change >= 0:
+		return
+	shield_absorbed += 1
+	_shield_health.current_health = _shield_health.max_health
+	var material := (_shield_visual.mesh as SphereMesh).material as StandardMaterial3D
+	material.albedo_color.a = 0.45
+	create_tween().tween_property(material, "albedo_color:a", SHIELD_COLOR.a, 0.2)
+
+
+func _raise_shield() -> void:
+	shield_up = true
+	shield_raises += 1
+	_shield_step = &"up"
+	health.damage_blocked = true
+	health.damage_scale = 1.0
+	_shield_visual.visible = true
+	_shield_visual.scale = Vector3(0.2, 0.12, 0.2)
+	create_tween().tween_property(_shield_visual, "scale", Vector3(1.0, 0.62, 1.0), 0.35).set_trans(Tween.TRANS_BACK)
+	_shield_area.set_deferred("monitorable", true)
+	var count := SHIELD_NODES if shield_raises == 1 else SHIELD_NODES_AGAIN
+	for i in count:
+		var node := UfoShieldNode.new()
+		node.name = "UfoShieldNode%d" % i
+		get_parent().add_child(node)
+		var spread := SHIELD_ARC if count >= 3 else SHIELD_ARC * 0.6
+		var offset := -spread * 0.5 + spread * float(i) / float(maxi(count - 1, 1)) # Slots on the arc facing Bee.
+		node.setup(self, offset, BeeGameSettings.scaled_hp(SHIELD_NODE_HP))
+		node.destroyed.connect(_on_node_destroyed)
+		shield_nodes.append(node)
+	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.6)
+	if _phase_label != null:
+		_phase_label.text = "FASE 2 / 4 · ESCUDO: ROMPÉ LOS NODOS"
+
+
+func _on_node_destroyed(node: UfoShieldNode) -> void:
+	shield_nodes.erase(node)
+	if shield_nodes.is_empty() and _shield_step == &"up" and state == State.PHASE_2:
+		_drop_shield()
+
+
+## Every node broken: the shield falls for SHIELD_WINDOW s and the saucer takes WINDOW_DAMAGE_SCALE damage.
+func _drop_shield() -> void:
+	shield_up = false
+	shield_windows += 1
+	_shield_step = &"window"
+	_shield_left = SHIELD_WINDOW
+	health.damage_blocked = false
+	health.damage_scale = WINDOW_DAMAGE_SCALE
+	_shield_area.set_deferred("monitorable", false)
+	BeeLiberation.explode_tech(get_parent(), global_position, 1.2)
+	BeeCameraShake.kick(self, 0.05, 0.25)
+	var shrink := create_tween()
+	shrink.tween_property(_shield_visual, "scale", Vector3(1.3, 0.8, 1.3), 0.12)
+	shrink.tween_callback(func(): _shield_visual.visible = false)
+	if _phase_label != null:
+		_phase_label.text = "FASE 2 / 4 · ¡ESCUDO ABAJO!"
+
+
+func _update_shield(delta: float) -> void:
+	if shield_up and target != null:
+		# Bee inside the bubble (hugging the saucer): her shots must still get out to the nodes.
+		var rel := target.global_position - global_position
+		var inside := pow(rel.x / SHIELD_RADIUS, 2.0) + pow(rel.y / (SHIELD_RADIUS * 0.62), 2.0) < 1.0
+		if _shield_area.monitorable == inside:
+			_shield_area.set_deferred("monitorable", not inside)
+	match _shield_step:
+		&"window":
+			_shield_left -= delta
+			if _shield_left <= 0.0:
+				_shield_step = &"reform"
+				_shield_left = SHIELD_REFORM
+				health.damage_scale = 1.0
+		&"reform":
+			# Warning: the bubble flickers back before it closes again.
+			_shield_left -= delta
+			_shield_visual.visible = int(_shield_left * 12.0) % 2 == 0
+			_shield_visual.scale = Vector3(1.0, 0.62, 1.0)
+			if _shield_left <= 0.0:
+				_raise_shield()
+
+
+func _clear_shield() -> void:
+	for node in shield_nodes:
+		if is_instance_valid(node):
+			node.dismiss()
+	shield_nodes.clear()
+	shield_up = false
+	_shield_step = &"off"
+	health.damage_blocked = state == State.DEATH or state == State.DONE
+	health.damage_scale = 1.0
+	if _shield_visual != null:
+		_shield_visual.visible = false
+	if _shield_area != null:
+		_shield_area.set_deferred("monitorable", false)
+
+
+func shield_window_open() -> bool:
+	return _shield_step == &"window"
+
+
+# --- LOTE 9 · ETAPA C: phase 4 fury ---------------------------------------------------------------------------------
+
+func _enter_fury() -> void:
+	for node: MeshInstance3D in [_core]:
+		var material := node.get_surface_override_material(0) as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter("albedo", FURY_COLOR)
+			material.set_shader_parameter("emission", FURY_COLOR)
+	BeeCameraShake.kick(self, 0.06, 0.4)
+	BeeAudio.play(get_parent(), &"ufo_charge", global_position, 0.5)
+	if _phase_label != null:
+		_phase_label.text = "FASE 4 / 4 · FURIA"
+
+
+func _fury_pulse() -> void:
+	if _attack_step == &"cooldown":
+		_core.scale = Vector3.ONE * (1.0 + 0.14 * absf(sin(fight_seconds * 7.0)))
+
+
+func is_fury() -> bool:
+	return state == State.PHASE_4
+
+
+func _exit_tree() -> void:
+	for node in shield_nodes:
+		if is_instance_valid(node):
+			node.queue_free()
+	shield_nodes.clear()

@@ -43,6 +43,11 @@ func throw(from: Vector3, to: Vector3) -> void:
 		_body.add_child(art)
 
 
+## LOTE 9: where it hangs and explodes (the node itself stays at the origin; tests and bots read this).
+func spot() -> Vector3:
+	return _to
+
+
 ## Seconds until it explodes (travel + fuse) from now.
 func time_to_blast() -> float:
 	return maxf(0.0, TRAVEL + fuse - _t)

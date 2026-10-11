@@ -123,5 +123,36 @@ func run() -> void:
 		bee.fire()
 		await frames(8)
 	await capture("boss")
+	var boss := wave.boss
+	if boss.has_method("shield_window_open"): # LOTE 9 boss only (the "before" capture stops here).
+		boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.6))
+		for i in 240:
+			await physics_frame
+			if boss.state == UfoBoss01.State.PHASE_2 and boss.shield_up and i > 120:
+				break
+		await frames(40)
+		await capture("boss_shield")
+		for node in boss.shield_nodes.duplicate():
+			node.health.take_damage(9999)
+		await frames(6)
+		await capture("boss_shield_down")
+		await frames(30)
+		boss.health.take_damage(ceili(float(boss.health.current_health - int(boss.max_hp * 0.3)) / boss.health.damage_scale))
+		await frames(160)
+		boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.1))
+		for i in 600:
+			await physics_frame
+			if boss.state == UfoBoss01.State.PHASE_4 and boss._attack_step == &"beam_tele" and boss._attack_left < 0.35:
+				break
+		await capture("boss_fury")
+		boss.health.take_damage(99999)
+		await frames(int((UfoBoss01.DEATH_SPARKS * UfoBoss01.DEATH_SPARK_GAP + 0.1) * 60.0))
+		await capture("boss_death")
+		for i in 900:
+			await physics_frame
+			if stage.sector_complete:
+				break
+		await frames(40)
+		await capture("sector_clear")
 	print("LOTE9_CAPTURE_DONE")
 	quit(0)

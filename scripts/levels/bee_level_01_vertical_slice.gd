@@ -7,6 +7,7 @@ var elapsed_seconds := 0.0
 ## BOSS v2 (combat variety 01): during the NODO ALIEN fight the saucer changes side, so Bee may use the whole width.
 var boss_arena_wide := false
 var _victory_seconds := 0.0
+var clear_banner: Label # LOTE 9: "SECTOR DESPEJADO · LIBERADOS n/N" in the middle of the screen.
 @onready var checkpoint: BeeCheckpointQoL = $CheckpointQoL
 
 ## NOCHE 01 · ETAPA 2 — Codex toon items, shots and explosions (Level 01 only; the POCs keep the old ones).
@@ -87,6 +88,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if sector_complete:
 		status.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() # NOCHE 01: freed animals n/N.
+		if clear_banner == null:
+			_show_clear_banner() # LOTE 9: the big closing card after the UFO explosion.
 		section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO"
 		_secure_victory()
 		if BeeGameSettings.from_title:
@@ -159,3 +162,25 @@ func _place_preboss_supply() -> void:
 	jar.name = "SupplyHealing"
 	group.add_child(jar)
 	jar.global_position = Vector3(PREBOSS_SUPPLY["healing"].x, PREBOSS_SUPPLY["healing"].y, 0.0)
+
+## LOTE 9 · ETAPA C: the closing card (big, centred, pops in) once the UFO explosion is over.
+func _show_clear_banner() -> void:
+	clear_banner = Label.new()
+	clear_banner.name = "ClearBanner"
+	clear_banner.text = "SECTOR DESPEJADO · " + level_wave.liberation_text()
+	clear_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	clear_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	clear_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	clear_banner.offset_bottom = -120.0
+	clear_banner.add_theme_font_size_override("font_size", 46)
+	clear_banner.add_theme_color_override("font_color", Color(1.0, 0.9, 0.45))
+	clear_banner.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.02))
+	clear_banner.add_theme_constant_override("outline_size", 10)
+	clear_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	clear_banner.modulate.a = 0.0
+	$CanvasLayer.add_child(clear_banner)
+	clear_banner.pivot_offset = get_viewport().get_visible_rect().size * 0.5
+	clear_banner.scale = Vector2.ONE * 1.25
+	var pop := clear_banner.create_tween().set_parallel(true)
+	pop.tween_property(clear_banner, "modulate:a", 1.0, 0.35)
+	pop.tween_property(clear_banner, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

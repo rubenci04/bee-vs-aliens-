@@ -5,6 +5,8 @@ extends SceneTree
 # explosion, no damage after the win, boss checkpoint (respawn at the start of the fight, HP >= 60) and F9 debug.
 # With a rendering window it also saves captures in res://dev/visual_target/.
 
+## LOTE 9 · ETAPA C: the NODO ALIEN has 1200 HP and 4 phases (was 500 HP, 3 phases).
+const BOSS_HP := 1200
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const OUT := "res://dev/visual_target/"
 
@@ -92,7 +94,7 @@ func run() -> void:
 		if wave.boss != null:
 			break
 	boss = wave.boss
-	check(boss != null and boss.max_hp == 500, "Boss did not appear with 500 HP")
+	check(boss != null and boss.max_hp == BOSS_HP, "Boss did not appear with %d HP" % BOSS_HP)
 	check(stage.checkpoint.checkpoint_active and stage.checkpoint.boss_checkpoint_count == 1, "No boss checkpoint")
 	await wait_phase(UfoBoss01.State.PHASE_1)
 	check(boss.state == UfoBoss01.State.PHASE_1 and boss.health_bar_visible(), "Phase 1 did not start")
@@ -116,23 +118,22 @@ func run() -> void:
 	await frames(1)
 	check(bee.use_bomb() != null, "Bomb refused")
 	await frames(4)
-	check(hp - boss.health.current_health == bee.bomb_damage, "Bomb must deal 32")
+	check(hp - boss.health.current_health == roundi(boss.max_hp * UfoBoss01.BOMB_FRACTION), "LOTE 9: the bomb must take %d %% of the UFO (%d)" % [roundi(UfoBoss01.BOMB_FRACTION * 100.0), hp - boss.health.current_health])
 	bee.global_position = Vector3(stage.distance - 4.0, 2.2, 0)
 
-	# 3. Phase 2 at 66 %: drones launched.
+	# 3. LOTE 9 — Phase 2 at 70 %: the cyan shield powered by orbiting nodes (no drones any more).
 	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.6))
 	check(await wait_phase(UfoBoss01.State.PHASE_2, 120), "Phase 2 not reached")
-	var drones := 0
-	for i in 600:
-		await frames(1)
-		drones = maxi(drones, wave.boss_minions().size())
-		if drones >= 2:
-			break
-	check(drones == 2 and boss.summons >= 1, "Phase 2 did not deploy 2 drones (%d)" % drones)
+	await frames(30)
+	var drones := wave.boss_minions().size()
+	check(boss.shield_up and boss.shield_nodes.size() == UfoBoss01.SHIELD_NODES and drones == 0, "Phase 2: shield + %d nodes, no drones (%d nodes, %d drones)" % [UfoBoss01.SHIELD_NODES, boss.shield_nodes.size(), drones])
 	await capture("ufo_boss_phase2")
 
-	# 4. Phase 3 at 33 %: tractor beam with a 1 s ground mark; 15 damage once.
-	boss.health.take_damage(boss.health.current_health - int(boss.max_hp * 0.3))
+	# 4. Phase 3 at 40 %: tractor beam with its ground mark (BEAM_TELEGRAPH_BY_PHASE); BEAM_DAMAGE once.
+	for node in boss.shield_nodes.duplicate():
+		node.health.take_damage(9999)
+	await frames(2)
+	boss.health.take_damage(ceili(float(boss.health.current_health - int(boss.max_hp * 0.3)) / boss.health.damage_scale)) # The open shield window doubles damage.
 	check(await wait_phase(UfoBoss01.State.PHASE_3, 120), "Phase 3 not reached")
 	bee.health.damage_blocked = false
 	var mark: MeshInstance3D = boss.get_node("BeamGroundMark")
@@ -148,7 +149,7 @@ func run() -> void:
 		await frames(1)
 		tele_frames += 1
 		bee.global_position = Vector3(beam_x - 4.5, 3.0, 0) # Dodging: well outside the column.
-	check(absf(float(tele_frames) / 60.0 - UfoBoss01.BEAM_TELEGRAPH) < 0.1, "Beam telegraph lasted %.2f s" % (float(tele_frames) / 60.0))
+	check(absf(float(tele_frames) / 60.0 - float(UfoBoss01.BEAM_TELEGRAPH_BY_PHASE[UfoBoss01.State.PHASE_3])) < 0.1, "Beam telegraph lasted %.2f s" % (float(tele_frames) / 60.0))
 	check(boss.beam_active() and boss._beam_box.enabled, "Beam did not fire after the telegraph")
 	await capture("ufo_boss_beam")
 	while boss.beam_active():
@@ -207,7 +208,7 @@ func run() -> void:
 	await reload(func(): stage.checkpoint.restart_level(false))
 	check(stage.distance >= 352.0 and bee.health.current_health >= 60 and not bee.is_defeated and wave.boss == null, "Respawn at the boss start failed (distance %.1f hp %d)" % [stage.distance, bee.health.current_health])
 	check(await wait_phase(UfoBoss01.State.PHASE_1, 900), "Boss not rebuilt after respawn")
-	check(wave.boss.health.current_health == 500, "Boss kept damage after respawn")
+	check(wave.boss.health.current_health == BOSS_HP, "Boss kept damage after respawn")
 
 	# 7. F9 debug: jump to the start of the fight with the DEBUG label.
 	await reload(func(): stage.checkpoint.restart_level(true))
