@@ -23,3 +23,6 @@ Thumbs.db
 .DS_Store
 .vscode/
 .idea/
+
+# Builds exportados (NOCHE 01)
+builds/
