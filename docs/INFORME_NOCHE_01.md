@@ -6,8 +6,8 @@ Punto de partida: `pacing-aim-01` (e003a75, Lote 7). Cada etapa tiene su rama, e
 - [x] ETAPA 1 — Liberación y correcciones (`liberation-01`)
 - [x] ETAPA 2 — Limpieza y assets de Codex (`assets-cleanup-02`)
 - [x] ETAPA 3 — Pulido y legibilidad (`polish-03`)
-- [ ] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
-- [ ] ETAPA 5 — Preparar demo (`demo-prep-01`)
+- [x] ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`)
+- [x] ETAPA 5 — Preparar demo (`demo-prep-01`) — con pendiente: build (faltan plantillas de exportación)
 
 ## Decisiones tomadas sin poder preguntar (interpretación más razonable)
 - **Assets de Codex sin trackear:** "no tocar" lo interpreto como no modificarlos ni borrarlos. Cuando una etapa necesita usarlos (Etapa 2), commiteo **tal cual** los archivos que el juego referencia, como en el respaldo del Lote 6, para que la rama sea jugable desde origin.
@@ -67,3 +67,61 @@ GPU sin cambios (~2,0 ms, ruido ±0,4).
 - **Capturas:** antes `noche3before_x{10,100,176,250,300,355}.png`, después `noche3after_x…`, más `noche3_{x100,x176,x300,sunset_actor}.png`.
 - **Falta playtest:** si el corredor quedó demasiado vacío o si falta "jungla" en algunos tramos (es fácil de ajustar con `CORRIDOR_Z`).
 - **Tests:** nuevo `validate_bee_readability_v03` (corredor, contornos al atardecer, brillo de implantes, auditoría de cian). **Suite:** 74/74 PASS.
+
+## ETAPA 4 — Prototipo Nivel 02 «Laguna» (`level02-lake-proto`, NO va a master)
+- **Escena** `scenes/levels/bee_level_02_lake.tscn` (hereda la base del shmup). Reutiliza la cámara del Level 01 (encuadre E), los controles, el apuntado libre y la mira, el HUD de armas, los disparos toon, la liberación y la dificultad. Tiene director propio (`bee_level_02_controller.gd`) y decoración propia (`bee_level_02_lake_scenery.gd`).
+- **Agua estilizada**: un plano con el shader de lago de Codex; el plano de juego queda sobre la superficie. Decoración (detrás del plano de juego): nenúfares (algunos con ranas Quaternius descansando), totoras, tronco hueco, raíces sumergidas, campanillas, helechos, pinos y orillas lejanas.
+- **Enemigos nuevos** (animales: se liberan):
+  - **zapatero de agua**: se desliza por la superficie y embiste (aviso 0,5 s);
+  - **ninfa de libélula**: escupe un orbe lento (0,6 s);
+  - **perca**: nada bajo el agua (sin hurtbox ni auto-aim mientras está sumergida), avisa con un anillo sobre el agua y una columna tenue en la X de Bee (0,7 s) y salta en arco a través de ese punto.
+  - Además reaparecen la libélula ondulante y los mosquitos.
+- **Mini-jefe sapo** (`lake_toad_boss.gd`, visual de Codex): **lengua** con línea de aviso de 0,7 s y **salto** con anillo en el punto de aterrizaje (0,9 s). Al caer lanza una **onda baja** por el agua hacia ambos lados (se esquiva volando alto). Implante en el lomo, 220 HP. Se **libera** (se va saltando) y eso completa el nivel: "LAGUNA DESPEJADA · LIBERADOS n/N".
+- **Duración medida con el bot:** sapo a los 75 s, nivel completo en **~90 s** (9/15 liberados).
+- **Acceso:** botón "Laguna (prototipo · debug)" en el título, solo en modo debug. El flujo del Level 01 no cambia.
+- **Capturas:** `noche4_{start,strider,perch,toad_tongue,complete}.png`.
+- **Pendiente:** no hay ranas enemigas (Codex no entregó una rana jugable; las ranas de Quaternius son decoración). Faltan sonidos propios del agua (salpicón, croar), checkpoint y transición desde el Level 01. El sapo no tiene animación esquelética (se mueve por transformaciones). Todo esto necesita playtest.
+- **Tests:** nuevo `validate_bee_level02_lake_proto` (escena, 3 enemigos nuevos con telegrafía medida, sapo, recorrido con bot, acceso solo debug). **Suite:** 75/75 PASS (incluye todo el Level 01 sin cambios).
+
+## ETAPA 5 — Preparar demo (`demo-prep-01`, desde `polish-03`)
+- **master** quedó adelantada por fast-forward a `2798f08` (fin de `polish-03`) y pusheada. **No incluye** la laguna. No hice checkout de master porque Codex tiene cambios sin commitear en `docs/art/` que se perderían; la actualicé con `git fetch . polish-03:master`, que solo acepta fast-forward.
+- **Export de Windows:** el preset "Windows Desktop" está en `export_presets.cfg` (x86_64, PCK embebido, sin firma, `builds/windows/BeeAlien.exe`, excluye dev/docs/tests/tools/demo/art_source). Lo commiteé con `-f` porque `.gitignore` lo ignoraba; no tiene secretos. `builds/` agregado a `.gitignore`.
+- **Build: PENDIENTE.** Faltan las plantillas de exportación de Godot 4.7.2 en esta PC y no las instalé a ciegas. Cómo instalarlas y exportar: `docs/GUIA_EXPORT_DEMO.md`.
+- **itch.io:** `docs/CHECKLIST_DEMO_ITCH.md` (nombre, descripción corta, controles, capturas necesarias, licencias a revisar).
+
+## Valores configurables (resumen)
+| Qué | Dónde | Valor |
+|---|---|---|
+| Tamaños de animales (× Bee) | `bee_fauna_sizes.gd` `SIZE` / `BEE_LENGTH` | ver Etapa 1 · 1,18 m |
+| Salida relajada del liberado | `asset_fauna.gd` `LEAVE_SECONDS`, `LEAVE_GROUND_SPEED`, `LEAVE_AIR_SPEED` | 3 s · 1,8 · 2,4 m/s |
+| Mosquito suave | `asset_fauna.gd` `MOSQUITO_SPEED`, `MOSQUITO_ACCEL`, `MOSQUITO_DRIFT(_RATE)` | 3,6 m/s · 6 m/s² |
+| Brillo de implantes | `asset_fauna.gd` `IMPLANT_GLOW` | 1,1 |
+| Texto / tintineo de liberación | `bee_liberation.gd` `TEXT_*`, `CHIME_PITCH`, `WARM_AMOUNT` | 1,3 s · ×1,45 · 0,28 |
+| Organismo como minion | `ufo_boss_01.gd` `ORGANIC_EVERY` | 2 |
+| Humano gigante | `bee_level_01_controller.gd` `GIANT_HUMAN_ENABLED` | false |
+| Tortuga | `bee_level_01_moments.gd` `TURTLE_ENABLED`, `TURTLE_SCALE` | true · 1,0 |
+| Curación antes del UFO | `bee_level_01_controller.gd` `BOSS_HEAL_BELOW` | 70 % HP |
+| Dificultad FÁCIL | `bee_game_settings.gd` `EASY_DAMAGE_TAKEN`, `EASY_ENEMY_HP` | ×0,6 · ×0,75 |
+| Vuelta al título | `bee_game_settings.gd` `RETURN_TO_TITLE_SECONDS` | 8 s |
+| Corredor limpio | `bee_level_01_readability.gd` `CORRIDOR_*`; `bee_level_01_visual_target.gd` `CORRIDOR_CLEAR_Z` | z −5 · y 1,6–6,4 |
+| Contorno de actores | `bee_toon_style.gd` `ACTOR_OUTLINE_TINT` | 0,15 |
+| Baliza de checkpoint | `bee_checkpoint_qol.gd` `BEACON_COLOR` | miel |
+| Sapo de la laguna | `lake_toad_boss.gd` (`TONGUE_*`, `JUMP_*`, `WAVE_*`, `IMPLANT_HP`) | 0,7 s · 0,9 s · 220 HP |
+| Perca | `asset_fauna.gd` `LEAP_DEPTH`, `LEAP_SPAN`, KINDS "perch" | −1,4 · 1,8 m |
+
+## Ramas de la noche
+`liberation-01` (cd8008f) → `assets-cleanup-02` (e4cf71e) → `polish-03` (2798f08 = **master**) → `demo-prep-01` (esta). Aparte: `level02-lake-proto` (5dcc8a7, desde `polish-03`, no mergeada).
+
+## Qué quedó solo medido por tests y qué necesita playtest humano
+- **Medido por tests/bot:** telegrafías (≥ 0,4 s), escalas, orientación, liberación (no muere, no daña, se aleja, cuenta), tecnología que explota, duración del Level 01 (UFO a ~6,5 min con el bot) y de la laguna (~90 s), corredor despejado, auditoría de cian, FÁCIL/NORMAL, menú del título, rendimiento del render.
+- **Necesita playtest:** la sensación de liberar (texto, tintineo, la retirada), el tamaño nuevo de los animales (sobre todo hormiga y escarabajo, ahora más chicos), si el mosquito suave sigue siendo una amenaza, la tortuga nueva, el nivel sin humano gigante, si el corredor limpio deja el jardín demasiado vacío, la dificultad FÁCIL, el flujo título → nivel → título y todo el prototipo de la laguna (ritmo, salto de la perca, sapo).
+
+## Pendientes
+- Build de Windows (instalar plantillas, ver guía).
+- Chorro de regadera (opcional de la Etapa 2): no hecho; sin humano, el hueco que debía cubrir ya no existe.
+- Laguna: ranas enemigas (falta un modelo jugable), sonidos de agua, animación esquelética del sapo, checkpoint.
+
+## Incidente (resuelto)
+Al crear `demo-prep-01` desde `polish-03`, git quitó del disco 15 archivos de Codex que yo había commiteado (tal cual) en `level02-lake-proto`: modelos y wrappers de `lake_fauna_v01`, `forest_fern` y el visual del sapo. No estaban en `polish-03`. Por eso, en la primera corrida de la suite de esta etapa, tres tests de arte de Codex fallaron por timeout. Los restauré en el disco desde el commit `5dcc8a7` con `git show` (sin tocar el índice) y verifiqué que son idénticos byte a byte (hash). No se perdió nada, pero conviene saberlo: esos archivos ahora están commiteados solo en la rama de la laguna; en las demás siguen sin trackear, como antes.
+
+**Suite final de `demo-prep-01`:** 74/74 PASS (corrida limpia, después de restaurar los archivos de Codex).
