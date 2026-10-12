@@ -13,7 +13,7 @@ const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const TIMING_TOLERANCE := 0.15
 const FAMILIES := ["FlyCommon", "FlyGreen", "FlyCloud", "Wasp", "Ladybird", "Ant", "Snail", "WormA", "WormB", "StagBeetle", "Spider", "MushroomCannon"]
 ## Family -> shot style it must have fired within SHOT_WATCH_SECONDS (patterns of the table).
-const SHOT_TABLE := {"Wasp": &"stinger", "FlyGreen": &"acid", "FlyCommon": &"pellet", "Ant": &"pebble", "Snail": &"bubble", "Spider": &"web",
+const SHOT_TABLE := {"Wasp": &"stinger", "FlyGreen": &"acid", "FlyCommon": &"pellet", "Ant": &"pebble", "Snail": &"bubble", "Spider": &"web", "StagBeetle": &"stone", "WormB": &"mud",
 		"MushroomCannon": &"spore", "Ladybird": &"seed"}
 const SHOT_WATCH_SECONDS := 14.0
 const BEE_GOLD := Color(1.0, 0.72, 0.16)
@@ -69,6 +69,8 @@ func run() -> void:
 	await test_lob()
 	for family in FAMILIES:
 		await test_family(family)
+	await test_beetle()
+	await test_worm_b()
 	for line in lines:
 		print(line)
 	print("BEE_LOTE13_COMBAT_V01_OK")
@@ -171,3 +173,85 @@ func test_family(family: String) -> void:
 	if SHOT_TABLE.has(family):
 		check(styles_seen.has(SHOT_TABLE[family]), "%s never fired its %s shot (saw %s)" % [family, SHOT_TABLE[family], str(styles_seen.keys())])
 	lines.append("LOTE13 %s first_warning=%.2fs after entering the screen · shortest_warning=%s · shots=%s" % [family, delay, ("%.2fs" % min_warning) if min_warning < INF else "-", str(styles_seen)])
+
+
+## The stag beetle WALKS: tripod gait synced to the ground speed (no ice skating), body bounce and sway, pincers open while a stone is
+## charged, the stone leaves from between the pincers, the charge is warned 0.8 s.
+func test_beetle() -> void:
+	await load_level()
+	wave._spawn({"family": "StagBeetle", "slot": 0, "event": 0, "due": 0.0, "hard": false})
+	var beetle := wave.active_units.back() as AssetFauna
+	check(beetle._legs.size() == 6 and beetle._mandibles.size() >= 2, "The beetle has its 6 legs and pincers wired (legs %d, mandibles %d)" % [beetle._legs.size(), beetle._mandibles.size()])
+	var walked := 0.0
+	var walk_steps := 0
+	var prev_steps := 0
+	var last_x := beetle.global_position.x
+	var leg_range := 0.0
+	var sway_max := 0.0
+	var pincers_max := 0.0
+	var stone_origin := Vector3.INF
+	var pincer_at_throw := Vector3.ZERO
+	var charge_warning := 0.0
+	var tick := 1.0 / float(Engine.physics_ticks_per_second)
+	for i in 60 * 20:
+		await physics_frame
+		bee.global_position = Vector3(stage.camera.global_position.x - 2.5, 3.4, 0.0)
+		var dx := absf(beetle.global_position.x - last_x)
+		last_x = beetle.global_position.x
+		var speed := dx / tick
+		if speed > 0.3 and speed < 3.0:
+			walked += dx # Walking pace (the charge is faster than the gait cap on purpose).
+			walk_steps += beetle.gait_steps - prev_steps
+		prev_steps = beetle.gait_steps
+		leg_range = maxf(leg_range, absf(beetle._legs[0].position.x - beetle._leg_bases[0].x))
+		sway_max = maxf(sway_max, absf(beetle.visual.rotation.z))
+		if not beetle._mandibles.is_empty():
+			pincers_max = maxf(pincers_max, absf(beetle._mandibles[0].rotation.y))
+		if stone_origin == Vector3.INF:
+			for shot in get_nodes_in_group("alien_projectiles"):
+				if shot.get_meta("shot_style", &"") == &"stone":
+					stone_origin = (shot as Node3D).global_position
+					pincer_at_throw = beetle.pincer_point()
+		if beetle.telegraphs.size() >= 1 and charge_warning == 0.0:
+			charge_warning = beetle.telegraphs[0]
+		if stone_origin != Vector3.INF and walked > 1.0 and charge_warning > 0.0 and i > 60 * 8:
+			break
+	check(beetle.gait_steps >= 2 and leg_range > 0.1, "The legs step (steps %d, leg swing %.2f m)" % [beetle.gait_steps, leg_range])
+	var expected_steps := walked / 0.9
+	check(walked < 0.5 or absf(float(walk_steps) - expected_steps) <= maxf(2.0, expected_steps * 0.35), "Steps match the ground: %.1f m walked = ~%.1f steps, got %d (no skating)" % [walked, expected_steps, walk_steps])
+	check(sway_max > 0.01, "The body sways with the steps (%.3f rad)" % sway_max)
+	check(pincers_max > 0.15, "The pincers open while a stone is charged (%.2f rad)" % pincers_max)
+	check(stone_origin != Vector3.INF and stone_origin.distance_to(pincer_at_throw) < 0.8, "The stone leaves from between the pincers (%.2f m off)" % stone_origin.distance_to(pincer_at_throw))
+	check(charge_warning >= 0.78, "The charge warns 0.8 s (%.2f)" % charge_warning)
+	lines.append("LOTE13 beetle steps=%d walked=%.1fm leg_swing=%.2fm sway=%.3frad pincers=%.2frad charge_warning=%.2fs" % [beetle.gait_steps, walked, leg_range, sway_max, pincers_max, charge_warning])
+
+
+## Worm B: undulating body, mud fan from the soil (3 shots at once along the locked line) and the low ram, alternating.
+func test_worm_b() -> void:
+	await load_level()
+	wave._spawn({"family": "WormB", "slot": 0, "event": 0, "due": 0.0, "hard": false})
+	var worm := wave.active_units.back() as AssetFauna
+	var fan_max := 0
+	var rams := 0
+	var wave_min := INF
+	var wave_max := -INF
+	var spit_telegraphs := 0
+	for i in 60 * 14:
+		await physics_frame
+		bee.global_position = Vector3(stage.camera.global_position.x - 2.5, 3.4, 0.0)
+		var mud := get_nodes_in_group("alien_projectiles").filter(func(s): return s.get_meta("shot_style", &"") == &"mud").size()
+		fan_max = maxi(fan_max, mud)
+		if worm.state == AssetFauna.State.TELEGRAPH and worm._variant == &"spit":
+			spit_telegraphs += 1
+		if worm.attack_hitbox.enabled:
+			rams += 1
+		var y := worm.segments[5].position.y
+		wave_min = minf(wave_min, y)
+		wave_max = maxf(wave_max, y)
+		if fan_max >= 3 and rams > 0 and worm.attacks_started >= 3:
+			break
+	check(worm.segments.size() >= 8 and wave_max - wave_min > 0.03, "Worm B undulates (%d segments, wave %.3f m)" % [worm.segments.size(), wave_max - wave_min])
+	check(fan_max >= 3, "Worm B spits a fan of 3 mud shots (saw %d at once)" % fan_max)
+	check(spit_telegraphs > 0 and rams > 0, "Worm B alternates the spit and the low ram")
+	check(worm.telegraphs.all(func(t): return t >= 0.4 - 0.05), "Worm B warnings >= 0.4 s")
+	lines.append("LOTE13 wormB fan=%d spit_warning_frames=%d ram_frames=%d wave=%.2fm" % [fan_max, spit_telegraphs, rams, wave_max - wave_min])

@@ -206,35 +206,57 @@ func test_cloud() -> void:
 	print("LEVEL01_ROSTER cloud whole_body hp=%d" % hp)
 
 func test_worm_a() -> void:
+	# LOTE 13 · ETAPA 3: mark -> dirt eruption -> head up with a thin aim line that locks -> laser -> landing ring -> arc leap -> buried again.
 	prepare()
 	await frames(2)
 	var worm := spawn("WormA") as AssetFauna
-	check(worm.kind == &"worm_rose" and worm.is_ground(), "Worm A is a ground burrower")
-	var marked := false
-	var erupted := false
-	var mark_frames := 0
-	for i in 60 * 14:
+	check(worm.kind == &"worm_rose" and worm.is_ground() and worm._worm != null, "Worm A is a ground burrower with its own cycle")
+	var behaviour := worm._worm
+	var seen := {}
+	var apex := 0.0
+	var wave_min := INF
+	var wave_max := -INF
+	var line_follows := false
+	var first_line := Vector3.ZERO
+	for i in 60 * 10:
 		await physics_frame
-		if worm.state == AssetFauna.State.TELEGRAPH:
-			marked = true
-			mark_frames += 1
-			check(worm.buried and not worm.visual.visible and not worm.is_in_group("bee_auto_aim_targets"), "Underground: invisible and not targetable")
-			check(worm._warn.size() >= 1 and is_instance_valid(worm._warn[0]) and (worm._warn[0] as Node3D).visible, "The ground mark is shown during the warning")
-		if worm.state == AssetFauna.State.ATTACK and not erupted:
-			erupted = true
-			check(not worm.buried and worm.visual.visible and worm.is_in_group("bee_auto_aim_targets"), "Erupted: visible and targetable")
-			check(worm.attack_hitbox.enabled, "The eruption hits")
-		if erupted and worm.state == AssetFauna.State.RECOVER:
-			check(not worm.buried, "Surfaced and vulnerable")
+		var step_name: String = WormBehavior.Step.keys()[behaviour.step]
+		if not seen.has(step_name):
+			seen[step_name] = float(i) / 60.0
+			match behaviour.step:
+				WormBehavior.Step.MARK:
+					check(worm.buried and not worm.visual.visible and not worm.is_in_group("bee_auto_aim_targets"), "Underground: invisible and not targetable")
+					check(worm._warn.size() >= 2 and is_instance_valid(worm._warn[0]) and (worm._warn[0] as Node3D).visible, "The ground mark (disc + ring) is shown during the warning")
+				WormBehavior.Step.ERUPT:
+					check(not worm.buried and worm.visual.visible and worm.is_in_group("bee_auto_aim_targets") and worm.attack_hitbox.enabled, "Erupted: visible, targetable, the eruption hits")
+				WormBehavior.Step.PEEK:
+					check(is_instance_valid(behaviour._line), "A thin aim line shows while the head is up")
+					first_line = behaviour._lock_point
+				WormBehavior.Step.LASER:
+					check(behaviour._beam_box.enabled and behaviour.lasers == 1 and behaviour._locked, "The laser fires along the locked line")
+				WormBehavior.Step.CROUCH:
+					check(worm._warn.size() >= 2, "A ring marks where it will land")
+					check(not behaviour.warned_line().is_empty(), "The landing is readable (warned_line)")
+				WormBehavior.Step.LEAP:
+					check(worm.attack_hitbox.enabled and not behaviour._beam_box.enabled, "The leap hurts, the laser is gone")
+		if behaviour.step == WormBehavior.Step.PEEK and not behaviour._locked:
+			line_follows = line_follows or behaviour._lock_point.distance_to(first_line) > 0.01 or bee.global_position.distance_to(first_line) < 0.05
+		if behaviour.step == WormBehavior.Step.LEAP:
+			apex = maxf(apex, worm.global_position.y - worm.ground_y)
+		if worm.segments.size() >= 8:
+			var y := worm.segments[4].position.y
+			wave_min = minf(wave_min, y)
+			wave_max = maxf(wave_max, y)
+		if behaviour.cycles >= 1:
 			break
-	check(marked and erupted, "Worm A marks the soil, then erupts")
-	check(worm.telegraphs.size() >= 1 and worm.telegraphs[0] >= 0.95 and worm.telegraphs[0] <= 1.2, "Worm A warning ~1 s (%s)" % str(worm.telegraphs))
-	for i in 60 * 6:
-		await physics_frame
-		if worm.buried:
-			break
-	check(worm.buried, "It digs back in after being surfaced")
-	print("LEVEL01_ROSTER worm_a warning=%.2fs erupts=OK reburies=OK" % worm.telegraphs[0])
+	for name in ["MARK", "ERUPT", "PEEK", "LASER", "CROUCH", "LEAP", "LAND", "BURY"]:
+		check(seen.has(name), "Worm A cycle step %s happened" % name)
+	check(apex >= 1.5, "The leap is an arc (apex %.1f m)" % apex)
+	check(worm.buried and behaviour.cycles >= 1, "It digs back in after the leap")
+	check(worm.segments.size() == 16 and wave_max - wave_min > 0.03, "The 16 body segments undulate (wave %.3f m)" % (wave_max - wave_min))
+	check(behaviour.warnings.size() >= 3 and behaviour.warnings.all(func(t): return t >= 0.4), "Every worm warning lasts at least 0.4 s: %s" % str(behaviour.warnings))
+	check(is_equal_approx(behaviour.warnings[1], WormBehavior.LASER_WARN), "The laser warning is 0.6 s (%.2f)" % behaviour.warnings[1])
+	print("LEVEL01_ROSTER worm_a mark=%.1fs laser_warn=%.1fs leap_warn=%.1fs apex=%.1fm segments=16 wave=%.2fm" % [WormBehavior.MARK_SECONDS, WormBehavior.LASER_WARN, WormBehavior.LEAP_WARN, apex, wave_max - wave_min])
 
 func test_worm_b() -> void:
 	prepare()
@@ -250,22 +272,36 @@ func test_worm_b() -> void:
 	print("LEVEL01_ROSTER worm_b lunge warning=%.2fs" % worm.telegraphs[0])
 
 func test_turtle() -> void:
+	# LOTE 13 · ETAPA 3: PARKED (not in the table until a new model arrives) but its behaviour is ready: slow walk, spit up in an arc
+	# (ring warning), head in + shell launched along the soil with a ground-line warning, spinning and bouncing off the screen edges.
 	prepare()
 	await frames(2)
 	var turtle := spawn("Turtle") as BeeGardenTurtle
 	check(turtle != null and turtle.is_ground() and turtle.is_active(), "Garden turtle tank")
 	check(turtle.get_node("HealthComponent").max_health == BeeGameSettings.scaled_hp(int(BeeLevel01Controller.LEVEL_HP["Turtle"])), "Turtle HP from the director")
-	var start_x := turtle.global_position.x
-	var checked_ring := false
-	for i in 60 * 10:
+	var saw_ring := false
+	var saw_line := false
+	var saw_lob := false
+	var rolling_checked := false
+	for i in 60 * 40:
 		await physics_frame
-		if turtle._warn_left >= 0.0 and not checked_ring:
-			checked_ring = true
-			check(turtle._warn_nodes.size() == 1 and BeeGardenTurtle.SLAM_WARN >= 0.4, "Ground ring warns the shell slam")
-		if turtle.slams >= 1:
+		if turtle.step == BeeGardenTurtle.Step.SPIT_WARN and not turtle._warn_nodes.is_empty():
+			saw_ring = true
+		if turtle.step == BeeGardenTurtle.Step.ROLL_WARN and not turtle._warn_nodes.is_empty():
+			saw_line = true
+		for shot in get_nodes_in_group("alien_projectiles"):
+			if shot.get_meta("shot_style", &"") == &"bile" and (shot as AlienEnemyProjectile).gravity > 0.0:
+				saw_lob = true
+		if turtle.step == BeeGardenTurtle.Step.ROLLING and not rolling_checked and turtle._roll_time > 0.3:
+			rolling_checked = true
+			check(not turtle.is_in_group("bee_auto_aim_targets") and not turtle.hurtbox.monitorable, "The spinning shell is not a target")
+			check(turtle._roll_box.enabled and (turtle._hideable[0] as Node3D).scale.x < 0.1, "Head and legs are inside the shell while it rolls, the shell hurts")
+		if turtle.spits >= 2 and turtle.rolls >= 1 and turtle.bounces >= 1 and turtle.step == BeeGardenTurtle.Step.WALK:
 			break
-	check(checked_ring and turtle.slams >= 1 and turtle.slam_warnings.all(func(t): return t >= 0.4), "Shell slam with a >= 0.4 s warning")
-	check(turtle.global_position.x < start_x - 2.0, "The turtle walks slowly towards -X")
+	check(saw_ring and saw_line and saw_lob, "Spit ring warning, roll path warning and an arc spit (ring %s, line %s, lob %s)" % [saw_ring, saw_line, saw_lob])
+	check(turtle.spits >= 2 and turtle.rolls >= 1 and turtle.bounces >= 1, "It spits, rolls and bounces off the edges (spits %d rolls %d bounces %d)" % [turtle.spits, turtle.rolls, turtle.bounces])
+	check(turtle.warnings.size() >= 2 and turtle.warnings.all(func(t): return t >= 0.4), "Every warning lasts at least 0.4 s")
+	check(turtle.is_in_group("bee_auto_aim_targets") and turtle.hurtbox.monitorable and is_equal_approx((turtle._hideable[0] as Node3D).scale.x, 1.0), "After the roll it comes out and can be hit again")
 	var defeated := [false]
 	turtle.defeated.connect(func(_t): defeated[0] = true)
 	turtle.get_node("HealthComponent").take_damage(9999)
@@ -275,7 +311,7 @@ func test_turtle() -> void:
 		if defeated[0]:
 			break
 	check(defeated[0], "The freed turtle walks off and leaves play")
-	print("LEVEL01_ROSTER turtle slam_warning=%.1fs slams=%d freed=OK" % [BeeGardenTurtle.SLAM_WARN, turtle.slams])
+	print("LEVEL01_ROSTER turtle (parked) spit_warn=%.1fs roll_warn=%.1fs spits=%d rolls=%d bounces=%d freed=OK" % [BeeGardenTurtle.SPIT_WARN, BeeGardenTurtle.ROLL_WARN, turtle.spits, turtle.rolls, turtle.bounces])
 
 func test_kept_code() -> void:
 	# Everything that left Level 1 still exists and loads: UFO (Level 7), frog (Level 2), alien families, old table.

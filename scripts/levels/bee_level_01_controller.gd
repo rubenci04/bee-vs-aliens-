@@ -209,7 +209,7 @@ const LEVEL_TUNING = {
 	"Spider": {"attacks": 99},
 	# LOTE 12: roster species attack more often (shorter rests; windups and shot speed untouched).
 	"FlyCommon": {"idle_time": 0.5, "recovery_time": 0.45},
-	"FlyGreen": {"idle_time": 0.9, "recovery_time": 0.7},
+	"FlyGreen": {"idle_time": 1.3, "recovery_time": 1.0},
 	"FlyCloud": {"idle_time": 0.7, "recovery_time": 0.6},
 	"WormA": {"idle_time": 0.8, "recovery_time": 0.9},
 	"WormB": {"idle_time": 0.6, "recovery_time": 0.6},

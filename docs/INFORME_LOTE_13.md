@@ -63,19 +63,43 @@ Los arcos son proyectiles con gravedad (`AlienEnemyProjectile.gravity`, `BeeEnem
 
 | Métrica (bot, Normal, Base, sin jefes) | Meta | Resultado |
 |---|---|---|
-| ≥ 3 enemigos visibles | ≥ 80 % del tiempo | **83 %** |
-| 1 volador + 1 terrestre a la vez | ≥ 70 % | **82 %** |
-| Balas enemigas en pantalla | ≥ 70 % | **79 %** |
+| ≥ 3 enemigos visibles | ≥ 80 % del tiempo | **85 %** |
+| 1 volador + 1 terrestre a la vez | ≥ 70 % | **86 %** |
+| Balas enemigas en pantalla | ≥ 70 % | **82 %** |
 | Mayor tiempo sin amenaza | ≤ 4 s | **1,2 s** |
-| Vida perdida antes del robot | 50–75 | **61** |
-| Duración hasta la tarántula | 5,5–7 min | **366 s (6,1 min)** |
-| Máx. simultáneos ruta / zonas | 7 / 10 | 6 / 8 |
-| Retraso máx. de un evento respecto de su X | ≤ 18 m | 15,7 m (media 4,2 m) |
+| Vida perdida antes del robot | 50–75 | **73** |
+| Duración hasta la tarántula | 5,5–7 min | **362 s (6,0 min)** |
+| Máx. simultáneos ruta / zonas | 7 / 10 | 5 / 7 |
+| Retraso máx. de un evento respecto de su X | ≤ 18 m | 8,6 m (media 1,7 m) |
 
-El robot entra a los 326 s (5,4 min). El retraso de eventos viene de los topes de simultáneos (se vuelve a medir y se acota en el test).
+El robot entra a los 325 s (5,4 min). Cifras finales tras la Etapa 3 (gusanos nuevos); la vida perdida (73) queda cerca del tope de 75: el daño es de 1-2 por impacto y el bot es determinista, pero cualquier cambio de tabla o de ritmo de disparo lo mueve ±15. El retraso de eventos viene de los topes de simultáneos (se vuelve a medir y se acota en el test).
 
 ### Tests de la etapa
 - Nuevo: `validate_bee_lote13_combat_v01` (tiempos del primer aviso, avisos ≥ 0,4 s, estilos, arcos y disparo propio de cada familia en vivo).
 - Actualizados: `validate_bee_pacing_v01` (densidad, quietud ≤ 4 s, daño 50–75, tarántula 5,5–7 min, retraso, bot lee avisos y rueda), `validate_bee_level01_roster_v01` (sin valle, sin tortuga, 6 oleadas), `validate_bee_level_01_vertical_slice` (conteos de la tabla densa).
 
 Verificación de la etapa: reimportación y suite completa **96 validaciones** (`dev/l13e2_*`): 94 en verde y 2 con expectativas viejas (caracol "lento" ahora es un arco de lanzamiento ≤ 7 m/s; regadera 4–12 de daño) que se corrigieron y repitieron en verde sin tocar código. Sin `SCRIPT ERROR` ajenos a esas dos.
+
+## Etapa 3 — Personalidad de enemigos
+
+### 3.1 Gusanos (`worm_behavior.gd`, `AssetFauna`)
+- **Gusano A** (rosa): ciclo propio de ~4,7 s — marca de aviso en el suelo (0,8 s: disco + anillo) → **estallido de tierra** y sale parado, cabeza arriba (0,45 s; la erupción golpea) → **asoma la cabeza**: una línea fina naranja la sigue y se **fija** 0,25 s antes → **láser fino** (aviso **0,6 s**, rayo de 0,2 s) → anillo de aterrizaje (0,5 s) → **salta en arco** hacia donde estaba Bee (no la persigue; mín. 1,5 m de recorrido, dentro de la pantalla; apex ≈ 2,6 m) → se echa 0,5 s (vulnerable) → **se vuelve a enterrar** con otro estallido. Enterrado no se ve, no se apunta ni daña. Vulnerable unos 3,3 s por ciclo.
+- **Cuerpo ondulante:** los 16 segmentos (`Segment_NN`) ondulan con una **onda senoidal viajera** todo el tiempo (amplitud ~7 cm, más grande al avanzar); se apaga el clip `idle` del modelo, que pisaba la onda.
+- **Gusano B** (compost): **escupe un abanico de 3 glóbulos de barro desde el suelo** (línea fina que se fija) y **embiste a ras de tierra**, alternando; también ondula.
+- Constantes configurables al inicio de `worm_behavior.gd` (`MARK_SECONDS`, `LASER_WARN`, `LEAP_HEIGHT`, ...).
+
+### 3.2 Escarabajo ciervo
+- **Camina:** marcha en trípode (6 patas) con la **fase de paso atada a la velocidad real sobre el suelo** (un paso cada 0,9 m: sin patinar), rebote y balanceo del cuerpo; al cargar, las patas aletean a ≤ 14 rad/s. Config `"gait"` en `AssetFauna.KINDS`.
+- **Embiste con aviso de 0,8 s** (medido 0,80 s) y **lanza piedras con las pinzas**: las pinzas se abren durante el aviso (0,6 s) y la piedra sale de entre ellas (arco, `stone`).
+
+### 3.3 Tortuga
+- **Sacada del Nivel 1** (no está en la tabla; su modelo hexagonal queda aparcado hasta que Rubén genere uno nuevo). El código sigue y el comportamiento está **listo para el modelo nuevo** (`bee_garden_turtle.gd`): camina lenta; **escupe hacia arriba en arco** (anillo de aterrizaje 0,7 s, 2 lobs de bilis); **se mete en el caparazón** y lo **lanza girando por el suelo** (línea de recorrido 0,9 s, 7 m/s, **rebota en los bordes** de la pantalla, el caparazón no es blanco mientras gira), luego saca cabeza y patas. Probado con la tortuga aparcada (`validate_bee_level01_roster_v01`).
+
+### 3.4 Hormigas, caracol, mariquita, avispa
+Verificados con `validate_bee_lote13_combat_v01` (primer aviso ≤ 1 s, avisos ≥ 0,4 s, disparo propio) y por diseño de movimiento: **hormiga** sale del hormiguero, se acerca al suelo de Bee y alterna embestida y piedra en arco; **caracol** avanza a 0,7 m/s y lanza burbujas en arco; **mariquita** barre y abanica semillas (cooldown propio); **avispa** merodea en línea con Bee, abanico de agujas y picada con aviso. Ninguna queda quieta a lo lejos.
+
+### Qué falta (Etapa 3)
+- **Modelo nuevo de tortuga** (Rubén): hasta entonces no está en el Nivel 1.
+- Animaciones propias: gusano parado/erupción (hoy se orienta el modelo tumbado), pinzas del escarabajo (hoy se giran las mandíbulas desde el origen del modelo), patas con pivote de cadera (hoy se desplazan).
+
+Verificación de la etapa 3: suite completa (96 validaciones; `dev/l13e3_*`): 95 en verde y `validate_bee_pacing_v01` con 89 de vida perdida (los gusanos nuevos disparan más); se bajó el daño del gusano B (10 → 7), la cadencia de la mosca verde y el cooldown de las salvas (3,0 s) y se repitieron en verde los 7 tests afectados (pacing, combate del Lote 13, elenco, corte vertical, fauna, variedad de combate y balance de liberación). Resultado final del bot: 73 de vida perdida, densidad 85/86/82 %, 6,0 min hasta la tarántula.

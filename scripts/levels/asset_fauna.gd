@@ -61,7 +61,8 @@ const KINDS := {
 	&"ant": {"scene": "res://scenes/art_labs/assets_v09/controlled_ant.tscn", "mode": &"lunge", "ground": true, "scale": 1.1,
 			"telegraph": 0.5, "damage": 8, "cycles": 4, "speed": 2.6, "lunge_range": 3.2, "label": "Ant"},
 	&"stag_beetle": {"scene": "res://scenes/art_labs/assets_v02/controlled_stag_beetle.tscn", "mode": &"charge", "ground": true, "scale": 1.0,
-			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle"},
+			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle",
+			"gait": [0.9, 0.22, 0.16, 0.05, 0.04]}, # LOTE 13: walks (tripod gait synced to the ground speed), charges with a 0.8 s warning, lobs stones
 	&"snail": {"scene": "res://scenes/art_labs/assets_v02/controlled_woodland_snail.tscn", "mode": &"spitter", "ground": true, "scale": 1.0,
 			"telegraph": 0.6, "damage": 7, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail",
 			"lob": true, "style": &"bubble", "lob_flight": 1.5, "lob_gravity": 6.0}, # LOTE 13: slime bubble in an arc
@@ -93,9 +94,11 @@ const KINDS := {
 	&"fly_cloud": {"scene": "res://scenes/art_labs/fly_trio_v01/swarm.tscn", "mode": &"sweep", "ground": false, "scale": 0.8,
 			"telegraph": 0.6, "damage": 8, "cycles": 99, "speed": 3.4, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud", "chase": true}, # LOTE 13: chases Bee as a block
 	&"worm_rose": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_rose.tscn", "mode": &"burrow", "ground": true, "scale": 0.85,
-			"telegraph": 1.0, "damage": 14, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA"},
+			"telegraph": 1.0, "damage": 12, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA",
+			"worm_a": true, "undulate": [0.07, 7.0, 0.55]}, # LOTE 13: own cycle (WormBehavior)
 	&"worm_compost": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_compost.tscn", "mode": &"lunge", "ground": true, "scale": 0.9,
-			"telegraph": 0.6, "damage": 12, "cycles": 99, "speed": 1.8, "lunge_range": 3.6, "label": "WormB"},
+			"telegraph": 0.6, "damage": 7, "cycles": 99, "speed": 1.8, "lunge_range": 3.6, "label": "WormB",
+			"undulate": [0.06, 8.0, 0.6], "spit": {"fan": 3, "step": 16.0, "style": &"mud", "speed": 4.2, "every": 2}}, # LOTE 13: spits a mud fan and rams low
 }
 
 @export var kind: StringName = &"mosquito"
@@ -294,6 +297,21 @@ func _build() -> void:
 	attack_hitbox.position = Vector3(0.0, center.y, 0.0)
 	add_child(attack_hitbox)
 	attack_hitbox.set_enabled(false)
+	# LOTE 13 · ETAPA 3: worm A has its own cycle (eruption, thin laser, arc leap, burying); both worms undulate their 16 segments.
+	for node in visual.find_children("Segment_*", "Node3D", true, false):
+		if (node as Node3D).get_child_count() >= 0 and str(node.name).length() == 10:
+			segments.append(node as Node3D)
+			_segment_bases.append((node as Node3D).position)
+	if not segments.is_empty(): # The code undulates the body: the model idle clip would overwrite it every frame.
+		var clip_player := visual.find_child("AnimationPlayer", true, false) as AnimationPlayer
+		if clip_player != null:
+			clip_player.stop()
+			clip_player.active = false
+	_setup_gait()
+	if bool(config.get("worm_a", false)):
+		_worm = WormBehavior.new()
+		add_child(_worm)
+		_worm.setup(self)
 
 
 func _hurtbox(label: String, source: HealthComponent, shape: Shape3D, at: Vector3) -> DamageHurtbox3D:
@@ -331,6 +349,8 @@ static func _bounds(root: Node3D, space: Node3D) -> AABB:
 func _physics_process(delta: float) -> void:
 	_clock += delta
 	_flap()
+	_undulate()
+	_animate_gait(delta)
 	if spent:
 		var cam := get_viewport().get_camera_3d()
 		if cam != null and global_position.x < cam.global_position.x - 11.0:
@@ -361,6 +381,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _enter(delta: float, camera_x: float) -> void:
+	if _worm != null:
+		state = State.IDLE
+		_worm.begin()
+		return
 	if config["mode"] == &"leaper":
 		_leaper_swim(delta, camera_x)
 		_begin(State.IDLE, _start_idle())
@@ -414,6 +438,9 @@ func _hover_point(camera_x: float) -> Vector3:
 
 
 func _idle(delta: float, camera_x: float) -> void:
+	if _worm != null:
+		_worm.step_frame(delta)
+		return
 	if config["mode"] == &"leaper":
 		_leaper_swim(delta, camera_x)
 		_left -= delta
@@ -487,9 +514,12 @@ func _start_telegraph() -> void:
 			_lock_to = Vector3(global_position.x - 17.0, global_position.y, 0.0)
 			_add_line(_lock_from, _lock_to, float(config["wave_amp"]) * 2.0, Color(1.0, 0.55, 0.15, 0.16))
 		&"lunge":
-			var dirx := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
-			_lock_to = global_position + Vector3(dirx * float(config["lunge_range"]), 0.0, 0.0)
-			_add_line(global_position + Vector3(0, 0.5, 0), _lock_to + Vector3(0, 0.5, 0), 0.14)
+			if _variant == &"spit":
+				_lock_to = bee # Worm B spit: the aim line (added below) locks, then a mud fan.
+			else:
+				var dirx := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
+				_lock_to = global_position + Vector3(dirx * float(config["lunge_range"]), 0.0, 0.0)
+				_add_line(global_position + Vector3(0, 0.5, 0), _lock_to + Vector3(0, 0.5, 0), 0.14)
 		&"charge":
 			var dirc := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
 			_lock_to = global_position + Vector3(dirc * float(config["charge_speed"]) * float(config["charge_time"]), 0.0, 0.0)
@@ -582,8 +612,12 @@ func _start_attack() -> void:
 			_left = 17.0 / float(config["wave_speed"])
 			attack_hitbox.set_enabled(true)
 		&"lunge":
-			_left = 0.35
-			attack_hitbox.set_enabled(true)
+			if _variant == &"spit":
+				_fire_fan_style() # Worm B: a mud fan from the soil
+				_left = 0.45
+			else:
+				_left = 0.35
+				attack_hitbox.set_enabled(true)
 		&"charge":
 			_left = float(config["charge_time"])
 			attack_hitbox.set_enabled(true)
@@ -623,7 +657,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 			global_position.y = _lock_from.y + sin((global_position.x - _lock_from.x) * 1.6) * float(config["wave_amp"])
 		&"lunge", &"charge":
 			var speed := float(config["lunge_range"]) / 0.35 if mode == &"lunge" else float(config["charge_speed"])
-			global_position = global_position.move_toward(_lock_to, speed * delta)
+			if not (mode == &"lunge" and _variant == &"spit"): # Worm B spitting stays put
+				global_position = global_position.move_toward(_lock_to, speed * delta)
 
 	if _left <= 0.0:
 		if mode == &"dash" and _variant != &"spit":
@@ -683,6 +718,8 @@ func _begin(next: int, seconds: float) -> void:
 
 func _cancel_attack() -> void:
 	attack_hitbox.set_enabled(false)
+	if _worm != null:
+		_worm.cancel()
 	_clear_warn()
 	_release_token()
 	visual.scale = Vector3.ONE * model_scale
@@ -860,6 +897,11 @@ func _on_died() -> void:
 	liberated = true
 	state = State.LIBERATED
 	_cancel_attack()
+	if _worm != null: # A freed worm lies down on the soil (never stays standing or buried).
+		rig.rotation.z = 0.0
+		rig.position.y = 0.0
+		visual.visible = true
+		global_position.y = ground_y
 	remove_from_group("bee_auto_aim_targets")
 	hurtbox.set_deferred("monitorable", false)
 	for area: Area3D in find_children("*", "Area3D", true, false):
@@ -1005,7 +1047,7 @@ func _start_idle() -> float:
 
 ## True while a warning is showing (tests: time from entering the screen to the first warning).
 func is_telegraphing() -> bool:
-	return state == State.TELEGRAPH
+	return state == State.TELEGRAPH or (_worm != null and _worm.is_warning())
 
 
 var _variant := &"" # &"spit" = a flying fly's alternate attack: aimed pellets instead of the ram.
@@ -1058,6 +1100,8 @@ func _update_burst(delta: float) -> void:
 ## The line the current warning marks: [from, to, half_width] while a ram / lunge / charge / sweep / aimed spit is being warned, else [].
 ## Tests and bots read it the way a player reads the warning line on screen.
 func warned_line() -> Array:
+	if _worm != null:
+		return _worm.warned_line()
 	if state != State.TELEGRAPH:
 		return []
 	if _aim_line != null and is_instance_valid(_aim_line):
@@ -1085,9 +1129,112 @@ var _aim_lock_point := Vector3.ZERO
 
 
 func _is_aimed_attack() -> bool:
-	return config["mode"] in AIMED_MODES or (config["mode"] == &"dash" and _variant == &"spit")
+	return config["mode"] in AIMED_MODES or (config["mode"] in [&"dash", &"lunge"] and _variant == &"spit")
 
 
 ## Where the volley goes: the locked point once the aim line has locked, Bee's position before.
 func _aim_target() -> Vector3:
 	return _aim_lock_point if _aim_locked else target.global_position
+
+
+# --- LOTE 13 · ETAPA 3: worms -------------------------------------------------------------------------------------------------------
+
+var _worm: WormBehavior
+var segments: Array[Node3D] = [] # The 16 body segments (worms): they undulate with a travelling sine wave.
+var _segment_bases: Array[Vector3] = []
+
+
+## Travelling sine wave along the body (config "undulate": [amplitude m, speed rad/s, phase per segment rad]). Faster crawling = bigger waves.
+func _undulate() -> void:
+	if segments.is_empty():
+		return
+	var spec: Array = config.get("undulate", [0.07, 7.0, 0.55])
+	var amplitude := float(spec[0]) * (1.0 + clampf(absf(_move_vx) * 0.25, 0.0, 0.8))
+	for i in segments.size():
+		var wave := _clock * float(spec[1]) - float(i) * float(spec[2])
+		segments[i].position = _segment_bases[i] + Vector3(0.0, amplitude * sin(wave), amplitude * 0.8 * cos(wave * 0.7))
+
+
+## A fan of `fan` shots of the spit variant along the locked aim (worm B: mud from the soil).
+func _fire_fan_style() -> void:
+	if not BeeShmupFairness.can_fire(self):
+		return
+	var spit: Dictionary = config.get("spit", {})
+	var origin := _muzzle()
+	var aim := _aim_target() - origin
+	for direction in BeeEnemyPatterns.fan_directions(aim, int(spit.get("fan", 3)), float(spit.get("step", 16.0))):
+		BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, origin, direction, damage, float(spit.get("speed", 4.2)), self, StringName(spit.get("style", &"mud")))
+		shots_fired += 1
+	BeeCombatVFX.spawn(get_parent(), origin, &"rock_break", Vector3.UP, 0.5)
+
+
+# --- LOTE 13 · ETAPA 3: the stag beetle WALKS (no more ice skating) -----------------------------------------------------------------
+## Config "gait": [stride m, leg swing m, leg lift m, body bounce m, body sway rad]. Tripod gait: legs 1_0, -1_1, 1_2 against -1_0, 1_1, -1_2.
+## The step phase advances with the REAL ground speed (stride metres per step), so the feet match the soil; at rest the legs settle.
+
+var _legs: Array[Node3D] = []
+var _leg_groups: Array[float] = [] # +1 / -1: which tripod the leg belongs to.
+var _leg_bases: Array[Vector3] = []
+var _mandibles: Array[Node3D] = []
+var _mandible_sides: Array[float] = []
+var _gait_phase := 0.0
+var gait_steps := 0 ## Half-cycles walked (tests).
+var _visual_base_y := 0.0
+
+
+func _setup_gait() -> void:
+	if not config.has("gait"):
+		return
+	_visual_base_y = visual.position.y
+	for node in visual.find_children("Leg_*", "Node3D", true, false):
+		var leg := node as Node3D
+		_legs.append(leg)
+		_leg_bases.append(leg.position)
+		var parts := str(leg.name).split("_") # Leg_<side>_<index>: tripod = parity of (side + index).
+		var side := 1 if parts[1] == "1" else 0
+		_leg_groups.append(1.0 if (side + int(parts[2])) % 2 == 0 else -1.0)
+	for node in visual.find_children("Mandible*", "Node3D", true, false):
+		_mandibles.append(node as Node3D)
+		_mandible_sides.append(-1.0 if str(node.name).ends_with("_001") or str(node.name).ends_with("_R") else 1.0)
+
+
+func _animate_gait(delta: float) -> void:
+	if _legs.is_empty():
+		return
+	var spec: Array = config["gait"]
+	var speed := absf(_move_vx)
+	var walking := speed > 0.15 and state != State.TELEGRAPH
+	if walking:
+		var before := int(floorf(_gait_phase / PI))
+		_gait_phase += minf(speed / float(spec[0]) * PI, GAIT_MAX_RATE) * delta
+		gait_steps += int(floorf(_gait_phase / PI)) - before
+	var amount := 1.0 if walking else 0.0
+	_gait_blend = move_toward(_gait_blend, amount, delta * 5.0)
+	for i in _legs.size():
+		var phase := _gait_phase + (0.0 if _leg_groups[i] > 0.0 else PI)
+		var swing := float(spec[1]) * sin(phase) * _gait_blend
+		var lift := float(spec[2]) * maxf(0.0, cos(phase)) * _gait_blend
+		_legs[i].position = _leg_bases[i] + Vector3(swing, lift, 0.0)
+	visual.position.y = _visual_base_y + float(spec[3]) * absf(sin(_gait_phase)) * _gait_blend
+	visual.rotation.z = float(spec[4]) * sin(_gait_phase) * _gait_blend
+
+
+var _gait_blend := 0.0
+const GAIT_MAX_RATE := 14.0 ## rad/s: even a full charge flutters no faster than this.
+
+
+## 0..1: how far the pincers are open (the stone throw warning opens them; 0 = closed).
+func set_pincers(open: float) -> void:
+	for i in _mandibles.size():
+		_mandibles[i].rotation.y = _mandible_sides[i] * open * PINCER_OPEN_RAD
+
+
+const PINCER_OPEN_RAD := 0.38
+
+
+## Where the beetle's stones leave from: between its open pincers, in front of the head.
+func pincer_point() -> Vector3:
+	var head := visual.find_child("Head", true, false) as Node3D
+	if head == null:
+		return _muzzle()
+	return head.global_position + visual.global_transform.basis * Vector3(-0.35, 0.0, 0.0)

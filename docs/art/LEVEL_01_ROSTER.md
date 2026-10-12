@@ -51,6 +51,11 @@ Los roles son propuestas de diseño; el estado de cada modelo lo confirma la aud
 | Luciérnaga | Nivel 3 (Bosque) |
 | Hongo de color | Nivel 3 (Bosque) |
 
+## Estado en el Lote 13
+
+- La **tortuga de jardín está aparcada**: no sale en el Nivel 1 hasta que Rubén genere un modelo nuevo (el hexagonal está fuera de estilo). Su comportamiento ya está listo.
+- El nivel es **jardín puro** (sin pinos ni restos alien) y **denso**: sin valle de respiro; el tramo del checkpoint 1 es la entrada de los gusanos. Detalle en `docs/INFORME_LOTE_13.md`.
+
 ## Reglas del nivel
 
 - Solo se usa el elenco de arriba. Todo lo demás vive en su propia carpeta de nivel.

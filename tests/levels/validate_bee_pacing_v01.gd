@@ -15,7 +15,7 @@ const BOT_DODGE_LOOKAHEAD := 0.65
 const BOT_DODGE_HOLD := 0.55 # LOTE 13: a shorter hold = it re-reads the field more often (a player does not freeze for a second after dodging).
 const BOT_WARNING_HOLD := 0.55
 ## LOTE 13: a reasonable player rolls (Shift, Lote 11) when a shot is about to hit: it is invulnerable for 0.35 s and destroys common shots.
-const BOT_ROLL_WINDOW := 0.3
+const BOT_ROLL_WINDOW := 0.4
 const BOT_DRIFT := 2.4
 const BOT_DRIFT_PERIOD := 4.5
 ## Target (game seconds from start to the UFO entry).

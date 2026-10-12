@@ -32,6 +32,7 @@ const STYLES := {
 	&"seed": {"rim": Color(0.85, 0.08, 0.1), "trail": Color(0.9, 0.3, 0.25), "shape": &"oval", "hit_radius": 0.12, "spin": 0.0},
 	&"stone": {"rim": Color(0.5, 0.44, 0.36), "trail": Color(0.55, 0.5, 0.42), "shape": &"rock", "hit_radius": 0.18, "spin": 5.0},
 	&"mud": {"rim": Color(0.3, 0.19, 0.1), "trail": Color(0.45, 0.3, 0.16), "shape": &"glob", "hit_radius": 0.15, "spin": 0.0},
+	&"bile": {"rim": Color(0.3, 0.55, 0.18), "trail": Color(0.45, 0.7, 0.25), "shape": &"glob", "hit_radius": 0.16, "spin": 0.0}, # The turtle's spit.
 }
 
 static var _materials := {}

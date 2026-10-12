@@ -36,7 +36,9 @@ func _physics_process(delta: float) -> void:
 		_cancel()
 		return
 	if is_instance_valid(warning):
-		warning.global_position = unit.global_position + Vector3(0, 0.4, 0)
+		warning.global_position = _origin(unit)
+		if unit.has_method("set_pincers"):
+			unit.call("set_pincers", 1.0 - clampf(clock / WARNING_SECONDS, 0.0, 1.0)) # The pincers open while the stone is charged.
 	clock -= delta
 	if clock > 0.0:
 		return
@@ -46,13 +48,13 @@ func _physics_process(delta: float) -> void:
 			return
 		locked_aim = target.global_position - unit.global_position
 		locked_point = target.global_position
-		warning = BeeAttackVisuals.ring(unit, unit.global_position + Vector3(0, 0.4, 0), 0.45, 0.07, Color(0.2, 0.9, 1.0, 0.9))
+		warning = BeeAttackVisuals.ring(unit, _origin(unit), 0.45, 0.07, Color(0.2, 0.9, 1.0, 0.9))
 		warnings_started += 1
 		clock = WARNING_SECONDS
 		return
 	_cancel()
 	if BeeShmupFairness.can_fire(unit):
-		var origin := unit.global_position + Vector3(0, 0.4, 0)
+		var origin := _origin(unit)
 		var style: StringName = SHOT_STYLES.get(family, &"")
 		if family in LOB_FAMILIES:
 			# An arc to the spot Bee was at when the warning ended: it never homes, so moving away dodges it.
@@ -68,9 +70,19 @@ func _physics_process(delta: float) -> void:
 	clock = float(COOLDOWN_BY_FAMILY.get(family, COOLDOWN_SECONDS))
 
 func _cancel() -> void:
+	var owner_unit := get_parent()
+	if is_instance_valid(owner_unit) and owner_unit.has_method("set_pincers"):
+		owner_unit.call("set_pincers", 0.0)
 	if is_instance_valid(warning):
 		warning.queue_free()
 	warning = null
 
 func _exit_tree() -> void:
 	_cancel()
+
+
+## Where the volley leaves from: the stag beetle throws from between its pincers, the rest from their back (the implant).
+func _origin(unit: Node3D) -> Vector3:
+	if family == "StagBeetle" and unit.has_method("pincer_point"):
+		return unit.call("pincer_point")
+	return unit.global_position + Vector3(0, 0.4, 0)
