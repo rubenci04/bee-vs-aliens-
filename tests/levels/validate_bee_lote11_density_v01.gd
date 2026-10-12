@@ -15,6 +15,7 @@ var wave: BeeLevel01Controller
 var bee: BeePlayer
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -44,7 +45,7 @@ func run() -> void:
 func test_table() -> void:
 	var total := 0
 	var formations := {}
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		total += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			total += (zone_wave["units"] as Array).size()

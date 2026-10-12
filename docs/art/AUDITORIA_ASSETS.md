@@ -8,7 +8,7 @@ Presupuesto (de `ASSET_REQUEST_TEMPLATE.md`): enemigo común ~5.000 triángulos;
 
 | Destino | GLB | En uso |
 |---|---|---|
-| Nivel 1 (jardín) | 45 | 23 |
+| Nivel 1 (jardín) | 45 | 31 |
 | Nivel 2 (laguna; carpeta `level_02_lake`) | 27 | 9 |
 | Nivel 3 (bosque) | 11 | 6 |
 | Nivel 4 (cielo) | 8 | 0 |
@@ -16,7 +16,7 @@ Presupuesto (de `ASSET_REQUEST_TEMPLATE.md`): enemigo común ~5.000 triángulos;
 | Nivel 7 (espacio) | 3 | 0 |
 | shared (bee 2, alien_tech 6, pickups 4, projectiles 2) | 14 | 11 |
 | `_unassigned` (costa 3, humano 1) | 4 | 1 |
-| **Total** | **112** | |
+| **Total** | **112** | **58** |
 
 - **Piezas blancas:** una sola, `hipster_poc` (1 material casi blanco, camisa/zapatillas del humano gigante; hoy apagado). Ninguna pieza blanca en los GLB de nivel.
 - **Material roto:** ninguno (todos tienen materiales y una imagen/paleta).
@@ -25,23 +25,26 @@ Presupuesto (de `ASSET_REQUEST_TEMPLATE.md`): enemigo común ~5.000 triángulos;
 
 ## Contraste con el contrato del Nivel 1
 
+Estado tras la etapa 2 del Lote 12 (el Nivel 1 ya juega solo con este elenco; tabla de eventos en `bee_level_01_controller.gd`, `EVENTS_ROSTER`).
+
 | Unidad del contrato | Modelo en `level_01_garden` | Tris | Estado | Falta |
 |---|---|---|---|---|
-| Mariquita | `controlled_flying_ladybird` (+ `_lite`) | 9.384 / 4.954 | En juego (asset_fauna) | usar el `_lite` en el juego |
-| Mosca común | `lvl01_enemy_fly_common_v01` (+ liberada) | 4.104 | Solo laboratorio | escena jugable, IA, HP |
-| Mosca verde | `lvl01_enemy_fly_green_v01` (+ liberada) | 4.104 | Solo laboratorio | escena jugable, IA, gota apuntada |
-| Nube de moscas | `lvl01_enemy_fly_swarm_v01` (+ liberada) | 4.896 | Solo laboratorio | unidad de grupo jugable, bomba que la limpia |
+| Mariquita | `controlled_flying_ladybird` (+ `_lite`) | 9.384 / 4.954 | En juego | usar el `_lite` en el juego |
+| Mosca común | `lvl01_enemy_fly_common_v01` (+ liberada) | 4.104 | **En juego** (`AssetFauna` `fly_common`: vuelo errático, embestida con aviso 0,5 s) | — |
+| Mosca verde | `lvl01_enemy_fly_green_v01` (+ liberada) | 4.104 | **En juego** (`fly_green`: zigzag, gotas lentas apuntadas) | — |
+| Nube de moscas | `lvl01_enemy_fly_swarm_v01` (+ liberada) | 4.896 | **En juego** (`fly_cloud`: unidad de grupo, un solo hurtbox, la bomba la limpia) | las 15–25 moscas del contrato son 8 miembros en el modelo |
 | Avispa | `wasp_mid_poly` (en juego) y `wasp_enemy_visual` (original) | 4.294 / 1.014 | En juego | — |
 | Hormiga | `controlled_ant` (+ `_lite`) | 13.456 / 4.980 | En juego | `_lite` en juego; piedritas en arco |
 | Caracol | `controlled_woodland_snail` | 7.748 | En juego | **sin `_lite`** |
-| Gusano A / B | `lvl01_enemy_worm_rose/compost_v01` (+ liberados) | 4.532 / 3.636 | Solo laboratorio | emerger con marca, escena/IA |
-| Escarabajo ciervo | `controlled_stag_beetle` | 9.952 | En juego | **sin `_lite`**; embestida con aviso 0,8 s |
-| Hongos de jardín | `lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | 584–1.184 | Solo laboratorio | destructible que suelta polen |
+| Gusano A / B | `lvl01_enemy_worm_rose/compost_v01` (+ liberados) | 4.532 / 3.636 | **En juego** (A: emerge con marca de 1 s; B: embestida a ras) | solo se usan los clips idle/crawl; falta animación de erupción propia |
+| Escarabajo ciervo | `controlled_stag_beetle` | 9.952 | En juego | **sin `_lite`** |
+| Hongos de jardín | `lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | 584–1.184 | **En juego** (`BeeGardenMushroom`: destructibles, sueltan polen, no sólidos) | — |
 | Hongo cañón | `controlled_mushroom_cannon` | 11.822 | En juego | **sin `_lite`** |
 | Araña colgante | nodo `controlled_spider.tscn` (procedural) y `controlled_hanging_spider.glb` | 4.930 | En juego (nodo); GLB sin conectar | conectar el GLB al nodo (hilo + abanico) |
-| Tortuga de jardín | solo código (`bee_aftermath_turtle.gd`, caparazón hexagonal procedural) | — | Solo como escena de «secuela» | modelo GLB jugable como tanque, HP alto |
-| Robot caminante | `ground_walker_enemy.tscn` (procedural, Quaternius/Kenney) | — | En juego | pasarlo a mini-jefe con escoltas |
-| Tarántula (jefe) | `lvl01_boss_giant_spider_v01` (+ liberada), implante en la versión controlada (22 nodos) | 11.652 / 8.584 | Solo laboratorio | escena de jefe, IA, hitbox del implante, liberación |
+| Tortuga de jardín | `BeeGardenTurtle` (pieza procedural de la secuela, escalada ×2) | — | **En juego** como tanque (220 HP, golpe de caparazón con anillo de aviso 0,9 s) | modelo GLB propio |
+| Robot caminante | `ground_walker_enemy.tscn` (procedural) | — | En juego como cierre del nivel, con escoltas de avispas y moscas | animación/rediseño de mini-jefe |
+| Tarántula (jefe) | `lvl01_boss_giant_spider_v01` (+ liberada), implante en la versión controlada (22 nodos) | 11.652 / 8.584 | Solo laboratorio (etapa 3) | escena de jefe, IA, hitbox del implante, liberación; el modelo lleva exoesqueleto alien y el contrato pide solo implante |
+
 
 El implante separado está en las nuevas moscas, gusanos y tarántula (versión controlada con dispositivo, `_liberado` sin él). Los modelos antiguos separan el dispositivo en un nodo (`AlienControlDevice`) que se oculta al liberar.
 
@@ -63,9 +66,9 @@ El implante separado está en las nuevas moscas, gusanos y tarántula (versión 
 
 ## Usos cruzados (el Nivel 1 usa assets de otros niveles)
 
-- Pinos y piñas (`tall_pine`, `umbrella_pine`, `pine_cone`) → Nivel 3; los usa `bee_level_01_asset_dressing.gd` (y `tall_pine` también la laguna). Decorado de fondo del jardín: se decide en la etapa 2.
+- Pinos y piñas (`tall_pine`, `umbrella_pine`, `pine_cone`) → Nivel 3; los usa `bee_level_01_asset_dressing.gd` (y `tall_pine` también la laguna). Decorado de fondo del jardín: se siguen usando en el Nivel 1 (pendiente de decidir si se reemplazan por vegetación de jardín).
 - Luciérnaga (Nivel 3) en `bee_level_01_asset_dressing.gd` (ya apagada por `FIREFLIES_ENABLED`).
-- `asset_fauna.gd` instancia mosquito, libélula (Nivel 2), polilla bomba, polilla estacionaria (Nivel 3), caza y semillero (`shared/alien_tech`): salen del Nivel 1 en la etapa 2.
+- `asset_fauna.gd` aún tiene (código intacto) mosquito, libélula (Nivel 2), polilla bomba, polilla estacionaria (Nivel 3), caza y semillero (`shared/alien_tech`): desde la etapa 2 el Nivel 1 ya no los instancia (`LEVEL01_ROSTER_ONLY`).
 - Helecho, campanilla y tronco hueco están en `level_01_garden` y también los usa la laguna.
 
 ## Tabla completa
@@ -84,15 +87,15 @@ Columnas: nivel / carpeta / archivo / unidad del contrato / ¿en uso? / triángu
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_mushroom_cannon.glb` | Hongo cañón | sí: asset_fauna.gd | 11822 | no | sí (2) | sobre presupuesto: enemigo 11822 > 5.000 (sin _lite);  |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_stag_beetle.glb` | Escarabajo ciervo | sí: asset_fauna.gd | 9952 | no | sí (1) | sobre presupuesto: enemigo 9952 > 5.000 (sin _lite);  |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_woodland_snail.glb` | Caracol | sí: asset_fauna.gd | 7748 | no | sí (1) | sobre presupuesto: enemigo 7748 > 5.000 (sin _lite);  |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01.glb` | Mosca común | no (solo laboratorio) | 4104 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01.glb` | Mosca común | sí: asset_fauna.gd | 4104 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01_liberado.glb` | Mosca común (liberada) | no (solo laboratorio) | 3776 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01.glb` | Mosca verde | no (solo laboratorio) | 4104 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01.glb` | Mosca verde | sí: asset_fauna.gd | 4104 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01_liberado.glb` | Mosca verde (liberada) | no (solo laboratorio) | 3776 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb` | Nube de moscas | no (solo laboratorio) | 4896 | no | sí (25) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb` | Nube de moscas | sí: asset_fauna.gd | 4896 | no | sí (25) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01_liberado.glb` | Nube de moscas (liberada) | no (solo laboratorio) | 4320 | no | sí (8) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb` | Gusano B | no (solo laboratorio) | 3636 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb` | Gusano B | sí: asset_fauna.gd | 3636 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01_liberado.glb` | Gusano B (liberado) | no (solo laboratorio) | 3360 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb` | Gusano A | no (solo laboratorio) | 4532 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb` | Gusano A | sí: asset_fauna.gd | 4532 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01_liberado.glb` | Gusano A (liberado) | no (solo laboratorio) | 4256 | no | sí (1) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/wasp_enemy_visual.glb` | Avispa | no (solo laboratorio) | 1014 | no | no | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/wasp_mid_poly.glb` | Avispa | sí: bee_prototype/visuals/wasp_enemy_visual.tscn | 4294 | no | no | — |
@@ -103,9 +106,9 @@ Columnas: nivel / carpeta / archivo / unidad del contrato / ¿en uso? / triángu
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/garden_fence_module.glb` | — | sí: bee_level_01_asset_dressing.gd | 2404 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/garden_sapling.glb` | — | sí: bee_level_01_asset_dressing.gd | 7904 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/hollow_fallen_log.glb` | — | sí: bee_level_01_asset_dressing.gd, bee_level_02_lake_scenery.gd | 1972 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb` | Hongo de jardín | no (solo laboratorio) | 584 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb` | Hongo de jardín | no (solo laboratorio) | 1184 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb` | Hongo de jardín | no (solo laboratorio) | 584 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 584 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 1184 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 584 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_crescent_moon.glb` | — | sí: bee_level_01_asset_dressing.gd | 3692 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_star_cluster.glb` | — | sí: bee_level_01_asset_dressing.gd | 2640 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_sun.glb` | — | sí: bee_level_01_asset_dressing.gd | 2208 | no | no | — |

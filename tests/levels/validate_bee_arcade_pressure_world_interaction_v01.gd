@@ -24,6 +24,7 @@ var bee: BeePlayer
 var only := ""
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -409,7 +410,7 @@ func test_rock_checkpoint() -> void:
 # --- Level ----------------------------------------------------------------------------------------
 
 func test_level() -> void:
-	var events := BeeLevel01Controller.EVENTS
+	var events := BeeLevel01Controller.EVENTS_LEGACY
 	var total := 0
 	var biggest := 0
 	var with_ranged := 0
@@ -450,7 +451,7 @@ func test_boss_and_complete() -> void:
 	bee.health.damage_blocked = true
 	stage.scroll_speed = 2.0
 	wave.set_physics_process(true)
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	stage.distance = 352.0
 	stage._update_camera_and_bounds()
 	for i in 900:

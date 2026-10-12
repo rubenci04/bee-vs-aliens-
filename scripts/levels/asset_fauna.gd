@@ -77,6 +77,20 @@ const KINDS := {
 			"telegraph": 0.7, "damage": 10, "cycles": 99, "speed": 2.2, "leap_time": 1.0, "leap_height": 4.6, "label": "Perch"},
 	&"seed_carrier": {"scene": "res://scenes/art_labs/assets_v02/alien_seed_carrier.tscn", "mode": &"seeder", "ground": false, "scale": 1.15,
 			"telegraph": 0.8, "damage": 6, "cycles": 99, "speed": 2.0, "shot_speed": 3.6, "machine": true, "label": "SeedCarrier"},
+	# LOTE 12 · ETAPA 2 — Level 1 roster species (Codex GLB: implant node `implant`, clips hover/attack/liberate or idle/crawl).
+	# Common fly: erratic flight with a soft ram (mosquito logic). Green fly: zigzag + slow aimed drops. Fly cloud: one group unit
+	# (the whole cloud is the target, one hurtbox over all of it). Worm A: burrows, the ground mark warns 1 s, then it erupts.
+	# Worm B: low crawling lunge along the soil.
+	&"fly_common": {"scene": "res://scenes/art_labs/fly_trio_v01/common.tscn", "mode": &"dash", "ground": false, "scale": 0.55,
+			"telegraph": 0.5, "damage": 11, "cycles": 99, "speed": 6.0, "dash_speed": 12.0, "dash_range": 6.0, "label": "FlyCommon"},
+	&"fly_green": {"scene": "res://scenes/art_labs/fly_trio_v01/green.tscn", "mode": &"zigzag", "ground": false, "scale": 0.55,
+			"telegraph": 0.5, "damage": 10, "cycles": 99, "speed": 5.0, "shot_speed": 4.0, "zig_amp": 1.5, "zig_rate": 3.4, "label": "FlyGreen"},
+	&"fly_cloud": {"scene": "res://scenes/art_labs/fly_trio_v01/swarm.tscn", "mode": &"sweep", "ground": false, "scale": 0.8,
+			"telegraph": 0.6, "damage": 12, "cycles": 99, "speed": 2.0, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud"},
+	&"worm_rose": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_rose.tscn", "mode": &"burrow", "ground": true, "scale": 0.85,
+			"telegraph": 1.0, "damage": 14, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA"},
+	&"worm_compost": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_compost.tscn", "mode": &"lunge", "ground": true, "scale": 0.9,
+			"telegraph": 0.6, "damage": 12, "cycles": 99, "speed": 1.8, "lunge_range": 3.6, "label": "WormB"},
 }
 
 @export var kind: StringName = &"mosquito"
@@ -145,6 +159,10 @@ func _ready() -> void:
 func is_ground() -> bool:
 	return bool(config.get("ground", false))
 
+## LOTE 12: true when the model carries a separate implant (the cloud does not use a weak point; tests).
+func has_implant() -> bool:
+	return _has_implant or _device != null
+
 
 func activate(new_target: BeePlayer) -> bool:
 	if _activated or new_target == null or health == null:
@@ -192,6 +210,8 @@ func _build() -> void:
 			_wing_bases.append(hinge.transform.basis)
 			_wing_sides.append(-1.0 if str(hinge.name).begins_with("FlightWing_-1") else 1.0) # _-1 wings sit on +Z.
 	_device = visual.find_child("AlienControlDevice", true, false) as Node3D
+	if _device == null:
+		_device = visual.find_child("implant", true, false) as Node3D # LOTE 12: the Codex roster models name it `implant`.
 	if _device != null:
 		# NOCHE 01 · ETAPA 3: a brighter cyan implant (the shot target) reads against every light of the level.
 		for mesh: MeshInstance3D in _device.find_children("*", "MeshInstance3D", true, false):
@@ -219,8 +239,15 @@ func _build() -> void:
 	health.name = "HealthComponent"
 	health.max_health = 60
 	add_child(health)
-	hurtbox = _hurtbox("Hurtbox3D", health, SphereShape3D.new(), _implant_center)
-	(hurtbox.get_child(0) as CollisionShape3D).shape.set("radius", radius)
+	if bool(config.get("whole_body", false)):
+		# LOTE 12: a group unit (the fly cloud): anywhere on the cloud is a 1x hit; the bomb clears it. No implant weak point.
+		var cloud := BoxShape3D.new()
+		cloud.size = Vector3(bounds.size.x, bounds.size.y, 1.0)
+		hurtbox = _hurtbox("Hurtbox3D", health, cloud, center)
+		_has_implant = false
+	else:
+		hurtbox = _hurtbox("Hurtbox3D", health, SphereShape3D.new(), _implant_center)
+		(hurtbox.get_child(0) as CollisionShape3D).shape.set("radius", radius)
 	health.died.connect(_on_died)
 	health.health_changed.connect(_on_health_changed)
 	if _has_implant:
@@ -334,6 +361,11 @@ func _enter(delta: float, camera_x: float) -> void:
 	if config["mode"] == &"cannon":
 		_begin(State.IDLE, idle_time) # Planted in the garden: it never walks.
 		return
+	if config["mode"] == &"burrow":
+		global_position = Vector3(camera_x + 5.0, ground_y, 0.0)
+		_set_buried(true) # LOTE 12: underground until the ground mark has warned.
+		_begin(State.IDLE, idle_time)
+		return
 	_hover = _hover_point(camera_x)
 	if is_ground():
 		var arrived := _walk_to(_hover.x, float(config["speed"]) if float(config["speed"]) > 0.0 else 2.0, delta)
@@ -362,6 +394,9 @@ func _hover_point(camera_x: float) -> Vector3:
 			return Vector3(minf(bee.x + 3.0, camera_x + 4.6), 4.6 + 0.5 * sin(_clock * 0.9), 0.0)
 		&"seeder":
 			return Vector3(minf(bee.x + 4.6, camera_x + 4.8), clampf(bee.y + 1.0, 3.2, 5.6), 0.0)
+		&"zigzag":
+			# LOTE 12: the green fly zigzags up and down around Bee's height, always a little ahead.
+			return Vector3(minf(bee.x + 4.0, camera_x + 5.0), clampf(bee.y + float(config["zig_amp"]) * sin(_clock * float(config["zig_rate"])), 1.6, 5.6), 0.0)
 		&"fighter":
 			# Strafes along the top of the right half (a slow sine), always ahead of Bee.
 			return Vector3(camera_x + 3.4 + 1.4 * sin(_clock * 0.7), 5.0 + 0.7 * sin(_clock * 1.1), 0.0)
@@ -384,6 +419,8 @@ func _idle(delta: float, camera_x: float) -> void:
 			_steer(_hover + _mosquito_drift(), MOSQUITO_SPEED, delta)
 		&"cannon":
 			pass # Static: its position is part of the garden.
+		&"burrow":
+			pass # Underground: nothing to steer until it picks the spot to erupt.
 		_:
 			if is_ground():
 				_walk_to(_hover.x, speed, delta)
@@ -457,6 +494,14 @@ func _start_telegraph() -> void:
 			_warn.append(BeeAttackVisuals.line(get_parent(), Vector3(lock_x, WATER_SURFACE_Y, 0.0), Vector3(lock_x, _leap_apex, 0.0), 0.06, Color(1.0, 0.55, 0.15, 0.35)))
 		&"bomber":
 			_add_ring(global_position + Vector3(0, -0.8, 0), float(config["radius"]))
+		&"burrow":
+			# LOTE 12: it picks a spot just ahead of Bee, inside the screen, and marks it on the ground for the whole warning.
+			var spot := minf(bee.x + 2.6, get_viewport().get_camera_3d().global_position.x + 5.0)
+			global_position = Vector3(spot, ground_y, 0.0)
+			_lock_from = global_position
+			_lock_to = global_position
+			_warn.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(spot, ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
+			_add_ring(Vector3(spot, ground_y + 0.2, 0.0), 1.1)
 		_:
 			_lock_to = bee # Shooters re-aim at the moment of firing; the glow is the warning.
 
@@ -480,10 +525,16 @@ func _telegraph(delta: float) -> void:
 
 func _start_attack() -> void:
 	state = State.ATTACK
+	_play("attack")
 	var mode: StringName = config["mode"]
 	if mode == &"leaper":
 		_left = float(config["leap_time"])
 		global_position = _lock_from
+		attack_hitbox.set_enabled(true)
+		return
+	if mode == &"burrow":
+		_surface()
+		_left = 0.5
 		attack_hitbox.set_enabled(true)
 		return
 	match mode:
@@ -505,7 +556,7 @@ func _start_attack() -> void:
 		&"bomber":
 			_drop_bomb()
 			_left = 0.2
-		&"spitter", &"cannon", &"seeder", &"fighter":
+		&"spitter", &"cannon", &"seeder", &"fighter", &"zigzag":
 			_fire()
 			_left = 0.25
 		_:
@@ -541,11 +592,19 @@ func _attack(delta: float, _camera_x: float) -> void:
 		cycles_done += 1
 		state = State.RECOVER
 		_left = recovery_time if mode != &"charge" else 1.4
+		if mode == &"burrow":
+			_left = float(config["exposed"]) # Surfaced and vulnerable for this long, then it digs back in.
 		if cycles_done >= max_cycles:
 			state = State.EXIT
 
 
 func _recover(delta: float, camera_x: float) -> void:
+	if config["mode"] == &"burrow":
+		_left -= delta
+		if _left <= 0.0:
+			_set_buried(true)
+			_begin(State.IDLE, idle_time)
+		return
 	if config["mode"] == &"leaper":
 		_leaper_swim(delta, camera_x)
 		_left -= delta
@@ -566,7 +625,15 @@ func _recover(delta: float, camera_x: float) -> void:
 		_begin(State.IDLE, idle_time)
 
 
+func _play(clip: String) -> void:
+	# LOTE 12: the Codex flies carry hover/attack/liberate clips (their wrapper loops "hover").
+	if visual != null and visual.has_method("play_clip") and str(kind).begins_with("fly_"):
+		visual.call("play_clip", clip)
+
+
 func _begin(next: int, seconds: float) -> void:
+	if next == State.IDLE:
+		_play("hover")
 	state = next
 	_left = seconds
 
@@ -584,6 +651,30 @@ func _release_token() -> void:
 		BeeAttackTokens.release(self)
 		_token_held = false
 
+
+# --- LOTE 12: burrowing worm ----------------------------------------------------------------------------------------
+
+var buried := false
+
+## Underground: invisible, not targetable and harmless. `false` brings it back (see `_surface`).
+func _set_buried(value: bool) -> void:
+	buried = value
+	visual.visible = not value
+	hurtbox.set_deferred("monitorable", not value)
+	if body_hurtbox != null:
+		body_hurtbox.set_deferred("monitorable", not value)
+	if value:
+		remove_from_group("bee_auto_aim_targets")
+	elif not is_in_group("bee_auto_aim_targets"):
+		add_to_group("bee_auto_aim_targets")
+
+
+## Erupts: the model rises out of the soil in 0.3 s; the eruption hitbox is live for 0.5 s (see `_start_attack`).
+func _surface() -> void:
+	_set_buried(false)
+	rig.position.y = -1.2
+	var rise := create_tween()
+	rise.tween_property(rig, "position:y", 0.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 # --- attacks that spawn something ------------------------------------------------------------------------------
 
@@ -740,6 +831,7 @@ func _on_died() -> void:
 		spent = true
 		return # Leaves play (defeated) once the scroll has left it behind: see _physics_process.
 	add_to_group("bee_liberated")
+	_play("liberate")
 	if visual.has_method("release_control"):
 		visual.call("release_control")
 	BeeLiberation.free_animal(get_parent(), visual, _device, at)

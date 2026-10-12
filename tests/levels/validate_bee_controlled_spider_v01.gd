@@ -19,6 +19,7 @@ var failed := false
 
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 
@@ -141,7 +142,7 @@ func run() -> void:
 	check(not is_instance_valid(spider) or not spider.visible, "Freed spider did not leave the frame")
 	# --- 4. level placement: three appearances, soft, within caps ---------------------------------------------------
 	var appearances: Array[float] = []
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		if "Spider" in event["units"]:
 			appearances.append(float(event["at"]))
 			check(not bool(event.get("hard", false)), "Spider in a hard gate")
@@ -158,7 +159,7 @@ func run() -> void:
 	# The director never exceeds the cap around a spider event (accelerated real progression, Bee fixture-protected).
 	await fresh(appearances[1] - 2.0)
 	wave.event_index = 0
-	while float(BeeLevel01Controller.EVENTS[wave.event_index]["at"]) < appearances[1] - 2.0:
+	while float(BeeLevel01Controller.EVENTS_LEGACY[wave.event_index]["at"]) < appearances[1] - 2.0:
 		wave.event_index += 1
 	bee.health.damage_blocked = true
 	stage.scroll_speed = 2.0
@@ -175,8 +176,8 @@ func run() -> void:
 	await fresh(190.0)
 	wave.resume_after_checkpoint(190.0)
 	var remaining := 0
-	for index in range(wave.event_index, BeeLevel01Controller.EVENTS.size()):
-		if "Spider" in BeeLevel01Controller.EVENTS[index]["units"]:
+	for index in range(wave.event_index, BeeLevel01Controller.EVENTS_LEGACY.size()):
+		if "Spider" in BeeLevel01Controller.EVENTS_LEGACY[index]["units"]:
 			remaining += 1
 	check(remaining == 1, "After the checkpoint exactly the late spider must remain (got %d)" % remaining)
 	# --- 6. restart: a clean level ------------------------------------------------------------------------------------

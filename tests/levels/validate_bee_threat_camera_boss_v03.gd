@@ -22,6 +22,7 @@ var bee: BeePlayer
 var only := ""
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -248,7 +249,7 @@ func test_roles() -> void:
 
 func boss_fight() -> UfoBoss01:
 	arena(340.0)
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	wave.set_physics_process(true)
 	for i in 600:
 		await physics_frame

@@ -283,17 +283,22 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 72, "Event count wrong (LOTE 11: 72 events incl. the watering can)")
+	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() == 48, "Event count wrong (LOTE 12: 48 roster events)")
 	var total := 0
 	var max_gap := 0.0
+	var valley_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
 		var event: Dictionary = BeeLevel01Controller.EVENTS[i]
 		total += event["units"].size()
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: combat-zone waves included.
 			total += (zone_wave["units"] as Array).size()
 		if i > 0:
-			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 149 and max_gap <= 8, "Unit count/pacing wrong (LOTE 11: 149 units, gaps <= 8 m)")
+			var gap := float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"])
+			if gap > 20.0:
+				valley_gap = gap # The breathing valley of checkpoint 1: the only long stretch.
+			else:
+				max_gap = maxf(max_gap, gap)
+	check(total == 133 and max_gap <= 14 and valley_gap >= 22.0 and valley_gap <= 30.0, "Unit count/pacing wrong (LOTE 12: 133 units, gaps <= 14 m (combat zones slow the scroll), one valley of 22-30 m; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -373,7 +378,7 @@ func run() -> void:
 			# here while validating normal progression and flight bounds.
 			bee.global_position.y = 7.0
 			bee.global_position.x = stage.distance - 5.1
-		elif not wave._hard_gate:
+		elif not wave._hard_gate and not wave.roster_complete: # LOTE 12: the run-out after the walking robot uses ROSTER_RUN_OUT_SCROLL.
 			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL * BeeGardenToadEncounter.SCROLL_FACTOR) or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
@@ -385,20 +390,27 @@ func run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= 4, "Progression/max active wrong")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ROUTE_THREATS and wave.roster_complete and wave.boss == null, "Progression/max active wrong (roster level ends at the walking robot, no UFO)")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
-	for family in BeeLevel01Controller.LEVEL_HP:
-		if family == "OrganicAlien":
-			continue # NOCHE 01: UFO minion only (the harness destroys the UFO at once).
-		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing enemy family")
+	var roster_families := {}
+	for event: Dictionary in BeeLevel01Controller.EVENTS:
+		for family in event["units"]:
+			roster_families[family] = true
+		for zone_wave: Dictionary in event.get("arena", []):
+			for family in zone_wave["units"]:
+				roster_families[family] = true
+	for family in roster_families:
+		check(int(wave.spawned_by_family.get(family, 0)) > 0, "Missing roster family " + str(family))
+	for family in wave.spawned_by_family:
+		check(roster_families.has(family), "A family outside the Level 1 roster spawned: " + str(family))
 		spawned += int(wave.spawned_by_family[family])
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
-	check(planned == 149 and spawned == planned, "Not all %d units spawned (%d) (LOTE 11: route and combat-zone units included)" % [planned, spawned])
+	check(planned == 133 and spawned == planned, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

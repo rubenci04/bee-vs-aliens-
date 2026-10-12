@@ -8,15 +8,15 @@
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_mushroom_cannon.glb` | Hongo cañón | sí: asset_fauna.gd | 11822 | no | sí (2) | sobre presupuesto: enemigo 11822 > 5.000 (sin _lite);  |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_stag_beetle.glb` | Escarabajo ciervo | sí: asset_fauna.gd | 9952 | no | sí (1) | sobre presupuesto: enemigo 9952 > 5.000 (sin _lite);  |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/controlled_woodland_snail.glb` | Caracol | sí: asset_fauna.gd | 7748 | no | sí (1) | sobre presupuesto: enemigo 7748 > 5.000 (sin _lite);  |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01.glb` | Mosca común | no (solo laboratorio) | 4104 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01.glb` | Mosca común | sí: asset_fauna.gd | 4104 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01_liberado.glb` | Mosca común (liberada) | no (solo laboratorio) | 3776 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01.glb` | Mosca verde | no (solo laboratorio) | 4104 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01.glb` | Mosca verde | sí: asset_fauna.gd | 4104 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01_liberado.glb` | Mosca verde (liberada) | no (solo laboratorio) | 3776 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb` | Nube de moscas | no (solo laboratorio) | 4896 | no | sí (25) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb` | Nube de moscas | sí: asset_fauna.gd | 4896 | no | sí (25) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01_liberado.glb` | Nube de moscas (liberada) | no (solo laboratorio) | 4320 | no | sí (8) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb` | Gusano B | no (solo laboratorio) | 3636 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb` | Gusano B | sí: asset_fauna.gd | 3636 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01_liberado.glb` | Gusano B (liberado) | no (solo laboratorio) | 3360 | no | sí (1) | — |
-| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb` | Gusano A | no (solo laboratorio) | 4532 | no | sí (5) | — |
+| Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb` | Gusano A | sí: asset_fauna.gd | 4532 | no | sí (5) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01_liberado.glb` | Gusano A (liberado) | no (solo laboratorio) | 4256 | no | sí (1) | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/wasp_enemy_visual.glb` | Avispa | no (solo laboratorio) | 1014 | no | no | — |
 | Nivel 1 | enemies | `assets/models/levels/level_01_garden/enemies/wasp_mid_poly.glb` | Avispa | sí: bee_prototype/visuals/wasp_enemy_visual.tscn | 4294 | no | no | — |
@@ -27,9 +27,9 @@
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/garden_fence_module.glb` | — | sí: bee_level_01_asset_dressing.gd | 2404 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/garden_sapling.glb` | — | sí: bee_level_01_asset_dressing.gd | 7904 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/hollow_fallen_log.glb` | — | sí: bee_level_01_asset_dressing.gd, bee_level_02_lake_scenery.gd | 1972 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb` | Hongo de jardín | no (solo laboratorio) | 584 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb` | Hongo de jardín | no (solo laboratorio) | 1184 | no | no | — |
-| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb` | Hongo de jardín | no (solo laboratorio) | 584 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 584 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 1184 | no | no | — |
+| Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb` | Hongo de jardín | sí: bee_garden_mushroom.gd | 584 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_crescent_moon.glb` | — | sí: bee_level_01_asset_dressing.gd | 3692 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_star_cluster.glb` | — | sí: bee_level_01_asset_dressing.gd | 2640 | no | no | — |
 | Nivel 1 | environment | `assets/models/levels/level_01_garden/environment/sky_sun.glb` | — | sí: bee_level_01_asset_dressing.gd | 2208 | no | no | — |

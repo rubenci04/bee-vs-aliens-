@@ -22,6 +22,7 @@ var bee: BeePlayer
 var lines: Array[String] = []
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:

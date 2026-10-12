@@ -16,6 +16,7 @@ var bee: BeePlayer
 var boss: UfoBoss01
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -55,7 +56,7 @@ func reload(action: Callable) -> void:
 	bind()
 
 func to_boss_entry(distance := 352.0) -> void:
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	stage.distance = distance
 	stage._update_camera_and_bounds()
 	bee.global_position = Vector3(stage.distance - 3.2, 3.4, 0)
@@ -216,7 +217,7 @@ func run() -> void:
 	check(not stage.checkpoint.debug_label.visible, "DEBUG label visible in a normal run")
 	await reload(func(): stage.checkpoint.debug_jump_to_boss())
 	check(stage.checkpoint.debug_label.visible and stage.checkpoint.debug_active, "No DEBUG label after F9")
-	check(stage.distance >= 340.0 and wave.event_index == BeeLevel01Controller.EVENTS.size() and bee.bomb_charges == 2 and bee.spread_ammo == 0, "F9 must land at the boss start with Base weapon and 2 bombs")
+	check(stage.distance >= 340.0 and wave.event_index == BeeLevel01Controller.EVENTS_LEGACY.size() and bee.bomb_charges == 2 and bee.spread_ammo == 0, "F9 must land at the boss start with Base weapon and 2 bombs")
 	check(await wait_phase(UfoBoss01.State.PHASE_1, 900), "Boss did not start after F9")
 	await reload(func(): stage.checkpoint.restart_level(true))
 	check(not stage.checkpoint.debug_label.visible, "DEBUG label survived a full restart")

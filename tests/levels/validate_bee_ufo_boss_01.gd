@@ -17,6 +17,7 @@ var shots: Array[Dictionary] = []
 var peak_projectiles := 0
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -51,7 +52,7 @@ func load_level() -> void:
 
 ## Jump to the end of Level 01: every encounter consumed, camera near the sector end.
 func to_boss_entry(distance := 352.0) -> void:
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	stage.distance = distance
 	stage._update_camera_and_bounds()
 	bee.global_position = Vector3(stage.distance - 3.2, 3.4, 0)
@@ -255,7 +256,7 @@ func run() -> void:
 	await frames(2)
 	check(bee.is_defeated and not boss.is_physics_processing(), "Boss must freeze when Bee dies")
 	await load_after(func(): stage.checkpoint.restart_level(false))
-	check(stage.distance >= 352.0 and stage.distance < 353.0 and stage.checkpoint.checkpoint_active and wave.event_index == BeeLevel01Controller.EVENTS.size(), "Retry did not resume at the start of the boss fight (%.2f)" % stage.distance)
+	check(stage.distance >= 352.0 and stage.distance < 353.0 and stage.checkpoint.checkpoint_active and wave.event_index == BeeLevel01Controller.EVENTS_LEGACY.size(), "Retry did not resume at the start of the boss fight (%.2f)" % stage.distance)
 	await assert_clean("checkpoint retry")
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true

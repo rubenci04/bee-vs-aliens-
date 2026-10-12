@@ -7,6 +7,13 @@ const BOSS_ARENA_X := 340.5
 const DEBUG_KEY := KEY_F9
 const BEACON_COLOR := Color(0.96, 0.7, 0.22)
 @export var checkpoint_x := 190.0
+## Breakable rocks and (LOTE 12) the garden mushrooms: both are BreakableRock and both keep their broken state across a respawn.
+func _rock_nodes() -> Array[Node]:
+	var nodes: Array[Node] = []
+	nodes.append_array(get_tree().get_nodes_in_group("breakable_rocks"))
+	nodes.append_array(get_tree().get_nodes_in_group("garden_mushrooms"))
+	return nodes
+
 ## LOTE 7: second checkpoint, in act 4 after the third combat zone and the contaminated flower (X=266), before the 296 gate.
 @export var second_checkpoint_x := 281.0
 var second_checkpoint_active := false
@@ -156,7 +163,7 @@ func activate_checkpoint() -> void:
 	for crate in stage.get_node("Destructibles").get_children():
 		if crate.position.x < checkpoint_x and crate.is_destroyed:
 			broken.append(str(crate.name))
-	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+	for rock: BreakableRock in _rock_nodes():
 		if stage.is_ancestor_of(rock) and rock.global_position.x < checkpoint_x and rock.is_destroyed:
 			broken.append(str(rock.name))
 	snapshot = {"distance": checkpoint_x, "bee_position": Vector3(checkpoint_x, 5.4, 0),
@@ -195,7 +202,7 @@ func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_
 	for crate in stage.get_node("Destructibles").get_children():
 		if crate.position.x < limit and crate.is_destroyed:
 			broken.append(str(crate.name))
-	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+	for rock: BreakableRock in _rock_nodes():
 		if stage.is_ancestor_of(rock) and rock.global_position.x < limit and rock.is_destroyed:
 			broken.append(str(rock.name))
 	return {"distance": distance, "bee_position": bee_position,
@@ -271,7 +278,7 @@ func restore_snapshot() -> void:
 			crate.body.collision_layer = 0
 			crate.collider.set_deferred("disabled", true)
 			crate.hurtbox.set_deferred("monitorable", false)
-	for rock: BreakableRock in get_tree().get_nodes_in_group("breakable_rocks"):
+	for rock: BreakableRock in _rock_nodes():
 		if stage.is_ancestor_of(rock) and str(rock.name) in snapshot["broken"]:
 			rock.restore_broken()
 	for surface: ImpactSurface in get_tree().get_nodes_in_group("bee_destructibles"):

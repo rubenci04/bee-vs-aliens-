@@ -38,6 +38,7 @@ var bee: BeePlayer
 var lines: Array[String] = []
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -79,7 +80,7 @@ func _route_checks() -> void:
 	var units := 0
 	var families := {}
 	var zones := 0
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		for family in event["units"]:
 			units += 1
 			families[str(family)] = true
@@ -96,7 +97,7 @@ func _route_checks() -> void:
 		check(families.has(family), "Family %s vanished from the route" % family)
 	check(zones == 3, "Three combat zones (%d)" % zones)
 	check(BeeLevel01Controller.MAX_ON_SCREEN == 7 and BeeLevel01Controller.MAX_ON_SCREEN_ARENA == 10, "On-screen caps must be 7 / 10 (LOTE 11)")
-	var gate := BeeLevel01Controller.EVENTS.filter(func(e): return is_equal_approx(float(e["at"]), 254.0))
+	var gate := BeeLevel01Controller.EVENTS_LEGACY.filter(func(e): return is_equal_approx(float(e["at"]), 254.0))
 	check(gate.size() == 1 and bool(gate[0].get("hard", false)), "The X=254 hard gate must stay")
 	var checkpoints := stage.get_node("CheckpointQoL") as BeeCheckpointQoL
 	check(is_equal_approx(float(checkpoints.checkpoint_list()[0]), 190.0) and is_equal_approx(float(checkpoints.checkpoint_list()[1]), 281.0), "Checkpoints must stay at X=190 / 281 (%s)" % str(checkpoints.checkpoint_list()))

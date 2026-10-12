@@ -19,6 +19,7 @@ var bee: BeePlayer
 var only := ""
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
@@ -128,7 +129,7 @@ func test_run() -> void:
 			if not seen.has(id):
 				seen[id] = wave._clock
 				var parts := str(unit.name).split("_")
-				var event: Dictionary = BeeLevel01Controller.EVENTS[int(parts[1])]
+				var event: Dictionary = BeeLevel01Controller.EVENTS_LEGACY[int(parts[1])]
 				var slot := int(parts[2])
 				var planned: Array = event.get("y", [])
 				# The spider drops in from above the top edge (GARDEN IDENTITY 04): no formation height, like ground units.
@@ -169,8 +170,8 @@ func test_checkpoint() -> void:
 	await reloaded(old)
 	bind(current_scene)
 	check(wave.current_act == 3 and wave.fauna_hint_shown, "Checkpoint must resume in act 3 with the fauna lesson learnt")
-	for index in range(wave.event_index, BeeLevel01Controller.EVENTS.size()):
-		var event: Dictionary = BeeLevel01Controller.EVENTS[index]
+	for index in range(wave.event_index, BeeLevel01Controller.EVENTS_LEGACY.size()):
+		var event: Dictionary = BeeLevel01Controller.EVENTS_LEGACY[index]
 		check(float(event["at"]) >= 190.0, "An event before the checkpoint would replay")
 		check(str(event.get("moment", "")) != "opening_can" and str(event.get("moment", "")) != "human_aftermath", "An earlier moment would replay")
 	check(wave.human.current_phase == GiantHumanCrossingHazard.Phase.EXITED, "The Giant Human must not repeat")

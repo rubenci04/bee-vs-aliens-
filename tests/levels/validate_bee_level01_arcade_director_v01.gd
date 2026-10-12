@@ -20,6 +20,7 @@ var bee: BeePlayer
 var only := ""
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -53,7 +54,7 @@ func reloaded(old: Node) -> void:
 # --- static structure ---------------------------------------------------------------------------------
 
 func test_static() -> void:
-	var events := BeeLevel01Controller.EVENTS
+	var events := BeeLevel01Controller.EVENTS_LEGACY
 	var acts := BeeLevel01Controller.ACT_STARTS
 	check(acts.size() == 5 and acts[0] == 0.0, "Five acts expected")
 	var previous_at := -1.0
@@ -186,7 +187,7 @@ func test_run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size(), "Not every event ran")
+	check(wave.event_index == BeeLevel01Controller.EVENTS_LEGACY.size(), "Not every event ran")
 	check(moments_seen == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
 	check(acts_seen.has(1) and acts_seen.has(2) and acts_seen.has(3) and acts_seen.has(4) and acts_seen.has(5), "Acts not all reached: " + str(acts_seen.keys()))
 	check(peak <= 14, "Projectile ceiling exceeded during the level (%d)" % peak)
@@ -194,7 +195,7 @@ func test_run() -> void:
 	for family in wave.spawned_by_family:
 		spawned += int(wave.spawned_by_family[family])
 	var planned := 0
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 7: combat-zone waves.
 			planned += (zone_wave["units"] as Array).size()
@@ -203,7 +204,7 @@ func test_run() -> void:
 
 func test_checkpoint() -> void:
 	var expected := 0
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		if float(event["at"]) < 190.0:
 			expected += 1
 	stage.distance = 190.05

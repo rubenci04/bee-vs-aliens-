@@ -19,6 +19,7 @@ var bee: BeePlayer
 var report: Array[String] = []
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -62,8 +63,8 @@ func test_human() -> void:
 	check(not BeeLevel01Controller.GIANT_HUMAN_ENABLED and not BeeLevel01Controller.giant_human_enabled, "The Giant Human must be switched off")
 	check(not wave.human.visible, "Switched-off human must be hidden")
 	var human_index := -1
-	for i in BeeLevel01Controller.EVENTS.size():
-		if bool(BeeLevel01Controller.EVENTS[i].get("human", false)):
+	for i in BeeLevel01Controller.EVENTS_LEGACY.size():
+		if bool(BeeLevel01Controller.EVENTS_LEGACY[i].get("human", false)):
 			human_index = i
 	wave.event_index = human_index
 	wave._pending.clear()

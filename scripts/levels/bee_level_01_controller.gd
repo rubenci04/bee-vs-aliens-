@@ -19,6 +19,7 @@ const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
 const POWERUP_PICKUP = preload("res://scenes/bee_prototype/bee_powerup_pickup.tscn")
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 const SWARM = preload("res://scenes/levels/popcorn_drone.tscn")
+const TURTLE = preload("res://scenes/levels/garden_turtle.tscn") # LOTE 12: garden turtle tank (BeeGardenTurtle).
 ## LOTE 6 — Codex GLB fauna (scripts/levels/asset_fauna.gd): family name -> scene.
 const ASSET_FAUNA := {
 	"Mosquito": preload("res://scenes/levels/asset_fauna/mosquito.tscn"), "Ladybird": preload("res://scenes/levels/asset_fauna/ladybird.tscn"),
@@ -26,15 +27,20 @@ const ASSET_FAUNA := {
 	"Ant": preload("res://scenes/levels/asset_fauna/ant.tscn"), "StagBeetle": preload("res://scenes/levels/asset_fauna/stag_beetle.tscn"),
 	"Snail": preload("res://scenes/levels/asset_fauna/snail.tscn"), "MushroomCannon": preload("res://scenes/levels/asset_fauna/mushroom.tscn"),
 	"SeedCarrier": preload("res://scenes/levels/asset_fauna/seed_carrier.tscn"),
+	# LOTE 12 · ETAPA 2: the Level 1 roster species.
+	"FlyCommon": preload("res://scenes/levels/asset_fauna/fly_common.tscn"), "FlyGreen": preload("res://scenes/levels/asset_fauna/fly_green.tscn"),
+	"FlyCloud": preload("res://scenes/levels/asset_fauna/fly_cloud.tscn"), "WormA": preload("res://scenes/levels/asset_fauna/worm_rose.tscn"),
+	"WormB": preload("res://scenes/levels/asset_fauna/worm_compost.tscn"),
 	"AlienFighter": preload("res://scenes/levels/asset_fauna/fighter.tscn"), # NOCHE 01 · ETAPA 2: Codex interceptor (dusk).
 }
 ## NOCHE 01 — animals (freed, never killed) counted for "LIBERADOS n/N"; everything else is technology and explodes.
-const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail"]
+const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail",
+		"FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB", "Turtle"]
 ## NOCHE 01 · ETAPA 2: Level 01 enemies fire the Codex toon alien bolt (same AlienEnemyProjectile rules, new look).
 const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
 const BOSS_HEAL_BELOW := 0.7 # Fraction of max HP under which the honey jar appears before the UFO.
 const TOON_ALIEN_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
-const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter"]
+const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter", "FlyCommon", "FlyGreen", "FlyCloud"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
 ## Camera-relative X where a spider drops in from above the top edge when the event gives none (inside the screen).
@@ -60,7 +66,7 @@ const MAX_ON_SCREEN_ARENA := 10 # LOTE 11: 8 -> 10 in combat zones.
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 16
 ## Denser route volleys trade burst damage for more dodge decisions; UFO damage is unchanged.
-const ROUTE_DAMAGE_SCALE := 0.22
+const ROUTE_DAMAGE_SCALE := 0.8
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
 const MIN_FORMATION_GAP := 0.2
 ## REBUILD 03: Wasp implant sting / overload are introduced progressively (see `_spawn`).
@@ -85,7 +91,8 @@ const POST_BOSS_SCROLL := 2.0
 ## Families not listed use soft_pressure_seconds. Popcorn (Swarm) is a crossing pattern by design and keeps its paths.
 const CAMERA_TIME := {"Wasp": 12.0, "Probe": 13.0, "EyeDrone": 13.0, "Speeder": 10.0, "OrganicAlien": 13.0, "Walker": 16.0,
 		"Turret": 14.0, "Dragonfly": 14.0, "Spider": 12.0, "Mosquito": 10.0, "Ladybird": 15.0, "WaveDragonfly": 12.0, "Moth": 13.0,
-		"Ant": 12.0, "StagBeetle": 14.0, "Snail": 15.0, "MushroomCannon": 13.0, "SeedCarrier": 22.0, "AlienFighter": 12.0}
+		"Ant": 12.0, "StagBeetle": 14.0, "Snail": 15.0, "MushroomCannon": 13.0, "SeedCarrier": 22.0, "AlienFighter": 12.0,
+		"FlyCommon": 10.0, "FlyGreen": 11.0, "FlyCloud": 11.0, "WormA": 14.0, "WormB": 12.0, "Turtle": 24.0}
 ## LOTE 7 — COMBAT ZONES ("arena" key in EVENTS): the scroll creeps at ARENA_SCROLL while the zone plays its waves one after
 ## another (next wave when the field has been clear ARENA_WAVE_GAP s, or after ARENA_WAVE_MAX s), then a breather of
 ## BREATHER_SECONDS with no new encounters lets the landscape scroll by. ARENA_MAX_SECONDS is a safety cap.
@@ -95,7 +102,7 @@ const ARENA_WAVE_CADENCE := 6.0
 const ARENA_WAVE_MAX := 9.0
 const ARENA_MAX_SECONDS := 36.0
 ## LOTE 9: with 2 waves a zone could end in ~14 s: it now lasts at least this long (the scroll keeps creeping).
-const ARENA_MIN_SECONDS := 22.0
+const ARENA_MIN_SECONDS := 28.0
 const BREATHER_SECONDS := 1.0 # LOTE 10: short transition; route patrols maintain pressure.
 ## BOSS V2: never more than this many minions alive; they fly out of the saucer in MINION_LAUNCH_SECONDS.
 const MAX_BOSS_MINIONS := 2
@@ -121,11 +128,13 @@ const MINION_LAUNCH_SECONDS := 0.7
 ## BEFORE: Wasp 44, Probe 80, EyeDrone 40, Speeder 30, Walker 120 (showcase 150), Dragonfly 60, Spider 90, Ladybird 130,
 ## WaveDragonfly 56, Moth 60, Ant 44, StagBeetle 110, Snail 100, MushroomCannon 60, SeedCarrier 240, AlienFighter 60.
 const LEVEL_HP = {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80,
-		"Mosquito": 36, "Ladybird": 70, "WaveDragonfly": 64, "Moth": 70, "Ant": 64, "StagBeetle": 120, "Snail": 120, "MushroomCannon": 70, "SeedCarrier": 220, "AlienFighter": 70}
+		"Mosquito": 36, "Ladybird": 70, "WaveDragonfly": 64, "Moth": 70, "Ant": 64, "StagBeetle": 120, "Snail": 120, "MushroomCannon": 70, "SeedCarrier": 220, "AlienFighter": 70,
+		"FlyCommon": 30, "FlyGreen": 40, "FlyCloud": 24, "WormA": 70, "WormB": 60, "Turtle": 220} # LOTE 12: roster species (fly cloud <= 32: the bomb clears it)
 const SHOWCASE_HP := 130
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
 		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM",
-		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE", "AlienFighter": &"MEDIUM"}
+		"Mosquito": &"LIGHT", "Ladybird": &"HEAVY", "WaveDragonfly": &"LIGHT", "Moth": &"MEDIUM", "Ant": &"LIGHT", "StagBeetle": &"HEAVY", "Snail": &"MEDIUM", "MushroomCannon": &"MEDIUM", "SeedCarrier": &"SHOWCASE", "AlienFighter": &"MEDIUM",
+		"FlyCommon": &"LIGHT", "FlyGreen": &"LIGHT", "FlyCloud": &"POPCORN", "WormA": &"MEDIUM", "WormB": &"MEDIUM", "Turtle": &"HEAVY"}
 # Level-only tuning (reusable scenes and the family POCs keep their values). Damage, projectile speed and telegraph
 # (windup) are never touched; HP is global-unchanged. BEFORE (Arcade Pressure pass 01) -> AFTER (Combat Pattern pass 02):
 #   Wasp      2 passes, recovery 0.9 s            -> 3 passes, recovery 1.1 s, stalk 2.2/2.9/3.6 s on lanes (no simultaneous attacks)
@@ -171,6 +180,12 @@ const LEVEL_TUNING = {
 	# their CAMERA_TIME instead of leaving after a fixed count (the director retires them).
 	"Dragonfly": {"max_passes": 99},
 	"Spider": {"attacks": 99},
+	# LOTE 12: roster species attack more often (shorter rests; windups and shot speed untouched).
+	"FlyCommon": {"idle_time": 0.5, "recovery_time": 0.45},
+	"FlyGreen": {"idle_time": 0.6, "recovery_time": 0.5},
+	"FlyCloud": {"idle_time": 0.7, "recovery_time": 0.6},
+	"WormA": {"idle_time": 0.8, "recovery_time": 0.9},
+	"WormB": {"idle_time": 0.6, "recovery_time": 0.6},
 	"Walker": {"recovery_time": 0.6, "burst_shots": 3, "burst_gap": 0.35, "walk_speed": 2.4, "reposition_distance": 2.4, "detection_range": 10.0, "stay_on_screen": true, "sweep_every": 2, "low_burst": true},
 }
 # ARCADE CONTENT & SPECTACLE REBUILD 02 — EVENTS V3 (on top of the Transformation Pass EVENTS V2).
@@ -192,7 +207,8 @@ const FAN_FROM_X := 96.0
 ## behind (`sides`, `speed`, `amplitude`) and kamikaze popcorn (0.5 s warning). They fill every stretch that was empty for >5 s.
 ## LOTE 10 B: 107 units, no new families. Small route patrols at <=8m intervals plus three mixed waves
 ## in each zone; moments and the gates at X=254/296/340 and checkpoints X=190/281 remain.
-const EVENTS = [
+## LOTE 12: the pre-roster table (Lote 11 and before) is kept intact; LEVEL01_ROSTER_ONLY selects which one plays.
+const EVENTS_LEGACY = [
 	# ACT 1 — AWAKENING (intensity 1 -> 2)
 	{"at": 1.5, "act": 1, "label": "POPCORN · OLA SENOIDAL", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path":"sine","amplitude": 1.3, "delays": [0.0, 0.4, 0.8], "y": [4.2, 4.2, 4.2]},
 	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
@@ -296,6 +312,106 @@ const EVENTS = [
 	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA Y AVISPA", "units": ["Walker", "Probe", "Wasp"], "hard": true, "delays": [0.0, 0.8, 2.2]},
 ]
 
+## LOTE 12 · ETAPA 2 — LEVEL 1 ROSTER ONLY (docs/art/LEVEL_01_ROSTER.md). Garden animals and insects, the garden turtle and a single
+## technology enemy (the walking robot). Arc: lawn -> flower bed (zone 1) -> checkpoint 1 as a BREATHING VALLEY (X~186-208, up to ~20 s
+## without threats, healing + bomb supplies) -> vegetable patch (zone 2, turtle tank) -> shade under the leaves (zone 3) -> checkpoint 2 ->
+## the walking robot with insect escorts, which ends the level in this stage. Garden mushrooms are placed by BeeLevel01GardenMushrooms.
+## Species roles: common fly = erratic soft ram; green fly = zigzag + slow aimed drops; fly cloud = group unit (the bomb clears it);
+## wasp = fan sting + dive; ladybird = shell-open sweep; ant = column lunge; snail = slow spitter; worm A = erupts from a marked
+## spot; worm B = low crawling lunge; stag beetle = charge with warning; hanging spider = vertical thread lane; turtle = slow tank
+## with a ground-ring shell slam.
+const EVENTS_ROSTER = [
+	# ACT 1 — LAWN (day, gentle): common flies, ants, ladybirds
+	{"at": 2.0, "act": 1, "label": "CÉSPED · PRIMERA MOSCA", "units": ["FlyCommon"], "y": [4.4]},
+	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
+	{"at": 9.0, "act": 1, "label": "CÉSPED · PAREJA DE MOSCAS", "units": ["FlyCommon", "FlyCommon"], "formation": "pair", "delays": [0.0, 1.0], "y": [3.0, 5.0]},
+	{"at": 15.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"]},
+	{"at": 20.0, "act": 1, "label": "MARIQUITA · PRESENTACIÓN", "units": ["Ladybird"], "y": [4.2]},
+	{"at": 25.0, "act": 1, "label": "MOSCAS · FORMACIÓN EN V", "units": ["FlyCommon", "FlyCommon", "FlyCommon"], "formation": "v", "delays": [0.0, 0.4, 0.8], "y": [4.0, 5.0, 3.0]},
+	{"at": 32.0, "act": 1, "label": "CÉSPED · HORMIGA Y MOSCA", "units": ["Ant", "FlyCommon"], "delays": [0.0, 1.2], "y": [0.0, 4.6]},
+	{"at": 38.0, "act": 1, "label": "CÉSPED · MARIQUITA Y MOSCA", "units": ["Ladybird", "FlyCommon"], "formation": "staggered", "delays": [0.0, 0.8], "y": [3.4, 5.2]},
+	{"at": 44.0, "act": 1, "label": "MOSCAS · TENAZA", "units": ["FlyCommon", "FlyCommon"], "formation": "top_bottom", "delays": [0.0, 0.5], "y": [2.6, 5.2]},
+	{"at": 50.0, "act": 1, "label": "HORMIGAS · COLUMNA", "units": ["Ant", "Ant"], "formation": "pair", "delays": [0.0, 1.4]},
+	{"at": 56.0, "act": 1, "label": "CÉSPED · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 1.0], "y": [4.6, 0.0]},
+	{"at": 62.0, "act": 1, "label": "MOSCAS · ESCALONADAS", "units": ["FlyCommon", "FlyCommon", "FlyCommon"], "formation": "staggered", "delays": [0.0, 0.8, 1.6], "y": [5.0, 3.4, 4.2]},
+	# ACT 2 — FLOWER BED (wasps, green flies, the fly cloud) and combat zone 1
+	{"at": 68.0, "act": 2, "label": "MACIZO · PRIMERA AVISPA", "units": ["Wasp"], "y": [4.4]},
+	{"at": 73.0, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.8]},
+	{"at": 78.0, "act": 2, "label": "MACIZO · NUBE DE MOSCAS", "units": ["FlyCloud"], "y": [4.2]},
+	{"at": 84.0, "act": 2, "label": "MACIZO · AVISPA Y MOSCA VERDE", "units": ["Wasp", "FlyGreen"], "formation": "staggered", "delays": [0.0, 1.0], "y": [2.8, 5.0]},
+	{"at": 90.0, "act": 2, "label": "MACIZO · MARIQUITA Y MOSCAS", "units": ["Ladybird", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [4.2, 5.2, 2.8]},
+	{"at": 96.0, "act": 2, "label": "MACIZO · NUBE Y AVISPA", "units": ["FlyCloud", "Wasp"], "delays": [0.0, 1.4], "y": [3.4, 5.2]},
+	{"at": 102.0, "act": 2, "label": "MACIZO · DOS MOSCAS VERDES", "units": ["FlyGreen", "FlyGreen"], "formation": "top_bottom", "delays": [0.0, 0.6], "y": [5.4, 2.4]},
+	{"at": 107.0, "act": 2, "label": "MACIZO · MOSCA ERRÁTICA", "units": ["FlyCommon"], "y": [4.2]},
+	{"at": 112.0, "act": 2, "label": "MACIZO · AVISPA Y MOSCA VERDE", "units": ["Wasp", "FlyGreen"], "delays": [0.0, 0.8], "y": [5.2, 2.8],
+			"arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
+		{"units": ["FlyCommon", "Wasp", "FlyCommon"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 3.0, 4.0]},
+		{"units": ["FlyCloud", "FlyGreen", "Ladybird"], "delays": [0.0, 1.0, 1.8], "y": [4.4, 5.2, 3.4]},
+		{"units": ["Ant", "Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.0], "y": [0.0, 5.0, 3.0, 4.4]},
+		{"units": ["FlyGreen", "FlyGreen", "FlyCloud"], "delays": [0.0, 0.6, 1.6], "y": [5.2, 2.8, 4.4]},
+		{"units": ["Wasp", "Ladybird", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.8, 1.6, 2.2], "y": [4.8, 3.6, 5.2, 2.8]},
+	]},
+	{"at": 122.0, "act": 2, "label": "MACIZO · PAREJA DE MOSCAS", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 0.8], "y": [4.4, 2.8]},
+	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
+	{"at": 130.0, "act": 2, "label": "MACIZO · AVISPA Y MOSCA VERDE", "units": ["Wasp", "FlyGreen"], "delays": [0.0, 1.0], "y": [3.0, 5.2]},
+	{"at": 136.0, "act": 2, "label": "MACIZO · NUBE DE MOSCAS", "units": ["FlyCloud"], "y": [4.0]},
+	# ACT 3 — the flower bed tightens before the breathing valley
+	{"at": 141.0, "act": 3, "label": "MACIZO · MARIQUITA Y AVISPA", "units": ["Ladybird", "Wasp"], "delays": [0.0, 1.0], "y": [4.4, 3.0]},
+	{"at": 147.0, "act": 3, "label": "MOSCAS · V MIXTA", "units": ["FlyGreen", "FlyCommon", "FlyGreen"], "formation": "v", "delays": [0.0, 0.5, 1.0], "y": [4.0, 5.2, 2.8]},
+	{"at": 153.0, "act": 3, "label": "MACIZO · NUBE Y MOSCA", "units": ["FlyCloud", "FlyCommon"], "delays": [0.0, 1.2], "y": [3.6, 5.0]},
+	{"at": 159.0, "act": 3, "label": "MACIZO · PAREJA DE AVISPAS", "units": ["Wasp", "Wasp"], "formation": "pair", "delays": [0.0, 1.2], "y": [4.8, 2.8]},
+	{"at": 165.0, "act": 3, "label": "MACIZO · TRES ESPECIES", "units": ["Ladybird", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [4.2, 5.2, 3.0]},
+	{"at": 171.0, "act": 3, "label": "MACIZO · ÚLTIMA OLEADA", "units": ["Wasp", "FlyCloud"], "delays": [0.0, 1.2], "y": [3.4, 4.8]},
+	{"at": 179.0, "act": 3, "label": "MACIZO · MOSCAS DE DESPEDIDA", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 1.0], "y": [4.4, 3.0]},
+	# CHECKPOINT 1 (X=190) — BREATHING VALLEY: no events from X=179 to X=205 (healing and bomb supplies on the way, see the stage).
+	# ACT 4 — VEGETABLE PATCH: worms, snail, turtle, stag beetle; combat zone 2
+	{"at": 205.0, "act": 4, "label": "HUERTA · GUSANO", "units": ["WormA"]},
+	{"at": 214.0, "act": 4, "label": "HUERTA · GUSANO Y MOSCA", "units": ["WormB", "FlyCommon"], "delays": [0.0, 1.0], "y": [0.0, 4.4]},
+	{"at": 220.0, "act": 4, "label": "HUERTA · CARACOL", "units": ["Snail"],
+			"arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
+		{"units": ["WormA", "WormB"], "delays": [0.0, 1.2]},
+		{"units": ["StagBeetle", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [0.0, 5.0, 3.2]},
+		{"units": ["WormB", "WormA", "FlyCloud"], "delays": [0.0, 1.0, 1.8], "y": [0.0, 0.0, 4.2]},
+		{"units": ["WormA", "WormA", "FlyGreen"], "delays": [0.0, 1.4, 2.2], "y": [0.0, 0.0, 4.6]},
+		{"units": ["StagBeetle", "WormB", "FlyCloud", "FlyCommon"], "delays": [0.0, 0.8, 1.6, 2.4], "y": [0.0, 0.0, 4.2, 3.0]},
+	]},
+	{"at": 229.0, "act": 4, "label": "HUERTA · MOSCA ERRÁTICA", "units": ["FlyCommon"], "y": [4.2]},
+	{"at": 232.0, "act": 4, "label": "TORTUGA · TANQUE DE JARDÍN", "units": ["Turtle"], "hard": true},
+	{"at": 238.0, "act": 4, "label": "HUERTA · GUSANO Y AVISPA", "units": ["WormA", "Wasp"], "delays": [0.0, 1.2], "y": [0.0, 4.2]},
+	{"at": 244.0, "act": 4, "label": "HUERTA · ESCARABAJO Y MOSCAS", "units": ["StagBeetle", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [0.0, 4.8, 3.0]},
+	{"at": 250.0, "act": 4, "label": "HUERTA · CARACOL Y GUSANO", "units": ["Snail", "WormB"], "delays": [0.0, 1.0]},
+	# SHADE UNDER THE LEAVES (late afternoon): hanging spiders, beetles, ants; combat zone 3
+	{"at": 252.0, "act": 4, "label": "SOMBRA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.4]},
+	{"at": 255.0, "act": 4, "label": "SOMBRA · ARAÑA COLGANTE", "units": ["Spider"], "x": [1.2],
+			"arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
+		{"units": ["Ant", "StagBeetle"], "delays": [0.0, 1.2]},
+		{"units": ["Spider", "Wasp", "FlyGreen"], "delays": [0.0, 0.9, 1.8], "x": [0.6, 0.0, 0.0], "y": [0.0, 4.6, 3.2]},
+		{"units": ["MushroomCannon", "Ladybird", "Ant"], "delays": [0.0, 1.0, 2.0], "y": [0.0, 4.6, 0.0]},
+		{"units": ["Spider", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.9, 1.7], "x": [0.6, 0.0, 0.0], "y": [0.0, 4.4, 2.8]},
+		{"units": ["StagBeetle", "Wasp", "Ant", "FlyGreen"], "delays": [0.0, 0.8, 1.6, 2.4], "y": [0.0, 4.6, 0.0, 3.4]},
+	]},
+	{"at": 268.0, "act": 4, "label": "SOMBRA · HORMIGAS Y AVISPA", "units": ["Ant", "Ant", "Wasp"], "delays": [0.0, 1.2, 2.0], "y": [0.0, 0.0, 4.4]},
+	{"at": 273.0, "act": 4, "label": "SOMBRA · ARAÑA Y MOSCA", "units": ["Spider", "FlyCommon"], "x": [0.6, 0.0], "delays": [0.0, 1.0], "y": [0.0, 4.2]},
+	{"at": 277.0, "act": 4, "label": "SOMBRA · MARIQUITA Y MOSCA VERDE", "units": ["Ladybird", "FlyGreen"], "delays": [0.0, 1.0], "y": [4.2, 5.0]},
+	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
+	# CHECKPOINT 2 (X=281) — the walking robot (gate at X=294) with insect escorts closes the level (hard gate, never overlapping soft actors).
+	{"at": 287.0, "act": 4, "label": "SOMBRA · DOS MOSCAS", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 1.0], "y": [4.4, 3.0]},
+	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · ESCOLTA DE INSECTOS", "units": ["Wasp", "Walker", "FlyCommon", "Wasp", "FlyGreen"], "hard": true,
+			"delays": [0.0, 0.3, 3.0, 6.0, 8.0], "y": [4.4, 0.0, 5.0, 3.0, 4.0]},
+]
+
+## LOTE 12 · ETAPA 2: Level 1 plays only its roster (docs/art/LEVEL_01_ROSTER.md). false restores the old table, with the alien enemies,
+## the frog scale event, the fireflies and the UFO (all their code is intact; the UFO belongs to Level 7, the frog to Level 2).
+const LEVEL01_ROSTER_ONLY := true
+const EVENTS = EVENTS_ROSTER if LEVEL01_ROSTER_ONLY else EVENTS_LEGACY
+## Runtime switch (tests of the legacy flow set it to false before loading the level, like `giant_human_enabled`).
+static var roster_only := LEVEL01_ROSTER_ONLY
+
+## The table that plays now (EVENTS is the default one, for static references).
+static func events_table() -> Array:
+	return EVENTS_ROSTER if roster_only else EVENTS_LEGACY
+
+
 @export var show_debug_labels := false # Internal event names ("JARDÍN · AVISPA"...) only for development.
 @export var group_delay := 0.8
 @export var soft_pressure_seconds := 14.0
@@ -378,11 +494,11 @@ func _physics_process(delta: float) -> void:
 		return
 	if _clock < _breather_until:
 		return # LOTE 7: breather after a combat zone - landscape, no new encounter.
-	if event_index >= EVENTS.size():
+	if event_index >= events_table().size():
 		if active_units.is_empty() and _pending.is_empty() and swarm_units.is_empty() and _swarm_pending.is_empty():
 			_advance_boss(delta) # Level complete only after the UFO is destroyed.
 		return
-	var event: Dictionary = EVENTS[event_index]
+	var event: Dictionary = events_table()[event_index]
 	if stage.distance < float(event["at"]) or not _pending.is_empty():
 		return
 	if bool(event.get("human", false)) and not giant_human_enabled:
@@ -559,8 +675,10 @@ func _spawn(request: Dictionary) -> void:
 		"Walker": scene = WALKER
 		"Dragonfly": scene = DRAGONFLY
 		"Swarm": scene = SWARM
+		"Turtle": scene = TURTLE
 		"Spider": scene = SPIDER
-		"Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier", "AlienFighter": scene = ASSET_FAUNA[family]
+		"Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail", "MushroomCannon", "SeedCarrier", "AlienFighter", \
+		"FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB": scene = ASSET_FAUNA[family]
 		_: return
 	var unit := scene.instantiate() as Node3D
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
@@ -694,7 +812,7 @@ func _retire_soft_units(delta: float) -> void:
 			continue
 		# REBUILD 02: a ground unit left behind the left edge is out of play at once (it can never come back on its
 		# own and would hold the next gate with an empty screen).
-		var left_behind: bool = (unit is GroundWalkerEnemy or unit is GroundTurretEnemy or (unit is AssetFauna and (unit as AssetFauna).is_ground())) \
+		var left_behind: bool = (unit is GroundWalkerEnemy or unit is GroundTurretEnemy or (unit.has_method("is_ground") and bool(unit.call("is_ground")))) \
 				and unit.global_position.x < stage.camera.global_position.x - BeeLevel01Framing.half_width_min(BeeLevel01Framing.DESIGN_ASPECT) - 0.8
 		if left_behind or _clock - float(unit.get_meta("level_born")) >= camera_time(str(unit.name).get_slice("_", 0)):
 			if not bool(unit.get_meta("level_retreat")):
@@ -740,13 +858,13 @@ func is_complete() -> bool:
 func resume_after_checkpoint(progress: float) -> void:
 	# New scene: no actors/pending shots to serialize. Earlier events are consumed.
 	event_index = 0
-	while event_index < EVENTS.size() and float(EVENTS[event_index]["at"]) < progress:
+	while event_index < events_table().size() and float(events_table()[event_index]["at"]) < progress:
 		event_index += 1
 	current_act = 1
 	for index in ACT_STARTS.size():
 		if progress >= float(ACT_STARTS[index]):
 			current_act = index + 1
-	for event: Dictionary in EVENTS:
+	for event: Dictionary in events_table():
 		if "Dragonfly" in event["units"] and float(event["at"]) < progress:
 			fauna_hint_shown = true # Already learnt before the checkpoint.
 	encounter_label = "CHECKPOINT · SEGUNDA MITAD"
@@ -771,6 +889,9 @@ func freeze_enemies() -> void:
 
 func _advance_boss(delta: float) -> void:
 	if boss_defeated:
+		return
+	if roster_only:
+		_finish_roster_level() # LOTE 12: no UFO in Level 1; the walking robot closes the level.
 		return
 	if boss == null:
 		if _boss_breather_left < 0.0:
@@ -816,6 +937,19 @@ func _on_boss_defeated(defeated_boss: UfoBoss01) -> void:
 	boss = null
 	_complete = true
 	stage.scroll_speed = POST_BOSS_SCROLL # Short roll to the sector end, then SECTOR DESPEJADO.
+	wave_completed.emit()
+
+## LOTE 12: Level 1 without the UFO: the last encounter (the walking robot) is cleared -> the sector completes after a short run-out.
+const ROSTER_RUN_OUT_SCROLL := 3.2
+var roster_complete := false
+
+func _finish_roster_level() -> void:
+	if _complete:
+		return
+	roster_complete = true
+	_complete = true
+	stage.scroll_speed = ROSTER_RUN_OUT_SCROLL
+	encounter_label = "RUTA DESPEJADA"
 	wave_completed.emit()
 
 func boss_active() -> bool:
@@ -893,7 +1027,7 @@ func _on_boss_summon(family: StringName, count: int) -> void:
 		var gate: Array = gates[minion_gate_index % gates.size()]
 		minion_gate_index += 1
 		var free_slot: Vector2 = gate[1]
-		_spawn({"family": str(family), "slot": i, "event": EVENTS.size() - 1, "hard": true, "y": free_slot.y, "minion": true,
+		_spawn({"family": str(family), "slot": i, "event": events_table().size() - 1, "hard": true, "y": free_slot.y, "minion": true,
 				"launch_from": gate[0], "launch_slot": free_slot})
 		if not active_units.is_empty():
 			active_units.back().set("laser_every", 0)

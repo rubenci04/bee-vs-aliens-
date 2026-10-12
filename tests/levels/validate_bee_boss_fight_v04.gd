@@ -28,6 +28,7 @@ var trace := false
 var use_spread := false
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	report_only = "report" in OS.get_cmdline_user_args()
 	trace = "trace" in OS.get_cmdline_user_args()
 	call_deferred("run")
@@ -90,7 +91,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 	stage.scroll_speed = 0.0
 	stage.distance = 340.0
 	stage._update_camera_and_bounds()
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	for unit in wave.active_units:
 		unit.queue_free()
 	wave.active_units.clear()

@@ -8,6 +8,7 @@ var qol: BeeCheckpointQoL
 var failed := false
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	call_deferred("run")
 
@@ -216,7 +217,7 @@ func run() -> void:
 ## First event after the checkpoint (X=190) in the current event table (EVENTS V2 changed the count).
 func checkpoint_event() -> int:
 	var index := 0
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		if float(event["at"]) < 190.0:
 			index += 1
 	return index

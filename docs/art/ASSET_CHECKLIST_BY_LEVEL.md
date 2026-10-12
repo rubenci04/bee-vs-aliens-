@@ -9,21 +9,21 @@ Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITOR
 | Unidad | Estado | Archivo / código | Nota |
 |---|---|---|---|
 | Mariquita | ✅ | `enemies/controlled_flying_ladybird` (+ `_lite`) | el juego usa la versión completa (9.384 tris) |
-| Mosca común | ⚠️ | `enemies/lvl01_enemy_fly_common_v01` (+ liberada) | falta escena jugable, IA, HP |
-| Mosca verde | ⚠️ | `enemies/lvl01_enemy_fly_green_v01` (+ liberada) | falta escena jugable, IA, gota apuntada |
-| Nube de moscas | ⚠️ | `enemies/lvl01_enemy_fly_swarm_v01` (+ liberada) | falta unidad de grupo jugable |
+| Mosca común | ✅ | `enemies/lvl01_enemy_fly_common_v01` (+ liberada) | `AssetFauna` `fly_common` (Lote 12) |
+| Mosca verde | ✅ | `enemies/lvl01_enemy_fly_green_v01` (+ liberada) | `fly_green`: zigzag y gotas lentas apuntadas |
+| Nube de moscas | ✅ | `enemies/lvl01_enemy_fly_swarm_v01` (+ liberada) | `fly_cloud`: unidad de grupo, la bomba la limpia |
 | Avispa | ✅ | `enemies/wasp_mid_poly`, `wasp_enemy.tscn` | |
 | Hormiga | ✅ | `enemies/controlled_ant` (+ `_lite`) | |
 | Caracol | ✅ | `enemies/controlled_woodland_snail` | 7.748 tris, sin `_lite` |
-| Gusano A (rosado) | ⚠️ | `enemies/lvl01_enemy_worm_rose_v01` (+ liberado) | falta emerger con marca, escena, IA |
-| Gusano B (compost) | ⚠️ | `enemies/lvl01_enemy_worm_compost_v01` (+ liberado) | falta patrón propio, escena, IA |
+| Gusano A (rosado) | ✅ | `enemies/lvl01_enemy_worm_rose_v01` (+ liberado) | `worm_rose`: emerge con marca de 1 s |
+| Gusano B (compost) | ✅ | `enemies/lvl01_enemy_worm_compost_v01` (+ liberado) | `worm_compost`: embestida a ras de suelo |
 | Escarabajo ciervo | ✅ | `enemies/controlled_stag_beetle` | 9.952 tris, sin `_lite` |
-| Hongos de jardín | ⚠️ | `environment/lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | falta destructible que suelta polen |
+| Hongos de jardín | ✅ | `environment/lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | `BeeGardenMushroom`: destructibles que sueltan polen |
 | Hongo cañón | ✅ | `enemies/controlled_mushroom_cannon` | 11.822 tris, sin `_lite` |
 | Araña colgante | ✅ / ⚠️ | nodo `controlled_spider.tscn`; GLB `enemies/controlled_hanging_spider` sin conectar | |
-| Tortuga de jardín | ⚠️ | solo código (`bee_aftermath_turtle.gd`) | falta modelo/escena de tanque |
-| Robot caminante | ✅ | `ground_walker_enemy.tscn` (procedural) | falta mini-jefe con escoltas |
-| Tarántula (jefe) | ⚠️ | `bosses/lvl01_boss_giant_spider_v01` (+ liberada) | modelo con exoesqueleto alien; el contrato pide solo implante; sin combate |
+| Tortuga de jardín | ✅ | `BeeGardenTurtle` (sobre `bee_aftermath_turtle.gd`) | tanque con golpe de caparazón; falta modelo GLB propio |
+| Robot caminante | ✅ | `ground_walker_enemy.tscn` (procedural) | cierra el nivel con escoltas de insectos (etapa 2) |
+| Tarántula (jefe) | ⚠️ (etapa 3) | `bosses/lvl01_boss_giant_spider_v01` (+ liberada) | modelo con exoesqueleto alien; el contrato pide solo implante; sin combate |
 
 ### Decorado de jardín
 
@@ -75,8 +75,8 @@ Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITOR
 2. El contrato pide la carpeta `level_02_lagoon`; se conserva `level_02_lake` porque Codex ya entregó assets ahí y los manifiestos/documentos la citan. Si se prefiere el otro nombre es un renombre de carpeta.
 3. El contrato dice que la tortuga de jardín «ya existe»: solo existe como pieza procedural de una escena de secuela, no como tanque jugable.
 4. La tarántula entregada lleva exoesqueleto alien (placas, núcleo cian, nodos); el contrato dice «con implante, sin exoesqueleto alien».
-5. El contrato propone gusanos que «emergen con marca» y escupen/embisten, pero los modelos son solo arte (3 clips, sin escena ni IA).
-6. El Nivel 1 todavía instancia pinos (N3), luciérnaga (N3) y la fauna de N2/N3 desde `asset_fauna.gd`: se apaga en la etapa 2.
+5. (Resuelta en la etapa 2) El contrato proponía gusanos que emergen con marca y moscas con roles propios, y los modelos eran solo arte: ya tienen escena, IA y formaciones en el Nivel 1.
+6. (Resuelta en la etapa 2) El Nivel 1 ya no instancia la fauna de N2/N3 ni las unidades alien (`LEVEL01_ROSTER_ONLY`); sigue usando pinos (N3) en el decorado de fondo.
 7. Helecho, campanilla y tronco (decorado de jardín) también los usa la laguna.
 8. `CLAUDE.md` habla de 52 validaciones; hay 91 scripts `validate_*.gd`.
 9. Hongos: los tres hongos de jardín de Codex son naturales (sin alien); el «hongo de color» del contrato (Nivel 3) no existe como modelo todavía.

@@ -1,5 +1,8 @@
 extends SceneTree
-const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
+# The garden toad (Lote 10 frog) belongs to LEVEL 2 (laguna): LOTE 12 hosts this test in the Level 2 stage and drives the
+# encounter directly, so it no longer depends on Level 1 (its event table, its scroll or its director). The Level 1 wrapper
+# (BeeLevel01ScaleEvent) is covered by validate_bee_level01_roster_v01 (the code stays intact, switched off by LEVEL01_ROSTER_ONLY).
+const LEVEL := preload("res://scenes/levels/bee_level_02_lake.tscn")
 var errors: Array[String] = []
 func _initialize() -> void:
 	call_deferred("run")
@@ -20,11 +23,12 @@ func run() -> void:
 	stage.bee.set_physics_process(false)
 	stage.bee.health.damage_blocked = true
 	stage.bee.global_position = Vector3(stage.camera.global_position.x, 5, 0)
-	var moment := stage.get_node("ScaleEvent") as BeeLevel01ScaleEvent
-	stage.wave.director_moment.emit(&"scale_event")
-	var frog := moment.frog as BeeGardenToadEncounter
-	check(frog != null and frog.visual.find_child("AlienControlDevice", true, false) != null, "Lake model/implant not reused")
-	check(stage.scroll_speed <= 0.1, "Frog must almost stop scrolling")
+	var frog := BeeGardenToadEncounter.new()
+	stage.add_child(frog)
+	var landings := [0]
+	frog.landing.connect(func(): landings[0] += 1)
+	check(frog.activate(stage.bee), "The toad did not activate")
+	check(frog.visual.find_child("AlienControlDevice", true, false) != null, "Lake model/implant not reused")
 	var locked_checked := false
 	for i in 60 * 55:
 		await physics_frame
@@ -34,11 +38,10 @@ func run() -> void:
 			await frames(2)
 			check(frog._aim == locked, "Tongue must not home after launch")
 			locked_checked = true
-	check(frog.crossings >= 2 and moment.landings >= 8, "Frog must cross at least twice by hopping")
+	check(frog.crossings >= 2 and landings[0] >= 8, "Frog must cross at least twice by hopping (%d crossings, %d landings)" % [frog.crossings, landings[0]])
 	check(frog.variants.has(0) and frog.variants.has(1) and frog.variants.has(2), "All three tongue variants must run")
 	check(frog.telegraphs.all(func(t): return t >= 0.6), "Tongue warnings too short")
-	check(locked_checked and frog.expired and not frog.is_visible_in_tree() and not frog.is_physics_processing(), "50-second timeout must finish without a gate")
-	check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL), "Scroll must resume after timeout")
+	check(locked_checked and frog.expired and not frog.is_visible_in_tree() and not frog.is_physics_processing(), "50-second timeout must finish the encounter")
 	var free_frog := BeeGardenToadEncounter.new()
 	stage.add_child(free_frog)
 	free_frog.activate(stage.bee)
@@ -59,5 +62,5 @@ func run() -> void:
 	free_frog.set_physics_process(true)
 	await frames(190)
 	check(not free_frog.visible, "Liberated frog must hop away")
-	print("GARDEN_TOAD crossings=", frog.crossings, " variants=",frog.variants, " warnings=",frog.telegraphs, " base_liberation=",started)
+	print("GARDEN_TOAD (level 2 host) crossings=", frog.crossings, " variants=", frog.variants, " warnings=", frog.telegraphs, " base_liberation=", started)
 	quit(0 if errors.is_empty() else 1)

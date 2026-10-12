@@ -18,6 +18,7 @@ var only := ""
 var report: Array[String] = []
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -100,7 +101,7 @@ func test_static() -> void:
 		check(BeeLevel01Controller.ASSET_FAUNA.has(family), "%s missing scene" % family)
 	var used := {}
 	var last := -1.0
-	for event in BeeLevel01Controller.EVENTS:
+	for event in BeeLevel01Controller.EVENTS_LEGACY:
 		check(float(event["at"]) >= last, "Events must stay sorted by 'at' (%s)" % event["label"])
 		last = float(event["at"])
 		for unit in event["units"]:

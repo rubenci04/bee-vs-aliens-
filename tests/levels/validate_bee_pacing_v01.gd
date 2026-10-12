@@ -23,6 +23,11 @@ const MIN_ROUTE_DAMAGE := 45
 const MAX_ROUTE_DAMAGE := 70
 ## LOTE 11: longest stretch with no visible threat (s).
 const MAX_QUIET := 5.0
+## LOTE 12: the breathing valley of checkpoint 1 (X range of the end of its quiet span, and its length in seconds).
+const VALLEY_FROM_X := 190.0
+const VALLEY_TO_X := 215.0
+const VALLEY_MIN_QUIET := 12.0
+const VALLEY_MAX_QUIET := 22.0
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -59,9 +64,10 @@ func run() -> void:
 		bee.honey_seconds = 0.0
 	bee.set_physics_process(false)
 	Engine.time_scale = TIME_SCALE
+	var past_entry := [false] # LOTE 12: true once the last encounter (boss or walking robot) has been launched.
 	var lost := [0]
 	bee.health.health_changed.connect(func(_hp, _max, change):
-		if change < 0 and wave.boss == null:
+		if change < 0 and not past_entry[0]:
 			lost[0] -= change)
 	var act_times := {}
 	var checkpoint_times: Array[String] = []
@@ -75,6 +81,7 @@ func run() -> void:
 	var quiet := 0.0 # Seconds with no threat on screen (breathers).
 	var longest_quiet := 0.0
 	var run_quiet := 0.0
+	var quiet_spans: Array[Vector3] = [] # x = seconds, y = distance at the end, z = game time at the end
 	wave.director_moment.connect(func(_id): pass)
 	var checkpoints := stage.get_node("CheckpointQoL") as BeeCheckpointQoL
 	var seen_checkpoints := {}
@@ -118,8 +125,9 @@ func run() -> void:
 		if wave.event_index != last_event:
 			last_event = wave.event_index
 			event_log.append("%d@%.0f" % [last_event, t])
-		if wave.boss != null and boss_at < 0.0:
+		if boss_at < 0.0 and (wave.boss != null or (BeeLevel01Controller.LEVEL01_ROSTER_ONLY and wave.event_index >= BeeLevel01Controller.EVENTS.size())):
 			boss_at = t
+			past_entry[0] = true
 			hp_at_boss = bee.health.current_health
 			bee.health.damage_blocked = true # Measure route on Normal; boss has its own battle suite.
 		if stage.sector_complete:
@@ -202,6 +210,8 @@ func run() -> void:
 			quiet += tick
 			longest_quiet = maxf(longest_quiet, run_quiet)
 		else:
+			if run_quiet > 0.0:
+				quiet_spans.append(Vector3(run_quiet, stage.distance, t))
 			if trace and run_quiet > 4.0:
 				print("QUIET %.1f..%.1f (%.1fs) d=%.1f ev=%d" % [quiet_start, t, run_quiet, stage.distance, wave.event_index])
 			run_quiet = 0.0
@@ -224,8 +234,8 @@ func run() -> void:
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
 		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])
-		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the UFO %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
-		check(complete_at > boss_at, "Level must complete after the UFO")
+		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the last encounter %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
+		check(complete_at > boss_at, "Level must complete after the last encounter")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())
 		check(is_equal_approx(BeeLevel01Controller.LEVEL_SCROLL, 1.25), "Cruise scroll must be 1.25 m/s (LOTE 9)")
 		check(wave.arena_log.size() == 3, "Three combat zones must play (%d)" % wave.arena_log.size())
@@ -235,7 +245,15 @@ func run() -> void:
 			check(float(zone["seconds"]) >= 20.0, "A combat zone ended too early: %s" % zone)
 		check(zone_seconds >= 60.0, "Combat-zone content %.0f s < 60 s (LOTE 9: 3 zones of 2 waves)" % zone_seconds)
 		check(early_retire.is_empty(), "Units left before their camera time: %s" % str(early_retire))
-		check(longest_quiet <= MAX_QUIET, "LOTE 11: %.1f s without a visible threat (max %.1f s)" % [longest_quiet, MAX_QUIET])
+		# LOTE 12: at most MAX_QUIET s without a threat, except the BREATHING VALLEY of checkpoint 1 (up to VALLEY_MAX_QUIET s, at least VALLEY_MIN_QUIET).
+		var valley_quiet := 0.0
+		for span in quiet_spans:
+			if span.x > MAX_QUIET:
+				check(span.y >= VALLEY_FROM_X and span.y <= VALLEY_TO_X, "%.1f s without a threat at X=%.0f (max %.1f s outside the valley)" % [span.x, span.y, MAX_QUIET])
+				valley_quiet = maxf(valley_quiet, span.x)
+			if span.y >= VALLEY_FROM_X and span.y <= VALLEY_TO_X:
+				valley_quiet = maxf(valley_quiet, span.x)
+		check(valley_quiet >= VALLEY_MIN_QUIET and valley_quiet <= VALLEY_MAX_QUIET, "Breathing valley %.1f s outside %.0f-%.0f s" % [valley_quiet, VALLEY_MIN_QUIET, VALLEY_MAX_QUIET])
 		check(wave.max_alive_route <= BeeLevel01Controller.MAX_ON_SCREEN, "LOTE 9: %d enemies at once on the route (max %d)" % [wave.max_alive_route, BeeLevel01Controller.MAX_ON_SCREEN])
 		check(wave.max_alive_arena <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA, "LOTE 9: %d enemies at once in a zone (max %d)" % [wave.max_alive_arena, BeeLevel01Controller.MAX_ON_SCREEN_ARENA])
 	print("PACING camera-time violations=%d retired_checked=%d" % [early_retire.size(), retired_seen.size()])

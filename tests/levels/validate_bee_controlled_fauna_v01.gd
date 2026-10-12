@@ -17,6 +17,7 @@ var bee: BeePlayer
 var only := ""
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -82,7 +83,7 @@ func albedo(fly: ControlledDragonfly, part: String) -> Color:
 
 func test_static() -> void:
 	var placements: Array = []
-	for event: Dictionary in BeeLevel01Controller.EVENTS:
+	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
 		if "Dragonfly" in event["units"]:
 			placements.append(event)
 	check(placements.size() >= 2 and placements.size() <= 3, "Level 01 must have 2-3 dragonflies (%d)" % placements.size())
@@ -213,7 +214,7 @@ func test_checkpoint() -> void:
 	stage.distance = 120.0
 	stage._update_camera_and_bounds()
 	wave.event_index = 0
-	while wave.event_index < BeeLevel01Controller.EVENTS.size() and float(BeeLevel01Controller.EVENTS[wave.event_index]["at"]) < 120.0:
+	while wave.event_index < BeeLevel01Controller.EVENTS_LEGACY.size() and float(BeeLevel01Controller.EVENTS_LEGACY[wave.event_index]["at"]) < 120.0:
 		wave.event_index += 1
 	wave.set_physics_process(true)
 	stage.scroll_speed = 2.0
@@ -241,13 +242,13 @@ func test_checkpoint() -> void:
 	await reloaded(old)
 	bind(current_scene)
 	for event_index in range(wave.event_index):
-		check(not ("Dragonfly" in BeeLevel01Controller.EVENTS[event_index]["units"]) or float(BeeLevel01Controller.EVENTS[event_index]["at"]) < 190.0, "")
+		check(not ("Dragonfly" in BeeLevel01Controller.EVENTS_LEGACY[event_index]["units"]) or float(BeeLevel01Controller.EVENTS_LEGACY[event_index]["at"]) < 190.0, "")
 	var first_after := -1
-	for event_index in range(wave.event_index, BeeLevel01Controller.EVENTS.size()):
-		if "Dragonfly" in BeeLevel01Controller.EVENTS[event_index]["units"]:
+	for event_index in range(wave.event_index, BeeLevel01Controller.EVENTS_LEGACY.size()):
+		if "Dragonfly" in BeeLevel01Controller.EVENTS_LEGACY[event_index]["units"]:
 			first_after = event_index
 			break
-	check(first_after > 0 and float(BeeLevel01Controller.EVENTS[first_after]["at"]) > 190.0, "Only the post-checkpoint dragonfly may remain after a respawn")
+	check(first_after > 0 and float(BeeLevel01Controller.EVENTS_LEGACY[first_after]["at"]) > 190.0, "Only the post-checkpoint dragonfly may remain after a respawn")
 	check(wave.fauna_hint_shown, "The hint must not repeat after a checkpoint respawn")
 	# Full restart: the first dragonfly is back (event table from zero) and the hint shows again.
 	var old2 := stage

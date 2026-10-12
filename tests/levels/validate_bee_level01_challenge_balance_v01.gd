@@ -26,6 +26,7 @@ var boss: UfoBoss01
 var only := "" # Optional dev filter: -- only=spread (human|density|spread|boss).
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
@@ -237,7 +238,7 @@ func test_human() -> void:
 # --- Density and tuning --------------------------------------------------------------------------
 
 func test_density() -> void:
-	var events := BeeLevel01Controller.EVENTS
+	var events := BeeLevel01Controller.EVENTS_LEGACY
 	var total := 0
 	var biggest := 0
 	var triples := 0
@@ -257,6 +258,8 @@ func test_density() -> void:
 	for family in BeeLevel01Controller.LEVEL_HP:
 		if family == "OrganicAlien":
 			continue # NOCHE 01: UFO minion only.
+		if family in ["FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB", "Turtle"]:
+			continue # LOTE 12: roster species (see validate_bee_level01_roster_v01).
 		var found := false
 		for event: Dictionary in events:
 			found = found or family in event["units"]
@@ -403,7 +406,7 @@ func dps(gap: float, spread: bool, shot := "") -> float:
 func test_boss() -> void:
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
-	wave.event_index = BeeLevel01Controller.EVENTS.size()
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size()
 	stage.distance = 352.0
 	stage._update_camera_and_bounds()
 	for i in 900:

@@ -19,3 +19,17 @@ static func spawn(parent: Node, at: Vector3, seed_value: int) -> void:
 	if stage != null and item is BeePollenPickup:
 		item.collected.connect(stage._on_pollen_collected)
 	item.global_position = Vector3(at.x, maxf(at.y, 1.0), 0.0)
+
+
+## LOTE 12: a guaranteed pollen drop (garden mushrooms): `count` pickups spread around `at`, wired to the stage like the rock drops.
+static func spawn_pollen(parent: Node, at: Vector3, count: int) -> void:
+	var stage := parent
+	while stage != null and not stage is BeeShmupStage:
+		stage = stage.get_parent()
+	var holder: Node = stage.get_node("Pollen") if stage != null else parent
+	for i in count:
+		var item := POLLEN.instantiate() as Node3D
+		holder.add_child(item)
+		if stage != null and item is BeePollenPickup:
+			item.collected.connect(stage._on_pollen_collected)
+		item.global_position = Vector3(at.x + 0.6 * (float(i) - float(count - 1) * 0.5), maxf(at.y, 1.0), 0.0)

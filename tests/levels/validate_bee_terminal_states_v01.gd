@@ -12,6 +12,7 @@ var stage: BeeShmupStage
 var bee: BeePlayer
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
@@ -44,7 +45,7 @@ func run() -> void:
 	var wave := stage.wave as BeeLevel01Controller
 
 	# --- 1. Victory is not damageable -------------------------------------
-	wave.event_index = BeeLevel01Controller.EVENTS.size() # Every encounter consumed.
+	wave.event_index = BeeLevel01Controller.EVENTS_LEGACY.size() # Every encounter consumed.
 	stage.distance = 359.0
 	stage.scroll_speed = 8.0
 	await frames(2)

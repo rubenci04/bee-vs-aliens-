@@ -20,6 +20,10 @@ const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
 ## when hurt). [x, y] per item; it is part of the level (a respawn at the X=281 checkpoint finds it again; the boss
 ## checkpoint is past it, so it can never be farmed).
 const PREBOSS_SUPPLY := {"bomb": Vector2(337.0, 3.8), "healing": Vector2(338.8, 2.6)}
+## LOTE 12 · ETAPA 2 (roster only): the supply right before the walking-robot gate (X=290) and the BREATHING VALLEY supplies after
+## checkpoint 1 (X=190): [kind, x, y] - honey jars heal, the bomb capsule gives +3 bombs.
+const ROSTER_GATE_SUPPLY := {"bomb": Vector2(285.5, 3.8), "healing": Vector2(287.3, 2.6)}
+const VALLEY_SUPPLY := [["healing", 192.5, 2.8], ["bomb", 196.0, 3.8], ["healing", 200.0, 2.6]]
 
 func _ready() -> void:
 	_swap_toon_pickups() # Before the stage connects the pickups' signals.
@@ -31,8 +35,13 @@ func _ready() -> void:
 			BeeItemBeacon.attach(item)
 	BeeCombatVFX.toon_bursts = true
 	bee.health.damage_scale = BeeGameSettings.damage_taken_scale() # NOCHE 01: EASY = less damage taken.
+	if BeeLevel01Controller.roster_only:
+		var mushrooms := BeeLevel01GardenMushrooms.new() # LOTE 12: destructible garden mushrooms that drop pollen.
+		mushrooms.name = "GardenMushrooms"
+		add_child(mushrooms)
 	checkpoint.setup(self)
 	_place_preboss_supply()
+	_place_valley_supply()
 	for leftover in ["Ground", "GroundExtension"]: # POC boxes under the mulch slab (coplanar): never visible, never styled.
 		var poc_ground := get_node_or_null(leftover) as Node3D
 		if poc_ground != null:
@@ -157,7 +166,8 @@ func _on_node_added_lote9(node: Variant) -> void:
 
 ## LOTE 9 · ETAPA B: the pre-boss supply (PREBOSS_SUPPLY), skipped when the level resumes past it.
 func _place_preboss_supply() -> void:
-	if distance > float(PREBOSS_SUPPLY["healing"].x):
+	var supply: Dictionary = ROSTER_GATE_SUPPLY if BeeLevel01Controller.roster_only else PREBOSS_SUPPLY
+	if distance > float(supply["healing"].x):
 		return
 	var group := Node3D.new()
 	group.name = "PreBossSupply"
@@ -166,11 +176,30 @@ func _place_preboss_supply() -> void:
 	bomb.name = "SupplyBomb"
 	bomb.set("kind", BeePowerupPickup.Kind.BOMB)
 	group.add_child(bomb)
-	bomb.global_position = Vector3(PREBOSS_SUPPLY["bomb"].x, PREBOSS_SUPPLY["bomb"].y, 0.0)
+	bomb.global_position = Vector3(supply["bomb"].x, supply["bomb"].y, 0.0)
 	var jar := TOON_HEALING.instantiate() as Node3D
 	jar.name = "SupplyHealing"
 	group.add_child(jar)
-	jar.global_position = Vector3(PREBOSS_SUPPLY["healing"].x, PREBOSS_SUPPLY["healing"].y, 0.0)
+	jar.global_position = Vector3(supply["healing"].x, supply["healing"].y, 0.0)
+
+## LOTE 12: the breathing valley of checkpoint 1 - honey jars and a bomb capsule on the way (skipped once passed).
+func _place_valley_supply() -> void:
+	if not BeeLevel01Controller.roster_only:
+		return
+	var group := Node3D.new()
+	group.name = "ValleySupply"
+	add_child(group)
+	var index := 0
+	for entry in VALLEY_SUPPLY:
+		if distance > float(entry[1]):
+			continue
+		var item := (TOON_BOMB if entry[0] == "bomb" else TOON_HEALING).instantiate() as Node3D
+		if entry[0] == "bomb":
+			item.set("kind", BeePowerupPickup.Kind.BOMB)
+		item.name = "Valley%s%d" % [str(entry[0]).capitalize(), index]
+		index += 1
+		group.add_child(item)
+		item.global_position = Vector3(float(entry[1]), float(entry[2]), 0.0)
 
 ## LOTE 9 · ETAPA C: the closing card (big, centred, pops in) once the UFO explosion is over.
 func _show_clear_banner() -> void:
