@@ -1,0 +1,29 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_environment_anthill_side_tunnel_v01",
+      "triangles": 1636,
+      "unique_mesh_triangles": 1636,
+      "materials": 1,
+      "animations": [],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.glb",
+      "size_godot_xyz_m": [
+        1.827,
+        1.59,
+        1.841
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "static environment prop with entrance/tunnel anchors",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 2000,
+  "emission_only": "none"
+}

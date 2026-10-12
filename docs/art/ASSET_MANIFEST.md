@@ -140,3 +140,13 @@ Totales: 112 GLB (58 referenciados por el juego tras la etapa 2: moscas, lombric
 | proyectil | `scenes/projectiles/toon/{alien_bolt,bee_bolt}.tscn` | en juego |
 | escena de jefe | `scenes/levels/level_02_lake/lake_toad_miniboss_visual.tscn` (sapo; antes `scenes/art_labs/assets_lake/`) | en juego (laguna) |
 | externo aprobado | `assets/external/approved/` (Kenney, Quaternius, Tiny Treats, KayKit; ver `assets/external/ASSET_PROVENANCE.md`) | parcial: speeder, torreta, ojo, rana, araña, walker, vegetación y objetos domésticos |
+
+
+## Adición — dos hormigueros de jardín (2026-10-12)
+
+| Nivel | Categoría | Asset | Fuente | GLB | ¿Juego? | Tris | Estado |
+|---|---|---|---|---|---|---:|---|
+| L01 jardín | entorno natural | lvl01_environment_anthill_crater_v01 | art_source/blender/levels/level_01_garden/environment/lvl01_environment_anthill_crater_v01.blend | assets/models/levels/level_01_garden/environment/lvl01_environment_anthill_crater_v01.glb | no (laboratorio) | 1336 | listo, estático con cavidad real |
+| L01 jardín | entorno natural | lvl01_environment_anthill_side_tunnel_v01 | art_source/blender/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.blend | assets/models/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.glb | no (laboratorio) | 1636 | listo, estático con cavidad real |
+
+Detalle: `ANTHILLS_V01.md`. Laboratorio: `scenes/art_labs/anthills_v01.tscn`. Montículo bajo con entrada superior y montículo alto con túnel lateral; un material por GLB, anclas de entrada y menos de 2.000 tris por prop.

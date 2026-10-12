@@ -1,0 +1,54 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_environment_anthill_crater_v01",
+      "triangles": 1336,
+      "unique_mesh_triangles": 1336,
+      "materials": 1,
+      "animations": [],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_anthill_crater_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_anthill_crater_v01.glb",
+      "size_godot_xyz_m": [
+        2.41,
+        0.62,
+        2.402
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "static environment prop with entrance/tunnel anchors",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_environment_anthill_side_tunnel_v01",
+      "triangles": 1636,
+      "unique_mesh_triangles": 1636,
+      "materials": 1,
+      "animations": [],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_anthill_side_tunnel_v01.glb",
+      "size_godot_xyz_m": [
+        1.827,
+        1.59,
+        1.841
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "static environment prop with entrance/tunnel anchors",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget_per_prop": 2000,
+  "original": true,
+  "gameplay_integrated": false,
+  "emission": "none"
+}

@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/anthills_v01/crater.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/anthills_v01/side_tunnel.tscn" id="3"]
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.63, 0.65, 0.67, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.87, 0.90, 0.95, 1)
+ambient_light_energy = 0.5
+[sub_resource type="LabelSettings" id="Label"]
+font_size = 20
+font_color = Color(0.08, 0.09, 0.1, 1)
+[node name="AnthillsArtLab" type="Node3D"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45, -35, 0)
+light_color = Color(1, 0.93, 0.81, 1)
+light_energy = 1.0
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(-4, 5, 13)
+rotation_degrees = Vector3(-16, -16, 0)
+projection = 1
+size = 7.4
+current = true
+[node name="Controlled" parent="." instance=ExtResource("2")]
+position = Vector3(-1.7, 0, 0)
+[node name="Liberated" parent="." instance=ExtResource("3")]
+position = Vector3(1.7, 0, 0)
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Instructions" type="Label" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 20.0
+text = "HORMIGUEROS · CRÁTER BAJO / TÚNEL LATERAL\nProps naturales · anclas EntranceAnchor y TunnelAnchor"
+label_settings = SubResource("Label")
