@@ -13,6 +13,8 @@ signal liberated_now(enemy: AssetFauna)
 enum State { IDLE, ENTER, WAIT, TELEGRAPH, ATTACK, RECOVER, EXIT, LIBERATED, DONE }
 
 const MIN_TELEGRAPH := 0.4
+## LOTE 13: a unit counts as arrived (and starts its first rest) once it is this far inside the screen edge, not only at its hover point.
+const ARRIVAL_INSET := 0.6
 const PROJECTILE := preload("res://scenes/projectiles/toon/alien_bolt.tscn") # NOCHE 01: Codex toon alien bolt.
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
@@ -61,9 +63,10 @@ const KINDS := {
 	&"stag_beetle": {"scene": "res://scenes/art_labs/assets_v02/controlled_stag_beetle.tscn", "mode": &"charge", "ground": true, "scale": 1.0,
 			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle"},
 	&"snail": {"scene": "res://scenes/art_labs/assets_v02/controlled_woodland_snail.tscn", "mode": &"spitter", "ground": true, "scale": 1.0,
-			"telegraph": 0.6, "damage": 7, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail"},
+			"telegraph": 0.6, "damage": 7, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail",
+			"lob": true, "style": &"bubble", "lob_flight": 1.5, "lob_gravity": 6.0}, # LOTE 13: slime bubble in an arc
 	&"mushroom": {"scene": "res://scenes/art_labs/assets_v10/controlled_mushroom_cannon.tscn", "mode": &"cannon", "ground": true, "scale": 1.0,
-			"telegraph": 0.7, "damage": 9, "cycles": 99, "speed": 0.0, "shot_speed": 6.0, "label": "MushroomCannon"},
+			"telegraph": 0.7, "damage": 9, "cycles": 99, "speed": 0.0, "shot_speed": 6.0, "label": "MushroomCannon", "style": &"spore"},
 	# NOCHE 01 · ETAPA 2: the Codex alien interceptor (dusk enemy, technology: it explodes). Hovers high, warns with a line
 	# for 0.6 s and fires a fan of 3 toon bolts, then strafes to another spot.
 	&"fighter": {"scene": "res://scenes/art_labs/alien_ships_v02/alien_needle_interceptor.tscn", "mode": &"fighter", "ground": false, "scale": 0.62,
@@ -82,11 +85,13 @@ const KINDS := {
 	# (the whole cloud is the target, one hurtbox over all of it). Worm A: burrows, the ground mark warns 1 s, then it erupts.
 	# Worm B: low crawling lunge along the soil.
 	&"fly_common": {"scene": "res://scenes/art_labs/fly_trio_v01/common.tscn", "mode": &"dash", "ground": false, "scale": 0.55,
-			"telegraph": 0.5, "damage": 11, "cycles": 99, "speed": 6.0, "dash_speed": 12.0, "dash_range": 6.0, "label": "FlyCommon"},
+			"telegraph": 0.5, "damage": 7, "cycles": 99, "speed": 6.0, "dash_speed": 12.0, "dash_range": 6.0, "label": "FlyCommon",
+			"spit": {"shots": 2, "gap": 0.2, "style": &"pellet", "speed": 4.4, "every": 2}}, # LOTE 13: rams and SPITS (every second attack)
 	&"fly_green": {"scene": "res://scenes/art_labs/fly_trio_v01/green.tscn", "mode": &"zigzag", "ground": false, "scale": 0.55,
-			"telegraph": 0.5, "damage": 10, "cycles": 99, "speed": 5.0, "shot_speed": 4.0, "zig_amp": 1.5, "zig_rate": 3.4, "label": "FlyGreen"},
+			"telegraph": 0.5, "damage": 7, "cycles": 99, "speed": 5.0, "shot_speed": 3.8, "zig_amp": 1.5, "zig_rate": 3.4, "label": "FlyGreen",
+			"burst": 3, "burst_gap": 0.17, "style": &"acid"}, # LOTE 13: acid burst
 	&"fly_cloud": {"scene": "res://scenes/art_labs/fly_trio_v01/swarm.tscn", "mode": &"sweep", "ground": false, "scale": 0.8,
-			"telegraph": 0.6, "damage": 12, "cycles": 99, "speed": 2.0, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud"},
+			"telegraph": 0.6, "damage": 8, "cycles": 99, "speed": 3.4, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud", "chase": true}, # LOTE 13: chases Bee as a block
 	&"worm_rose": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_rose.tscn", "mode": &"burrow", "ground": true, "scale": 0.85,
 			"telegraph": 1.0, "damage": 14, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA"},
 	&"worm_compost": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_compost.tscn", "mode": &"lunge", "ground": true, "scale": 0.9,
@@ -96,6 +101,8 @@ const KINDS := {
 @export var kind: StringName = &"mosquito"
 @export var idle_time := 1.2
 @export var recovery_time := 0.9
+## LOTE 13 · ETAPA 2: rest before the FIRST attack (rule: every enemy starts attacking within ~1 s of entering the screen). < 0 = use idle_time.
+@export var first_idle_time := -1.0
 
 var target: BeePlayer
 var state := State.IDLE
@@ -356,29 +363,29 @@ func _physics_process(delta: float) -> void:
 func _enter(delta: float, camera_x: float) -> void:
 	if config["mode"] == &"leaper":
 		_leaper_swim(delta, camera_x)
-		_begin(State.IDLE, idle_time)
+		_begin(State.IDLE, _start_idle())
 		return
 	if config["mode"] == &"cannon":
-		_begin(State.IDLE, idle_time) # Planted in the garden: it never walks.
+		_begin(State.IDLE, _start_idle()) # Planted in the garden: it never walks.
 		return
 	if config["mode"] == &"burrow":
 		global_position = Vector3(camera_x + 5.0, ground_y, 0.0)
 		_set_buried(true) # LOTE 12: underground until the ground mark has warned.
-		_begin(State.IDLE, idle_time)
+		_begin(State.IDLE, _start_idle())
 		return
 	_hover = _hover_point(camera_x)
 	if is_ground():
 		var arrived := _walk_to(_hover.x, float(config["speed"]) if float(config["speed"]) > 0.0 else 2.0, delta)
-		if arrived or global_position.x < camera_x + 5.5:
-			_begin(State.IDLE, idle_time)
+		if arrived or global_position.x < camera_x + 5.5 or BeeShmupFairness.is_inside_screen(self, 0.0): # Ground units: on screen = arrived (the snail crawls at 0.7 m/s).
+			_begin(State.IDLE, _start_idle())
 	elif config["mode"] == &"dash":
 		_steer(_hover, MOSQUITO_SPEED, delta) # NOCHE 01: smooth entry too.
-		if global_position.distance_to(_hover) < 0.6:
-			_begin(State.IDLE, idle_time)
+		if global_position.distance_to(_hover) < 0.6 or BeeShmupFairness.is_inside_screen(self, ARRIVAL_INSET):
+			_begin(State.IDLE, _start_idle())
 	else:
 		global_position = global_position.move_toward(_hover, 5.5 * delta)
-		if global_position.distance_to(_hover) < 0.4:
-			_begin(State.IDLE, idle_time)
+		if global_position.distance_to(_hover) < 0.4 or BeeShmupFairness.is_inside_screen(self, ARRIVAL_INSET):
+			_begin(State.IDLE, _start_idle())
 
 
 func _hover_point(camera_x: float) -> Vector3:
@@ -387,6 +394,8 @@ func _hover_point(camera_x: float) -> Vector3:
 		&"dash":
 			return Vector3(minf(bee.x + 3.5, camera_x + 5.0), clampf(bee.y + 0.6, 1.8, 5.6), 0.0)
 		&"sweep":
+			if bool(config.get("chase", false)): # LOTE 13: the fly cloud follows Bee as a block, right on her tail.
+				return Vector3(minf(bee.x + 2.2, camera_x + 5.0), clampf(bee.y + 0.3, 1.6, 5.6), 0.0)
 			return Vector3(minf(bee.x + 4.4, camera_x + 5.0), clampf(bee.y + 0.8, 2.0, 5.6), 0.0)
 		&"wave":
 			return Vector3(camera_x + 5.4, clampf(bee.y, 1.6, 5.4), 0.0)
@@ -449,17 +458,23 @@ func _start_telegraph() -> void:
 	_token_held = mode in [&"charge", &"wave", &"sweep"]
 	attacks_started += 1
 	state = State.TELEGRAPH
+	_variant = _pick_variant()
+	if first_telegraph_clock < 0.0:
+		first_telegraph_clock = _clock
 	_left = maxf(float(config["telegraph"]), MIN_TELEGRAPH)
 	_tele_started = BeeAttackTokens.now()
 	_lock_from = global_position
 	var bee := target.global_position
 	match mode:
 		&"dash":
-			var dir := (bee - global_position)
-			dir.z = 0.0
-			dir = dir.normalized() if dir.length() > 0.1 else Vector3.LEFT
-			_lock_to = global_position + dir * float(config["dash_range"])
-			_add_line(_lock_from, _lock_to, 0.12)
+			if _variant == &"spit":
+				_lock_to = bee # LOTE 13: the spit variant of the common fly: thin aim line, then aimed pellets.
+			else:
+				var dir := (bee - global_position)
+				dir.z = 0.0
+				dir = dir.normalized() if dir.length() > 0.1 else Vector3.LEFT
+				_lock_to = global_position + dir * float(config["dash_range"])
+				_add_line(_lock_from, _lock_to, 0.12)
 		&"sweep":
 			var dir2 := (bee - global_position)
 			dir2.z = 0.0
@@ -481,7 +496,6 @@ func _start_telegraph() -> void:
 			_add_line(global_position + Vector3(0, 0.4, 0), _lock_to + Vector3(0, 0.4, 0), 0.5, Color(1.0, 0.55, 0.15, 0.25))
 		&"fighter":
 			_lock_to = bee
-			_add_line(global_position, bee, 0.08) # Thin aim line: where the fan will be centred.
 		&"leaper":
 			var lock_x := bee.x
 			_lock_from = Vector3(lock_x + LEAP_SPAN, LEAP_DEPTH, 0.0)
@@ -503,16 +517,31 @@ func _start_telegraph() -> void:
 			_warn.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(spot, ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
 			_add_ring(Vector3(spot, ground_y + 0.2, 0.0), 1.1)
 		_:
-			_lock_to = bee # Shooters re-aim at the moment of firing; the glow is the warning.
+			_lock_to = bee # Shooters: the aim line below and the glow are the warning.
+	# LOTE 13: aimed attacks show a thin line to Bee that follows her and LOCKS (turns orange) AIM_LOCK_BEFORE s before the first shot:
+	# the whole burst / fan / lob then goes along the locked line, so leaving it after the lock is a clean dodge.
+	_aim_locked = false
+	_aim_line = null
+	if _is_aimed_attack():
+		_aim_lock_point = bee
+		_aim_line = BeeAttackVisuals.line(get_parent(), _muzzle(), bee, 0.08, WARN_COLOR)
+		_warn.append(_aim_line)
 
 
 func _telegraph(delta: float) -> void:
 	_left -= delta
 	if config["mode"] == &"dash":
-		_steer(_lock_from, MOSQUITO_SPEED, delta) # Brakes softly onto the start of its warning line.
+		_steer(global_position if _variant == &"spit" else _lock_from, MOSQUITO_SPEED, delta) # Brakes softly onto the start of its warning line.
 	var progress := 1.0 - clampf(_left / maxf(float(config["telegraph"]), MIN_TELEGRAPH), 0.0, 1.0)
 	var flare := 1.0 + 0.12 * sin(progress * PI * 3.0) + 0.1 * progress
 	visual.scale = Vector3.ONE * model_scale * flare # Whole animal swells: readable on any silhouette.
+	if _aim_line != null and is_instance_valid(_aim_line):
+		if not _aim_locked:
+			_aim_lock_point = target.global_position # Follows Bee...
+			if _left <= AIM_LOCK_BEFORE:
+				_aim_locked = true # ...until the lock: it turns orange and stops.
+				(_aim_line.mesh as BoxMesh).material = BeeAttackVisuals.material(LOCK_COLOR)
+		BeeAttackVisuals.place_line(_aim_line, _muzzle(), _aim_lock_point)
 	if config["mode"] == &"lunge" or config["mode"] == &"charge":
 		rig.rotation.z = (0.25 if config["mode"] == &"lunge" else -0.12) * progress * -_facing # Rears up / lowers its head.
 	if _left <= 0.0:
@@ -539,8 +568,13 @@ func _start_attack() -> void:
 		return
 	match mode:
 		&"dash":
-			_left = float(config["dash_range"]) / float(config["dash_speed"])
-			attack_hitbox.set_enabled(true)
+			if _variant == &"spit":
+				var spit: Dictionary = config["spit"]
+				_arm_burst(int(spit["shots"]), float(spit["gap"]), StringName(spit["style"]), float(spit["speed"]))
+				_left = float(spit["gap"]) * float(int(spit["shots"]) - 1) + 0.3
+			else:
+				_left = float(config["dash_range"]) / float(config["dash_speed"])
+				attack_hitbox.set_enabled(true)
 		&"sweep":
 			_left = float(config["pass_time"])
 			attack_hitbox.set_enabled(true)
@@ -557,8 +591,13 @@ func _start_attack() -> void:
 			_drop_bomb()
 			_left = 0.2
 		&"spitter", &"cannon", &"seeder", &"fighter", &"zigzag":
-			_fire()
-			_left = 0.25
+			var burst := int(config.get("burst", 1))
+			if burst > 1: # LOTE 13: the green fly spits acid in a burst, aimed again at every drop.
+				_arm_burst(burst, float(config.get("burst_gap", 0.17)), StringName(config.get("style", &"")), float(config["shot_speed"]))
+				_left = float(config.get("burst_gap", 0.17)) * float(burst - 1) + 0.3
+			else:
+				_fire()
+				_left = 0.25
 		_:
 			_left = 0.2
 
@@ -568,10 +607,12 @@ func _attack(delta: float, _camera_x: float) -> void:
 		_leaper_leap(delta)
 		return
 	_left -= delta
+	_update_burst(delta)
 	var mode: StringName = config["mode"]
 	match mode:
 		&"dash":
-			global_position = global_position.move_toward(_lock_to, float(config["dash_speed"]) * delta)
+			if _variant != &"spit":
+				global_position = global_position.move_toward(_lock_to, float(config["dash_speed"]) * delta)
 		&"sweep":
 			var t := clampf(1.0 - _left / float(config["pass_time"]), 0.0, 1.0)
 			var eased := t * t * (3.0 - 2.0 * t)
@@ -585,8 +626,10 @@ func _attack(delta: float, _camera_x: float) -> void:
 			global_position = global_position.move_toward(_lock_to, speed * delta)
 
 	if _left <= 0.0:
-		if mode == &"dash":
+		if mode == &"dash" and _variant != &"spit":
 			_velocity = (_lock_to - _lock_from).normalized() * MOSQUITO_SPEED # Glides out of the dash.
+		_burst_left = 0
+		_variant = &""
 		attack_hitbox.set_enabled(false)
 		_release_token()
 		cycles_done += 1
@@ -688,7 +731,13 @@ func _fire() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		return
 	var mode: StringName = config["mode"]
-	var aim := target.global_position - _muzzle()
+	var style: StringName = StringName(config.get("style", &""))
+	var aim := _aim_target() - _muzzle()
+	if bool(config.get("lob", false)): # LOTE 13: the snail lobs a slime bubble in an arc to where Bee is.
+		BeeEnemyPatterns.spawn_lob(get_parent(), PROJECTILE, _muzzle(), _aim_target(), damage, float(config.get("lob_flight", 1.3)), float(config.get("lob_gravity", 7.0)), self, style)
+		shots_fired += 1
+		BeeCombatVFX.spawn(get_parent(), _muzzle(), &"tech_hit", Vector3.UP, 0.5)
+		return
 	var count := 1
 	var step := 14.0
 	if mode == &"cannon":
@@ -700,7 +749,11 @@ func _fire() -> void:
 		count = 3
 		step = 20.0
 	for direction in BeeEnemyPatterns.fan_directions(aim, count, step):
-		var shot := BeeEnemyPatterns.spawn_shot(get_parent(), PROJECTILE, _muzzle(), direction, damage, float(config["shot_speed"]), self)
+		var shot: AlienEnemyProjectile
+		if style != &"":
+			shot = BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), direction, damage, float(config["shot_speed"]), self, style)
+		else:
+			shot = BeeEnemyPatterns.spawn_shot(get_parent(), PROJECTILE, _muzzle(), direction, damage, float(config["shot_speed"]), self)
 		shots_fired += 1
 		if mode == &"seeder":
 			shot.scale = Vector3.ONE * 1.5
@@ -941,3 +994,100 @@ func _set_submerged(value: bool) -> void:
 
 func is_submerged() -> bool:
 	return _submerged
+
+
+# --- LOTE 13 · ETAPA 2: first attack soon, spit / burst patterns with their own shot looks, chasing cloud ----------------------------
+
+## Seconds of rest after arriving: the short first rest only before the first attack.
+func _start_idle() -> float:
+	return first_idle_time if first_idle_time >= 0.0 and attacks_started == 0 else idle_time
+
+
+## True while a warning is showing (tests: time from entering the screen to the first warning).
+func is_telegraphing() -> bool:
+	return state == State.TELEGRAPH
+
+
+var _variant := &"" # &"spit" = a flying fly's alternate attack: aimed pellets instead of the ram.
+var _burst_left := 0
+var _burst_clock := 0.0
+var _burst_gap := 0.17
+var _burst_style: StringName = &""
+var _burst_speed := 5.5
+var first_telegraph_clock := -1.0 ## `_clock` at the first warning (tests).
+
+
+## The attack variant of this cycle: the common fly alternates ram and spit (config "spit").
+func _pick_variant() -> StringName:
+	var spit: Dictionary = config.get("spit", {})
+	if not spit.is_empty() and attacks_started % int(spit.get("every", 2)) == 0:
+		return &"spit"
+	return &""
+
+
+## Arms the shot burst of this attack (`count` shots `gap` s apart, the first one now).
+func _arm_burst(count: int, gap: float, style: StringName, speed: float) -> void:
+	_burst_left = count
+	_burst_clock = 0.0
+	_burst_gap = gap
+	_burst_style = style
+	_burst_speed = speed
+
+
+## One pellet / drop aimed at Bee's position at this very moment, then it flies straight.
+func _fire_aimed_style(style: StringName, speed: float) -> void:
+	if not BeeShmupFairness.can_fire(self):
+		return
+	var aim := _aim_target() - _muzzle()
+	aim.z = 0.0
+	var shot := BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), aim.normalized(), damage, speed, self, style)
+	shots_fired += 1
+	BeeCombatVFX.spawn(get_parent(), shot.global_position, &"tech_hit", Vector3.UP, 0.35)
+
+
+func _update_burst(delta: float) -> void:
+	if _burst_left <= 0:
+		return
+	_burst_clock -= delta
+	if _burst_clock <= 0.0:
+		_burst_left -= 1
+		_burst_clock = _burst_gap
+		_fire_aimed_style(_burst_style, _burst_speed)
+
+
+## The line the current warning marks: [from, to, half_width] while a ram / lunge / charge / sweep / aimed spit is being warned, else [].
+## Tests and bots read it the way a player reads the warning line on screen.
+func warned_line() -> Array:
+	if state != State.TELEGRAPH:
+		return []
+	if _aim_line != null and is_instance_valid(_aim_line):
+		if not _aim_locked:
+			return [] # The aim line still follows Bee: nothing to dodge yet.
+		if bool(config.get("lob", false)):
+			return [_aim_lock_point, _aim_lock_point + Vector3(0.05, 0.0, 0.0), 1.6] # Where the arc lands.
+		var from := _muzzle()
+		return [from, from + (_aim_lock_point - from).normalized() * 14.0, 0.8]
+	match config["mode"]:
+		&"dash":
+			return [global_position, _lock_to, 0.9]
+		&"lunge", &"charge", &"sweep":
+			return [_lock_from, _lock_to, 0.9]
+	return []
+
+
+## LOTE 13: the aimed attacks (shooters and the common fly's spit variant) show an aim line that locks before the burst.
+const AIMED_MODES := [&"zigzag", &"spitter", &"cannon", &"fighter", &"seeder"]
+const AIM_LOCK_BEFORE := 0.3 ## Seconds before the first shot at which the aim line stops following Bee (it turns orange).
+const LOCK_COLOR := Color(1.0, 0.45, 0.12, 0.8)
+var _aim_line: MeshInstance3D
+var _aim_locked := false
+var _aim_lock_point := Vector3.ZERO
+
+
+func _is_aimed_attack() -> bool:
+	return config["mode"] in AIMED_MODES or (config["mode"] == &"dash" and _variant == &"spit")
+
+
+## Where the volley goes: the locked point once the aim line has locked, Bee's position before.
+func _aim_target() -> Vector3:
+	return _aim_lock_point if _aim_locked else target.global_position

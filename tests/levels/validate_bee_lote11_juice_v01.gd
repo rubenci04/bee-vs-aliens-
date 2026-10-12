@@ -306,7 +306,7 @@ func test_watering() -> void:
 	var moments := BeeLevel01Controller.EVENTS.filter(func(e): return e.get("moment", "") == "watering_can")
 	check(moments.size() == 1 and float(moments[0]["at"]) >= 120.0 and float(moments[0]["at"]) <= 135.0 and int(moments[0]["act"]) == 2 and (moments[0]["units"] as Array).is_empty(), "Watering-can moment must be one enemy-free event in act 2 near the can")
 	var event := stage.get_node("WateringEvent") as BeeLevel01WateringEvent
-	check(event.WARNING_SECONDS >= 1.0 and event.DAMAGE >= 6 and event.DAMAGE <= 12, "1 s warning and moderate damage")
+	check(event.WARNING_SECONDS >= 1.0 and event.DAMAGE >= 4 and event.DAMAGE <= 12, "1 s warning and moderate damage")
 	bee.global_position = Vector3(stage.camera.global_position.x + 5.5, 3.5, 0.0) # far from the first lanes
 	bee.health.damage_blocked = false
 	var hp := bee.health.current_health

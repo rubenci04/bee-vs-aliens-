@@ -44,3 +44,39 @@ static func spawn_shot(parent: Node, scene: PackedScene, origin: Vector3, direct
 	projectile.global_position = origin
 	projectile.launch(direction, attacker)
 	return projectile
+
+
+## LOTE 13 · ETAPA 2: `style` names the family look (BeeShotStyles: stinger, acid, web, pebble, bubble, spore, ...); the Level 1 stage
+## dresses the shot with it when it enters the tree (cyan core always, own rim / shape / trail). The shot also points along its path.
+static func spawn_styled(parent: Node, scene: PackedScene, origin: Vector3, direction: Vector3, damage: int, speed: float, attacker: Node, style: StringName) -> AlienEnemyProjectile:
+	var projectile := scene.instantiate() as AlienEnemyProjectile
+	projectile.damage = damage
+	if speed > 0.0:
+		projectile.speed = speed
+	projectile.set_meta("shot_style", style)
+	parent.add_child(projectile)
+	projectile.global_position = origin
+	projectile.launch(direction, attacker)
+	projectile.rotation.z = atan2(projectile.travel_direction.y, projectile.travel_direction.x)
+	return projectile
+
+
+## Launch velocity of a lob from `from` that lands on `to` after `flight_time` seconds under `gravity` (m/s²).
+static func lob_velocity(from: Vector3, to: Vector3, flight_time: float, gravity: float) -> Vector3:
+	var t := maxf(flight_time, 0.2)
+	return Vector3((to.x - from.x) / t, (to.y - from.y) / t + 0.5 * gravity * t, 0.0)
+
+
+## A lobbed (arc) shot aimed to land on `target_point` after `flight_time` s. Fixed path: it never homes.
+static func spawn_lob(parent: Node, scene: PackedScene, origin: Vector3, target_point: Vector3, damage: int, flight_time: float, gravity: float, attacker: Node, style: StringName) -> AlienEnemyProjectile:
+	var velocity := lob_velocity(origin, target_point, flight_time, gravity)
+	var projectile := scene.instantiate() as AlienEnemyProjectile
+	projectile.damage = damage
+	projectile.speed = velocity.length()
+	projectile.gravity = gravity
+	projectile.lifetime = flight_time + 1.2
+	projectile.set_meta("shot_style", style)
+	parent.add_child(projectile)
+	projectile.global_position = origin
+	projectile.launch(velocity.normalized(), attacker)
+	return projectile

@@ -283,7 +283,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() == 48, "Event count wrong (LOTE 12: 48 roster events)")
+	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 90, "Event count wrong (LOTE 13: the dense roster table has 90+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
 	var total := 0
 	var max_gap := 0.0
 	var valley_gap := 0.0
@@ -298,7 +298,7 @@ func run() -> void:
 				valley_gap = gap # The breathing valley of checkpoint 1: the only long stretch.
 			else:
 				max_gap = maxf(max_gap, gap)
-	check(total == 135 and max_gap <= 14 and valley_gap >= 22.0 and valley_gap <= 30.0, "Unit count/pacing wrong (LOTE 12: 135 units incl. the robot escort wave, gaps <= 14 m (combat zones slow the scroll), one valley of 22-30 m; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
+	check(total >= 220 and total <= 330 and max_gap <= 18 and valley_gap == 0.0, "Unit count/pacing wrong (LOTE 13: 220-330 units incl. the robot escort wave, gaps <= 18 m, NO breathing valley; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -348,7 +348,7 @@ func run() -> void:
 			var family := str(unit.name).get_slice("_", 0)
 			var health := unit.get_node("HealthComponent") as HealthComponent
 			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit) or bool(unit.get_meta("anthill_entry", false))) and unit.visible, "Spawn not active/visible: %s state=%s vis=%s lib=%s" % [unit.name, unit.get("state"), unit.visible, unit.get("liberated")]) # REBUILD 02: depth entries activate on arrival.
-			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else int(BeeLevel01Controller.LEVEL_HP[family]))), "HP changed for " + family)
+			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else BeeLevel01Controller.level_hp(family))), "HP changed for " + family)
 			if not seen.has(id):
 				seen[id] = wave._clock
 			var event_id := int(str(unit.name).get_slice("_", 1))
@@ -413,7 +413,7 @@ func run() -> void:
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
 	var escorts := 3 if wave.escort_waves >= 2 else 0 # The robot calls its 2nd escort wave at 60 % HP (the harness kills it at once).
-	check(planned == 132 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
+	check(planned >= 217 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

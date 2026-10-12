@@ -12,22 +12,28 @@ const BOT_TAPS_PER_SECOND := 3.0
 const BOT_SPEED := 5.0
 const TIME_SCALE := 4.0
 const BOT_DODGE_LOOKAHEAD := 0.65
-const BOT_DODGE_HOLD := 1.0
+const BOT_DODGE_HOLD := 0.55 # LOTE 13: a shorter hold = it re-reads the field more often (a player does not freeze for a second after dodging).
+const BOT_WARNING_HOLD := 0.55
+## LOTE 13: a reasonable player rolls (Shift, Lote 11) when a shot is about to hit: it is invulnerable for 0.35 s and destroys common shots.
+const BOT_ROLL_WINDOW := 0.3
 const BOT_DRIFT := 2.4
 const BOT_DRIFT_PERIOD := 4.5
 ## Target (game seconds from start to the UFO entry).
-const MIN_TO_BOSS := 330.0 # LOTE 9: 5.5-6.5 min (was 320-420 s).
-const MAX_TO_BOSS := 420.0 # LOTE 11: 5.5-7 min.
+const MIN_TO_BOSS := 330.0 # LOTE 13: to the TARANTULA (5.5-7 min).
+const MAX_TO_BOSS := 420.0
 ## LOTE 11: HP lost on Normal before the UFO (frog included).
 const MIN_ROUTE_DAMAGE := 50
 const MAX_ROUTE_DAMAGE := 75
 ## LOTE 11: longest stretch with no visible threat (s).
-const MAX_QUIET := 5.0
-## LOTE 12: the breathing valley of checkpoint 1 (X range of the end of its quiet span, and its length in seconds).
-const VALLEY_FROM_X := 190.0
-const VALLEY_TO_X := 215.0
-const VALLEY_MIN_QUIET := 12.0
-const VALLEY_MAX_QUIET := 22.0
+const MAX_QUIET := 4.0 # LOTE 13: never more than 4 s without a threat (no breathing valley any more).
+## LOTE 13: density targets (route, bosses excluded): fraction of the time with >= DENSITY_MIN_VISIBLE visible enemies, with a flyer AND a ground enemy, with enemy bullets on screen.
+const DENSITY_FROM := 4.0
+const DENSITY_MIN_VISIBLE := 3
+const DENSITY_VISIBLE_FRACTION := 0.80
+const DENSITY_MIXED_FRACTION := 0.70
+const DENSITY_BULLET_FRACTION := 0.70
+## LOTE 13: the director must not lag behind the scroll (the layout - checkpoints, supplies, gates - is tied to X): max metres an event may launch late.
+const MAX_EVENT_LAG := 18.0
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -75,6 +81,14 @@ func run() -> void:
 	var hp_at_boss := 0
 	var complete_at := -1.0
 	var tarantula_at := -1.0
+	var density_frames := 0
+	var max_lag := 0.0
+	var lag_log: Array = []
+	var sum_lag := 0.0
+	var lag_count := 0
+	var density_three := 0
+	var density_mixed := 0
+	var density_bullets := 0
 	var fire_left := 0.0
 	var dodge_until := 0.0
 	var dodge_y := 3.4
@@ -126,6 +140,12 @@ func run() -> void:
 		if wave.event_index != last_event:
 			last_event = wave.event_index
 			event_log.append("%d@%.0f" % [last_event, t])
+			if last_event > 0 and last_event <= BeeLevel01Controller.events_table().size(): # LOTE 13: how far behind its X the director launched this event (spawn caps hold the events back when the field is saturated).
+				var lag: float = stage.distance - float(BeeLevel01Controller.events_table()[last_event - 1]["at"])
+				max_lag = maxf(max_lag, lag)
+				lag_log.append([lag, last_event - 1, BeeLevel01Controller.events_table()[last_event - 1]["label"], BeeLevel01Controller.events_table()[last_event - 1]["at"]])
+				sum_lag += lag
+				lag_count += 1
 		if boss_at < 0.0 and (wave.boss != null or (BeeLevel01Controller.LEVEL01_ROSTER_ONLY and wave.event_index >= BeeLevel01Controller.EVENTS.size())):
 			boss_at = t
 			past_entry[0] = true
@@ -156,16 +176,33 @@ func run() -> void:
 			for unit in wave.active_units:
 				if is_instance_valid(unit) and unit.global_position.distance_to(bee.global_position) < 2.0:
 					goal_y = 5.8 if unit.global_position.y < 3.5 else 1.4
+			if t >= dodge_until: # LOTE 13: read the warnings first (the lines and rings are the whole point of the telegraph).
+				var warn_dir := _warning_dodge()
+				if warn_dir != 0.0:
+					dodge_y = bee.global_position.y + warn_dir * 2.0
+					if dodge_y < 1.0 or dodge_y > 6.2:
+						dodge_y = bee.global_position.y - warn_dir * 2.0
+					dodge_until = t + BOT_WARNING_HOLD
 			if t >= dodge_until:
 				for node in get_nodes_in_group("alien_projectiles"):
 					var shot := node as AlienEnemyProjectile
 					if shot == null or shot.is_queued_for_deletion():
 						continue
-					var v := Vector2(shot.travel_direction.x, shot.travel_direction.y) * shot.speed
-					var r := Vector2(shot.global_position.x - bee.global_position.x, shot.global_position.y - bee.global_position.y)
-					var closest := -r.dot(v) / maxf(v.length_squared(), 0.001)
-					if closest > 0.0 and closest < BOT_DODGE_LOOKAHEAD and (r + v * closest).length() < 0.7:
-						var miss_y := (r + v * closest).y
+					# LOTE 13: arcs too (a lobbed shot is predicted with its gravity): a reasonable player dodges pebbles and bubbles.
+					var hit_t := -1.0
+					var miss_y := 0.0
+					var step := 0.05
+					var look := step
+					while look <= BOT_DODGE_LOOKAHEAD:
+						var future := shot.predicted_position(look) - bee.global_position
+						if Vector2(future.x, future.y).length() < 0.7:
+							hit_t = look
+							miss_y = future.y
+							break
+						look += step
+					if hit_t > 0.0 and hit_t <= BOT_ROLL_WINDOW:
+						bee.start_roll() # The dodge below still applies after the roll.
+					if hit_t > 0.0:
 						var away := -1.0 if miss_y > 0.0 else 1.0
 						dodge_y = bee.global_position.y + away * 1.8
 						if dodge_y < 1.0 or dodge_y > 6.2:
@@ -174,6 +211,9 @@ func run() -> void:
 						break
 			if t < dodge_until:
 				goal_y = dodge_y
+		bee._update_roll(tick) # The bot drives Bee itself (its physics process is off): the roll timers need their tick.
+		if _contact_imminent():
+			bee.start_roll() # A body about to touch Bee (ram, lunge, dash): roll through it.
 		var p := bee.global_position
 		p.x = move_toward(p.x, clampf(anchor_x, bee.flight_min.x, bee.flight_max.x), BOT_SPEED * tick)
 		p.y = move_toward(p.y, clampf(goal_y, bee.flight_min.y, bee.flight_max.y), BOT_SPEED * tick)
@@ -205,6 +245,18 @@ func run() -> void:
 				frog_tracked = true
 				(frog as BeeGardenToadEncounter)._tongue_box.hit_confirmed.connect(func(hurt, amount):
 					if hurt.owner_entity == bee: frog_damage[0] += amount)
+		if boss_at < 0.0 and t >= DENSITY_FROM: # LOTE 13: density metrics (route only, bosses excluded).
+			var visible_units := actors.filter(_visible_threat)
+			var air := visible_units.filter(func(u): return not _is_ground_unit(u)).size()
+			var ground := visible_units.size() - air
+			var bullets := get_nodes_in_group("alien_projectiles").filter(func(s): return is_instance_valid(s) and not s.is_queued_for_deletion() and BeeShmupFairness.is_on_screen(s as Node3D, 0.0)).size()
+			density_frames += 1
+			if visible_units.size() >= DENSITY_MIN_VISIBLE:
+				density_three += 1
+			if air >= 1 and ground >= 1:
+				density_mixed += 1
+			if bullets >= 1:
+				density_bullets += 1
 		var threats := actors.filter(_visible_threat).size()
 		if threats == 0 and boss_at < 0.0:
 			if run_quiet == 0.0:
@@ -231,14 +283,19 @@ func run() -> void:
 	print("PACING scroll stopped=%.0fs slowed=%.0fs spawned=%d escaped(retired)=%d shots=%d zones=%s" % [stopped, slowed, spawned, wave.escaped_count, bee.shots_fired, str(wave.arena_log)])
 	print("PACING boss_entry=%.1fs (%.1f min) complete=%.1fs (%.1f min) distance_scroll=%.1f m/s quiet_total=%.0fs longest_quiet=%.1fs" % [
 			boss_at, boss_at / 60.0, complete_at, complete_at / 60.0, stage.scroll_speed, quiet, longest_quiet])
+	print("PACING event_lag max=%.1f m mean=%.1f m (events launched after their X)" % [max_lag, sum_lag / maxf(float(lag_count), 1.0)])
+	lag_log.sort_custom(func(a, b): return float(a[0]) > float(b[0]))
+	print("PACING worst lags: ", str(lag_log.slice(0, 6)))
 	print("PACING frog_damage=", frog_damage[0])
+	print("PACING density visible>=3: %.0f %% · flyer+ground: %.0f %% · bullets: %.0f %% (frames %d) longest_quiet=%.1fs" % [100.0 * density_three / maxf(density_frames, 1), 100.0 * density_mixed / maxf(density_frames, 1), 100.0 * density_bullets / maxf(density_frames, 1), density_frames, longest_quiet])
 	print("PACING robot_miniboss_fight=%.1fs (invulnerable bot) tarantula_entry=%.1fs (%.1f min) escort_waves=%d" % [wave.miniboss_seconds, tarantula_at, tarantula_at / 60.0, wave.escort_waves])
 	var juice := stage.get_node("Juice") as BeeLevel01Juice
 	print("PACING juice score=%d best_combo=%d pollen=%d (pickups %d, liberations %d) frenzy=%d pollen_heals=%d magnet_pulls=%d hit_stops=%d" % [juice.score, juice.best_combo, juice.pollen_total, juice.pollen_from_pickups, juice.pollen_from_liberations, juice.frenzy_activations, juice.pollen_heals, juice.magnet_pulls, BeeJuice.hit_stops])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
 		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])
-		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the last encounter %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
+		check(tarantula_at >= MIN_TO_BOSS and tarantula_at <= MAX_TO_BOSS, "LOTE 13: time to the tarantula %.0fs outside %.0f-%.0f s (5.5-7 min)" % [tarantula_at, MIN_TO_BOSS, MAX_TO_BOSS])
+		check(boss_at >= 280.0 and boss_at < tarantula_at, "The robot gate comes before the tarantula (%.0fs)" % boss_at)
 		check(complete_at > boss_at, "Level must complete after the last encounter")
 		check(tarantula_at > boss_at and wave.tarantula_freed, "The tarantula must close Level 1 (LOTE 12 · ETAPA 3)")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())
@@ -250,15 +307,15 @@ func run() -> void:
 			check(float(zone["seconds"]) >= 20.0, "A combat zone ended too early: %s" % zone)
 		check(zone_seconds >= 60.0, "Combat-zone content %.0f s < 60 s (LOTE 9: 3 zones of 2 waves)" % zone_seconds)
 		check(early_retire.is_empty(), "Units left before their camera time: %s" % str(early_retire))
-		# LOTE 12: at most MAX_QUIET s without a threat, except the BREATHING VALLEY of checkpoint 1 (up to VALLEY_MAX_QUIET s, at least VALLEY_MIN_QUIET).
-		var valley_quiet := 0.0
+		# LOTE 13: no breathing valley any more: never more than MAX_QUIET s without a threat, anywhere on the route.
 		for span in quiet_spans:
-			if span.x > MAX_QUIET:
-				check(span.y >= VALLEY_FROM_X and span.y <= VALLEY_TO_X, "%.1f s without a threat at X=%.0f (max %.1f s outside the valley)" % [span.x, span.y, MAX_QUIET])
-				valley_quiet = maxf(valley_quiet, span.x)
-			if span.y >= VALLEY_FROM_X and span.y <= VALLEY_TO_X:
-				valley_quiet = maxf(valley_quiet, span.x)
-		check(valley_quiet >= VALLEY_MIN_QUIET and valley_quiet <= VALLEY_MAX_QUIET, "Breathing valley %.1f s outside %.0f-%.0f s" % [valley_quiet, VALLEY_MIN_QUIET, VALLEY_MAX_QUIET])
+			check(span.x <= MAX_QUIET + 0.3, "%.1f s without a threat at X=%.0f (max %.1f s)" % [span.x, span.y, MAX_QUIET])
+		check(longest_quiet <= MAX_QUIET + 0.3, "Longest quiet stretch %.1f s (max %.1f s)" % [longest_quiet, MAX_QUIET])
+		check(max_lag <= MAX_EVENT_LAG, "An event launched %.1f m after its X (max %.1f m): the roster saturates the caps" % [max_lag, MAX_EVENT_LAG])
+		var frames_total := maxf(float(density_frames), 1.0)
+		check(float(density_three) / frames_total >= DENSITY_VISIBLE_FRACTION, ">= %d visible enemies only %.0f %% of the time (min %.0f %%)" % [DENSITY_MIN_VISIBLE, 100.0 * density_three / frames_total, 100.0 * DENSITY_VISIBLE_FRACTION])
+		check(float(density_mixed) / frames_total >= DENSITY_MIXED_FRACTION, "Flyer + ground enemy together only %.0f %% of the time (min %.0f %%)" % [100.0 * density_mixed / frames_total, 100.0 * DENSITY_MIXED_FRACTION])
+		check(float(density_bullets) / frames_total >= DENSITY_BULLET_FRACTION, "Enemy bullets on screen only %.0f %% of the time (min %.0f %%)" % [100.0 * density_bullets / frames_total, 100.0 * DENSITY_BULLET_FRACTION])
 		check(wave.max_alive_route <= BeeLevel01Controller.MAX_ON_SCREEN, "LOTE 9: %d enemies at once on the route (max %d)" % [wave.max_alive_route, BeeLevel01Controller.MAX_ON_SCREEN])
 		check(wave.max_alive_arena <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA, "LOTE 9: %d enemies at once in a zone (max %d)" % [wave.max_alive_arena, BeeLevel01Controller.MAX_ON_SCREEN_ARENA])
 	print("PACING camera-time violations=%d retired_checked=%d" % [early_retire.size(), retired_seen.size()])
@@ -288,6 +345,8 @@ func _nearest_target() -> Variant:
 func _visible_threat(unit: Node3D) -> bool:
 	if not is_instance_valid(unit) or not unit.is_visible_in_tree():
 		return false
+	if unit.get("buried") == true:
+		return false # LOTE 13: a worm under the soil is not on screen.
 	if unit.has_method("is_active") and not bool(unit.call("is_active")):
 		return false
 	var hurt := unit.get_node_or_null("Hurtbox3D") as Node3D
@@ -296,3 +355,64 @@ func _visible_threat(unit: Node3D) -> bool:
 	var local := stage.camera.global_transform.affine_inverse() * point
 	var half_height := tan(deg_to_rad(stage.camera.fov) * 0.5) * -local.z
 	return local.z < 0.0 and absf(local.y) <= half_height and absf(local.x) <= half_height * BeeLevel01Framing.view_aspect(root)
+
+
+## Ground enemies: walkers, turrets and the ground fauna (a buried worm is not a visible threat).
+func _is_ground_unit(unit: Node3D) -> bool:
+	if unit is GroundWalkerEnemy or unit is GroundTurretEnemy:
+		return true
+	return unit.has_method("is_ground") and bool(unit.call("is_ground"))
+
+
+## LOTE 13: reading the warnings like a player. Returns the vertical direction to dodge (+1 up / -1 down) when Bee stands on the
+## line a warned attack will take (ram, lunge, dash, locked volley) or where a lobbed shot will land; 0.0 when she is safe.
+func _warning_dodge() -> float:
+	for unit in wave.active_units:
+		if not is_instance_valid(unit):
+			continue
+		if unit.has_method("warned_line"):
+			var line: Array = unit.call("warned_line")
+			if not line.is_empty():
+				var d := _line_miss(line[0], line[1], float(line[2]))
+				if d != 0.0:
+					return d
+		for child in unit.get_children():
+			if child is BeeImplantShooter and (child as BeeImplantShooter).warning != null:
+				var shooter := child as BeeImplantShooter
+				if shooter.family in BeeImplantShooter.LOB_FAMILIES:
+					var offset := Vector2(bee.global_position.x - shooter.locked_point.x, bee.global_position.y - shooter.locked_point.y)
+					if offset.length() < 1.7:
+						return 1.0 if offset.y >= 0.0 else -1.0
+				else:
+					var origin := unit.global_position + Vector3(0, 0.4, 0)
+					var d := _line_miss(origin, origin + shooter.locked_aim.normalized() * 14.0, 1.2)
+					if d != 0.0:
+						return d
+	return 0.0
+
+
+## Vertical escape direction when Bee is within `half_width` of the segment from -> to (0.0 when clear).
+func _line_miss(from: Vector3, to: Vector3, half_width: float) -> float:
+	var a := Vector2(from.x, from.y)
+	var b := Vector2(to.x, to.y)
+	var p := Vector2(bee.global_position.x, bee.global_position.y)
+	var ab := b - a
+	if ab.length_squared() < 0.0001:
+		return 0.0
+	var t := clampf((p - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+	var closest := a + ab * t
+	var off := p - closest
+	if off.length() >= half_width:
+		return 0.0
+	return 1.0 if off.y >= 0.0 else -1.0
+
+
+## An enemy attack body (ram, lunge, dash, eruption) is live and within touching distance of Bee.
+func _contact_imminent() -> bool:
+	for unit in wave.active_units:
+		if not is_instance_valid(unit):
+			continue
+		var hitbox: Variant = unit.get("attack_hitbox")
+		if hitbox is DamageHitbox3D and (hitbox as DamageHitbox3D).enabled and (hitbox as Node3D).global_position.distance_to(bee.global_position) < 1.5:
+			return true
+	return false

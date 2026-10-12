@@ -42,9 +42,10 @@ const ESCORT_FALLBACK := 14.0
 const BODY_DPS_RATIO := 0.039
 const BODY_BURST := 30.0
 ## It stays on the right part of the screen (camera-relative X), the left is Bee's room.
+const FIRST_REST := 0.15 ## Rest after walking in, before the first attack.
 const HOME_MIN := 0.8
 const HOME_MAX := 3.8
-const ENTRY_INSET := 2.6
+const ENTRY_INSET := 1.4 # LOTE 13: it starts attacking within ~1 s of entering the screen (the rule of the level).
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 
@@ -144,7 +145,7 @@ func _physics_process(delta: float) -> void:
 				visual_root.rotation.y = inward * deg_to_rad(60.0)
 				_play(&"Walk")
 			else:
-				_rest(0.6)
+				_rest(FIRST_REST)
 		&"rest":
 			_play(&"Idle")
 			if _left <= 0.0:

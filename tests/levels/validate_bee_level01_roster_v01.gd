@@ -6,8 +6,8 @@ extends SceneTree
 # minimum telegraph, erupting worm with a 1 s mark, cloud as one group unit, turtle tank with a ring warning.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const ALLOWED := ["FlyCommon", "FlyGreen", "FlyCloud", "Wasp", "Ladybird", "Ant", "Snail", "WormA", "WormB", "StagBeetle", "Spider", "Turtle", "MushroomCannon", "Walker"]
-const FORBIDDEN := ["Probe", "EyeDrone", "Speeder", "Turret", "OrganicAlien", "Swarm", "Dragonfly", "Mosquito", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter"]
+const ALLOWED := ["FlyCommon", "FlyGreen", "FlyCloud", "Wasp", "Ladybird", "Ant", "Snail", "WormA", "WormB", "StagBeetle", "Spider", "MushroomCannon", "Walker"] # LOTE 13: no Turtle (its model is out of style until Rubén delivers a new one)
+const FORBIDDEN := ["Turtle", "Probe", "EyeDrone", "Speeder", "Turret", "OrganicAlien", "Swarm", "Dragonfly", "Mosquito", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter"]
 const FORBIDDEN_MOMENTS := ["scale_event", "contaminated_garden", "last_silence", "human_aftermath", "walker_showcase", "bomb_reward"]
 
 var stage: BeeShmupStage
@@ -75,7 +75,7 @@ func test_table() -> void:
 		check(not bool(event.get("human", false)), "No giant human in the roster level")
 		if event.has("arena"):
 			arenas += 1
-			check((event["arena"] as Array).size() == 5, "Each zone plays 5 waves")
+			check((event["arena"] as Array).size() == 6, "Each zone plays 6 waves (LOTE 13)")
 		if i > 0:
 			check(float(event["at"]) >= float(events[i - 1]["at"]), "Events must ascend")
 		if bool(event.get("hard", false)):
@@ -86,21 +86,20 @@ func test_table() -> void:
 	check("Walker" in (events[events.size() - 1]["units"] as Array) and bool(events[events.size() - 1].get("hard", false)), "The walking robot closes the level")
 	var gate: Dictionary = events[events.size() - 1]
 	check("Wasp" in gate["units"] and ("FlyCommon" in gate["units"] or "FlyGreen" in gate["units"]), "The walking robot comes with insect escorts")
-	# Breathing valley: no event for >= 22 m around checkpoint 1 (X=190).
+	# LOTE 13: NO breathing valley any more: the stretch around checkpoint 1 (X=190) is the worm entrance, full of action.
 	var longest := 0.0
-	var valley_from := 0.0
 	for i in range(1, events.size()):
-		var gap := float(events[i]["at"]) - float(events[i - 1]["at"])
-		if gap > longest:
-			longest = gap
-			valley_from = float(events[i - 1]["at"])
-	check(longest >= 22.0 and longest <= 30.0 and valley_from < 190.0 and valley_from + longest > 190.0, "Breathing valley around X=190 (%.0f m from X=%.0f)" % [longest, valley_from])
+		longest = maxf(longest, float(events[i]["at"]) - float(events[i - 1]["at"]))
+	var near_checkpoint := events.filter(func(e): return float(e["at"]) > 179.0 and float(e["at"]) < 206.0 and not (e["units"] as Array).is_empty())
+	var worms_near := near_checkpoint.filter(func(e): return "WormA" in e["units"] or "WormB" in e["units"])
+	check(longest <= 18.0, "No long empty stretch in the table (%.0f m)" % longest)
+	check(near_checkpoint.size() >= 8 and worms_near.size() >= 4, "Checkpoint 1 is the worm entrance: %d events, %d with worms" % [near_checkpoint.size(), worms_near.size()])
 	check(not BeeLevel01AssetDressing.FIREFLIES_ENABLED, "Fireflies stay reserved for the forest")
 	for family in ["FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB", "Turtle"]:
 		check(BeeLevel01Controller.LEVEL_HP.has(family) and BeeLevel01Controller.CAMERA_TIME.has(family), "Tuning missing for " + family)
 	check(int(BeeLevel01Controller.LEVEL_HP["FlyCloud"]) <= int(bee_bomb_damage()), "The bomb must clear a fly cloud")
 	check(int(BeeLevel01Controller.LEVEL_HP["Turtle"]) >= 200, "The turtle is a tank (lots of life)")
-	print("LEVEL01_ROSTER table events=%d zones=%d valley=%.0f m families=%s" % [events.size(), arenas, longest, str(seen)])
+	print("LEVEL01_ROSTER table events=%d zones=%d longest_gap=%.0f m families=%s" % [events.size(), arenas, longest, str(seen)])
 
 func bee_bomb_damage() -> int:
 	return 32 # BeePlayer.bomb_damage default.
@@ -289,7 +288,7 @@ func test_kept_code() -> void:
 	check(event.played and event.frog != null, "The frog wrapper still plays when its moment is emitted")
 	event.frog.queue_free()
 	for family in FORBIDDEN:
-		check(wave.spawned_by_family.get(family, 0) == 0, "Nothing outside the roster was spawned in this test: " + family)
+		check(wave.spawned_by_family.get(family, 0) == 0 or family == "Turtle", "Nothing outside the roster was spawned in this test: " + family) # The turtle is parked (behaviour tests spawn it by hand), never in the table.
 	print("LEVEL01_ROSTER kept_code UFO/frog/legacy table OK")
 
 

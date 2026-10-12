@@ -156,7 +156,7 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 	combo += 1
 	best_combo = maxi(best_combo, combo)
 	combo_left = COMBO_RESET_SECONDS
-	if combo == FRENZY_COMBO: # FRENESI: the double shot no longer depends on pollen.
+	if combo % FRENZY_COMBO == 0: # FRENESI at combo x8 (and every further x8 of an unbroken chain): the double shot no longer depends on pollen.
 		frenzy_activations += 1
 		bee.activate_honey()
 	score += roundi(float(base_points(unit, liberated)) * combo_multiplier())

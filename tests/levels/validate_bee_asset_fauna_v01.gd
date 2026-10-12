@@ -216,7 +216,7 @@ func test_snail() -> void:
 	check(shot >= 0, "Snail never spat")
 	check(unit.telegraphs[0] >= AssetFauna.MIN_TELEGRAPH - 0.03, "Snail spit warned < 0.4 s")
 	var orb := get_nodes_in_group("alien_projectiles")[0] as AlienEnemyProjectile
-	check(orb.speed <= 5.0, "Snail spit is slow")
+	check(orb.speed <= 7.0 and orb.gravity > 0.0, "Snail spit is a slow slime-bubble lob (LOTE 13: an arc, launch speed <= 7 m/s)")
 	await capture("snail_spit")
 	report.append("Snail telegraph=%.2fs spit speed=%.1f" % [unit.telegraphs[0], orb.speed])
 	await clear()

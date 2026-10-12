@@ -126,6 +126,18 @@ func activate(new_target: BeePlayer) -> bool:
 	return true
 
 
+## LOTE 13: true while a warning shows (the sting charge, the dash windup, the overload): tests measure the time to the first one.
+func is_telegraphing() -> bool:
+	return current_state in [State.WINDUP, State.STING, State.OVERLOAD]
+
+
+## The line of the dash the windup warns: [from, to, half_width] (tests and bots read it like the warning on screen).
+func warned_line() -> Array:
+	if current_state != State.WINDUP:
+		return []
+	return [global_position, global_position + _dash_dir * _dash_length, 0.9]
+
+
 func is_active() -> bool:
 	return _active and current_state != State.DEAD
 
@@ -391,13 +403,8 @@ func _fire_sting() -> void:
 		return
 	var origin := implant.global_position if implant != null else global_position
 	origin.z = 0.0
-	var projectile := STING_PROJECTILE.instantiate() as AlienEnemyProjectile
-	projectile.damage = sting_damage
-	projectile.speed = sting_speed
-	get_parent().add_child(projectile)
-	projectile.global_position = origin
+	var projectile := BeeEnemyPatterns.spawn_styled(get_parent(), STING_PROJECTILE, origin, (target.global_position - origin).normalized(), sting_damage, sting_speed, self, &"stinger") # Re-aims per bolt, then flies straight.
 	projectile.scale = Vector3.ONE * 0.75 # A light bolt: smaller than a Probe shot.
-	projectile.launch((target.global_position - origin).normalized(), self) # Re-aims per bolt, then flies straight.
 	sting_count += 1
 
 
@@ -494,6 +501,6 @@ func _fire_sting_fan() -> void:
 	var origin := implant.global_position if implant != null else global_position
 	origin.z = 0.0
 	for direction in BeeEnemyPatterns.fan_directions(target.global_position - origin, sting_fan_count, STING_FAN_STEP):
-		var projectile := BeeEnemyPatterns.spawn_shot(get_parent(), STING_PROJECTILE, origin, direction, sting_damage, sting_speed, self)
+		var projectile := BeeEnemyPatterns.spawn_styled(get_parent(), STING_PROJECTILE, origin, direction, sting_damage, sting_speed, self, &"stinger") # LOTE 13: the violet needle
 		projectile.scale = Vector3.ONE * 0.75
 		sting_count += 1

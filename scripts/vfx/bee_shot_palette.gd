@@ -150,4 +150,8 @@ const BOSS_SHOT_SIZE := 1.3
 ## calls this: every enemy projectile that enters the tree is re-dressed as the cold orb.
 static func on_node_added(node: Node) -> void:
 	if node is AlienEnemyProjectile and is_instance_valid(node) and node.is_inside_tree():
+		var style: StringName = node.get_meta("shot_style", &"") # LOTE 13: family look (BeeShotStyles).
+		if style != &"" and BeeShotStyles.has_style(style):
+			BeeShotStyles.dress(node as Node3D, style)
+			return
 		dress_enemy(node as Node3D, BOSS_SHOT_SIZE if node.is_in_group(UfoBoss01.PROJECTILE_GROUP) else 1.0)

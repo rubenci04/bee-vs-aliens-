@@ -117,6 +117,11 @@ func auto_aim_point() -> Vector3:
 	return hurtbox.global_position + Vector3(0.0, -AUTO_AIM_DROP, 0.0)
 
 
+## LOTE 13: true while a warning shows (the drop column): tests measure the time to the first one.
+func is_telegraphing() -> bool:
+	return current_state == State.TELEGRAPH
+
+
 func is_active() -> bool:
 	return current_state not in [State.IDLE, State.FREED] and not escaped
 
