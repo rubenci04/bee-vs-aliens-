@@ -160,6 +160,7 @@ func test_human() -> void:
 	stage.distance = 140.0
 	stage._update_camera_and_bounds()
 	wave.set_physics_process(false)
+	stage.get_node("Juice").set_physics_process(false) # LOTE 11: no item magnet in this fixture.
 	bee.set_physics_process(false)
 	await frames(3)
 	check(is_equal_approx(human.crossing_speed, 2.6) and is_equal_approx(human.second_crossing_speed, 2.4), "Human speed changed")
@@ -249,7 +250,7 @@ func test_density() -> void:
 			triples += 1 # Challenge pass: last third only; Arcade Pressure pass relaxed this (see its own test).
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
 			total += (zone_wave["units"] as Array).size()
-	check(events.size() == 71, "Encounter count changed (LOTE 11: 71 events)")
+	check(events.size() == 72, "Encounter count changed (LOTE 11: 72 events)")
 	check(total >= 144 and total <= 150, "Unit total %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(biggest <= 4, "An encounter has more than 4 threats")
 	check(float(events.back()["at"]) <= 340.0 and float(events[0]["at"]) >= 1.5, "Timeline thresholds changed (LOTE 11: opening popcorn at 1.5)")

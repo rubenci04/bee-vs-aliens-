@@ -4,6 +4,9 @@ extends Node3D
 signal wave_completed
 ## Enemy-free director set pieces ("opening_can", "human_aftermath", ...; "last_silence" before the UFO).
 signal director_moment(id: StringName)
+## LOTE 11: a unit was destroyed or freed (score / combo / hit stop, see BeeLevel01Juice) and an enemy took a hit (keeps the combo alive).
+signal unit_downed(unit: Node3D, liberated: bool)
+signal enemy_hit
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
 const PROBE = preload("res://scenes/bee_prototype/alien_probe_ranged.tscn")
@@ -227,6 +230,8 @@ const EVENTS = [
 	]},
 	{"at": 120.0, "act": 2, "label": "PATRULLA · JARDÍN", "units": ["Mosquito"], "y": [4.2]},
 	{"at": 124.0, "act": 2, "label": "FAUNA · PRIMERA LIBÉLULA CONTROLADA", "units": ["Dragonfly"]},
+	# LOTE 11 C5: the giant watering can empties over the garden (3 waves of 2 water columns, 1 s warning). Enemy-free moment.
+	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
 	{"at": 132.0, "act": 2, "label": "PATRULLA · JARDÍN", "units": ["Wasp"], "y": [2.6]},
 	{"at": 138.0, "act": 2, "label": "PATRULLA · CRUCE", "units": ["Mosquito"], "y": [4.6]},
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
@@ -606,6 +611,8 @@ func _spawn(request: Dictionary) -> void:
 	var health := unit.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(int(LEVEL_HP[family])) # NOCHE 01: EASY lowers enemy HP.
 	health.current_health = health.max_health
+	BeeJuice.attach_hit_flash(unit) # LOTE 11: 0.06 s white flash on every hit.
+	health.health_changed.connect(func(_current, _maximum, change): if change < 0: enemy_hit.emit())
 	if unit.get("projectile_scene") is PackedScene:
 		unit.set("projectile_scene", TOON_ALIEN_BOLT)
 	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
@@ -706,6 +713,9 @@ func _retire_soft_units(delta: float) -> void:
 			unit.queue_free()
 
 func _on_unit_defeated(unit: Node3D) -> void:
+	if not bool(unit.get_meta("juice_downed", false)): # A freed animal already counted when it was liberated.
+		unit.set_meta("juice_downed", true)
+		unit_downed.emit(unit, false)
 	active_units.erase(unit)
 	swarm_units.erase(unit)
 	# Keep the existing death feedback briefly, then release its subtree.
@@ -800,8 +810,9 @@ func _on_boss_phase(state: int) -> void:
 	if state == UfoBoss01.State.PHASE_1:
 		player_label = "" # The health bar takes over.
 
-func _on_boss_defeated(_boss: UfoBoss01) -> void:
+func _on_boss_defeated(defeated_boss: UfoBoss01) -> void:
 	boss_defeated = true
+	unit_downed.emit(defeated_boss, false) # LOTE 11: boss points + hit stop.
 	boss = null
 	_complete = true
 	stage.scroll_speed = POST_BOSS_SCROLL # Short roll to the sector end, then SECTOR DESPEJADO.
@@ -816,6 +827,9 @@ func _clear_fauna_hint() -> void:
 
 func _on_unit_liberated(unit: Node3D) -> void:
 	active_units.erase(unit)
+	if not bool(unit.get_meta("juice_downed", false)):
+		unit.set_meta("juice_downed", true)
+		unit_downed.emit(unit, true)
 	if str(unit.name).get_slice("_", 0) in ANIMAL_FAMILIES:
 		liberated_count += 1
 
@@ -823,8 +837,10 @@ func _on_unit_liberated(unit: Node3D) -> void:
 func register_extra_animal() -> void:
 	animals_total += 1
 
-func note_extra_liberated() -> void:
+func note_extra_liberated(unit: Node3D = null) -> void:
 	liberated_count += 1
+	if unit != null:
+		unit_downed.emit(unit, true)
 
 func liberation_text() -> String:
 	return "LIBERADOS %d/%d" % [liberated_count, animals_total]

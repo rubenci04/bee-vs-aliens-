@@ -43,6 +43,14 @@ func multiplier_for(hitbox: Node3D) -> float:
 func receive_hit(hitbox: DamageHitbox3D) -> int:
 	if health_component == null or not hitbox.can_damage(self):
 		return 0
+	# LOTE 11: during the roll, common enemy shots that touch Bee are destroyed (everything else is just ignored by `invulnerable`).
+	if owner_entity is BeePlayer and (owner_entity as BeePlayer).is_rolling:
+		var shot := hitbox.get_parent() as AlienEnemyProjectile
+		if shot != null and shot.is_common:
+			hitbox.set_enabled(false)
+			shot.queue_free()
+			(owner_entity as BeePlayer).absorb_shot()
+		return 0
 	# One hitbox damages one HealthComponent once per enable: a bomb overlapping the body and the implant of the same
 	# animal (two areas, one health) counts once.
 	var health_id := health_component.get_instance_id()

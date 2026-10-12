@@ -200,7 +200,7 @@ func _human_aftermath() -> void:
 	add_child(beetle)
 	if stage.wave.has_method("register_extra_animal"):
 		stage.wave.register_extra_animal()
-		turtle.liberated_now.connect(func(_t): stage.wave.note_extra_liberated())
+		turtle.liberated_now.connect(func(t): stage.wave.note_extra_liberated(t))
 	beetle.position = Vector3(camera_x + 7.0, -0.15, -1.6)
 	beetle.rotation.y = PI # Walks towards -X.
 	var walk := beetle.create_tween()

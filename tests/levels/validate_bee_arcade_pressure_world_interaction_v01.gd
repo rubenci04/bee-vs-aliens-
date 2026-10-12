@@ -426,7 +426,7 @@ func test_level() -> void:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 71 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
+	check(events.size() == 72 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
 	check(total >= 144 and total <= 150, "Unit total %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.6, "Too few encounters with a ranged threat (%d/%d; LOTE 9: >= 60 %%, fewer escorts)" % [with_ranged, combat_events])

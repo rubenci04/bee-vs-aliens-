@@ -100,6 +100,7 @@ func run() -> void:
 	await frames(4)
 	stage.set_physics_process(false)
 	stage.wave.set_physics_process(false)
+	stage.get_node("Juice").set_physics_process(false) # LOTE 11: the item magnet would pull the Spread capsule next to Bee.
 	bee = stage.bee
 	bee.set_physics_process(false)
 	bee.flight_min = Vector2(-20, 0.7)

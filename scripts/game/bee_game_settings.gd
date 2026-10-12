@@ -16,6 +16,8 @@ const RETURN_TO_TITLE_SECONDS := 8.0
 static var difficulty: StringName = NORMAL
 ## True when Level 01 was opened from the title screen (tests and F6 open it directly: no automatic return).
 static var from_title := false
+## LOTE 11: camera shake (bomb, boss, damage taken). Title menu option; the shake code reads it, so it also covers the POCs.
+static var screen_shake_enabled := true
 
 
 static func damage_taken_scale() -> float:
@@ -28,6 +30,10 @@ static func enemy_hp_scale() -> float:
 
 static func scaled_hp(base: int) -> int:
 	return maxi(1, roundi(float(base) * enemy_hp_scale()))
+
+
+static func shake_label() -> String:
+	return "SÍ" if screen_shake_enabled else "NO"
 
 
 static func label() -> String:

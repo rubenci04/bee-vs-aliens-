@@ -294,7 +294,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 	lines.append("BOSS %s timeline: %s" % [label, " | ".join(phase_log)])
 	lines.append("BOSS %s hits taken (damage: count): %s" % [label, str(hits)])
 	# Let the death cinematic finish (complete flow).
-	for i in 600:
+	for i in 720: # LOTE 11: was 600, exactly the 20 m of scroll at 2 m/s; the death hit stop costs a few frames.
 		await physics_frame
 		if stage.sector_complete:
 			break

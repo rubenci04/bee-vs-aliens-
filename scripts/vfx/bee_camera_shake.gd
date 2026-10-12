@@ -8,6 +8,8 @@ const MAX_AMPLITUDE := 0.09 ## metres at the flight plane: barely visible, felt 
 
 
 static func kick(from: Node, amplitude := 0.05, duration := 0.2) -> void:
+	if not BeeGameSettings.screen_shake_enabled:
+		return # LOTE 11: switched off from the title menu.
 	if from == null or not from.is_inside_tree():
 		return
 	var camera := from.get_viewport().get_camera_3d()

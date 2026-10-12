@@ -101,7 +101,7 @@ func test_static() -> void:
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
 	check(total >= 144 and total <= 150, "Unit budget %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
-	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
+	check(moments == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.
 	var distinct := {}
 	var run := 1
@@ -187,7 +187,7 @@ func test_run() -> void:
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing")
 	check(wave.event_index == BeeLevel01Controller.EVENTS.size(), "Not every event ran")
-	check(moments_seen == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
+	check(moments_seen == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
 	check(acts_seen.has(1) and acts_seen.has(2) and acts_seen.has(3) and acts_seen.has(4) and acts_seen.has(5), "Acts not all reached: " + str(acts_seen.keys()))
 	check(peak <= 14, "Projectile ceiling exceeded during the level (%d)" % peak)
 	var spawned := 0

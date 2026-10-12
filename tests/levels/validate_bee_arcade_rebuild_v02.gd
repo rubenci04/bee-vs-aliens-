@@ -349,7 +349,7 @@ func test_run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing")
-	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments out of order: " + str(moments))
+	check(moments == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments out of order: " + str(moments))
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS:
 		planned += (event["units"] as Array).size()

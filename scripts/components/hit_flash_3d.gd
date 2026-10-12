@@ -43,6 +43,12 @@ func flash() -> void:
 	_flash_tween.tween_callback(_finish_flash)
 
 
+func set_flash_color(color: Color) -> void:
+	flash_color = color
+	if _flash_material != null:
+		_flash_material.albedo_color = color
+
+
 func cancel() -> void:
 	if _flash_tween != null:
 		_flash_tween.kill()

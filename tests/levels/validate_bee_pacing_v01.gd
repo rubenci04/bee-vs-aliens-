@@ -52,6 +52,11 @@ func run() -> void:
 	wave = stage.wave as BeeLevel01Controller
 	bee = stage.bee
 	bee.health.damage_blocked = false
+	# LOTE 11: the route is measured without hit stop (the bot counts fixed time steps) and without honey mode (an optional power-up:
+	# with it the bot reaches the UFO ~20-30 s earlier and loses ~25 HP less). `-- honey` plays with it and only reports.
+	BeeJuice.hit_stop_enabled = false
+	if not "honey" in OS.get_cmdline_user_args():
+		bee.honey_seconds = 0.0
 	bee.set_physics_process(false)
 	Engine.time_scale = TIME_SCALE
 	var lost := [0]
@@ -214,6 +219,8 @@ func run() -> void:
 	print("PACING boss_entry=%.1fs (%.1f min) complete=%.1fs (%.1f min) distance_scroll=%.1f m/s quiet_total=%.0fs longest_quiet=%.1fs" % [
 			boss_at, boss_at / 60.0, complete_at, complete_at / 60.0, stage.scroll_speed, quiet, longest_quiet])
 	print("PACING frog_damage=", frog_damage[0])
+	var juice := stage.get_node("Juice") as BeeLevel01Juice
+	print("PACING juice score=%d best_combo=%d pollen=%d (pickups %d, liberations %d) honey_activations=%d magnet_pulls=%d hit_stops=%d" % [juice.score, juice.best_combo, juice.pollen_total, juice.pollen_from_pickups, juice.pollen_from_liberations, juice.honey_activations, juice.magnet_pulls, BeeJuice.hit_stops])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
 		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])

@@ -7,6 +7,10 @@ extends Node3D
 
 @onready var hitbox: DamageHitbox3D = $Hitbox3D
 var travel_direction := Vector3.LEFT
+## LOTE 11: a plain enemy shot is destroyed when it touches Bee during the roll; UFO shots (group ufo_boss_projectiles) are not.
+var is_common: bool:
+	get:
+		return not is_in_group(&"ufo_boss_projectiles")
 var _time_left := 0.0
 
 

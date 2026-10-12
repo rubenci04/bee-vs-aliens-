@@ -415,7 +415,7 @@ func test_level() -> void:
 			check(float(delays[i]) >= float(delays[i - 1]), "Delays must be ascending (the queue is FIFO): " + str(event["label"]))
 		if units.filter(func(f): return f != "Swarm").size() >= 4:
 			check(float(delays.back()) >= 2.4, "The 4th threat must still be staggered (REBUILD 02: >= 2.4 s): " + str(event["label"]))
-	check(events.size() == 71 and float(events.back()["at"]) == 340.0, "Event table changed (LOTE 11: 71 events, last defence at X=340)")
+	check(events.size() == 72 and float(events.back()["at"]) == 340.0, "Event table changed (LOTE 11: 72 events, last defence at X=340)")
 	check(total >= 144 and total <= 150, "Unit total %d outside the 144-150 budget (LOTE 11: +35-40 % over 107, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(BeeLevel01Controller.threat_cap(10.0) == 4 and BeeLevel01Controller.threat_cap(150.0) == 5 and BeeLevel01Controller.threat_cap(300.0) == 6, "Concurrency cap changed")

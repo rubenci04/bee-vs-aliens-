@@ -50,6 +50,19 @@ func _ready() -> void:
 	crosshair.name = "Crosshair"
 	crosshair.bee = bee
 	$CanvasLayer.add_child(crosshair)
+	var juice := BeeLevel01Juice.new() # LOTE 11: combo, honey mode, hit stop, damage shake, item magnet.
+	juice.name = "Juice"
+	add_child(juice)
+	var foreground := BeeLevel01Foreground.new() # LOTE 11 C4: out-of-focus grass layers in front of Bee.
+	foreground.name = "Foreground"
+	add_child(foreground)
+	var speed_lines := BeeLevel01SpeedLines.new() # LOTE 11 C4: streaks while Bee rolls.
+	speed_lines.name = "SpeedLines"
+	speed_lines.bee = bee
+	$CanvasLayer.add_child(speed_lines)
+	var watering := BeeLevel01WateringEvent.new() # LOTE 11 C5: water columns near the giant watering can.
+	watering.name = "WateringEvent"
+	add_child(watering)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 
@@ -163,7 +176,7 @@ func _place_preboss_supply() -> void:
 func _show_clear_banner() -> void:
 	clear_banner = Label.new()
 	clear_banner.name = "ClearBanner"
-	clear_banner.text = "SECTOR DESPEJADO · " + level_wave.liberation_text()
+	clear_banner.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() + "\n" + ($Juice as BeeLevel01Juice).summary_text()
 	clear_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	clear_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	clear_banner.set_anchors_preset(Control.PRESET_FULL_RECT)

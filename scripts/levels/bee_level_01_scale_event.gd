@@ -24,7 +24,7 @@ func _begin() -> void:
 	frog = encounter
 	stage.wave.register_extra_animal()
 	encounter.landing.connect(func(): landings += 1)
-	encounter.liberated_now.connect(func(_animal): stage.wave.note_extra_liberated())
+	encounter.liberated_now.connect(func(animal): stage.wave.note_extra_liberated(animal))
 	encounter.defeated.connect(func(_animal):
 		if is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL * BeeGardenToadEncounter.SCROLL_FACTOR):
 			stage.scroll_speed = BeeLevel01Controller.LEVEL_SCROLL)

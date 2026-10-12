@@ -8,6 +8,8 @@ signal died
 var current_health: int
 var _death_emitted := false
 var damage_blocked := false # Temporary protection, off by default.
+## LOTE 11: set by the Bee roll (Shift) - same effect as damage_blocked but owned by the roll, so it never cancels respawn or victory protection.
+var invulnerable := false
 
 
 func _ready() -> void:
@@ -20,7 +22,7 @@ var damage_scale := 1.0
 func take_damage(amount: int) -> int:
 	if damage_scale != 1.0 and amount > 0:
 		amount = maxi(1, roundi(float(amount) * damage_scale))
-	if damage_blocked or amount <= 0 or current_health <= 0:
+	if damage_blocked or invulnerable or amount <= 0 or current_health <= 0:
 		return 0
 	var previous := current_health
 	current_health = maxi(0, current_health - amount)

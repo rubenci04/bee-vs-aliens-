@@ -7,6 +7,8 @@ signal melee_started
 signal defeated
 signal weapon_state_changed
 signal powerup_collected(kind: StringName)
+signal roll_started
+signal honey_changed
 
 @export_category("Flight")
 @export var horizontal_speed := 7.0
@@ -39,6 +41,16 @@ const AIM_HOLD_SECONDS := 2.5
 @export var bomb_damage := 32
 const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 
+@export_category("Roll (LOTE 11)")
+@export var roll_duration := 0.35 ## Invulnerable seconds of the Shift roll.
+@export var roll_cooldown := 2.5 ## Seconds before the next roll (counted from the start of the roll).
+@export var roll_enabled := true
+
+@export_category("Honey mode (LOTE 11)")
+@export var honey_seconds := 6.0 ## Double shot while it lasts; filled by pollen (BeeLevel01Juice).
+@export var honey_shot_offset := 0.14 ## Half distance between the two parallel shots (m).
+@export var honey_twin_damage_ratio := 0.5 ## The second shot does this share of the first one (honey = 1.5x damage, not 2x).
+
 @export_category("Melee")
 @export var melee_damage := 15
 @export var melee_range := 0.85
@@ -60,6 +72,13 @@ var spread_ammo := 0
 var bomb_charges := 0
 var active_bomb: BeeAlienBomb
 var _melee_active_left := 0.0
+var is_rolling := false
+var roll_count := 0
+var roll_absorbed_shots := 0 ## Common enemy shots destroyed by touching Bee during a roll.
+var honey_left := 0.0
+var _roll_left := 0.0
+var _roll_cooldown_left := 0.0
+var _roll_tween: Tween
 var _melee_cooldown_left := 0.0
 var _melee_tween: Tween
 var aim_point := Vector3.ZERO # World point under the crosshair (z = 0), valid while is_free_aiming().
@@ -83,6 +102,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_melee(delta)
+	_update_roll(delta)
+	_update_honey(delta)
 	if is_defeated:
 		velocity = Vector3.ZERO
 		return
@@ -106,6 +127,8 @@ func _physics_process(delta: float) -> void:
 		fire()
 	if Input.is_action_just_pressed("debug_attack"):
 		start_melee()
+	if Input.is_action_just_pressed("bee_roll"):
+		start_roll()
 	if Input.is_action_just_pressed("bee_bomb"):
 		if mouse_aim_enabled and not is_instance_valid(active_bomb):
 			_aim_at_screen(get_viewport().get_mouse_position())
@@ -148,6 +171,7 @@ func fire() -> BeeEnergyProjectile:
 		return null
 	refresh_auto_aim()
 	var direction := aim_direction() # LOTE 7: free aim (mouse) first, then auto-aim, then straight ahead.
+	var spread_shot := spread_ammo > 0
 	var projectile := _spawn_projectile(direction)
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
 	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle_spread" if spread_ammo > 0 else &"muzzle", direction)
@@ -160,6 +184,8 @@ func fire() -> BeeEnergyProjectile:
 			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), reduced_damage).set_spread_visual()
 		spread_ammo -= 1
 		weapon_state_changed.emit()
+	if honey_left > 0.0:
+		_spawn_honey_twin(projectile, direction, spread_shot) # LOTE 11: honey mode = double shot.
 	shots_fired += 1
 	return projectile
 
@@ -390,3 +416,76 @@ func _update_free_aim(delta: float) -> void:
 		facing_x = signf(dx) # Bee looks where it aims.
 		visual_root.rotation.y = -facing_x * PI * 0.5
 		_place_melee_hitbox()
+
+
+# --- LOTE 11: roll (Shift) and honey mode ---------------------------------------------------------------------------
+
+## Barrel roll: `roll_duration` s of invulnerability (HealthComponent.invulnerable; common enemy shots that touch Bee are
+## destroyed, see DamageHurtbox3D), then `roll_cooldown` s until the next one.
+func start_roll() -> bool:
+	if is_defeated or not roll_enabled or is_rolling or _roll_cooldown_left > 0.0:
+		return false
+	is_rolling = true
+	roll_count += 1
+	_roll_left = roll_duration
+	_roll_cooldown_left = roll_cooldown
+	health.invulnerable = true
+	if _roll_tween != null:
+		_roll_tween.kill()
+	visual_root.rotation.z = 0.0
+	_roll_tween = create_tween()
+	_roll_tween.tween_property(visual_root, "rotation:z", -facing_x * TAU, roll_duration).from(0.0)
+	_roll_tween.tween_callback(func(): visual_root.rotation.z = 0.0)
+	roll_started.emit()
+	weapon_state_changed.emit()
+	return true
+
+
+func _update_roll(delta: float) -> void:
+	if _roll_cooldown_left > 0.0:
+		_roll_cooldown_left = maxf(0.0, _roll_cooldown_left - delta)
+	if is_rolling:
+		_roll_left -= delta
+		if _roll_left <= 0.0:
+			is_rolling = false
+			health.invulnerable = false
+			visual_root.rotation.z = 0.0
+			weapon_state_changed.emit()
+
+
+## 0..1 recharge progress of the roll (1 = ready); the HUD reads it.
+func roll_ready_ratio() -> float:
+	if not roll_enabled:
+		return 0.0
+	if is_rolling:
+		return 0.0
+	return 1.0 - clampf(_roll_cooldown_left / maxf(roll_cooldown, 0.001), 0.0, 1.0)
+
+
+func absorb_shot() -> void:
+	roll_absorbed_shots += 1
+	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0.0, 0.2, 0.0), &"impact")
+
+
+func activate_honey(seconds := -1.0) -> void:
+	honey_left = honey_seconds if seconds < 0.0 else seconds
+	honey_changed.emit()
+	weapon_state_changed.emit()
+
+
+func _update_honey(delta: float) -> void:
+	if honey_left <= 0.0:
+		return
+	honey_left = maxf(0.0, honey_left - delta)
+	if honey_left == 0.0:
+		honey_changed.emit()
+
+
+## The second parallel shot of honey mode (same damage and look as `main`).
+func _spawn_honey_twin(main: BeeEnergyProjectile, direction: Vector3, spread_look: bool) -> void:
+	var twin := _spawn_projectile(direction, maxi(1, roundi(float(main.damage) * honey_twin_damage_ratio)))
+	var side := Vector3(-direction.y, direction.x, 0.0).normalized() * honey_shot_offset
+	main.global_position += side
+	twin.global_position -= side
+	if spread_look:
+		twin.set_spread_visual()
