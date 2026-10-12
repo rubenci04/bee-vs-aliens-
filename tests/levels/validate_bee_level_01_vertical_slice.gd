@@ -289,7 +289,7 @@ func run() -> void:
 	var valley_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
 		var event: Dictionary = BeeLevel01Controller.EVENTS[i]
-		total += event["units"].size()
+		total += event["units"].size() + (event.get("escort_wave", {"units": []})["units"] as Array).size() # LOTE 12 · ETAPA 3: robot escorts (2nd wave).
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: combat-zone waves included.
 			total += (zone_wave["units"] as Array).size()
 		if i > 0:
@@ -298,7 +298,7 @@ func run() -> void:
 				valley_gap = gap # The breathing valley of checkpoint 1: the only long stretch.
 			else:
 				max_gap = maxf(max_gap, gap)
-	check(total == 133 and max_gap <= 14 and valley_gap >= 22.0 and valley_gap <= 30.0, "Unit count/pacing wrong (LOTE 12: 133 units, gaps <= 14 m (combat zones slow the scroll), one valley of 22-30 m; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
+	check(total == 135 and max_gap <= 14 and valley_gap >= 22.0 and valley_gap <= 30.0, "Unit count/pacing wrong (LOTE 12: 135 units incl. the robot escort wave, gaps <= 14 m (combat zones slow the scroll), one valley of 22-30 m; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -348,7 +348,7 @@ func run() -> void:
 			var family := str(unit.name).get_slice("_", 0)
 			var health := unit.get_node("HealthComponent") as HealthComponent
 			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit)) and unit.visible, "Spawn not active/visible: %s state=%s vis=%s lib=%s" % [unit.name, unit.get("state"), unit.visible, unit.get("liberated")]) # REBUILD 02: depth entries activate on arrival.
-			check(health.max_health == (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else int(BeeLevel01Controller.LEVEL_HP[family])), "HP changed for " + family)
+			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else int(BeeLevel01Controller.LEVEL_HP[family]))), "HP changed for " + family)
 			if not seen.has(id):
 				seen[id] = wave._clock
 			var event_id := int(str(unit.name).get_slice("_", 1))
@@ -383,14 +383,16 @@ func run() -> void:
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true
-		# UFO BOSS 01 closes the level; its fight is covered by validate_bee_ufo_boss_01.
+		# LOTE 12 · ETAPA 3: the tarantula closes the level; its fight is covered by validate_bee_tarantula_boss_v01.
+		if wave.tarantula != null and wave.tarantula.is_active():
+			wave.tarantula.health.take_damage(99999)
 		if wave.boss != null and wave.boss.is_active():
 			wave.boss.health.take_damage(99999)
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ROUTE_THREATS and wave.roster_complete and wave.boss == null, "Progression/max active wrong (roster level ends at the walking robot, no UFO)")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ROUTE_THREATS and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	var roster_families := {}
@@ -410,7 +412,8 @@ func run() -> void:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
-	check(planned == 133 and spawned == planned, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned, spawned])
+	var escorts := 3 if wave.escort_waves >= 2 else 0 # The robot calls its 2nd escort wave at 60 % HP (the harness kills it at once).
+	check(planned == 132 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

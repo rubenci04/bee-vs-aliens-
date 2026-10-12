@@ -20,6 +20,17 @@ const POWERUP_PICKUP = preload("res://scenes/bee_prototype/bee_powerup_pickup.ts
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 const SWARM = preload("res://scenes/levels/popcorn_drone.tscn")
 const TURTLE = preload("res://scenes/levels/garden_turtle.tscn") # LOTE 12: garden turtle tank (BeeGardenTurtle).
+## LOTE 12 · ETAPA 3: the walking robot as mini-boss (event "miniboss") and the tarantula, final boss of Level 1 (roster only).
+const WALKER_MINIBOSS = preload("res://scenes/levels/walker_miniboss.tscn")
+const TARANTULA = preload("res://scenes/levels/tarantula_boss_01.tscn")
+## Mini-boss robot HP (Normal; EASY scales it). Target fight: 25-40 s with Base (validate_bee_walker_miniboss_v01).
+const MINIBOSS_HP := 640
+## Breather between the robot and the tarantula's entrance (arena locked, supplies when needed).
+const TARANTULA_BREATHER := 2.6
+## Damage scale of the flies the tarantula summons (their ram is 11 on the route scale of 1).
+const TARANTULA_MINION_DAMAGE_SCALE := 0.3
+## After the tarantula walks away the sector ends this far ahead (the garden geometry runs to X=360; no 30 s empty run-out).
+const TARANTULA_RUN_OUT := 10.0
 ## LOTE 6 — Codex GLB fauna (scripts/levels/asset_fauna.gd): family name -> scene.
 const ASSET_FAUNA := {
 	"Mosquito": preload("res://scenes/levels/asset_fauna/mosquito.tscn"), "Ladybird": preload("res://scenes/levels/asset_fauna/ladybird.tscn"),
@@ -396,8 +407,11 @@ const EVENTS_ROSTER = [
 	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
 	# CHECKPOINT 2 (X=281) — the walking robot (gate at X=294) with insect escorts closes the level (hard gate, never overlapping soft actors).
 	{"at": 287.0, "act": 4, "label": "SOMBRA · DOS MOSCAS", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 1.0], "y": [4.4, 3.0]},
-	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · ESCOLTA DE INSECTOS", "units": ["Wasp", "Walker", "FlyCommon", "Wasp", "FlyGreen"], "hard": true,
-			"delays": [0.0, 0.3, 3.0, 6.0, 8.0], "y": [4.4, 0.0, 5.0, 3.0, 4.0]},
+	# LOTE 12 · ETAPA 3: the robot is a MINI-BOSS (WalkerMiniboss): first escort wave with it, the second ("escort_wave") when it
+	# drops to 60 % HP or after 14 s - 6 insect escorts in all (wasps and flies). The tarantula follows (see _advance_tarantula).
+	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · MINIJEFE CON ESCOLTA", "units": ["Walker", "Wasp", "FlyCommon", "FlyCommon"], "hard": true, "miniboss": true,
+			"delays": [0.0, 1.2, 2.4, 3.4], "y": [0.0, 4.6, 5.4, 3.0],
+			"escort_wave": {"units": ["Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.9, 1.8], "y": [5.0, 3.4, 4.4]}},
 ]
 
 ## LOTE 12 · ETAPA 2: Level 1 plays only its roster (docs/art/LEVEL_01_ROSTER.md). false restores the old table, with the alien enemies,
@@ -455,6 +469,13 @@ var arena_log: Array[Dictionary] = [] # {event, seconds, waves} per finished zon
 var _label_token := 0
 var animals_total := 0 # NOCHE 01: controlled animals that appeared (incl. the turtle, see register_extra_animal).
 var liberated_count := 0
+## LOTE 12 · ETAPA 3
+var miniboss: WalkerMiniboss
+var miniboss_seconds := -1.0 # Fight length of the robot (activation to fall); -1 = not finished.
+var escort_waves := 0
+var tarantula: TarantulaBoss01
+var tarantula_freed := false
+var _tarantula_breather_left := -1.0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -489,6 +510,8 @@ func _physics_process(delta: float) -> void:
 	_spawn_pending()
 	if boss != null and is_instance_valid(boss):
 		boss.minions_alive = boss_minions().size() # BOSS V2: the saucer only summons when the field allows it.
+	if tarantula != null and is_instance_valid(tarantula):
+		tarantula.minions_alive = boss_minions().size()
 	if not _arena.is_empty():
 		_update_arena(delta)
 		return
@@ -551,6 +574,9 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 			request["anchor"] = anchor
 		if hold:
 			request["hold"] = true
+		if bool(event.get("miniboss", false)) and str(units[i]) == "Walker":
+			request["miniboss"] = true
+			request["escort_wave"] = event.get("escort_wave", {})
 		if str(units[i]) == "Swarm":
 			request["path"] = str(event.get("path", "sine"))
 			request["shooter"] = i in event.get("shooters", [])
@@ -672,7 +698,7 @@ func _spawn(request: Dictionary) -> void:
 		"Turret": scene = TURRET
 		"Speeder": scene = SPEEDER
 		"OrganicAlien": scene = ORGANIC
-		"Walker": scene = WALKER
+		"Walker": scene = WALKER_MINIBOSS if bool(request.get("miniboss", false)) else WALKER
 		"Dragonfly": scene = DRAGONFLY
 		"Swarm": scene = SWARM
 		"Turtle": scene = TURTLE
@@ -698,10 +724,7 @@ func _spawn(request: Dictionary) -> void:
 		# Drops in from above the top edge INSIDE the screen (its thread is seen first); `x` is camera-relative here.
 		unit.global_position = Vector3(stage.camera.global_position.x + float(request.get("x", SPIDER_ENTRY_X)), BeeLevel01Framing.top_y() + 1.6, 0)
 	if not bool(request.get("minion", false)):
-		unit.set_meta("incoming_bee_damage_scale", ROUTE_DAMAGE_SCALE)
-		for area in unit.find_children("*", "Area3D", true, false):
-			if area is DamageHitbox3D:
-				area.bee_damage_scale = ROUTE_DAMAGE_SCALE
+		_scale_bee_damage(unit, ROUTE_DAMAGE_SCALE)
 	unit.set_meta("level_hard", bool(request["hard"]))
 	unit.set_meta("level_born", _clock)
 	unit.set_meta("level_retreat", false)
@@ -764,6 +787,8 @@ func _spawn(request: Dictionary) -> void:
 		fauna_hint_shown = true
 		player_label = FAUNA_HINT
 		get_tree().create_timer(3.5, false).timeout.connect(_clear_fauna_hint) # Bound method: dropped if the level reloads.
+	if unit is WalkerMiniboss:
+		_setup_miniboss(unit as WalkerMiniboss, request)
 	if bool(request.get("hold", false)) and family == "Walker":
 		unit.set_meta("level_hold", true) # Showcase: the scroll slows while it lives, so it stays on screen.
 		health.max_health = BeeGameSettings.scaled_hp(SHOWCASE_HP) # REBUILD 03: SHOWCASE role (5-8 s of reasonable fire).
@@ -785,6 +810,12 @@ func _spawn(request: Dictionary) -> void:
 		return # Activated on arrival at the flight plane (no AI, shots, collision or auto-aim before).
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s" % family)
+
+func _scale_bee_damage(unit: Node3D, scale: float) -> void:
+	unit.set_meta("incoming_bee_damage_scale", scale)
+	for area in unit.find_children("*", "Area3D", true, false):
+		if area is DamageHitbox3D:
+			area.bee_damage_scale = scale
 
 ## Shared start point of a depth formation: the middle of its slots (camera-relative X, absolute Y).
 func _depth_anchor(event: Dictionary) -> Vector2:
@@ -882,6 +913,8 @@ func freeze_enemies() -> void:
 		unit.set_physics_process(false)
 	if boss != null and is_instance_valid(boss):
 		boss.freeze()
+	if tarantula != null and is_instance_valid(tarantula):
+		tarantula.freeze()
 	stage.scroll_speed = 0.0
 
 # --- UFO BOSS 01 (FIRST CONTACT) -------------------------------------------------------------
@@ -891,7 +924,7 @@ func _advance_boss(delta: float) -> void:
 	if boss_defeated:
 		return
 	if roster_only:
-		_finish_roster_level() # LOTE 12: no UFO in Level 1; the walking robot closes the level.
+		_advance_tarantula(delta) # LOTE 12 · ETAPA 3: no UFO in Level 1; the tarantula closes it (after the robot mini-boss).
 		return
 	if boss == null:
 		if _boss_breather_left < 0.0:
@@ -953,7 +986,86 @@ func _finish_roster_level() -> void:
 	wave_completed.emit()
 
 func boss_active() -> bool:
-	return boss != null and is_instance_valid(boss) and boss.is_active()
+	return (boss != null and is_instance_valid(boss) and boss.is_active()) or (tarantula != null and is_instance_valid(tarantula) and tarantula.is_active())
+
+# --- LOTE 12 · ETAPA 3: walking robot mini-boss and the tarantula --------------------------------------------------------
+
+func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
+	miniboss = robot
+	var health := robot.get_node("HealthComponent") as HealthComponent
+	health.max_health = BeeGameSettings.scaled_hp(MINIBOSS_HP)
+	health.current_health = health.max_health
+	robot.set_meta("level_miniboss", true)
+	var escort: Dictionary = request.get("escort_wave", {})
+	var event_id := int(request["event"])
+	robot.escorts_requested.connect(func():
+		if not escort.is_empty() and not _frozen:
+			escort_waves += 1
+			_queue_units(escort, event_id, 200))
+	robot.defeated.connect(func(_robot):
+		miniboss_seconds = robot.fight_seconds)
+	escort_waves = 1 # The first wave comes with it (the event's own escorts).
+
+## After the robot gate: breather (arena locked, supplies), then the tarantula walks in from the right at dusk.
+func _advance_tarantula(delta: float) -> void:
+	if tarantula_freed:
+		return
+	if tarantula != null:
+		return
+	if _tarantula_breather_left < 0.0:
+		_tarantula_breather_left = TARANTULA_BREATHER
+		current_act = 5
+		stage.scroll_speed = 0.0 # Arena lock.
+		encounter_label = "FINAL · LA TARÁNTULA"
+		player_label = "ALGO SE MUEVE EN LAS TELARAÑAS"
+		_spawn_boss_supplies()
+	_tarantula_breather_left -= delta
+	if _tarantula_breather_left <= 0.0:
+		_start_tarantula()
+
+func _start_tarantula() -> void:
+	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
+	if checkpoint != null:
+		checkpoint.activate_boss_checkpoint() # Before counting it: a retry counts it again from the snapshot.
+	tarantula = TARANTULA.instantiate() as TarantulaBoss01
+	tarantula.name = "TarantulaBoss01"
+	tarantula.max_hp = BeeGameSettings.scaled_hp(tarantula.max_hp)
+	get_node("../Enemies").add_child(tarantula)
+	tarantula.defeated.connect(_on_tarantula_gone)
+	tarantula.liberated_now.connect(_on_tarantula_freed)
+	tarantula.phase_changed.connect(_on_tarantula_phase)
+	tarantula.summon_requested.connect(_on_boss_summon)
+	animals_total += 1 # An animal: it will be freed, never killed.
+	encounter_label = "FINAL · LA TARÁNTULA"
+	player_label = "LA TARÁNTULA"
+	stage.set("boss_arena_wide", true)
+	tarantula.begin(stage.camera, bee)
+
+func tarantula_active() -> bool:
+	return tarantula != null and is_instance_valid(tarantula) and tarantula.is_active()
+
+func _on_tarantula_phase(state: int) -> void:
+	if state == TarantulaBoss01.State.FREED:
+		for minion in boss_minions():
+			minion.get_node("HealthComponent").take_damage(99999) # Its flies are freed with it.
+	if state == TarantulaBoss01.State.PHASE_1:
+		player_label = "" # The health bar takes over.
+
+func _on_tarantula_freed(freed: TarantulaBoss01) -> void:
+	liberated_count += 1
+	unit_downed.emit(freed, true)
+	player_label = ""
+
+## The tarantula has walked away: the level is complete (short run-out, then SECTOR DESPEJADO · LIBERADOS n/N).
+func _on_tarantula_gone(_gone: TarantulaBoss01) -> void:
+	tarantula_freed = true
+	boss_defeated = true
+	tarantula = null
+	roster_complete = true
+	_complete = true
+	stage.sector_length = minf(stage.sector_length, stage.distance + TARANTULA_RUN_OUT)
+	stage.scroll_speed = POST_BOSS_SCROLL
+	wave_completed.emit()
 
 func _clear_fauna_hint() -> void:
 	if player_label == FAUNA_HINT:
@@ -1013,7 +1125,7 @@ func boss_minions() -> Array[Node3D]:
 ## Minions leave the saucer's hatch and fly to their slots (no AI, shots or collision until they arrive), then fight
 ## as normal Level 01 units that never retreat on their own.
 func _on_boss_summon(family: StringName, count: int) -> void:
-	if boss == null or not is_instance_valid(boss) or _frozen:
+	if ((boss == null or not is_instance_valid(boss)) and not tarantula_active()) or _frozen:
 		return
 	# COMBAT VARIETY 01 (boss v2): minions come in from several points - above the screen, the left edge and the right
 	# edge - in rotation, each to a slot on its own side (camera-relative). They keep aimed bursts (no laser) under the boss.
@@ -1027,13 +1139,16 @@ func _on_boss_summon(family: StringName, count: int) -> void:
 		var gate: Array = gates[minion_gate_index % gates.size()]
 		minion_gate_index += 1
 		var free_slot: Vector2 = gate[1]
-		_spawn({"family": str(family), "slot": i, "event": events_table().size() - 1, "hard": true, "y": free_slot.y, "minion": true,
+		# LOTE 12 · ETAPA 3: the tarantula's flies are soft (they leave after their CAMERA_TIME); the UFO's minions stay until shot.
+		_spawn({"family": str(family), "slot": i, "event": events_table().size() - 1, "hard": not tarantula_active(), "y": free_slot.y, "minion": true,
 				"launch_from": gate[0], "launch_slot": free_slot})
 		if not active_units.is_empty():
 			active_units.back().set("laser_every", 0)
 			active_units.back().set("split_orb", false)
 			active_units.back().set("burst_shots", 1)
 			active_units.back().set("windup_time", UfoBoss01.MIN_TELEGRAPH)
+			if tarantula_active(): # LOTE 12 · ETAPA 3: the tarantula's flies are a distraction, not a second damage source.
+				_scale_bee_damage(active_units.back(), TARANTULA_MINION_DAMAGE_SCALE)
 		minion_gates_used.append(minion_gate_index - 1)
 
 ## UFO BOSS 01: a Bomb pickup appears in the arena during the last silence (only when Bee is low on charges, so dying and

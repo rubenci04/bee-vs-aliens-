@@ -118,6 +118,8 @@ func combo_multiplier() -> float:
 
 
 static func base_points(unit: Node, liberated: bool) -> int:
+	if unit is TarantulaBoss01 or unit is WalkerMiniboss: # LOTE 12 · ETAPA 3: Level 1's bosses (freed / exploded).
+		return POINTS_BOSS
 	if liberated:
 		return POINTS_LIBERATION
 	if unit is UfoBoss01:

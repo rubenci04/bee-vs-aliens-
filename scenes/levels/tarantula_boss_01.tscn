@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/tarantula_boss_01.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/components/health_component.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/components/hurtbox_3d.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/components/hit_flash_3d.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="5"]
+
+[sub_resource type="BoxShape3D" id="placeholder_shape"]
+size = Vector3(1, 1, 1)
+
+[node name="TarantulaBoss01" type="Node3D"]
+script = ExtResource("1")
+
+[node name="HealthComponent" parent="." instance=ExtResource("2")]
+max_health = 1200
+
+[node name="HitFlash3D" parent="." instance=ExtResource("4")]
+
+[node name="Hurtbox3D" parent="." instance=ExtResource("3")]
+team_id = &"alien"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox3D"]
+shape = SubResource("placeholder_shape")
+
+[node name="ContactHitbox" parent="." instance=ExtResource("5")]
+team_id = &"alien"
+damage = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ContactHitbox"]
+shape = SubResource("placeholder_shape")

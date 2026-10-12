@@ -20,10 +20,10 @@ Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITOR
 | Escarabajo ciervo | ✅ | `enemies/controlled_stag_beetle` | 9.952 tris, sin `_lite` |
 | Hongos de jardín | ✅ | `environment/lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | `BeeGardenMushroom`: destructibles que sueltan polen |
 | Hongo cañón | ✅ | `enemies/controlled_mushroom_cannon` | 11.822 tris, sin `_lite` |
-| Araña colgante | ✅ / ⚠️ | nodo `controlled_spider.tscn`; GLB `enemies/controlled_hanging_spider` sin conectar | |
+| Araña colgante | ✅ / ⚠️ | nodo `controlled_spider.tscn`; GLB `enemies/controlled_hanging_spider` | el GLB se usa en las arañas pequeñas que suelta la tarántula (etapa 3); la araña del recorrido sigue con el nodo procedural |
 | Tortuga de jardín | ✅ | `BeeGardenTurtle` (sobre `bee_aftermath_turtle.gd`) | tanque con golpe de caparazón; falta modelo GLB propio |
-| Robot caminante | ✅ | `ground_walker_enemy.tscn` (procedural) | cierra el nivel con escoltas de insectos (etapa 2) |
-| Tarántula (jefe) | ⚠️ (etapa 3) | `bosses/lvl01_boss_giant_spider_v01` (+ liberada) | modelo con exoesqueleto alien; el contrato pide solo implante; sin combate |
+| Robot caminante | ✅ | `ground_walker_enemy.tscn` → `walker_miniboss.tscn` | mini-jefe del checkpoint 2 con dos oleadas de escoltas (etapa 3) |
+| Tarántula (jefe) | ✅ / ⚠️ | `bosses/lvl01_boss_giant_spider_v01` (+ liberada) | jefe final en juego (etapa 3); placas alien ocultas en tiempo de ejecución, falta quitarlas del `.blend`; sin clips de pisotón/embestida (ver `AUDITORIA_ASSETS.md`) |
 
 ### Decorado de jardín
 
@@ -80,3 +80,9 @@ Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITOR
 7. Helecho, campanilla y tronco (decorado de jardín) también los usa la laguna.
 8. `CLAUDE.md` habla de 52 validaciones; hay 91 scripts `validate_*.gd`.
 9. Hongos: los tres hongos de jardín de Codex son naturales (sin alien); el «hongo de color» del contrato (Nivel 3) no existe como modelo todavía.
+
+
+## Adición — hormigueros (2026-10-12)
+
+- ✅ Hormiguero bajo de cráter y alto de túnel lateral, fuentes Blender, GLB, cavidades reales, anclas y laboratorio (`ANTHILLS_V01.md`).
+- ⚠️ Colocación en la escena jugable pendiente; los props no generan hormigas ni añaden colisiones por sí mismos.

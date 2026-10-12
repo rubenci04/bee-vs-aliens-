@@ -42,8 +42,18 @@ Estado tras la etapa 2 del Lote 12 (el Nivel 1 ya juega solo con este elenco; ta
 | Hongo cañón | `controlled_mushroom_cannon` | 11.822 | En juego | **sin `_lite`** |
 | Araña colgante | nodo `controlled_spider.tscn` (procedural) y `controlled_hanging_spider.glb` | 4.930 | En juego (nodo); GLB sin conectar | conectar el GLB al nodo (hilo + abanico) |
 | Tortuga de jardín | `BeeGardenTurtle` (pieza procedural de la secuela, escalada ×2) | — | **En juego** como tanque (220 HP, golpe de caparazón con anillo de aviso 0,9 s) | modelo GLB propio |
-| Robot caminante | `ground_walker_enemy.tscn` (procedural) | — | En juego como cierre del nivel, con escoltas de avispas y moscas | animación/rediseño de mini-jefe |
-| Tarántula (jefe) | `lvl01_boss_giant_spider_v01` (+ liberada), implante en la versión controlada (22 nodos) | 11.652 / 8.584 | Solo laboratorio (etapa 3) | escena de jefe, IA, hitbox del implante, liberación; el modelo lleva exoesqueleto alien y el contrato pide solo implante |
+| Robot caminante | `ground_walker_enemy.tscn` (modelo Quaternius) heredado por `walker_miniboss.tscn` | — | **En juego como mini-jefe** (etapa 3: cañón dorsal con su propia vida, ojo amarillo ×2, pisotón con onda, explota al caer) | animación propia de pisotón (usa Idle + elevación del modelo); el cañón roto se oculta (malla `Cylinder`), no hay malla de cañón destruido |
+| Tarántula (jefe) | `lvl01_boss_giant_spider_v01` (+ liberada), implante en la versión controlada (22 nodos) | 11.652 / 8.584 | **En juego como jefe final** (etapa 3, `tarantula_boss_01.tscn`) | ver «Tarántula: piezas» abajo |
+
+### Tarántula: piezas (Lote 12, etapa 3)
+
+- **Implante:** existe como pieza separada en el GLB (grupo `implant`: `implant_core` cian, `implant_dorsal_shell`, puentes y nodos violetas). Se usa tal cual: el hurtbox del implante está sobre `implant_core`; en la ventana ×2 el `implant_dorsal_shell` se oculta y el núcleo pulsa. **No se creó ninguna malla provisoria.**
+- **Exoesqueleto alien:** las placas `implant_flank_*`, `implant_thorax_guard` e `implant_sensor_housing` se **ocultan en tiempo de ejecución** (el contrato pide solo implante). El GLB no se tocó; si se aprueba, conviene quitarlas en el `.blend` y reexportar.
+- **Patas blindadas (fase 2):** se leen con los brazaletes `implant_bracer_*` que ya trae el modelo (se ocultan al liberarla, junto con el resto del dispositivo).
+- **Liberada:** se usa el mismo modelo con el dispositivo oculto y colores cálidos (`BeeLiberation`); el GLB `_liberado` existe pero no se intercambia (evita un salto de pose a mitad de la retirada).
+- **Animaciones:** `idle`, `walk`, `attack` del GLB. No hay clip de pisotón, embestida ni retirada: se resuelven con inclinación del modelo y desplazamiento. Pedido sugerido si se quiere más lectura: clips `stomp`, `charge`, `calm`.
+- **Arañas colgantes del jefe:** usan `enemies/controlled_hanging_spider.glb` (primer uso en juego de ese GLB), con su hilo propio reemplazado por una línea al borde superior.
+- **Efectos en código (no son modelos):** onda de pisotón (`BeeGroundShockwave`), hilos que barren, banda de aviso de la embestida, cortina de telaraña (disparos cian con nudo blanco). Son primitivas, no piezas del modelo.
 
 
 El implante separado está en las nuevas moscas, gusanos y tarántula (versión controlada con dispositivo, `_liberado` sin él). Los modelos antiguos separan el dispositivo en un nodo (`AlienControlDevice`) que se oculta al liberar.
@@ -54,7 +64,7 @@ El implante separado está en las nuevas moscas, gusanos y tarántula (versión 
 |---|---|---|---|
 | Avispa | `wasp_enemy.tscn/.gd` | 1 | visual `wasp_mid_poly.glb` |
 | Araña colgante | `controlled_spider.tscn/.gd` | 1 | |
-| Robot caminante | `ground_walker_enemy.tscn/.gd` | 1 (único tecnológico) | |
+| Robot caminante | `ground_walker_enemy.tscn/.gd`; mini-jefe `walker_miniboss.tscn/.gd` | 1 (único tecnológico) | etapa 3: mini-jefe del checkpoint 2 |
 | Tortuga | `bee_aftermath_turtle.gd` | 1 | |
 | Popcorn alien | `popcorn_drone.tscn/.gd` | shared/alien_tech | relleno de formaciones del Lote 11; no figura en el contrato |
 | Sonda, dron ojo, speeder, torreta, organismo morado | `alien_probe_*`, `eye_drone_enemy`, `speeder_enemy`, `ground_turret_enemy`, `organic_alien_enemy` | shared/alien_tech (el organismo, Nivel 7) | apagar en el Nivel 1 (etapa 2) |

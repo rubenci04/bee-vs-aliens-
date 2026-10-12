@@ -54,3 +54,65 @@ Verificación: reimportación (0 errores) y suite completa **91/91 PASS** (la pr
 - **Para jugar:** Nivel 01 en Normal: mirar moscas en V, la nube, el gusano que marca el suelo, el valle de respiro con frascos y bomba tras el checkpoint, la tortuga y su anillo, hongos que se rompen en polen y el robot con escoltas al final.
 
 Verificación: reimportación y suite completa **92/92 PASS** (logs `dev/lote12_2_*`; primera pasada tras el cambio: 70/91, los fallos eran tests atados a la tabla anterior).
+
+## Etapa 3 — Robot caminante como mini-jefe y tarántula como jefe final
+
+### 3.1 Robot caminante (mini-jefe, checkpoint 2)
+
+- **Archivos:** `scripts/levels/walker_miniboss.gd` (`WalkerMiniboss`, hereda de `GroundWalkerEnemy`: mismo modelo, animaciones y escena base), `scenes/levels/walker_miniboss.tscn` (escena heredada), `scripts/levels/bee_ground_shockwave.gd` (onda de suelo compartida con la tarántula).
+- **Puerta X=294** (`"miniboss": true`): primera oleada con el robot (avispa + 2 moscas comunes) y segunda oleada (`escort_wave`: avispa, mosca verde, mosca común) cuando baja al 60 % de vida o a los 14 s. **6 escoltas** en total.
+- **Cañón dorsal:** carga + línea de aviso de **0,5 s**; la línea se fija al final del aviso y dispara una ráfaga de 3. El cañón tiene **vida propia (70)**; al romperlo explota, se oculta la malla `Cylinder` y pierde ese disparo (sigue pisoteando más seguido).
+- **Pisotón:** banda de aviso en el suelo (0,6 s), luego una onda que corre a ambos bordes a ras de suelo (1,25 m de alto): se esquiva volando por encima. No es un proyectil: **la pirueta no la destruye** (solo da su invulnerabilidad de 0,35 s).
+- **Ojo amarillo:** punto débil ×2 dentro del cuerpo (un disparo cuya línea pasa a 0,42 m del ojo). El auto-apuntado apunta al cuerpo a la altura del ojo; el cañón es un tiro deliberado con el mouse.
+- **Vida 640** (Normal) con tope de daño sostenido (3,9 %/s de la vida, reserva 30) para que Spread no lo derrita. Barra propia "ROBOT CAMINANTE". **Explota al caer** (cadena de explosiones + estallido final); no cuenta como liberado.
+
+### 3.2 Tarántula (jefe final, atardecer)
+
+- **Archivos:** `scripts/levels/tarantula_boss_01.gd` (`TarantulaBoss01`), `scenes/levels/tarantula_boss_01.tscn`, `scripts/levels/tarantula_drop_spider.gd` (arañas colgantes). Misma estructura que el jefe UFO del Lote 10: barra con marcas de fase, registro `hazards` con el aviso de cada ataque, tope de daño por segundo (`limit_hull_damage`), bomba = 8 % de su vida, miel entre fases, checkpoint de jefe.
+- **Entrada:** tras el robot, respiro de 2,6 s (miel si Bee está bajo 70 %, bomba si tiene menos de 2) y la tarántula entra caminando por la derecha (X≈296, atardecer completo).
+- **Fase 1 (100–75 %):** abanico de telaraña desde la boca (aviso 0,6 s), pisotón con onda (0,65 s), arañas pequeñas que bajan por un hilo en la columna de Bee (el hilo es el aviso, 0,7 s; un par de disparos las liberan).
+- **Fase 2 (75–50 %):** hilos que bajan (aviso 0,75 s) y barren la pantalla hasta 3,0 m de altura (por debajo hay pasillo); invoca moscas (2 llamadas de 2 moscas, se retiran solas a los 10 s); **patas blindadas** (los disparos en las patas se absorben); tras cada ataque grande el **implante del abdomen queda expuesto 1,8 s (×2)**: se abre la tapa dorsal y el núcleo late.
+- **Fase 3 (50–20 %):** **embestida** a lo ancho con banda roja de **0,8 s** mientras retrocede (carga previa), cruza al otro lado y se da vuelta; **miel** al entrar (mitad de la pelea).
+- **Fase 4 (<20 %, furia):** **cortina de telaraña** con dos huecos seguros (aviso 0,6 s) y **embestidas encadenadas** (dos, cada una con 0,8 s).
+- **Reglas:** nunca encadena un ataque que cierra carril (pisotón, embestida, cortina) mientras los hilos barren (abajo vs. arriba sería imposible); la telaraña es disparo común (la pirueta la destruye), **el pisotón y la embestida no**. Vida 1200 (Normal), tope 1,3 %/s (Fácil 1,15 %/s), reserva 18; el implante expuesto paga la mitad del tope. RNG con semilla: cada pelea se juega igual (mediciones reproducibles).
+- **Liberación:** al romper el implante queda **LIBERADA**: se ocultan el dispositivo y los brazaletes, colores cálidos, texto "LIBERADO", se calma y se retira caminando; luego 10 m de carrera y **"SECTOR DESPEJADO · LIBERADOS n/N"** (la tarántula cuenta como animal). Puntaje de jefe en el combo.
+- **Modelo:** el implante existe como pieza separada en el GLB (`implant_core`); **no se inventó ninguna malla**. Las placas alien que el contrato no quiere (flancos, guarda del tórax, sensor) se ocultan en tiempo de ejecución; detalle en `docs/art/AUDITORIA_ASSETS.md` («Tarántula: piezas»).
+
+### 3.3 Medición con el bot
+
+Bot de las peleas (igual criterio que el del UFO): 3 toques/s, 60 % apuntados, reacciona a cada aviso pero uno de cada dos tarde (con la mitad del aviso ya gastada), ve la mitad de los disparos que le vienen; con Spread la munición es infinita (peor caso de daño). Daño = HP perdido acumulado (la miel no se resta). Tests: `validate_bee_tarantula_boss_v01`, `validate_bee_walker_miniboss_v01`.
+
+**Tarántula** (desde fase 1 hasta la liberación):
+
+| Dificultad / arma | Duración | Daño recibido | Notas |
+| --- | --- | --- | --- |
+| Normal / Base | 86,2 s | 69 | 4 fases, 17 ventanas del implante, aviso mínimo 0,60 s, 0 daño sin aviso |
+| Normal / Spread | 84,4 s | 66 | el tope de DPS iguala a Base |
+| Fácil / Base | 90,8 s | 48 | |
+| Fácil / Spread | 91,3 s | 44 | |
+
+El daño lo hacen la telaraña (≈2/3) y las moscas (≈1/3): el bot esquiva pisotón, hilos, embestida y cortina aun reaccionando tarde. Normal/Base queda justo en el borde (69 de 50–70).
+
+**Robot caminante** (activación → caída; daño de toda la puerta, escoltas incluidas):
+
+| Dificultad / arma | Duración | Daño recibido |
+| --- | --- | --- |
+| Normal / Base | 36,8 s | 45 |
+| Normal / Spread | 29,7 s | 5 |
+| Fácil / Base | 31,5 s | 19 |
+| Fácil / Spread | 27,4 s | 3 |
+
+**Recorrido completo** (`validate_bee_pacing_v01`, bot invulnerable desde el robot): llegada al robot 344,7 s (5,7 min), robot 32,4 s, **entrada de la tarántula 379,7 s (6,3 min)**, nivel completo 489,0 s (8,2 min). Vida perdida antes del robot: 61 (objetivo 45–70; antes 52: el bot de ritmo ahora apunta al mismo punto que el auto-apuntado del juego). Hueco máximo fuera del valle 4,8 s; valle 17,9 s; máximos simultáneos ruta/zonas 6/4.
+
+### Tests
+
+- Nuevos: `validate_bee_tarantula_boss_v01` (estructura, implante ×2, patas blindadas, bomba 8 %, pirueta vs. telaraña/onda/embestida, liberación y cartel, 4 peleas) y `validate_bee_walker_miniboss_v01` (dos oleadas, cañón 0,5 s y rotura, ojo ×2, onda no destruible, explosión, 4 peleas en 25–40 s).
+- Actualizados: `validate_bee_level_01_vertical_slice` (135 unidades con la segunda oleada, vida del mini-jefe, el nivel termina con la tarántula liberada) y `validate_bee_pacing_v01` (mide robot y tarántula, apunta como el auto-apuntado).
+- Verificación: reimportación y suite completa **95/95 PASS**, sin `SCRIPT ERROR` (logs `dev/lote12_3b_*`). Primera pasada: 94/95 (Spread derretía al robot en 21 s: se agregó su tope de DPS; y el auto-apuntado del robot miraba a la altura del cañón, corregido con `auto_aim_point`). Siguen los avisos conocidos del renderer headless (`Parameter "material" is null`), presentes desde antes.
+
+### Pendiente / qué falta
+
+- Arte: clips de pisotón/embestida/calma para la tarántula y pisotón del robot; quitar del `.blend` las placas alien que hoy se ocultan en ejecución; malla de cañón roto.
+- La araña del recorrido sigue con su nodo procedural (el GLB colgante solo se usa en las arañas del jefe).
+- Balance sujeto al playtest humano: el bot esquiva los ataques grandes y el daño viene casi todo de la telaraña y las moscas.
+- Música de jefe: no hay (fuera de alcance).

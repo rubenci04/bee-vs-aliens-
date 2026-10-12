@@ -74,6 +74,7 @@ func run() -> void:
 	var boss_at := -1.0
 	var hp_at_boss := 0
 	var complete_at := -1.0
+	var tarantula_at := -1.0
 	var fire_left := 0.0
 	var dodge_until := 0.0
 	var dodge_y := 3.4
@@ -130,6 +131,8 @@ func run() -> void:
 			past_entry[0] = true
 			hp_at_boss = bee.health.current_health
 			bee.health.damage_blocked = true # Measure route on Normal; boss has its own battle suite.
+		if tarantula_at < 0.0 and wave.tarantula != null:
+			tarantula_at = t # LOTE 12 · ETAPA 3: the final boss walks in after the robot mini-boss.
 		if stage.sector_complete:
 			complete_at = t
 			break
@@ -229,6 +232,7 @@ func run() -> void:
 	print("PACING boss_entry=%.1fs (%.1f min) complete=%.1fs (%.1f min) distance_scroll=%.1f m/s quiet_total=%.0fs longest_quiet=%.1fs" % [
 			boss_at, boss_at / 60.0, complete_at, complete_at / 60.0, stage.scroll_speed, quiet, longest_quiet])
 	print("PACING frog_damage=", frog_damage[0])
+	print("PACING robot_miniboss_fight=%.1fs (invulnerable bot) tarantula_entry=%.1fs (%.1f min) escort_waves=%d" % [wave.miniboss_seconds, tarantula_at, tarantula_at / 60.0, wave.escort_waves])
 	var juice := stage.get_node("Juice") as BeeLevel01Juice
 	print("PACING juice score=%d best_combo=%d pollen=%d (pickups %d, liberations %d) honey_activations=%d magnet_pulls=%d hit_stops=%d" % [juice.score, juice.best_combo, juice.pollen_total, juice.pollen_from_pickups, juice.pollen_from_liberations, juice.honey_activations, juice.magnet_pulls, BeeJuice.hit_stops])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
@@ -236,6 +240,7 @@ func run() -> void:
 		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])
 		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the last encounter %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
 		check(complete_at > boss_at, "Level must complete after the last encounter")
+		check(tarantula_at > boss_at and wave.tarantula_freed, "The tarantula must close Level 1 (LOTE 12 · ETAPA 3)")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())
 		check(is_equal_approx(BeeLevel01Controller.LEVEL_SCROLL, 1.25), "Cruise scroll must be 1.25 m/s (LOTE 9)")
 		check(wave.arena_log.size() == 3, "Three combat zones must play (%d)" % wave.arena_log.size())
@@ -273,8 +278,7 @@ func _nearest_target() -> Variant:
 			continue # LOTE 9: the shield is up - shoot its nodes.
 		if target.has_method("is_active") and not bool(target.call("is_active")):
 			continue
-		var hurtbox := target.get_node_or_null("Hurtbox3D") as Node3D
-		var point := hurtbox.global_position if hurtbox != null else target.global_position
+		var point := bee._target_point(target) # Same point the game auto-aim uses (LOTE 12 · ETAPA 3: the robot mini-boss offers its body).
 		var d := point.distance_to(bee.global_position)
 		if d < best_d:
 			best_d = d
