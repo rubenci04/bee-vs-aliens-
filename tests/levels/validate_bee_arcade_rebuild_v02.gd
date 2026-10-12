@@ -116,7 +116,7 @@ func test_static() -> void:
 			depth_events.append(event)
 			depth_units += units.size()
 			check(not bool(event.get("hard", false)), "Depth entries never open a hard gate")
-	check(total >= 90 and total <= 110, "Unit budget %d outside 90-110 (LOTE 9: quality over quantity, zones included)" % total)
+	check(total >= 144 and total <= 150, "Unit budget %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(walkers.size() >= 4 and walkers.size() <= 5, "Walker appearances %d (want 4-5)" % walkers.size())
 	var first_walker: Dictionary = events.filter(func(e): return "Walker" in e["units"])[0]
 	check((first_walker["units"] as Array).size() == 1 and walkers[0] < 140.0, "The first Walker must be a clean presentation, alone, before the human")

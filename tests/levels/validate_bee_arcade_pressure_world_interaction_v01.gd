@@ -420,14 +420,14 @@ func test_level() -> void:
 		biggest = maxi(biggest, units.filter(func(f): return f != "Swarm").size()) # Popcorn is outside the threat cap.
 		for zone_wave: Dictionary in event.get("arena", []): # LOTE 9: zone waves count in the budget.
 			total += (zone_wave["units"] as Array).size()
-		if not units.is_empty() and not units.all(func(f): return BeeLevel01Controller.ASSET_FAUNA.has(f) and not (f in RANGED)): # LOTE 6: melee-only Codex fauna are extra variety, outside this ratio.
+		if not units.is_empty() and not units.all(func(f): return BeeLevel01Controller.ASSET_FAUNA.has(f) and not (f in RANGED)) and not (units.all(func(f): return f == "Swarm") and (event.get("shooters", []) as Array).is_empty()): # LOTE 6: melee-only Codex fauna are extra variety, outside this ratio.
 			combat_events += 1
 			for family in units:
 				if family in RANGED or (family == "Swarm" and not (event.get("shooters", []) as Array).is_empty()):
 					with_ranged += 1
 					break
-	check(events.size() == 59 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
-	check(total >= 90 and total <= 110, "Unit total %d outside 90-110 (LOTE 9, zones included)" % total)
+	check(events.size() == 71 and float(events.back()["at"]) == 340.0, "Level length / thresholds changed (LOTE 9: 38 events, was 56)")
+	check(total >= 144 and total <= 150, "Unit total %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(biggest <= 4, "More than 4 threats in one encounter")
 	check(float(with_ranged) / float(combat_events) >= 0.6, "Too few encounters with a ranged threat (%d/%d; LOTE 9: >= 60 %%, fewer escorts)" % [with_ranged, combat_events])
 	check(BeeLevel01Controller.threat_cap(300.0) == 6 and wave.soft_pressure_seconds == 14.0, "Concurrency / lifetime constants")

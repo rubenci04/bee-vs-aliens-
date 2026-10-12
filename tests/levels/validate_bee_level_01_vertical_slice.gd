@@ -283,7 +283,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.EVENTS.size() == 59, "Event count wrong (LOTE 10: 59 events)")
+	check(BeeLevel01Controller.EVENTS.size() == 71, "Event count wrong (LOTE 11: 71 events)")
 	var total := 0
 	var max_gap := 0.0
 	for i in BeeLevel01Controller.EVENTS.size():
@@ -293,7 +293,7 @@ func run() -> void:
 			total += (zone_wave["units"] as Array).size()
 		if i > 0:
 			max_gap = maxf(max_gap, float(event["at"]) - float(BeeLevel01Controller.EVENTS[i - 1]["at"]))
-	check(total == 107 and max_gap <= 8, "Unit count/pacing wrong (LOTE 10: 107 units, gaps <= 8 m)")
+	check(total == 149 and max_gap <= 8, "Unit count/pacing wrong (LOTE 11: 149 units, gaps <= 8 m)")
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -398,7 +398,7 @@ func run() -> void:
 		planned += (event["units"] as Array).size()
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
-	check(planned == 107 and spawned == planned, "Not all %d units spawned (%d) (LOTE 10: route and combat-zone units included)" % [planned, spawned])
+	check(planned == 149 and spawned == planned, "Not all %d units spawned (%d) (LOTE 11: route and combat-zone units included)" % [planned, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:

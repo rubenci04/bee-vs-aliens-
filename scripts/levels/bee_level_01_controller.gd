@@ -46,10 +46,14 @@ const THREE_AT_ONCE_FROM := 96.0
 const FOUR_AT_ONCE_FROM := 240.0
 ## Popcorn drones alive at once (their own budget, outside the threat cap).
 const MAX_SWARM_ALIVE := 6
+## Popcorn paths by name (index = PopcornDrone.PathKind).
+const SWARM_PATHS := ["sine", "arc_top", "arc_bottom", "dive", "straight", "kamikaze"]
 ## LOTE 9 — enemies alive at once, popcorn INCLUDED: MAX_ON_SCREEN on the route, MAX_ON_SCREEN_ARENA in a combat zone
 ## (the threat cap above still limits the non-popcorn threats). Boss minions are outside this budget (MAX_BOSS_MINIONS).
-const MAX_ON_SCREEN := 6
-const MAX_ON_SCREEN_ARENA := 8
+## LOTE 11: non-popcorn threats alive at once at the end of the route (was MAX_ON_SCREEN = 6).
+const MAX_ROUTE_THREATS := 6
+const MAX_ON_SCREEN := 7 # LOTE 11: 6 -> 7 (the extra slot is popcorn: threat caps below are unchanged).
+const MAX_ON_SCREEN_ARENA := 10 # LOTE 11: 8 -> 10 in combat zones.
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 16
 ## Denser route volleys trade burst damage for more dodge decisions; UFO damage is unchanged.
@@ -181,12 +185,16 @@ const LEVEL_TUNING = {
 const ACT_STARTS := [0.0, 68.0, 140.0, 198.0, 340.0] # ACT 1 AWAKENING, 2 CONTROLLED GARDEN, 3 HUMAN TERRITORY, 4 ALIEN ESCALATION, 5 FIRST CONTACT
 ## EyeDrone fans are introduced from here on (before: aimed bursts only).
 const FAN_FROM_X := 96.0
+## LOTE 11 B: +42 popcorn units (149 total, +39 %), same families, no fireflies: V, sine wave, pincer from both sides, entry from
+## behind (`sides`, `speed`, `amplitude`) and kamikaze popcorn (0.5 s warning). They fill every stretch that was empty for >5 s.
 ## LOTE 10 B: 107 units, no new families. Small route patrols at <=8m intervals plus three mixed waves
 ## in each zone; moments and the gates at X=254/296/340 and checkpoints X=190/281 remain.
 const EVENTS = [
 	# ACT 1 — AWAKENING (intensity 1 -> 2)
+	{"at": 1.5, "act": 1, "label": "POPCORN · OLA SENOIDAL", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path":"sine","amplitude": 1.3, "delays": [0.0, 0.4, 0.8], "y": [4.2, 4.2, 4.2]},
 	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
 	{"at": 5.0, "act": 1, "label": "JARDÍN · PRIMERA AVISPA", "units": ["Wasp"]},
+	{"at": 8.0, "act": 1, "label": "POPCORN · V", "units": ["Swarm", "Swarm", "Swarm", "Swarm", "Swarm"], "formation": "v", "path": "straight", "delays": [0.0, 0.2, 0.4, 0.6, 0.8], "y": [4.0, 4.8, 3.2, 5.6, 2.4]},
 	{"at": 13.0, "act": 1, "label": "PATRULLA · JARDÍN", "units": ["Mosquito", "Probe"], "delays": [0.0, 0.8], "y": [4.2, 2.6]},
 	{"at": 14.0, "act": 1, "label": "POPCORN · FILA ONDULANTE", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "delays": [0.0, 0.4, 0.8], "y": [4.2, 4.2, 4.2]},
 	{"at": 22.0, "act": 1, "label": "JARDÍN · PAREJA DESFASADA", "units": ["Wasp", "Wasp"], "formation": "pair", "delays": [0.0, 1.2], "y": [4.8, 2.8]},
@@ -204,6 +212,7 @@ const EVENTS = [
 	# NOCHE 01: the one-eyed purple organism left the normal events (it is now a UFO minion in phases 2-3).
 	{"at": 80.0, "act": 2, "label": "MARIQUITA · PRESENTACIÓN", "units": ["Ladybird"], "y": [4.0]},
 	# GARDEN IDENTITY 04 — the spider is presented alone (clean read of the column, the ring and the lock).
+	{"at": 83.0, "act": 2, "label": "POPCORN · PINZA", "units": ["Swarm", "Swarm", "Swarm", "Swarm"], "formation": "pincer", "path": "straight", "sides": ["right", "left", "right", "left"], "delays": [0.0, 0.2, 0.9, 1.1], "y": [5.2, 1.8, 3.8, 2.6]},
 	{"at": 88.0, "act": 2, "label": "PATRULLA · JARDÍN", "units": ["Moth", "Probe"], "delays": [0.0, 0.8], "y": [2.6, 2.6]},
 	{"at": 91.0, "act": 2, "label": "ARAÑA · PRESENTACIÓN (CARRIL VERTICAL)", "units": ["Spider"], "x": [1.2]},
 	{"at": 99.0, "act": 2, "label": "PATRULLA · JARDÍN", "units": ["WaveDragonfly", "Probe"], "delays": [0.0, 0.8], "y": [5.2, 2.6]},
@@ -222,6 +231,7 @@ const EVENTS = [
 	{"at": 138.0, "act": 2, "label": "PATRULLA · CRUCE", "units": ["Mosquito"], "y": [4.6]},
 	{"at": 140.0, "act": 3, "label": "ALERTA · HUMANO GIGANTE", "units": [], "human": true},
 	# ACT 3 — HUMAN TERRITORY (2 -> 4 -> 2)
+	{"at": 141.0, "act": 3, "label": "POPCORN · POR ATRÁS", "units": ["Swarm", "Swarm", "Swarm"], "formation": "from_behind", "path": "straight", "speed": 5.0, "sides": ["left", "left", "left"], "delays": [0.0, 0.5, 1.0], "y": [4.6, 3.4, 2.2]},
 	{"at": 146.0, "act": 3, "label": "SECUELA · EL MUNDO SIGUE VIVO", "units": ["Wasp"], "moment": "human_aftermath"},
 	{"at": 152.0, "act": 3, "label": "CARRILES · DOS SPEEDERS", "units": ["Speeder", "Speeder"], "formation": "pair", "delays": [0.0, 0.9], "y": [5.6, 2.0]},
 	{"at": 158.0, "act": 3, "label": "TENAZA · TORRETA Y AVISPA", "units": ["Turret", "Wasp"], "formation": "top_bottom", "delays": [0.0, 1.2], "y": [-0.2, 4.6]},
@@ -237,12 +247,14 @@ const EVENTS = [
 	{"at": 180.0, "act": 3, "label": "SET PIECE A · WALKER BAJO EL ENJAMBRE", "units": ["Walker", "Swarm", "Swarm", "Swarm"], "formation": "showcase", "path": "dive", "delays": [0.0, 1.2, 1.5, 1.8], "y": [0.0, 5.6, 5.6, 5.6], "shooters": [1, 3], "moment": "walker_showcase", "hold": true},
 	{"at": 188.0, "act": 3, "label": "ESCALA · LA RANA", "units": [], "moment": "scale_event"},
 	# ACT 4 — ALIEN ESCALATION (3 -> 4 with valleys): 4a tech, 4b invasion, 4c last defence
+	{"at": 189.0, "act": 3, "label": "KAMIKAZE · TRES AVISOS", "units": ["Swarm", "Swarm", "Swarm"], "formation": "kamikaze", "path": "kamikaze", "delays": [0.0, 0.9, 1.8], "y": [4.6, 2.6, 4.0]},
 	{"at": 194.0, "act": 3, "label": "PATRULLA · JARDÍN", "units": ["Probe"], "y": [5.2]},
 	{"at": 202.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Ladybird"], "y": [4.2]},
 	{"at": 206.0, "act": 4, "label": "ROCA · TORRETA DETRÁS DE LA PIEDRA", "units": ["Turret"], "formation": "rock_turret", "y": [-0.2]},
 	{"at": 214.0, "act": 4, "label": "SET PIECE B · LIBÉLULA EN FUEGO CRUZADO", "units": ["WaveDragonfly", "EyeDrone"], "formation": "crossfire", "delays": [0.0, 0.8], "y": [3.6, 5.8]},
 	# LOTE 7 — COMBAT ZONE 3 (act 4, alien escalation).
 	{"at": 222.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Moth"], "y": [2.6]},
+	{"at": 226.0, "act": 4, "label": "POPCORN · OLA SENOIDAL", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "amplitude": 1.3, "delays": [0.0, 0.4, 0.8], "y": [4.2, 4.2, 4.2]},
 	{"at": 230.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["WaveDragonfly"], "y": [5.2]},
 	{"at": 233.0, "act": 4, "label": "CARACOL · ESCUPITAJO LENTO", "units": ["Snail"],
 			"arena_label": "ZONA DE COMBATE · DEFENSA ALIEN", "arena": [
@@ -252,23 +264,29 @@ const EVENTS = [
 	]},
 	{"at": 241.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Mosquito"], "y": [4.2]},
 	{"at": 245.0, "act": 4, "label": "POPCORN · ARCO BAJO", "units": ["Swarm", "Swarm", "Swarm"], "formation": "arc", "path": "arc_bottom", "delays": [0.0, 0.35, 0.7], "y": [1.6, 1.6, 1.6], "shooters": [0, 1, 2]},
+	{"at": 249.0, "act": 4, "label": "POPCORN · POR ATRÁS", "units": ["Swarm", "Swarm", "Swarm"], "formation": "from_behind", "path": "straight", "speed": 5.0, "sides": ["left", "left", "left"], "delays": [0.0, 0.5, 1.0], "y": [2.6, 3.6, 4.6]},
 	{"at": 253.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Wasp"], "y": [2.6]},
 	{"at": 254.0, "act": 4, "label": "MARIQUITA BLINDADA · SONDA", "units": ["Ladybird", "Probe"], "hard": true, "delays": [0.0, 1.0]},
+	{"at": 258.0, "act": 4, "label": "POPCORN · V", "units": ["Swarm", "Swarm", "Swarm", "Swarm", "Swarm"], "formation": "v", "path": "straight", "delays": [0.0, 0.2, 0.4, 0.6, 0.8], "y": [3.4, 4.2, 2.6, 5.0, 1.8]},
 	{"at": 260.0, "act": 4, "label": "PATRULLA · CONTAMINACIÓN", "units": ["Mosquito"], "y": [3.6]},
 	{"at": 262.0, "act": 4, "label": "JARDÍN CONTAMINADO · LIBÉLULA", "units": ["Dragonfly"], "delays": [2.0], "moment": "contaminated_garden"},
 	{"at": 270.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Probe"], "y": [5.2]},
 	{"at": 278.0, "act": 4, "label": "POPCORN · PICADA", "units": ["Swarm", "Swarm", "Swarm"], "formation": "dive", "path": "dive", "delays": [0.0, 0.3, 0.6], "y": [5.6, 4.4, 5.6], "shooters": [0, 1, 2]},
+	{"at": 282.0, "act": 4, "label": "KAMIKAZE · TRES AVISOS", "units": ["Swarm", "Swarm", "Swarm"], "formation": "kamikaze", "path": "kamikaze", "delays": [0.0, 0.9, 1.8], "y": [3.0, 5.0, 4.0]},
 	{"at": 286.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Ladybird"], "y": [4.2]},
 	{"at": 289.0, "act": 4, "label": "ATARDECER · CAZA ALIEN", "units": ["AlienFighter"], "y": [5.4]},
 	{"at": 296.0, "act": 4, "label": "FORMACIÓN C · WALKER Y AVISPA", "units": ["Walker", "Wasp"], "formation": "escort", "hard": true, "delays": [0.0, 1.2]},
+	{"at": 299.0, "act": 4, "label": "POPCORN · PINZA", "units": ["Swarm", "Swarm", "Swarm", "Swarm"], "formation": "pincer", "path": "straight", "sides": ["left", "right", "left", "right"], "delays": [0.0, 0.2, 0.9, 1.1], "y": [1.8, 5.2, 2.6, 3.8]},
 	{"at": 302.0, "act": 4, "label": "RECOMPENSA · BOMBA", "units": ["Mosquito"], "moment": "bomb_reward"},
 	# GARDEN IDENTITY 04 — late, optional pressure: the last web of the spider.
+	{"at": 306.0, "act": 4, "label": "POPCORN · OLA SENOIDAL", "units": ["Swarm", "Swarm", "Swarm"], "formation": "snake", "path": "sine", "amplitude": 1.3, "delays": [0.0, 0.4, 0.8], "y": [3.4, 3.4, 3.4]},
 	{"at": 310.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Moth"], "y": [2.6]},
 	{"at": 315.0, "act": 4, "label": "ARAÑA · ÚLTIMA TELARAÑA", "units": ["Spider"], "x": [1.6]},
 	# Optional mini-boss: not a hard gate, it leaves on its own like any soft unit (soft_pressure_seconds).
 	{"at": 319.5, "act": 4, "label": "SEMILLERO ALIEN · MINIJEFE OPCIONAL", "units": ["SeedCarrier"], "y": [4.4]},
 	{"at": 327.5, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["WaveDragonfly"], "y": [5.2]},
 	{"at": 330.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
+	{"at": 334.0, "act": 4, "label": "POPCORN · POR ATRÁS", "units": ["Swarm", "Swarm", "Swarm"], "formation": "from_behind", "path": "straight", "speed": 5.0, "sides": ["left", "left", "left"], "delays": [0.0, 0.5, 1.0], "y": [4.6, 3.4, 2.2]},
 	{"at": 338.0, "act": 4, "label": "PATRULLA · JARDÍN", "units": ["Mosquito"], "y": [4.2]},
 	{"at": 340.0, "act": 4, "label": "ÚLTIMA DEFENSA · WALKER, SONDA Y AVISPA", "units": ["Walker", "Probe", "Wasp"], "hard": true, "delays": [0.0, 0.8, 2.2]},
 ]
@@ -415,6 +433,15 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 		if str(units[i]) == "Swarm":
 			request["path"] = str(event.get("path", "sine"))
 			request["shooter"] = i in event.get("shooters", [])
+			# LOTE 11: popcorn formations - `sides` (right | left = enters from behind), `speed`, `amplitude` and `phases` per event.
+			var sides: Array = event.get("sides", [])
+			request["side"] = str(sides[i]) if i < sides.size() else "right"
+			for key in ["speed", "amplitude"]:
+				if event.has(key):
+					request[key] = float(event[key])
+			var phases: Array = event.get("phases", [])
+			if i < phases.size():
+				request["phase"] = float(phases[i])
 			_swarm_pending.append(request) # Popcorn has its own queue: never waits behind (or blocks) threats.
 		else:
 			_pending.append(request)
@@ -474,7 +501,7 @@ func camera_time(family: String) -> float:
 ## Threats alive at once at this point of the route (popcorn excluded).
 static func threat_cap(distance: float) -> int:
 	if distance >= FOUR_AT_ONCE_FROM:
-		return MAX_ON_SCREEN
+		return MAX_ROUTE_THREATS
 	return 5 if distance >= THREE_AT_ONCE_FROM else 4
 
 ## LOTE 9: enemies alive at once, popcorn included (MAX_ON_SCREEN / MAX_ON_SCREEN_ARENA).
@@ -560,8 +587,15 @@ func _spawn(request: Dictionary) -> void:
 		unit.connect("liberated_now", _on_unit_liberated) # A freed animal stops counting as a threat at once.
 	if family == "Swarm":
 		swarm_units.append(unit)
-		unit.set("path", ["sine", "arc_top", "arc_bottom", "dive"].find(str(request.get("path", "sine"))))
+		unit.set("path", SWARM_PATHS.find(str(request.get("path", "sine"))))
 		unit.set("shooter", bool(request.get("shooter", false)))
+		for key in ["speed", "amplitude", "phase"]:
+			if request.has(key):
+				unit.set(key, float(request[key]))
+		if str(request.get("side", "right")) == "left": # LOTE 11: enters from behind the player and travels right.
+			unit.set("from_left", true)
+			unit.set("shooter", false)
+			unit.global_position.x = stage.camera.global_position.x - spawn_offset - float(request.get("x", 0.0))
 	else:
 		active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1

@@ -11,7 +11,7 @@ extends SceneTree
 # Dev filter: -- only=static|fans|checkpoint|moments|run
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const FORMATIONS := ["pair", "escort", "staggered", "horizontal", "vertical", "top_bottom", "diagonal", "rock_turret", "wave", "v",
+const FORMATIONS := ["pair", "pincer", "from_behind", "kamikaze", "escort", "staggered", "horizontal", "vertical", "top_bottom", "diagonal", "rock_turret", "wave", "v",
 		"snake", "arc", "dive", "showcase", "crossfire"] # REBUILD 02: popcorn paths and showcase set pieces.
 
 var stage: BeeShmupStage
@@ -99,7 +99,7 @@ func test_static() -> void:
 	check(human_at == 140.0, "The Giant Human stays at X=140")
 	check(hard == [254.0, 296.0, 340.0], "Hard gates moved: " + str(hard))
 	check(float(events.back()["at"]) == 340.0, "The last defence stays at X=340 (UFO after it)")
-	check(total >= 90 and total <= 110, "Unit budget %d outside 90-110 (LOTE 9: quality over quantity, zones included)" % total)
+	check(total >= 144 and total <= 150, "Unit budget %d outside 144-150 (LOTE 11, zones included)" % total)
 	check(formations.size() >= 7, "Too few formation shapes: " + str(formations.keys()))
 	check(moments == ["opening_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power"], "Director moments wrong: " + str(moments))
 	# No metronome: varied spacing, short events, never more than 16 m without something happening.

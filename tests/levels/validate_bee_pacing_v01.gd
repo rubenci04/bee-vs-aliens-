@@ -17,7 +17,12 @@ const BOT_DRIFT := 2.4
 const BOT_DRIFT_PERIOD := 4.5
 ## Target (game seconds from start to the UFO entry).
 const MIN_TO_BOSS := 330.0 # LOTE 9: 5.5-6.5 min (was 320-420 s).
-const MAX_TO_BOSS := 390.0
+const MAX_TO_BOSS := 420.0 # LOTE 11: 5.5-7 min.
+## LOTE 11: HP lost on Normal before the UFO (frog included).
+const MIN_ROUTE_DAMAGE := 45
+const MAX_ROUTE_DAMAGE := 70
+## LOTE 11: longest stretch with no visible threat (s).
+const MAX_QUIET := 5.0
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -192,7 +197,7 @@ func run() -> void:
 			quiet += tick
 			longest_quiet = maxf(longest_quiet, run_quiet)
 		else:
-			if trace and run_quiet > 7.0:
+			if trace and run_quiet > 4.0:
 				print("QUIET %.1f..%.1f (%.1fs) d=%.1f ev=%d" % [quiet_start, t, run_quiet, stage.distance, wave.event_index])
 			run_quiet = 0.0
 	Engine.time_scale = 1.0
@@ -211,8 +216,7 @@ func run() -> void:
 	print("PACING frog_damage=", frog_damage[0])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
-		check(lost[0] - frog_damage[0] >= 25 and lost[0] - frog_damage[0] <= 45, "Ordinary route damage outside 25-45 after separating frog damage")
-		check(lost[0] <= 45 + BeeGardenToadEncounter.MODERATE_DAMAGE * 3, "Frog adds too much route damage")
+		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])
 		check(boss_at >= MIN_TO_BOSS and boss_at <= MAX_TO_BOSS, "Time to the UFO %.0fs outside %.0f-%.0f s" % [boss_at, MIN_TO_BOSS, MAX_TO_BOSS])
 		check(complete_at > boss_at, "Level must complete after the UFO")
 		check(seen_checkpoints.size() >= 2, "Two checkpoints must be crossed (%d)" % seen_checkpoints.size())
@@ -224,7 +228,7 @@ func run() -> void:
 			check(float(zone["seconds"]) >= 20.0, "A combat zone ended too early: %s" % zone)
 		check(zone_seconds >= 60.0, "Combat-zone content %.0f s < 60 s (LOTE 9: 3 zones of 2 waves)" % zone_seconds)
 		check(early_retire.is_empty(), "Units left before their camera time: %s" % str(early_retire))
-		check(longest_quiet <= 8.0, "A breather longer than 8 s feels empty (%.0f s)" % longest_quiet)
+		check(longest_quiet <= MAX_QUIET, "LOTE 11: %.1f s without a visible threat (max %.1f s)" % [longest_quiet, MAX_QUIET])
 		check(wave.max_alive_route <= BeeLevel01Controller.MAX_ON_SCREEN, "LOTE 9: %d enemies at once on the route (max %d)" % [wave.max_alive_route, BeeLevel01Controller.MAX_ON_SCREEN])
 		check(wave.max_alive_arena <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA, "LOTE 9: %d enemies at once in a zone (max %d)" % [wave.max_alive_arena, BeeLevel01Controller.MAX_ON_SCREEN_ARENA])
 	print("PACING camera-time violations=%d retired_checked=%d" % [early_retire.size(), retired_seen.size()])

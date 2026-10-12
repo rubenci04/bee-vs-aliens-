@@ -94,7 +94,8 @@ func run() -> void:
 		for i in 12:
 			wave._clock += 1.0
 			wave._spawn_pending()
-		check(wave.alive_count() == cap and wave._pending.size() == 10 - cap, "Pending queue must enforce the route / arena cap")
+		var allowed: int = BeeLevel01Controller.MAX_ROUTE_THREATS if cap == BeeLevel01Controller.MAX_ON_SCREEN else cap # LOTE 11: the route threat cap (6) is below the on-screen total (7, popcorn included).
+		check(wave.alive_count() == allowed and wave._pending.size() == 10 - allowed, "Pending queue must enforce the route / arena cap")
 		for enemy in wave.active_units:
 			enemy.queue_free()
 		wave.active_units.clear()
