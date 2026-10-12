@@ -7,6 +7,10 @@ uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable;
 uniform bool use_texture = false;
 uniform bool use_vertex_color = false;
+// LOTE 11 (white pieces): textured props (Kenney food cup, pale KayKit stone) bypassed the albedo cap and blew out under the sun.
+// albedo_cap is a luminance ceiling (linear) on the FINAL albedo; 10.0 = disabled. Pale texels above it are pulled to pale_tint.
+uniform float albedo_cap = 10.0;
+uniform vec3 pale_tint : source_color = vec3(1.0, 0.86, 0.66);
 uniform vec4 emission : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float emission_energy = 0.0;
 uniform float mid_band = 0.55; // Share of the sun the middle band receives.
@@ -33,6 +37,12 @@ void fragment() {
 	}
 	if (use_vertex_color) {
 		base *= COLOR.rgb;
+	}
+	float base_luma = dot(base, vec3(0.2126, 0.7152, 0.0722));
+	if (base_luma > albedo_cap) {
+		float over = clamp((base_luma - albedo_cap) / max(1.0 - albedo_cap, 0.001), 0.0, 1.0);
+		base *= albedo_cap / base_luma;
+		base = mix(base, base * pale_tint, over);
 	}
 #ifdef TOON_FABRIC
 	base *= mix(1.0 - fabric_variation, 1.0 + fabric_variation * 0.5, smoothstep(fabric_low, fabric_high, fabric_y));

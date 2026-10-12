@@ -16,3 +16,5 @@ Leé primero [`CLAUDE.md`](CLAUDE.md) y los informes de continuidad pertinentes 
 ## Referencia
 
 Para identidad, arquitectura, controles y flujo de validación, seguí [`CLAUDE.md`](CLAUDE.md) y `docs/INFORME_MAESTRO.md`.
+
+- Para pedir assets nuevos usar `docs/art/ASSET_REQUEST_TEMPLATE.md`; estructura e inventario en `docs/art/ASSET_MANIFEST.md`.

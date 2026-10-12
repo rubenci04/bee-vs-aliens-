@@ -68,6 +68,7 @@ godot --headless --path D:\proyectos\bee_alien_3d --script res://tests/bee_proto
 - POCs pequeños y verificables. No contenido masivo. Evaluar necesidad, costo y alcance antes de agregar features.
 - Al terminar: informar archivos cambiados, cómo probar (proyecto, escena, tecla, qué observar) y problemas. Instrucciones al usuario siempre precisas; no pedirle editar código a mano.
 - Responder en español.
+- Para pedir assets nuevos usar `docs/art/ASSET_REQUEST_TEMPLATE.md`; estructura e inventario en `docs/art/ASSET_MANIFEST.md`.
 
 ## Fuera de alcance por ahora
 Dash/roll, XP, moneda, árbol de habilidades, tienda, crafting, multi-checkpoint, save system, dificultad configurable, monetización. Score, boss/mini-UFO y música: se decide tras la auditoría.

@@ -13,6 +13,10 @@ const WING := preload("res://assets/style/toon_wing.gdshader")
 ## Alien-tech cyan emission is raised to at least this energy so it clears the glow threshold.
 const CYAN_MIN_ENERGY := 2.0
 const BRIGHT_ALBEDO_CAP := 0.8
+## LOTE 11: luminance ceiling (linear) on the final albedo of TEXTURED props (apply_profile); near-white texels such as the
+## Kenney cup or pale stone are pulled to PALE_TINT. The BRIGHT_ALBEDO_CAP above only saw the material colour, not the texture.
+const PROP_TEXTURE_CAP := 0.5
+const PALE_TINT := Color(1.0, 0.86, 0.66)
 ## Outline weight in fractions of the screen height (same on-screen thickness at any distance or scale).
 ## LEVEL 01 TRANSFORMATION PASS 01 (style): a slightly more drawn look on what the player reads, subtler on big props.
 ##   BEFORE: 0.0025 for everything (~1.3 px at 1080p).
@@ -37,7 +41,7 @@ static var _cache: Dictionary = {}
 
 
 ## outline = false keeps toon + rim only (cheaper: no second draw of every surface).
-static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP) -> void:
+static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP, cap_pale := false) -> void:
 	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
 	if model is MeshInstance3D:
 		meshes.append(model)
@@ -49,7 +53,7 @@ static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP) -> 
 			if source == null:
 				source = mesh.mesh.surface_get_material(surface) as BaseMaterial3D
 			if source != null:
-				mesh.set_surface_override_material(surface, _material_for(source, outline, outline_width))
+				mesh.set_surface_override_material(surface, _material_for(source, outline, outline_width, null, cap_pale))
 
 
 ## GARDEN IDENTITY 04 — Style C by asset type (imported props). Never applied blindly:
@@ -60,14 +64,14 @@ static func apply(model: Node, outline: bool, outline_width := OUTLINE_PROP) -> 
 static func apply_profile(model: Node, profile: StringName) -> void:
 	match profile:
 		&"foliage":
-			_apply_with(model, TOON_DOUBLE)
+			_apply_with(model, TOON_DOUBLE, true)
 		&"cutout":
-			_apply_with(model, TOON_CUTOUT)
+			_apply_with(model, TOON_CUTOUT, true)
 		_:
-			apply(model, true, OUTLINE_PROP)
+			apply(model, true, OUTLINE_PROP, true)
 
 
-static func _apply_with(model: Node, shader: Shader) -> void:
+static func _apply_with(model: Node, shader: Shader, cap_pale := false) -> void:
 	var meshes: Array = model.find_children("*", "MeshInstance3D", true, false)
 	if model is MeshInstance3D:
 		meshes.append(model)
@@ -79,7 +83,7 @@ static func _apply_with(model: Node, shader: Shader) -> void:
 			if source == null:
 				source = mesh.mesh.surface_get_material(surface) as BaseMaterial3D
 			if source != null:
-				mesh.set_surface_override_material(surface, _material_for(source, false, OUTLINE_PROP, shader))
+				mesh.set_surface_override_material(surface, _material_for(source, false, OUTLINE_PROP, shader, cap_pale))
 
 
 static func is_cyan(color: Color) -> bool:
@@ -87,12 +91,12 @@ static func is_cyan(color: Color) -> bool:
 
 
 ## `forced_shader` (profiles): use this body shader instead of choosing by the source's culling.
-static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: float, forced_shader: Shader = null) -> ShaderMaterial:
+static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: float, forced_shader: Shader = null, cap_pale := false) -> ShaderMaterial:
 	var is_wing := source.resource_name == "Wing"
 	var texture := source.albedo_texture
-	var key := "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [is_wing, source.albedo_color.to_html(), source.emission_enabled, source.emission.to_html() if source.emission_enabled else "",
+	var key := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [is_wing, source.albedo_color.to_html(), source.emission_enabled, source.emission.to_html() if source.emission_enabled else "",
 			source.emission_energy_multiplier, source.cull_mode, texture.get_instance_id() if texture != null else 0, str(source.vertex_color_use_as_albedo) + str(outline) + str(outline_width),
-			forced_shader.get_instance_id() if forced_shader != null else 0]
+			forced_shader.get_instance_id() if forced_shader != null else 0, cap_pale]
 	if _cache.has(key):
 		return _cache[key]
 	var material := ShaderMaterial.new()
@@ -111,6 +115,9 @@ static func _material_for(source: BaseMaterial3D, outline: bool, outline_width: 
 			material.set_shader_parameter("use_texture", true)
 		if source.vertex_color_use_as_albedo:
 			material.set_shader_parameter("use_vertex_color", true)
+		if cap_pale and (texture != null or source.vertex_color_use_as_albedo):
+			material.set_shader_parameter("albedo_cap", PROP_TEXTURE_CAP)
+			material.set_shader_parameter("pale_tint", PALE_TINT)
 		if source.emission_enabled and source.emission.get_luminance() > 0.001:
 			var energy := source.emission_energy_multiplier
 			if is_cyan(source.emission):
