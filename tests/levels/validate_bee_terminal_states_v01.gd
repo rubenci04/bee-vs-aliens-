@@ -96,7 +96,7 @@ func run() -> void:
 	# --- 3. Pollen and a defeated Bee -------------------------------------
 	bee.health.take_damage(30)
 	var pollen_a := stage.get_node("Pollen/PollenA") as BeePollenPickup
-	check(pollen_a.collect(bee) and bee.health.current_health == 90 and stage.pollen_count == 1, "Pollen no longer heals a living Bee")
+	check(pollen_a.collect(bee) and bee.health.current_health == 70 and stage.pollen_count == 1, "LOTE 13: pollen fills the bar, it must not heal a living Bee at once")
 	await frames(1)
 	var count_alive := stage.pollen_count
 	bee.health.take_damage(9999)

@@ -347,7 +347,7 @@ func run() -> void:
 			var id: int = unit.get_instance_id()
 			var family := str(unit.name).get_slice("_", 0)
 			var health := unit.get_node("HealthComponent") as HealthComponent
-			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit)) and unit.visible, "Spawn not active/visible: %s state=%s vis=%s lib=%s" % [unit.name, unit.get("state"), unit.visible, unit.get("liberated")]) # REBUILD 02: depth entries activate on arrival.
+			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit) or bool(unit.get_meta("anthill_entry", false))) and unit.visible, "Spawn not active/visible: %s state=%s vis=%s lib=%s" % [unit.name, unit.get("state"), unit.visible, unit.get("liberated")]) # REBUILD 02: depth entries activate on arrival.
 			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else int(BeeLevel01Controller.LEVEL_HP[family]))), "HP changed for " + family)
 			if not seen.has(id):
 				seen[id] = wave._clock

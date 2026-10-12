@@ -94,7 +94,8 @@ func _ready() -> void:
 		_fit_under_playfield(node)
 		foreground_nodes.append(node)
 	_build_watering_can_drips()
-	_build_alien_pot()
+	if not (BeeLevel01AlienEscalation.GARDEN_ONLY and BeeLevel01Controller.roster_only):
+		_build_alien_pot() # LOTE 13 · ETAPA 1: no alien-contaminated pot in the house garden.
 
 
 func _scene(key: String) -> PackedScene:

@@ -19,8 +19,8 @@ const BOT_DRIFT_PERIOD := 4.5
 const MIN_TO_BOSS := 330.0 # LOTE 9: 5.5-6.5 min (was 320-420 s).
 const MAX_TO_BOSS := 420.0 # LOTE 11: 5.5-7 min.
 ## LOTE 11: HP lost on Normal before the UFO (frog included).
-const MIN_ROUTE_DAMAGE := 45
-const MAX_ROUTE_DAMAGE := 70
+const MIN_ROUTE_DAMAGE := 50
+const MAX_ROUTE_DAMAGE := 75
 ## LOTE 11: longest stretch with no visible threat (s).
 const MAX_QUIET := 5.0
 ## LOTE 12: the breathing valley of checkpoint 1 (X range of the end of its quiet span, and its length in seconds).
@@ -234,7 +234,7 @@ func run() -> void:
 	print("PACING frog_damage=", frog_damage[0])
 	print("PACING robot_miniboss_fight=%.1fs (invulnerable bot) tarantula_entry=%.1fs (%.1f min) escort_waves=%d" % [wave.miniboss_seconds, tarantula_at, tarantula_at / 60.0, wave.escort_waves])
 	var juice := stage.get_node("Juice") as BeeLevel01Juice
-	print("PACING juice score=%d best_combo=%d pollen=%d (pickups %d, liberations %d) honey_activations=%d magnet_pulls=%d hit_stops=%d" % [juice.score, juice.best_combo, juice.pollen_total, juice.pollen_from_pickups, juice.pollen_from_liberations, juice.honey_activations, juice.magnet_pulls, BeeJuice.hit_stops])
+	print("PACING juice score=%d best_combo=%d pollen=%d (pickups %d, liberations %d) frenzy=%d pollen_heals=%d magnet_pulls=%d hit_stops=%d" % [juice.score, juice.best_combo, juice.pollen_total, juice.pollen_from_pickups, juice.pollen_from_liberations, juice.frenzy_activations, juice.pollen_heals, juice.magnet_pulls, BeeJuice.hit_stops])
 	print("PACING normal_hp_lost_before_boss=%d hp_at_boss=%d route_units=%d" % [lost[0], hp_at_boss, wave.spawn_history.filter(func(e): return not bool(e.get("boss_minion", false))).size()])
 	if not report_only:
 		check(lost[0] >= MIN_ROUTE_DAMAGE and lost[0] <= MAX_ROUTE_DAMAGE, "Route damage %d outside %d-%d HP (LOTE 11, frog included)" % [lost[0], MIN_ROUTE_DAMAGE, MAX_ROUTE_DAMAGE])

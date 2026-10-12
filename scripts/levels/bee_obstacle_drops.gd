@@ -1,7 +1,7 @@
 class_name BeeObstacleDrops
 extends RefCounted
 const POLLEN := preload("res://scenes/items/toon/pollen.tscn")
-const HEALING := preload("res://scenes/items/toon/healing.tscn")
+const HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: the honey jar became a pollen cluster.
 const DROP_EVERY := 3
 const HEAL_EVERY := 9
 
@@ -18,6 +18,8 @@ static func spawn(parent: Node, at: Vector3, seed_value: int) -> void:
 	parent.add_child(item)
 	if stage != null and item is BeePollenPickup:
 		item.collected.connect(stage._on_pollen_collected)
+	if item is BeePollenPickup and not item is BeePollenCluster:
+		item.heal_amount = BeeLevel01Juice.POLLEN_INSTANT_HEAL
 	item.global_position = Vector3(at.x, maxf(at.y, 1.0), 0.0)
 
 
@@ -32,4 +34,5 @@ static func spawn_pollen(parent: Node, at: Vector3, count: int) -> void:
 		holder.add_child(item)
 		if stage != null and item is BeePollenPickup:
 			item.collected.connect(stage._on_pollen_collected)
+		item.heal_amount = BeeLevel01Juice.POLLEN_INSTANT_HEAL
 		item.global_position = Vector3(at.x + 0.6 * (float(i) - float(count - 1) * 0.5), maxf(at.y, 1.0), 0.0)

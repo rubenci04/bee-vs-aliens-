@@ -217,6 +217,9 @@ func run() -> void:
 	var crate: DestructibleObstacle3D = stage.get_node("Destructibles/DefenseCrate")
 	await frames(4)
 	var own_hp := bee.health.current_health
+	var garden_plants := stage.get_node_or_null("GardenMushrooms") # LOTE 13: destructible flowers/mushrooms are not part of this fixture.
+	if garden_plants != null:
+		garden_plants.free()
 	var bomb := bee.use_bomb()
 	check(bomb != null and bomb.radius == 3.0 and bomb.damage == 32, "Bomb configuration wrong")
 	bomb.detonate()

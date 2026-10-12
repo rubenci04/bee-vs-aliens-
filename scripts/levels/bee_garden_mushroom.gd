@@ -8,9 +8,11 @@ const KINDS := {
 	&"button": {"scene": "res://scenes/art_labs/garden_floor_v01/mushroom_button.tscn", "hp": 20, "scale": 1.6, "radius": 0.8},
 	&"spotted": {"scene": "res://scenes/art_labs/garden_floor_v01/mushroom_spotted.tscn", "hp": 30, "scale": 1.4, "radius": 1.0},
 	&"umbrella": {"scene": "res://scenes/art_labs/garden_floor_v01/mushroom_umbrella.tscn", "hp": 40, "scale": 1.2, "radius": 1.3},
+	# LOTE 13 · ETAPA 1: destructible garden flowers (same rules as the mushrooms: fixed, not solid, they drop pollen).
+	&"bellflower": {"scene": "res://scenes/art_labs/forest_floor_v01/garden_bellflower.tscn", "hp": 20, "scale": 1.9, "radius": 0.7},
 }
 const GROUND_Y := -0.1
-const POLLEN_DROPS := 1
+const POLLEN_DROPS := 2 ## LOTE 13: pollen per broken mushroom or flower (it fills the pollen bar, see BeeLevel01Juice).
 
 var kind: StringName = &"button"
 

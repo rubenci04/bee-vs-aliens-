@@ -48,7 +48,7 @@ const ASSET_FAUNA := {
 const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird", "WaveDragonfly", "Moth", "Ant", "StagBeetle", "Snail",
 		"FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB", "Turtle"]
 ## NOCHE 01 · ETAPA 2: Level 01 enemies fire the Codex toon alien bolt (same AlienEnemyProjectile rules, new look).
-const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
+const TOON_HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: pollen cluster (was the honey jar).
 const BOSS_HEAL_BELOW := 0.7 # Fraction of max HP under which the honey jar appears before the UFO.
 const TOON_ALIEN_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
 const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter", "FlyCommon", "FlyGreen", "FlyCloud"]
@@ -77,7 +77,7 @@ const MAX_ON_SCREEN_ARENA := 10 # LOTE 11: 8 -> 10 in combat zones.
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 16
 ## Denser route volleys trade burst damage for more dodge decisions; UFO damage is unchanged.
-const ROUTE_DAMAGE_SCALE := 0.8
+const ROUTE_DAMAGE_SCALE := 0.7 # LOTE 13: 0.8 -> 0.7 (anthill ants and pollen clusters changed the bot route; target 50-75 HP).
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
 const MIN_FORMATION_GAP := 0.2
 ## REBUILD 03: Wasp implant sting / overload are introduced progressively (see `_spawn`).
@@ -336,14 +336,14 @@ const EVENTS_ROSTER = [
 	{"at": 2.0, "act": 1, "label": "CÉSPED · PRIMERA MOSCA", "units": ["FlyCommon"], "y": [4.4]},
 	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
 	{"at": 9.0, "act": 1, "label": "CÉSPED · PAREJA DE MOSCAS", "units": ["FlyCommon", "FlyCommon"], "formation": "pair", "delays": [0.0, 1.0], "y": [3.0, 5.0]},
-	{"at": 15.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"]},
+	{"at": 15.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
 	{"at": 20.0, "act": 1, "label": "MARIQUITA · PRESENTACIÓN", "units": ["Ladybird"], "y": [4.2]},
 	{"at": 25.0, "act": 1, "label": "MOSCAS · FORMACIÓN EN V", "units": ["FlyCommon", "FlyCommon", "FlyCommon"], "formation": "v", "delays": [0.0, 0.4, 0.8], "y": [4.0, 5.0, 3.0]},
-	{"at": 32.0, "act": 1, "label": "CÉSPED · HORMIGA Y MOSCA", "units": ["Ant", "FlyCommon"], "delays": [0.0, 1.2], "y": [0.0, 4.6]},
+	{"at": 32.0, "act": 1, "label": "CÉSPED · HORMIGA Y MOSCA", "units": ["Ant", "FlyCommon"], "delays": [0.0, 1.2], "y": [0.0, 4.6], "anthill": true},
 	{"at": 38.0, "act": 1, "label": "CÉSPED · MARIQUITA Y MOSCA", "units": ["Ladybird", "FlyCommon"], "formation": "staggered", "delays": [0.0, 0.8], "y": [3.4, 5.2]},
 	{"at": 44.0, "act": 1, "label": "MOSCAS · TENAZA", "units": ["FlyCommon", "FlyCommon"], "formation": "top_bottom", "delays": [0.0, 0.5], "y": [2.6, 5.2]},
-	{"at": 50.0, "act": 1, "label": "HORMIGAS · COLUMNA", "units": ["Ant", "Ant"], "formation": "pair", "delays": [0.0, 1.4]},
-	{"at": 56.0, "act": 1, "label": "CÉSPED · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 1.0], "y": [4.6, 0.0]},
+	{"at": 50.0, "act": 1, "label": "HORMIGAS · COLUMNA", "units": ["Ant", "Ant"], "formation": "pair", "delays": [0.0, 1.4], "anthill": true},
+	{"at": 56.0, "act": 1, "label": "CÉSPED · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 1.0], "y": [4.6, 0.0], "anthill": true},
 	{"at": 62.0, "act": 1, "label": "MOSCAS · ESCALONADAS", "units": ["FlyCommon", "FlyCommon", "FlyCommon"], "formation": "staggered", "delays": [0.0, 0.8, 1.6], "y": [5.0, 3.4, 4.2]},
 	# ACT 2 — FLOWER BED (wasps, green flies, the fly cloud) and combat zone 1
 	{"at": 68.0, "act": 2, "label": "MACIZO · PRIMERA AVISPA", "units": ["Wasp"], "y": [4.4]},
@@ -358,7 +358,7 @@ const EVENTS_ROSTER = [
 			"arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
 		{"units": ["FlyCommon", "Wasp", "FlyCommon"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 3.0, 4.0]},
 		{"units": ["FlyCloud", "FlyGreen", "Ladybird"], "delays": [0.0, 1.0, 1.8], "y": [4.4, 5.2, 3.4]},
-		{"units": ["Ant", "Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.0], "y": [0.0, 5.0, 3.0, 4.4]},
+		{"units": ["Ant", "Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.0], "anthill": true, "y": [0.0, 5.0, 3.0, 4.4]},
 		{"units": ["FlyGreen", "FlyGreen", "FlyCloud"], "delays": [0.0, 0.6, 1.6], "y": [5.2, 2.8, 4.4]},
 		{"units": ["Wasp", "Ladybird", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.8, 1.6, 2.2], "y": [4.8, 3.6, 5.2, 2.8]},
 	]},
@@ -395,13 +395,13 @@ const EVENTS_ROSTER = [
 	{"at": 252.0, "act": 4, "label": "SOMBRA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.4]},
 	{"at": 255.0, "act": 4, "label": "SOMBRA · ARAÑA COLGANTE", "units": ["Spider"], "x": [1.2],
 			"arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
-		{"units": ["Ant", "StagBeetle"], "delays": [0.0, 1.2]},
+		{"units": ["Ant", "StagBeetle"], "delays": [0.0, 1.2], "anthill": true},
 		{"units": ["Spider", "Wasp", "FlyGreen"], "delays": [0.0, 0.9, 1.8], "x": [0.6, 0.0, 0.0], "y": [0.0, 4.6, 3.2]},
-		{"units": ["MushroomCannon", "Ladybird", "Ant"], "delays": [0.0, 1.0, 2.0], "y": [0.0, 4.6, 0.0]},
+		{"units": ["MushroomCannon", "Ladybird", "Ant"], "delays": [0.0, 1.0, 2.0], "anthill": true, "y": [0.0, 4.6, 0.0]},
 		{"units": ["Spider", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.9, 1.7], "x": [0.6, 0.0, 0.0], "y": [0.0, 4.4, 2.8]},
-		{"units": ["StagBeetle", "Wasp", "Ant", "FlyGreen"], "delays": [0.0, 0.8, 1.6, 2.4], "y": [0.0, 4.6, 0.0, 3.4]},
+		{"units": ["StagBeetle", "Wasp", "Ant", "FlyGreen"], "delays": [0.0, 0.8, 1.6, 2.4], "anthill": true, "y": [0.0, 4.6, 0.0, 3.4]},
 	]},
-	{"at": 268.0, "act": 4, "label": "SOMBRA · HORMIGAS Y AVISPA", "units": ["Ant", "Ant", "Wasp"], "delays": [0.0, 1.2, 2.0], "y": [0.0, 0.0, 4.4]},
+	{"at": 268.0, "act": 4, "label": "SOMBRA · HORMIGAS Y AVISPA", "units": ["Ant", "Ant", "Wasp"], "delays": [0.0, 1.2, 2.0], "y": [0.0, 0.0, 4.4], "anthill": true},
 	{"at": 273.0, "act": 4, "label": "SOMBRA · ARAÑA Y MOSCA", "units": ["Spider", "FlyCommon"], "x": [0.6, 0.0], "delays": [0.0, 1.0], "y": [0.0, 4.2]},
 	{"at": 277.0, "act": 4, "label": "SOMBRA · MARIQUITA Y MOSCA VERDE", "units": ["Ladybird", "FlyGreen"], "delays": [0.0, 1.0], "y": [4.2, 5.0]},
 	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
@@ -574,6 +574,8 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 			request["anchor"] = anchor
 		if hold:
 			request["hold"] = true
+		if bool(event.get("anthill", false)) and str(units[i]) == "Ant":
+			request["anthill"] = true # LOTE 13: the ant comes out of an anthill on screen (BeeLevel01Anthills).
 		if bool(event.get("miniboss", false)) and str(units[i]) == "Walker":
 			request["miniboss"] = true
 			request["escort_wave"] = event.get("escort_wave", {})
@@ -803,6 +805,12 @@ func _spawn(request: Dictionary) -> void:
 		unit.set_meta("boss_minion", true)
 		CinematicDepthEntry.begin_from(unit, request["launch_from"], request["launch_slot"], _on_depth_arrived.bind(unit.get_instance_id()), MINION_LAUNCH_SECONDS)
 		return
+	if bool(request.get("anthill", false)):
+		var anthills := stage.get_node_or_null("Anthills") as BeeLevel01Anthills
+		var hill := anthills.pick(stage.camera.global_position.x) if anthills != null else {}
+		if not hill.is_empty():
+			anthills.emerge(unit, hill, _on_depth_arrived.bind(unit.get_instance_id()))
+			return # Activated when it has hopped out of the mound.
 	if bool(request.get("depth", false)):
 		var slot_point := Vector2(DEPTH_TARGET_X + float(request.get("x", 0.0)), height)
 		CinematicDepthEntry.begin(unit, slot_point, request.get("anchor", slot_point), _on_depth_arrived.bind(unit.get_instance_id()))

@@ -19,6 +19,7 @@ var failed := false
 
 
 func _initialize() -> void:
+	BeeLevel01Controller.roster_only = false # LOTE 13: this test covers the legacy dressing (alien pot); Level 1 is garden-only now.
 	call_deferred("run")
 
 

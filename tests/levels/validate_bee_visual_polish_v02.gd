@@ -62,7 +62,7 @@ func run() -> void:
 	light._apply(20.0)
 	# --- particles --------------------------------------------------------------------------------------------
 	var fx := stage.get_node("AmbientFx") as BeeLevel01AmbientFx
-	check(fx != null and fx.dust != null and fx.dew != null and fx.haze != null and not fx.spark_systems.is_empty(), "AmbientFx systems missing")
+	check(fx != null and fx.dust != null and fx.dew != null and fx.haze != null and (BeeLevel01Controller.roster_only or not fx.spark_systems.is_empty()), "AmbientFx systems missing") # LOTE 13: no alien pylons (spark sources) in the garden-only level.
 	var budget := 0
 	for particles: GPUParticles3D in fx.find_children("*", "GPUParticles3D", true, false):
 		var pm := particles.process_material as ParticleProcessMaterial

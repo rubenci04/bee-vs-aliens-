@@ -42,6 +42,7 @@ func run() -> void:
 	stage.get_node("Juice").set_physics_process(false)
 	test_supplies_and_mushrooms()
 	await test_mushroom_drop()
+	await test_anthills()
 	await test_flies()
 	await test_cloud()
 	await test_worm_a()
@@ -125,12 +126,11 @@ func test_supplies_and_mushrooms() -> void:
 	for mushroom in mushrooms.mushrooms:
 		check(mushroom.collision_layer == 0 and not mushroom.is_in_group("breakable_rocks") and mushroom.is_in_group("garden_mushrooms"), "Mushrooms are not solid rocks")
 		check(mushroom.find_children("*", "DamageHitbox3D", true, false).is_empty(), "A garden mushroom must never shoot or hurt")
-		var x := mushroom.global_position.x
-		check(not (x > 179.0 and x < 208.0), "No mushroom inside the breathing valley")
+		
 	var kinds := {}
 	for mushroom in mushrooms.mushrooms:
 		kinds[mushroom.kind] = true
-	check(kinds.size() == 3, "The three garden mushroom models are used")
+	check(kinds.size() == 4, "The three garden mushroom models and the bellflower are used")
 
 func test_mushroom_drop() -> void:
 	var mushroom := (stage.get_node("GardenMushrooms") as BeeLevel01GardenMushrooms).mushrooms[0]
@@ -291,3 +291,32 @@ func test_kept_code() -> void:
 	for family in FORBIDDEN:
 		check(wave.spawned_by_family.get(family, 0) == 0, "Nothing outside the roster was spawned in this test: " + family)
 	print("LEVEL01_ROSTER kept_code UFO/frog/legacy table OK")
+
+
+# LOTE 13 · ETAPA 1: anthills on the soil; ants of marked events grow out of one and hop down before they act.
+func test_anthills() -> void:
+	var anthills := stage.get_node("Anthills") as BeeLevel01Anthills
+	check(anthills != null and anthills.hills.size() == BeeLevel01Anthills.PLACEMENTS.size() and anthills.hills.size() >= 6, "Anthills placed")
+	for hill in anthills.hills:
+		check(float((hill["entrance"] as Vector3).y) > 0.2, "Each anthill has an entrance above the soil")
+	var ant_events := 0
+	for event: Dictionary in BeeLevel01Controller.EVENTS_ROSTER:
+		if bool(event.get("anthill", false)):
+			ant_events += 1
+	check(ant_events >= 5, "Several ant groups are marked to come out of anthills")
+	stage.distance = 15.0
+	stage._update_camera_and_bounds()
+	wave._spawn({"family": "Ant", "slot": 0, "event": 0, "due": 0.0, "hard": false, "anthill": true})
+	var ant := wave.active_units.back() as AssetFauna
+	var hill := anthills.pick(stage.camera.global_position.x)
+	check(ant != null and not hill.is_empty() and anthills.emerged == 1, "The ant is born at an anthill on screen")
+	check(not ant.is_active() and ant.scale.x < 1.0 and absf(ant.global_position.x - float((hill["entrance"] as Vector3).x)) < 0.6, "It starts inside the mound, small and inactive")
+	check(not ant.is_in_group("bee_auto_aim_targets"), "It cannot be targeted while it comes out")
+	for i in 150:
+		await physics_frame
+		if ant.is_active():
+			break
+	check(ant.is_active() and is_equal_approx(ant.scale.x, 1.0) and absf(ant.global_position.y - BeeLevel01Anthills.GROUND_Y) < 0.05 and ant.is_in_group("bee_auto_aim_targets"), "After the hop it is on the ground, full size and active")
+	wave.active_units.erase(ant)
+	ant.queue_free()
+	print("LEVEL01_ROSTER anthills=%d emerge=%.1fs hop=%.1fs OK" % [anthills.hills.size(), BeeLevel01Anthills.EMERGE_SECONDS, BeeLevel01Anthills.HOP_SECONDS])

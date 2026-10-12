@@ -93,6 +93,7 @@ func run() -> void:
 	await press("restart")
 	check(stage.get_instance_id() != old_id and stage.distance < 1 and not qol.checkpoint_active and bee.health.current_health == 100, "R before checkpoint must start fresh")
 	stage.get_node("Juice").set_physics_process(false) # LOTE 11: no item magnet in this fixture (it would collect extra pollen).
+	stage.get_node("Juice").pollen_heal_enabled = false # LOTE 13: freed animals add pollen; the pollen bar would heal during the traversal.
 	# Prepare real collected state before a real traversal of the timeline.
 	stage.get_node("Pollen/PollenA").collect(bee)
 	stage.get_node("Powerups/SpreadFirst").collect(bee)

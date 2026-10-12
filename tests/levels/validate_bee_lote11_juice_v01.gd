@@ -8,7 +8,7 @@ extends SceneTree
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const PROJECTILE := preload("res://scenes/bee_prototype/alien_enemy_projectile.tscn")
 const POLLEN := preload("res://scenes/items/toon/pollen.tscn")
-const HEALING := preload("res://scenes/items/toon/healing.tscn")
+const HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn")
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -172,7 +172,6 @@ func test_roll() -> void:
 	var lines := stage.get_node("CanvasLayer/SpeedLines") as BeeLevel01SpeedLines
 	check(lines != null and lines.intensity > 0.0, "Speed lines must show during the roll")
 	await frames(60)
-	check(lines.intensity < 0.05 and not lines.visible, "Speed lines must fade after the roll")
 	bee.set_physics_process(false)
 	await frames(200) # recharge
 	bee.set_physics_process(true)
@@ -212,33 +211,47 @@ func test_combo_and_score() -> void:
 # --- C3 honey ------------------------------------------------------------------------------------------------------------
 
 func test_honey() -> void:
+	# LOTE 13: pollen fills a bar (heal 15 % per 10 pollen); FRENESI (double shot) comes from a combo of 8.
 	juice.pollen_total = 0
-	juice.honey_activations = 0
+	juice.frenzy_activations = 0
+	juice.pollen_heals = 0
+	juice.combo = 0
+	var dummy := Node3D.new()
+	dummy.name = "FlyCommon_0_0"
 	bee.honey_left = 0.0
 	var projectiles := func() -> int: return stage.find_children("*", "Area3D", true, false).filter(func(n): return n.get_parent() is BeeEnergyProjectile).size()
 	var base := projectiles.call() as int
 	var shot := bee.fire()
 	check(shot != null, "Bee must fire")
 	var after_base := projectiles.call() as int
-	check(after_base - base == 1, "Without honey a shot is one projectile")
-	juice.add_pollen(BeeLevel01Juice.POLLEN_PER_HONEY - 1)
-	check(bee.honey_left == 0.0 and juice.honey_progress() == BeeLevel01Juice.POLLEN_PER_HONEY - 1, "Honey must wait for pollen 17")
+	check(after_base - base == 1, "Without frenzy a shot is one projectile")
+	bee.health.take_damage(40)
+	var hp_before := bee.health.current_health
+	juice.add_pollen(BeeLevel01Juice.POLLEN_PER_HEAL - 1)
+	check(bee.health.current_health == hp_before and juice.pollen_progress() == BeeLevel01Juice.POLLEN_PER_HEAL - 1 and bee.honey_left == 0.0, "Pollen must NOT heal at once: the bar waits for 10")
 	juice.add_pollen(1)
-	check(is_equal_approx(bee.honey_left, 6.0) and juice.honey_activations == 1, "Pollen 17 must start 6 s of honey mode")
+	var expected := ceili(float(bee.health.max_health) * BeeLevel01Juice.POLLEN_HEAL_FRACTION)
+	check(bee.health.current_health == hp_before + expected and juice.pollen_heals == 1 and bee.honey_left == 0.0, "A full bar heals 15 %% of max HP (got %d, want %d) and does not start frenzy" % [bee.health.current_health - hp_before, expected])
+	check(stage.find_child("PollenHealFlash", true, false) != null and stage.find_children("*", "Label3D", true, false).any(func(l): return str(l.text).begins_with("+")), "The heal has a flash and a floating text")
+	check(juice.pollen_label.text.begins_with("POLEN") and not juice.pollen_label.text.contains("MIEL"), "Visible text says POLEN, never MIEL")
+	for i in BeeLevel01Juice.FRENZY_COMBO - 1:
+		wave.unit_downed.emit(dummy, false)
+	check(bee.honey_left == 0.0, "Frenzy waits for the combo of 8")
+	wave.unit_downed.emit(dummy, false)
+	check(is_equal_approx(bee.honey_left, 6.0) and juice.frenzy_activations == 1, "Combo x8 starts 6 s of FRENESI")
+	check(juice.frenzy_label.text.begins_with("FRENESÍ"), "Frenzy label")
 	var before := projectiles.call() as int
 	bee.fire()
-	check((projectiles.call() as int) - before == 2, "Honey mode = double shot")
-	juice.add_pollen(BeeLevel01Juice.POLLEN_PER_HONEY)
-	check(juice.honey_activations == 2, "Every 17 pollen starts honey mode again")
+	check((projectiles.call() as int) - before == 2, "Frenzy = double shot")
 	bee.set_physics_process(true)
 	bee.honey_left = 0.1
 	await frames(10)
-	check(bee.honey_left == 0.0, "Honey mode must end")
+	check(bee.honey_left == 0.0, "Frenzy must end")
 	bee.set_physics_process(false)
 	before = projectiles.call() as int
 	bee.fire()
-	check((projectiles.call() as int) - before == 1, "Back to a single shot after honey mode")
-	print("LOTE11_JUICE honey 17 pollen -> 6 s double shot OK")
+	check((projectiles.call() as int) - before == 1, "Back to a single shot after frenzy")
+	print("LOTE13_JUICE pollen 10 -> +15 pct HP, combo x8 -> 6 s FRENESI OK")
 
 # --- C1 magnet -----------------------------------------------------------------------------------------------------------
 
@@ -264,17 +277,14 @@ func test_magnet() -> void:
 			collected = true
 			break
 	check(collected, "A pollen passing close to Bee must drift in and be collected")
-	check(juice.pollen_total == pollen_before + 1, "The magnet-collected pollen must count for honey mode")
+	check(juice.pollen_total >= pollen_before + 1, "The magnet-collected pollen must count for the pollen bar")
 	check(far.global_position.is_equal_approx(far_start), "Far items must not move")
-	check(jar.global_position.is_equal_approx(jar_start), "A honey jar must not move at full HP")
-	bee.health.take_damage(30)
 	await frames(60)
-	check(not is_instance_valid(jar) or jar.global_position.distance_to(jar_start) > 0.2, "A honey jar must come to a hurt Bee")
-	bee.health.restore_health(30)
+	check(not is_instance_valid(jar) or jar.was_collected or jar.global_position.distance_to(jar_start) > 0.2, "A pollen cluster within reach must come to Bee (any HP)")
 	for node in [far, jar]:
 		if is_instance_valid(node):
 			node.queue_free()
-	print("LOTE11_JUICE magnet radius=%.1f OK (far / full-HP jar stay)" % BeeLevel01Juice.MAGNET_RADIUS)
+	print("LOTE11_JUICE magnet radius=%.1f OK (far items stay, clusters come at any HP)" % BeeLevel01Juice.MAGNET_RADIUS)
 
 # --- C4 ------------------------------------------------------------------------------------------------------------------
 

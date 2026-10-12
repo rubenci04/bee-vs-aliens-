@@ -15,7 +15,7 @@ const TOON_POLLEN := preload("res://scenes/items/toon/pollen.tscn")
 const TOON_SPREAD := preload("res://scenes/items/toon/spread.tscn")
 const TOON_BOMB := preload("res://scenes/items/toon/bomb.tscn")
 const TOON_BEE_BOLT := preload("res://scenes/levels/bee_level_toon_bolt.tscn") # Codex toon bolt + the game hit rules.
-const TOON_HEALING := preload("res://scenes/items/toon/healing.tscn")
+const TOON_HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: pollen cluster (was the honey jar).
 ## LOTE 9 · ETAPA B — supply right before the X=340 last-defence gate: a bomb pickup (+3 bombs) and a honey jar (heals
 ## when hurt). [x, y] per item; it is part of the level (a respawn at the X=281 checkpoint finds it again; the boss
 ## checkpoint is past it, so it can never be farmed).
@@ -23,6 +23,8 @@ const PREBOSS_SUPPLY := {"bomb": Vector2(337.0, 3.8), "healing": Vector2(338.8, 
 ## LOTE 12 · ETAPA 2 (roster only): the supply right before the walking-robot gate (X=290) and the BREATHING VALLEY supplies after
 ## checkpoint 1 (X=190): [kind, x, y] - honey jars heal, the bomb capsule gives +3 bombs.
 const ROSTER_GATE_SUPPLY := {"bomb": Vector2(285.5, 3.8), "healing": Vector2(287.3, 2.6)}
+## LOTE 13 · ETAPA 1: loose pollen clusters along the route ([x, y]; each is CLUSTER_VALUE pollen; skipped once the level resumes past them).
+const POLLEN_CLUSTERS := [[34.0, 3.4], [84.0, 4.4], [124.0, 3.0], [168.0, 4.2], [214.0, 3.4], [236.0, 4.6], [262.0, 3.0], [279.0, 4.2]]
 const VALLEY_SUPPLY := [["healing", 192.5, 2.8], ["bomb", 196.0, 3.8], ["healing", 200.0, 2.6]]
 
 func _ready() -> void:
@@ -39,9 +41,13 @@ func _ready() -> void:
 		var mushrooms := BeeLevel01GardenMushrooms.new() # LOTE 12: destructible garden mushrooms that drop pollen.
 		mushrooms.name = "GardenMushrooms"
 		add_child(mushrooms)
+		var anthills := BeeLevel01Anthills.new() # LOTE 13: anthills the ants come out of.
+		anthills.name = "Anthills"
+		add_child(anthills)
 	checkpoint.setup(self)
 	_place_preboss_supply()
 	_place_valley_supply()
+	_place_pollen_clusters()
 	for leftover in ["Ground", "GroundExtension"]: # POC boxes under the mulch slab (coplanar): never visible, never styled.
 		var poc_ground := get_node_or_null(leftover) as Node3D
 		if poc_ground != null:
@@ -118,7 +124,7 @@ func _physics_process(delta: float) -> void:
 				get_tree().change_scene_to_file(BeeGameSettings.TITLE_SCENE)
 		return
 	if not wave_clear_announced:
-		status.text = "HP %d/%d · POLEN %d/17" % [bee.health.current_health, bee.health.max_health, pollen_count]
+		status.text = "HP %d/%d" % [bee.health.current_health, bee.health.max_health] # LOTE 13: the pollen bar has its own line (BeeLevel01Juice).
 	section_label.text = level_wave.player_label
 
 func _secure_victory() -> void:
@@ -140,7 +146,7 @@ func _swap_toon_pickups() -> void:
 			var fresh: Node3D
 			if bool(pair[1]):
 				fresh = TOON_POLLEN.instantiate() as Node3D
-				fresh.set("heal_amount", old.get("heal_amount"))
+				fresh.set("heal_amount", BeeLevel01Juice.POLLEN_INSTANT_HEAL) # LOTE 13: pollen fills the bar, it does not heal at once.
 			else:
 				var is_bomb: bool = int(old.get("kind")) == BeePowerupPickup.Kind.BOMB
 				fresh = (TOON_BOMB if is_bomb else TOON_SPREAD).instantiate() as Node3D
@@ -222,3 +228,20 @@ func _show_clear_banner() -> void:
 	var pop := clear_banner.create_tween().set_parallel(true)
 	pop.tween_property(clear_banner, "modulate:a", 1.0, 0.35)
 	pop.tween_property(clear_banner, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+## LOTE 13: pollen clusters on the way (a respawn finds the ones ahead of it again, like the valley supplies).
+func _place_pollen_clusters() -> void:
+	if not BeeLevel01Controller.roster_only:
+		return
+	var group := Node3D.new()
+	group.name = "PollenClusters"
+	add_child(group)
+	var index := 0
+	for entry in POLLEN_CLUSTERS:
+		if distance > float(entry[0]):
+			continue
+		var item := TOON_HEALING.instantiate() as Node3D
+		item.name = "PollenCluster%d" % index
+		index += 1
+		group.add_child(item)
+		item.global_position = Vector3(float(entry[0]), float(entry[1]), 0.0)

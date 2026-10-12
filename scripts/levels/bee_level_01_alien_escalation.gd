@@ -16,6 +16,8 @@ const ALIEN_VIOLET := BeeAlienPalette.VIOLET
 const FLOWER_X := 266.0
 const FLOWER_Z := -2.4
 const DEVICE_HP := 30
+## LOTE 13 · ETAPA 1: the alien dressing (pylons / relays, contaminated flower) is not built while Level 1 plays its roster.
+const GARDEN_ONLY := true
 ## Alien pylons after the checkpoint: [X, z, scale]. Sparse first, a little denser towards the sunset.
 const PYLONS := [[214.0, -6.5, 0.8], [236.0, -5.2, 0.9], [251.0, -7.0, 1.0], [271.0, -5.8, 1.1], [289.0, -6.6, 1.0],
 		[304.0, -5.0, 1.15], [318.0, -6.2, 1.2], [331.0, -5.4, 1.25], [349.0, -6.8, 1.3]]
@@ -46,6 +48,8 @@ var _clock := 0.0
 
 func _ready() -> void:
 	stage = get_node(stage_path) as BeeShmupStage
+	if GARDEN_ONLY and BeeLevel01Controller.roster_only:
+		return # LOTE 13 · ETAPA 1: Level 1 is a house garden: no relays (black pods with violet antennae), no contaminated flower.
 	for entry in PYLONS:
 		pylons.append(_pylon(float(entry[0]), float(entry[1]), float(entry[2])))
 	_build_contaminated_flower()

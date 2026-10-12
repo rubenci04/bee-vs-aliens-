@@ -22,6 +22,7 @@ const BANANA_PEEL := preload("res://scenes/art_labs/ground_litter_v02/banana_pee
 const HOSE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_hose.tscn")
 const FENCE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_fence_module.tscn")
 const HOUSE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_distant_house.tscn")
+const WATERING_CAN := preload("res://scenes/art_labs/garden_backdrop_v01/garden_watering_can.tscn")
 const PINE_CONE := preload("res://scenes/art_labs/pine_woods_v01/pine_cone.tscn")
 const TALL_PINE := preload("res://scenes/art_labs/pine_woods_v01/tall_pine.tscn")
 const UMBRELLA_PINE := preload("res://scenes/art_labs/pine_woods_v01/umbrella_pine.tscn")
@@ -72,12 +73,35 @@ const LITTER := [
 	[HOLLOW_LOG, 55.0, -3.4, 2.5, 0.2, 0.0], [BELLFLOWER, 122.5, -3.0, 1.6, 0.1, 0.0], [BELLFLOWER, 129.5, -3.6, 1.4, 1.2, 0.0],
 	[BELLFLOWER, 31.0, -3.2, 1.5, 0.4, 0.0], [BELLFLOWER, 72.0, -3.4, 1.6, 2.0, 0.0], [BELLFLOWER, 205.0, -3.0, 1.5, 0.8, 0.0],
 	[SHRUB, 68.0, -3.9, 3.0, 1.3, 0.0], [SHRUB, 158.0, -4.1, 3.3, 0.6, 0.0],
-	[FENCE, 148.0, -21.0, 3.6, 0.0, 0.0], [FENCE, 155.2, -21.0, 3.6, 0.0, 0.0], [FENCE, 162.4, -21.0, 3.6, 0.0, 0.0], [FENCE, 169.6, -21.0, 3.6, 0.0, 0.0], [FENCE, 176.8, -21.0, 3.6, 0.0, 0.0], [FENCE, 184.0, -21.0, 3.6, 0.0, 0.0],
-	[HOUSE, 176.0, -58.0, 8.0, 0.0, 0.0],
+	[SAPLING, 104.0, -14.0, 2.4, 1.0, 0.0], # NOCHE 01 · ETAPA 3: smaller and further (was z -9.5, 3.2: it filled the centre).
+	# LOTE 13 · ETAPA 1: the whole level is a HOUSE GARDEN, also at dusk. The pines and pine cones of the second half left the
+	# level (they belong to level_03_forest, see FOREST_PIECES) and the background is filled with garden pieces: the second half
+	# gets shrubs, bellflowers, saplings, cans, a hose and watering cans where the pines stood. Fence and houses: see FENCE_* / HOUSE_*.
+	[SHRUB, 240.0, -3.9, 3.1, 0.9, 0.0], [SHRUB, 262.0, -4.0, 3.3, 2.0, 0.0], [SHRUB, 283.0, -3.8, 3.0, 4.0, 0.0], [SHRUB, 306.0, -4.1, 3.4, 1.2, 0.0],
+	[SHRUB, 340.0, -3.9, 3.2, 3.3, 0.0], [SHRUB, 4.0, -4.0, 3.0, 2.2, 0.0],
+	[BELLFLOWER, 244.0, -3.2, 1.6, 0.3, 0.0], [BELLFLOWER, 258.0, -3.5, 1.5, 1.7, 0.0], [BELLFLOWER, 271.0, -3.1, 1.6, 2.6, 0.0],
+	[BELLFLOWER, 290.0, -3.4, 1.4, 0.8, 0.0], [BELLFLOWER, 311.0, -3.2, 1.6, 3.4, 0.0], [BELLFLOWER, 322.0, -3.6, 1.5, 5.0, 0.0],
+	[BELLFLOWER, 346.0, -3.3, 1.6, 1.1, 0.0], [BELLFLOWER, 358.0, -3.1, 1.5, 4.2, 0.0],
+	[SAPLING, 252.0, -13.0, 2.5, 3.0, 0.0], [SAPLING, 296.0, -12.5, 2.7, 0.7, 0.0], [SAPLING, 334.0, -13.5, 2.6, 5.2, 0.0], [SAPLING, 20.0, -12.0, 2.5, 1.9, 0.0],
+	[CAN, 301.0, -4.6, 4.3, 2.1, 0.05], [CAN, 349.0, -4.4, 4.0, 0.9, 0.0], [CANDY, 255.0, -2.9, 1.6, 1.3, 0.0], [CANDY, 331.0, -3.0, 1.5, 4.4, 0.0],
+	[HOSE, 226.0, -3.8, 4.0, 3.6, 0.0], [HOSE, 318.0, -3.9, 4.0, 0.4, 0.0],
+	[WATERING_CAN, 38.0, -4.6, 3.3, 0.6, 0.0], [WATERING_CAN, 205.0, -4.8, 3.3, 3.4, 0.0], [WATERING_CAN, 277.0, -4.6, 3.3, 5.8, 0.0], [WATERING_CAN, 352.0, -4.7, 3.3, 2.7, 0.0],
+]
+## Garden backdrop generated along the whole level: a fence (module every FENCE_STEP m) and distant houses.
+const FENCE_FROM := -10.0
+const FENCE_TO := 392.0
+const FENCE_STEP := 7.2
+const FENCE_Z := -21.0
+const FENCE_SCALE := 3.6
+const HOUSE_X := [20.0, 120.0, 176.0, 252.0, 330.0]
+const HOUSE_Z := -58.0
+const HOUSE_SCALE := 8.0
+## Forest pieces (pines, pine cones): kept for the forest level, NOT built in Level 01 (flip to bring them back for previews).
+const BUILD_FOREST_PIECES := false
+const FOREST_PIECES := [
 	[PINE_CONE, 160.0, -2.8, 4.0, 0.7, 0.0], [PINE_CONE, 236.0, -3.0, 3.6, 2.1, 0.0],
 	[TALL_PINE, 250.0, -20.0, 8.0, 0.3, 0.0], [TALL_PINE, 268.0, -22.0, 8.5, 1.1, 0.0], [UMBRELLA_PINE, 286.0, -24.0, 7.0, 0.5, 0.0],
 	[TALL_PINE, 304.0, -21.0, 8.0, 2.4, 0.0], [TALL_PINE, 330.0, -22.0, 9.0, 0.9, 0.0], [UMBRELLA_PINE, 352.0, -25.0, 7.5, 1.7, 0.0],
-	[SAPLING, 104.0, -14.0, 2.4, 1.0, 0.0], # NOCHE 01 · ETAPA 3: smaller and further (was z -9.5, 3.2: it filled the centre).
 ]
 
 var stage: BeeShmupStage
@@ -129,7 +153,16 @@ func _swap_pylons() -> void:
 # --- litter ---------------------------------------------------------------------------------------------------
 
 func _build_litter() -> void:
-	for entry in LITTER:
+	var entries: Array = LITTER.duplicate()
+	if BUILD_FOREST_PIECES or not BeeLevel01Controller.roster_only: # The legacy (pre-roster) table keeps its pines.
+		entries.append_array(FOREST_PIECES)
+	var fence_x := FENCE_FROM
+	while fence_x <= FENCE_TO:
+		entries.append([FENCE, fence_x, FENCE_Z, FENCE_SCALE, 0.0, 0.0])
+		fence_x += FENCE_STEP
+	for x in HOUSE_X:
+		entries.append([HOUSE, float(x), HOUSE_Z, HOUSE_SCALE, 0.0, 0.0])
+	for entry in entries:
 		var item := (entry[0] as PackedScene).instantiate() as Node3D
 		item.name = "Litter%d" % litter.size()
 		add_child(item)

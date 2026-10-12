@@ -3,8 +3,9 @@ extends Node
 ## LOTE 11 · ETAPA C — Level 01 "life and emotion" orchestrator (presentation + small rewards, no new enemy behaviour):
 ##   combo     "xN" counter for consecutive destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
 ##             kill); points per kill x combo multiplier; the score is shown on the SECTOR DESPEJADO card
-##   honey     pollen (collected pickups, +POLLEN_PER_LIBERATION per freed animal) fills a bar; every POLLEN_PER_HONEY starts
-##             HONEY MODE (6 s of double shot, see BeePlayer.activate_honey)
+##   pollen    pollen (pickups, clusters, mushrooms and flowers, +POLLEN_PER_LIBERATION per freed animal) fills a bar; every
+##             POLLEN_PER_HEAL pollen heals POLLEN_HEAL_FRACTION of max HP (flash + sound). It never heals instantly.
+##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
 ##   juice     hit stop on big kills / liberations, camera shake when Bee is hurt, pollen burst on a liberation
 ##   magnet    items drift towards Bee when she passes close
 ## Every number is a constant. The hit flash is attached to each enemy by the controller (BeeJuice.attach_hit_flash).
@@ -16,7 +17,12 @@ const POINTS_LIBERATION := 150
 const POINTS_BOSS := 1000
 ## [max base HP, points]: the first row whose HP limit covers the enemy.
 const POINTS_BY_HP := [[10, 10], [50, 40], [100, 80], [100000, 150]]
-const POLLEN_PER_HONEY := 17
+const POLLEN_INSTANT_HEAL := 0 ## Direct healing of a pollen pickup in Level 1: none (the bar heals).
+const POLLEN_PER_HEAL := 10 ## Pollen needed to fill the bar (one heal).
+const POLLEN_HEAL_FRACTION := 0.15 ## Fraction of max HP restored per full bar.
+const FRENZY_COMBO := 8 ## Combo that starts FRENESI (double shot).
+const HEAL_FLASH_COLOR := Color(1.0, 0.86, 0.3, 0.24)
+const HEAL_FLASH_SECONDS := 0.4
 const POLLEN_PER_LIBERATION := 1
 const DAMAGE_SHAKE_AMPLITUDE := 0.045
 const DAMAGE_SHAKE_SECONDS := 0.2
@@ -24,7 +30,8 @@ const MAGNET_RADIUS := 2.4
 const MAGNET_SPEED := 6.5
 const MAGNET_SCAN_SECONDS := 0.25
 const COMBO_COLOR := Color(1.0, 0.86, 0.3)
-const HONEY_COLOR := Color(1.0, 0.78, 0.2)
+const POLLEN_COLOR := Color(1.0, 0.84, 0.25)
+const FRENZY_COLOR := Color(1.0, 0.55, 0.15)
 
 signal combo_changed(combo: int)
 
@@ -40,11 +47,15 @@ var combo_left := 0.0
 var pollen_total := 0
 var pollen_from_pickups := 0
 var pollen_from_liberations := 0
-var honey_activations := 0
+var frenzy_activations := 0
+var pollen_heals := 0
+var pollen_healed := 0 # HP restored by the pollen bar.
+var pollen_heal_enabled := true # Tests that kill many units switch the heal off to keep their HP fixtures exact.
 var magnet_pulls := 0
 var big_stops := 0
 var combo_label: Label
-var honey_label: Label
+var pollen_label: Label
+var frenzy_label: Label
 var _pickups: Array[Area3D] = []
 var _connected_pollen := {}
 var _scan_left := 0.0
@@ -57,12 +68,13 @@ func _ready() -> void:
 	wave.unit_downed.connect(_on_unit_downed)
 	wave.enemy_hit.connect(_on_enemy_hit)
 	bee.health.health_changed.connect(_on_bee_health_changed)
-	bee.honey_changed.connect(_refresh_honey)
+	bee.honey_changed.connect(_refresh_frenzy)
 	get_tree().node_added.connect(_on_node_added)
 	_build_hud()
 	for pickup in stage.find_children("*", "Area3D", true, false):
 		_register_pickup(pickup)
-	_refresh_honey()
+	_refresh_pollen()
+	_refresh_frenzy()
 
 
 func _build_hud() -> void:
@@ -82,19 +94,25 @@ func _build_hud() -> void:
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_label.hide()
 	layer.add_child(combo_label)
-	honey_label = Label.new()
-	honey_label.name = "HoneyLabel"
-	honey_label.offset_left = 18.0
-	honey_label.offset_top = 108.0
-	honey_label.offset_right = 520.0
-	honey_label.offset_bottom = 136.0
-	honey_label.add_theme_font_size_override("font_size", 20)
-	honey_label.add_theme_color_override("font_color", HONEY_COLOR)
-	honey_label.add_theme_color_override("font_shadow_color", Color.BLACK)
-	honey_label.add_theme_constant_override("shadow_offset_x", 1)
-	honey_label.add_theme_constant_override("shadow_offset_y", 1)
-	honey_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(honey_label)
+	pollen_label = _hud_label(layer, "PollenLabel", 108.0, POLLEN_COLOR)
+	frenzy_label = _hud_label(layer, "FrenzyLabel", 136.0, FRENZY_COLOR)
+
+
+func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> Label:
+	var label := Label.new()
+	label.name = label_name
+	label.offset_left = 18.0
+	label.offset_top = top
+	label.offset_right = 520.0
+	label.offset_bottom = top + 28.0
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(label)
+	return label
 
 
 func _physics_process(delta: float) -> void:
@@ -103,7 +121,7 @@ func _physics_process(delta: float) -> void:
 		if combo_left <= 0.0:
 			_reset_combo()
 	if bee.honey_left > 0.0:
-		_refresh_honey()
+		_refresh_frenzy()
 	_scan_left -= delta
 	if _scan_left <= 0.0:
 		_scan_left = MAGNET_SCAN_SECONDS
@@ -138,6 +156,9 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 	combo += 1
 	best_combo = maxi(best_combo, combo)
 	combo_left = COMBO_RESET_SECONDS
+	if combo == FRENZY_COMBO: # FRENESI: the double shot no longer depends on pollen.
+		frenzy_activations += 1
+		bee.activate_honey()
 	score += roundi(float(base_points(unit, liberated)) * combo_multiplier())
 	_refresh_combo()
 	var family := str(unit.name).get_slice("_", 0)
@@ -165,6 +186,7 @@ func _reset_combo() -> void:
 
 func _refresh_combo() -> void:
 	combo_changed.emit(combo)
+	_refresh_frenzy()
 	if combo_label == null:
 		return
 	combo_label.visible = combo >= 2
@@ -179,36 +201,87 @@ func summary_text() -> String:
 	return "PUNTAJE %d · MEJOR COMBO x%d" % [score, best_combo]
 
 
-# --- pollen / honey mode -----------------------------------------------------------------------------------------
+# --- pollen bar / frenzy -----------------------------------------------------------------------------------------
 
 func add_pollen(amount: int) -> void:
 	for i in amount:
 		pollen_total += 1
-		if pollen_total % POLLEN_PER_HONEY == 0:
-			honey_activations += 1
-			bee.activate_honey()
-	_refresh_honey()
+		if pollen_total % POLLEN_PER_HEAL == 0:
+			_heal_from_pollen()
+	_refresh_pollen()
 
 
-func honey_progress() -> int:
-	return pollen_total % POLLEN_PER_HONEY
+func pollen_progress() -> int:
+	return pollen_total % POLLEN_PER_HEAL
 
 
-func _refresh_honey() -> void:
-	if honey_label == null:
+## A full bar: POLLEN_HEAL_FRACTION of max HP back, with a golden flash, a chime and a floating text.
+func _heal_from_pollen() -> void:
+	pollen_heals += 1
+	if bee.is_defeated:
 		return
-	if bee.honey_left > 0.0:
-		honey_label.text = "MODO MIEL · DISPARO DOBLE %.1f s" % bee.honey_left
-		honey_label.visible = true
+	if not pollen_heal_enabled:
 		return
-	var filled := honey_progress()
-	honey_label.visible = pollen_total > 0
-	honey_label.text = "MIEL %s %d/%d" % ["[" + "#".repeat(filled * 10 / POLLEN_PER_HONEY) + "-".repeat(10 - filled * 10 / POLLEN_PER_HONEY) + "]", filled, POLLEN_PER_HONEY]
+	var amount := maxi(1, ceili(float(bee.health.max_health) * POLLEN_HEAL_FRACTION))
+	pollen_healed += bee.health.restore_health(amount)
+	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
+	BeeCombatVFX.spawn(stage, bee.global_position, &"pollen", Vector3.UP, 1.3)
+	_heal_flash()
+	var text := Label3D.new()
+	text.text = "+%d%% VIDA" % roundi(POLLEN_HEAL_FRACTION * 100.0)
+	text.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	text.no_depth_test = true
+	text.font_size = 40
+	text.outline_size = 12
+	text.pixel_size = 0.0075
+	text.modulate = POLLEN_COLOR
+	text.outline_modulate = Color(0.16, 0.09, 0.03)
+	stage.add_child(text)
+	text.global_position = bee.global_position + Vector3(0.0, 0.9, 0.3)
+	var rise := text.create_tween().set_parallel(true)
+	rise.tween_property(text, "global_position", text.global_position + Vector3(0.0, 0.9, 0.0), 1.0)
+	rise.tween_property(text, "modulate:a", 0.0, 0.5).set_delay(0.5)
+	rise.chain().tween_callback(text.queue_free)
 
 
-func _on_pollen_collected(_pickup: BeePollenPickup, _restored: int) -> void:
-	pollen_from_pickups += 1
-	add_pollen(1)
+func _heal_flash() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "PollenHealFlash"
+	layer.layer = 6
+	stage.add_child(layer)
+	var rect := ColorRect.new()
+	rect.color = HEAL_FLASH_COLOR
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(rect)
+	var fade := layer.create_tween()
+	fade.tween_property(rect, "color:a", 0.0, HEAL_FLASH_SECONDS)
+	fade.tween_callback(layer.queue_free)
+
+
+func _refresh_pollen() -> void:
+	if pollen_label == null:
+		return
+	var filled := pollen_progress()
+	var cells := filled * 10 / POLLEN_PER_HEAL
+	pollen_label.visible = true
+	pollen_label.text = "POLEN [%s%s] %d/%d · +%d%% VIDA" % ["#".repeat(cells), "-".repeat(10 - cells), filled, POLLEN_PER_HEAL, roundi(POLLEN_HEAL_FRACTION * 100.0)]
+
+
+func _refresh_frenzy() -> void:
+	if frenzy_label == null:
+		return
+	var active := bee.honey_left > 0.0
+	frenzy_label.visible = active or combo > 0
+	if active:
+		frenzy_label.text = "FRENESÍ · DISPARO DOBLE %.1f s" % bee.honey_left
+	else:
+		frenzy_label.text = "FRENESÍ: COMBO x%d (%d/%d)" % [FRENZY_COMBO, mini(combo, FRENZY_COMBO), FRENZY_COMBO]
+
+
+func _on_pollen_collected(pickup: BeePollenPickup, _restored: int) -> void:
+	pollen_from_pickups += pickup.pollen_value
+	add_pollen(pickup.pollen_value)
 
 
 # --- bee hurt / item magnet --------------------------------------------------------------------------------------
@@ -229,7 +302,7 @@ func _register_pickup(node: Node) -> void:
 	if _pickups.has(node):
 		return
 	_pickups.append(node as Area3D)
-	if node is BeePollenPickup and BeeItemBeacon.for_item(node as Node3D) == &"pollen" and not _connected_pollen.has(node.get_instance_id()):
+	if node is BeePollenPickup and BeeItemBeacon.for_item(node as Node3D) in [&"pollen", &"cluster"] and not _connected_pollen.has(node.get_instance_id()):
 		_connected_pollen[node.get_instance_id()] = true
 		(node as BeePollenPickup).collected.connect(_on_pollen_collected)
 
@@ -238,8 +311,6 @@ func _wants(pickup: Area3D) -> bool:
 	if pickup is BeePowerupPickup:
 		var power := pickup as BeePowerupPickup
 		return not (power.kind == BeePowerupPickup.Kind.BOMB and bee.bomb_charges >= bee.max_bomb_charges)
-	if BeeItemBeacon.for_item(pickup) == &"healing":
-		return bee.health.current_health < bee.health.max_health # A honey jar at full HP would stick to Bee, uncollected.
 	return true
 
 

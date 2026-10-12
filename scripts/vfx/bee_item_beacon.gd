@@ -10,11 +10,11 @@ const COLORS := {
 	&"pollen": Color(0.78, 1.0, 0.22),
 	&"spread": Color(0.3, 0.46, 1.0),
 	&"bomb": Color(1.0, 0.16, 0.3),
-	&"healing": Color(0.3, 1.0, 0.42),
+	&"cluster": Color(0.3, 1.0, 0.42), # LOTE 13: pollen cluster: the old healing green (it reads apart from the lime pollen and the ochre soil), bigger.
 }
 const OUTLINE := Color(1.0, 1.0, 1.0)
 ## Size per kind (pollen is the small, frequent one).
-const SIZES := {&"pollen": 0.72, &"spread": 1.0, &"bomb": 1.0, &"healing": 1.0}
+const SIZES := {&"pollen": 0.72, &"spread": 1.0, &"bomb": 1.0, &"cluster": 1.2}
 const RING_RADIUS := 0.5
 const HALO_RADIUS := 0.66
 const HALO_ALPHA := 0.32
@@ -37,8 +37,8 @@ var _t := 0.0
 static func for_item(item: Node3D) -> StringName:
 	var script := item.get_script() as Script
 	var path := script.resource_path if script != null else ""
-	if path.contains("healing"):
-		return &"healing"
+	if path.contains("pollen_cluster") or path.contains("healing"): # The old honey jar reads as a cluster too.
+		return &"cluster"
 	if item is BeePowerupPickup:
 		return &"bomb" if (item as BeePowerupPickup).kind == BeePowerupPickup.Kind.BOMB else &"spread"
 	return &"pollen"

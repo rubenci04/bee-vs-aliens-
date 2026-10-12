@@ -752,7 +752,7 @@ func _phase_label_text(text: String) -> void:
 
 
 func _drop_honey() -> void:
-	var item := preload("res://scenes/items/toon/healing.tscn").instantiate() as Node3D
+	var item := preload("res://scenes/items/toon/pollen_cluster.tscn").instantiate() as Node3D
 	get_parent().add_child(item)
 	item.global_position = Vector3(_cam_x() - side * 3.8, 4.0, 0.0)
 	honey_spawned += 1

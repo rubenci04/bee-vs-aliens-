@@ -27,7 +27,7 @@ Detalle completo: `docs/INFORME_MAESTRO.md`. Reglas base: `AGENTS.md`.
 - Biblioteca externa (fuera del repo): `D:\proyectos\V_Asset_Library` (ver reglas de licencias).
 
 ## Controles
-- Mover: WASD / flechas. Disparo: X o clic izquierdo. Apuntar: mouse. Melee (Sting): Z. Alien Bomb: C. Pirueta: Shift (0,35 s invulnerable, recarga 2,5 s; Lote 11). Modo Miel: cada 17 de polen, 6 s de disparo doble. Temblor de pantalla: opción en el título.
+- Mover: WASD / flechas. Disparo: X o clic izquierdo. Apuntar: mouse. Melee (Sting): Z. Alien Bomb: C. Pirueta: Shift (0,35 s invulnerable, recarga 2,5 s; Lote 11). Polen: barra de 10 de polen = +15 % de vida (no cura al instante). FRENESÍ: combo x8 = 6 s de disparo doble. Temblor de pantalla: opción en el título.
 - Pausa: Esc. Reiniciar tras derrota: R (en checkpoint = respawn); tras ganar, R = reinicio completo. Reinicio total: Shift+R.
 - Armas: Base (10 HP, auto-aim ~12 m, sin homing), Spread (3 disparos ±14°, 8 HP c/u, 32 ráfagas), Bomb (radio 3 m, 32 HP, máx. 3 cargas).
 - Checkpoints en X=190 m y X=281 m; respawn en (x, 5.4, 0) con 1.25 s de invulnerabilidad.

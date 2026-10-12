@@ -4,6 +4,8 @@ extends Area3D
 signal collected(pickup: BeePollenPickup, restored_health: int)
 
 @export var heal_amount := 20
+## LOTE 13: pollen this pickup adds to the pollen bar of Level 1 (see BeeLevel01Juice).
+@export var pollen_value := 1
 var was_collected := false
 
 

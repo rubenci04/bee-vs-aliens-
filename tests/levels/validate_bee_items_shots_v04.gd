@@ -200,7 +200,7 @@ func test_items() -> void:
 			check(beacon != null, "Item without beacon: %s" % item.get_path())
 			check(beacon.halo != null and beacon.ring != null and beacon.outline != null and beacon.column != null, "Beacon parts missing")
 			beacons[beacon.kind] = beacon
-	for kind in [&"pollen", &"spread", &"bomb", &"healing"]:
+	for kind in [&"pollen", &"spread", &"bomb", &"cluster"]: # LOTE 13: the honey jar became a pollen cluster
 		check(beacons.has(kind), "No %s item with a beacon in the level" % kind)
 	# The halo pulses.
 	var probe: BeeItemBeacon = beacons[&"pollen"]
@@ -235,6 +235,6 @@ func test_items() -> void:
 	var bomb := supply.get_node("SupplyBomb") as BeePowerupPickup
 	var jar := supply.get_node("SupplyHealing") as Node3D
 	check(bomb.kind == BeePowerupPickup.Kind.BOMB and bomb.global_position.x > 330.0 and bomb.global_position.x < 340.0, "Supply bomb before the gate")
-	check(jar is BeePollenPickup and jar.global_position.x > 330.0 and jar.global_position.x < 340.0, "Supply honey jar before the gate")
+	check(jar is BeePollenCluster and jar.global_position.x > 330.0 and jar.global_position.x < 340.0, "Supply pollen cluster before the gate")
 	check(bomb.has_node("ItemBeacon") and jar.has_node("ItemBeacon"), "Supply items need beacons")
-	lines.append("SUPPLY bomb (+3) at X=%.1f, honey jar at X=%.1f (gate X=340)" % [bomb.global_position.x, jar.global_position.x])
+	lines.append("SUPPLY bomb (+3) at X=%.1f, pollen cluster at X=%.1f (gate X=340)" % [bomb.global_position.x, jar.global_position.x])
