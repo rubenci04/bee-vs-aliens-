@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/alien_ships_v02/alien_needle_interceptor.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/shared/alien_tech/alien_needle_interceptor.glb" id="2"]
 [node name="AlienNeedleInterceptor" type="Node3D"]
 script = ExtResource("1")
 [node name="Model" parent="." instance=ExtResource("2")]

@@ -1,0 +1,22 @@
+{
+  "assets": [
+    {
+      "id": "alien_mothership",
+      "role": "Campaign boss silhouette study; command bridge, scythe arms, hangar, twin engines and external rig markers",
+      "triangles": 6764,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        5.433,
+        1.44,
+        1.506
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_07_space/bosses/alien_mothership.blend",
+      "glb": "assets/models/levels/level_07_space/bosses/alien_mothership.glb"
+    }
+  ]
+}

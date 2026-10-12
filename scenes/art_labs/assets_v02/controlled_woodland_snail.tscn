@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v02/controlled_woodland_snail.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_01_garden/enemies/controlled_woodland_snail.glb" id="2"]
 
 [node name="controlled_woodland_snail" type="Node3D"]
 script = ExtResource("1")

@@ -163,7 +163,7 @@ func shape(pos: Vector3, dimensions: Vector3, color: Color, round_shape := false
 
 func bee_anchor(pos: Vector3) -> void:
 	# Original project visual, without loading player physics, audio or gameplay.
-	var bee := (load("res://assets/models/bee_prototype/bee_alien_visual.glb") as PackedScene).instantiate() as Node3D
+	var bee := (load("res://assets/models/shared/bee/bee_alien_visual.glb") as PackedScene).instantiate() as Node3D
 	bee.name = "BeeScaleReference"
 	stage.add_child(bee)
 	bee.position = pos

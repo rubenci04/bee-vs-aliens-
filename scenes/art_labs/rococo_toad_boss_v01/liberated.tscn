@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/art/rococo_toad_visual.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01_liberado.glb" id="2"]
+[node name="RococoToadBoss" type="Node3D"]
+script = ExtResource("1")
+controlled = false
+[node name="Model" parent="." instance=ExtResource("2")]

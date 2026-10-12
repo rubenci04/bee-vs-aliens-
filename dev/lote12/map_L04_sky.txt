@@ -1,0 +1,8 @@
+eagle_sky_v01/controlled_eagle_flight|levels/level_04_sky/enemies
+future_biomes_v11/controlled_eagle|levels/level_04_sky/enemies
+future_biomes_v04/controlled_pigeon|levels/level_04_sky/enemies
+future_biomes_v07/sky_cloud|levels/level_04_sky/environment
+residential_sky_v01/residential_cottage|levels/level_04_sky/environment
+residential_sky_v01/residential_two_storey|levels/level_04_sky/environment
+residential_sky_v01/warm_street_lamp|levels/level_04_sky/props
+residential_sky_v01/warm_star_set|levels/level_04_sky/environment

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v02/alien_seed_carrier.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/shared/alien_tech/alien_seed_carrier.glb" id="2"]
 
 [node name="alien_seed_carrier" type="Node3D"]
 script = ExtResource("1")

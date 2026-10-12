@@ -43,8 +43,8 @@ galería reciben monturas nuevas. Sus archivos originales se conservan.
 
 ## Archivos y reutilización
 
-- Fuente editable: `art_source/blender/future_biomes_v09/canonical_implant_kit.blend`.
-- Intercambio: `assets/models/future_biomes_v09/canonical_implant_kit.glb`.
+- Fuente editable: `art_source/blender/shared/alien_tech/canonical_implant_kit.blend`.
+- Intercambio: `assets/models/shared/alien_tech/canonical_implant_kit.glb`.
 - Escena con toon: `scenes/art_labs/assets_v09/canonical_implant_kit.tscn`.
 - Hoja y revisión: `scenes/art_labs/future_biomes_v09.tscn`, página **C**.
 - Constructor común: `implant()` en `tools/art/create_future_biomes_v09.py`.

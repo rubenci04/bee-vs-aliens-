@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/asset_catalog_lab.gd" id="1"]
+[node name="PickupsToonV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / POLEN Y MEJORAS"
+asset_folder = "pickups_toon_v01"
+asset_ids = PackedStringArray("pickup_pollen", "pickup_spread", "pickup_bomb", "pickup_healing")
+asset_names = PackedStringArray("Polen", "Spread", "Bomba", "Curación")
+factors = PackedFloat32Array(2.3, 2.3, 2.3, 2.3)
+offsets = PackedFloat32Array(0, 0, 0, 0)
+removable_control = false

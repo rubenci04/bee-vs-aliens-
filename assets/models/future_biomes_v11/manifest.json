@@ -1,0 +1,41 @@
+{
+  "batch": "V11",
+  "assets": [
+    {
+      "id": "controlled_hanging_spider",
+      "role": "Eight-legged hanging spider, natural silk and removable thorax controller",
+      "triangles": 4930,
+      "mesh_objects": 3,
+      "dimensions_xyz_blender": [
+        1.814,
+        1.077,
+        3.217
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_hanging_spider.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_hanging_spider.glb"
+    },
+    {
+      "id": "controlled_eagle",
+      "role": "Large sky threat with hooked beak, two broad wings, fingered flight feathers and removable neck mount",
+      "triangles": 6914,
+      "mesh_objects": 2,
+      "dimensions_xyz_blender": [
+        2.292,
+        3.734,
+        1.941
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/enemies/controlled_eagle.blend",
+      "glb": "assets/models/levels/level_04_sky/enemies/controlled_eagle.glb"
+    }
+  ]
+}

@@ -16,8 +16,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v08/coastal_rowboat.blend",
-      "glb": "assets/models/future_biomes_v08/coastal_rowboat.glb"
+      "source": "art_source/blender/levels/level_02_lake/props/coastal_rowboat.blend",
+      "glb": "assets/models/levels/level_02_lake/props/coastal_rowboat.glb"
     },
     {
       "id": "shore_wave_module",
@@ -34,8 +34,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v08/shore_wave_module.blend",
-      "glb": "assets/models/future_biomes_v08/shore_wave_module.glb"
+      "source": "art_source/blender/levels/level_02_lake/environment/shore_wave_module.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/shore_wave_module.glb"
     },
     {
       "id": "shore_rock",
@@ -52,8 +52,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v08/shore_rock.blend",
-      "glb": "assets/models/future_biomes_v08/shore_rock.glb"
+      "source": "art_source/blender/levels/level_02_lake/environment/shore_rock.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/shore_rock.glb"
     }
   ]
 }

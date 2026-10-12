@@ -1,0 +1,11 @@
+future_biomes_v10/controlled_bomb_moth|levels/level_03_forest/enemies
+future_biomes_v10/moth_stationary_bomb|levels/level_03_forest/enemies
+future_biomes_v03/controlled_firefly|levels/level_03_forest/enemies
+future_biomes_v03/controlled_owl|levels/level_03_forest/enemies
+future_biomes_v04/controlled_mouse|levels/level_03_forest/enemies
+future_biomes_v04/controlled_stick_insect|levels/level_03_forest/enemies
+future_biomes_v09/controlled_caterpillar|levels/level_03_forest/enemies
+swarm_lite_v01/controlled_caterpillar|levels/level_03_forest/enemies|controlled_caterpillar_lite
+pine_woods_v01/pine_cone|levels/level_03_forest/props
+pine_woods_v01/tall_pine|levels/level_03_forest/environment
+pine_woods_v01/umbrella_pine|levels/level_03_forest/environment

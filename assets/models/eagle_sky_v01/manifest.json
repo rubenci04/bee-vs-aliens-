@@ -1,0 +1,24 @@
+{
+  "batch": "eagle_sky_v01",
+  "assets": [
+    {
+      "id": "controlled_eagle_flight",
+      "role": "Sky eagle with two independent wing pivots and removable neck controller",
+      "triangles": 6914,
+      "mesh_objects": 4,
+      "dimensions_xyz_blender": [
+        2.292,
+        3.835,
+        2.1
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/enemies/controlled_eagle_flight.blend",
+      "glb": "assets/models/levels/level_04_sky/enemies/controlled_eagle_flight.glb",
+      "animation": "Independent wing object pivots; no skeletal rig"
+    }
+  ]
+}

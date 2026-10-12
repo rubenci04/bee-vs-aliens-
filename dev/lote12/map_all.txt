@@ -1,0 +1,90 @@
+# batch/stem|destination under levels/ shared/ _unassigned/ (relative to assets/models and art_source/blender)|new stem (optional)
+# --- Level 1 garden (roster + garden decor)
+bee_prototype/wasp_enemy_visual|levels/level_01_garden/enemies
+future_biomes_v11/controlled_hanging_spider|levels/level_01_garden/enemies
+future_biomes_v02/controlled_stag_beetle|levels/level_01_garden/enemies
+future_biomes_v02/controlled_woodland_snail|levels/level_01_garden/enemies
+future_biomes_v03/controlled_flying_ladybird|levels/level_01_garden/enemies
+future_biomes_v09/controlled_ant|levels/level_01_garden/enemies
+future_biomes_v10/controlled_mushroom_cannon|levels/level_01_garden/enemies
+swarm_lite_v01/controlled_ant|levels/level_01_garden/enemies|controlled_ant_lite
+swarm_lite_v01/controlled_flying_ladybird|levels/level_01_garden/enemies|controlled_flying_ladybird_lite
+forest_floor_v01/forest_fern|levels/level_01_garden/environment
+forest_floor_v01/garden_bellflower|levels/level_01_garden/environment
+forest_floor_v01/hollow_fallen_log|levels/level_01_garden/environment
+garden_backdrop_v01/garden_distant_house|levels/level_01_garden/environment
+garden_backdrop_v01/garden_fence_module|levels/level_01_garden/environment
+garden_backdrop_v01/garden_hose|levels/level_01_garden/props
+garden_backdrop_v01/garden_watering_can|levels/level_01_garden/props
+future_biomes_v04/giant_bottle_cap|levels/level_01_garden/props
+future_biomes_v06/empty_drink_can|levels/level_01_garden/props
+future_biomes_v06/wrapped_candy|levels/level_01_garden/props
+future_biomes_v06/flowering_shrub|levels/level_01_garden/environment
+future_biomes_v06/garden_sapling|levels/level_01_garden/environment
+future_biomes_v07/sky_sun|levels/level_01_garden/environment
+future_biomes_v07/sky_crescent_moon|levels/level_01_garden/environment
+future_biomes_v07/sky_star_cluster|levels/level_01_garden/environment
+ground_litter_v01/glass_bottle|levels/level_01_garden/props
+ground_litter_v01/matchbox|levels/level_01_garden/props
+ground_litter_v01/open_candy_wrapper|levels/level_01_garden/props
+ground_litter_v02/banana_peel|levels/level_01_garden/props
+ground_litter_v02/open_tuna_tin|levels/level_01_garden/props
+# --- Level 2 lake
+future_biomes_v01/controlled_mosquito|levels/level_02_lake/enemies
+future_biomes_v01/controlled_perch|levels/level_02_lake/enemies
+future_biomes_v10/controlled_dragonfly|levels/level_02_lake/enemies
+swarm_lite_v01/controlled_mosquito|levels/level_02_lake/enemies|controlled_mosquito_lite
+lake_fauna_v01/controlled_dragonfly_nymph|levels/level_02_lake/enemies
+lake_fauna_v01/controlled_water_strider|levels/level_02_lake/enemies
+future_biomes_v09/amphibian_mount_study|levels/level_02_lake/bosses
+future_biomes_v01/cattails_cluster|levels/level_02_lake/environment
+future_biomes_v01/lotus_lily_pad|levels/level_02_lake/environment
+lake_fauna_v01/submerged_root_module|levels/level_02_lake/environment
+future_biomes_v05/coastal_buoy|levels/level_02_lake/props
+future_biomes_v08/coastal_rowboat|levels/level_02_lake/props
+future_biomes_v08/shore_rock|levels/level_02_lake/environment
+future_biomes_v08/shore_wave_module|levels/level_02_lake/environment
+# --- Level 3 forest
+future_biomes_v10/controlled_bomb_moth|levels/level_03_forest/enemies
+future_biomes_v10/moth_stationary_bomb|levels/level_03_forest/enemies
+future_biomes_v03/controlled_firefly|levels/level_03_forest/enemies
+future_biomes_v03/controlled_owl|levels/level_03_forest/enemies
+future_biomes_v04/controlled_mouse|levels/level_03_forest/enemies
+future_biomes_v04/controlled_stick_insect|levels/level_03_forest/enemies
+future_biomes_v09/controlled_caterpillar|levels/level_03_forest/enemies
+swarm_lite_v01/controlled_caterpillar|levels/level_03_forest/enemies|controlled_caterpillar_lite
+pine_woods_v01/pine_cone|levels/level_03_forest/props
+pine_woods_v01/tall_pine|levels/level_03_forest/environment
+pine_woods_v01/umbrella_pine|levels/level_03_forest/environment
+# --- Level 4 sky
+eagle_sky_v01/controlled_eagle_flight|levels/level_04_sky/enemies
+future_biomes_v11/controlled_eagle|levels/level_04_sky/enemies
+future_biomes_v04/controlled_pigeon|levels/level_04_sky/enemies
+future_biomes_v07/sky_cloud|levels/level_04_sky/environment
+residential_sky_v01/residential_cottage|levels/level_04_sky/environment
+residential_sky_v01/residential_two_storey|levels/level_04_sky/environment
+residential_sky_v01/warm_street_lamp|levels/level_04_sky/props
+residential_sky_v01/warm_star_set|levels/level_04_sky/environment
+# --- Level 7 space
+mothership_v01/alien_mothership|levels/level_07_space/bosses
+future_biomes_v01/orbital_skimmer|levels/level_07_space/enemies
+future_biomes_v01/warm_asteroid|levels/level_07_space/environment
+# --- shared
+bee_prototype/bee_alien_visual|shared/bee
+bee_prototype/alien_probe_visual|shared/alien_tech
+alien_ships_v02/alien_needle_interceptor|shared/alien_tech
+alien_ships_v02/alien_armoured_bomber|shared/alien_tech
+future_biomes_v02/alien_seed_carrier|shared/alien_tech
+future_biomes_v02/alien_signal_relay|shared/alien_tech
+future_biomes_v09/canonical_implant_kit|shared/alien_tech
+pickups_toon_v01/pickup_bomb|shared/pickups
+pickups_toon_v01/pickup_healing|shared/pickups
+pickups_toon_v01/pickup_pollen|shared/pickups
+pickups_toon_v01/pickup_spread|shared/pickups
+projectiles_toon_v01/alien_bolt|shared/projectiles
+projectiles_toon_v01/bee_bolt|shared/projectiles
+# --- unassigned
+future_biomes_v03/controlled_manta_ray|_unassigned/coastal
+future_biomes_v05/controlled_gull|_unassigned/coastal
+future_biomes_v05/controlled_octopus|_unassigned/coastal
+human_reuse/hipster_poc|_unassigned/human

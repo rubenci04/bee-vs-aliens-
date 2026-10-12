@@ -1,0 +1,77 @@
+{
+  "batch": "pickups_toon_v01",
+  "assets": [
+    {
+      "id": "pickup_pollen",
+      "role": "Golden rounded pollen cluster; collectible currency",
+      "triangles": 2096,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.85,
+        0.57,
+        0.772
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/pickups/pickup_pollen.blend",
+      "glb": "assets/models/shared/pickups/pickup_pollen.glb"
+    },
+    {
+      "id": "pickup_spread",
+      "role": "Warm hexagonal upgrade with three fanned arrows; side-view readable without text",
+      "triangles": 1564,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.786,
+        0.255,
+        0.693
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/pickups/pickup_spread.blend",
+      "glb": "assets/models/shared/pickups/pickup_spread.glb"
+    },
+    {
+      "id": "pickup_bomb",
+      "role": "Bee bomb pickup; dark warm casing, honey band and short cream fuse",
+      "triangles": 2068,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.963,
+        0.52,
+        0.961
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/pickups/pickup_bomb.blend",
+      "glb": "assets/models/shared/pickups/pickup_bomb.glb"
+    },
+    {
+      "id": "pickup_healing",
+      "role": "Honey healing jar with red heart, cream label and natural green leaf",
+      "triangles": 1656,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.6,
+        0.512,
+        0.695
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/pickups/pickup_healing.blend",
+      "glb": "assets/models/shared/pickups/pickup_healing.glb"
+    }
+  ]
+}

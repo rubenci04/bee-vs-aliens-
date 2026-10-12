@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/asset_catalog_lab.gd" id="1"]
+[node name="MothershipV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / NAVE NODRIZA"
+asset_folder = "mothership_v01"
+asset_ids = PackedStringArray("alien_mothership")
+asset_names = PackedStringArray("Nave nodriza")
+factors = PackedFloat32Array(2.0)
+offsets = PackedFloat32Array(-0.5)
+single_camera_size = 7.0
+removable_control = false

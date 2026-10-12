@@ -1,0 +1,58 @@
+{
+  "batch": "swarm_lite_v01",
+  "target": 5000,
+  "assets": [
+    {
+      "id": "controlled_ant",
+      "original_triangles": 13456,
+      "triangles": 4980,
+      "glb_triangles": 4980,
+      "reduction_percent": 63.0,
+      "mesh_objects": 2,
+      "material_slots": 8,
+      "closed_meshes": true,
+      "original_source": "art_source/blender/levels/level_01_garden/enemies/controlled_ant.blend",
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_ant_lite.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_ant_lite.glb"
+    },
+    {
+      "id": "controlled_mosquito",
+      "original_triangles": 7840,
+      "triangles": 4954,
+      "glb_triangles": 4954,
+      "reduction_percent": 36.8,
+      "mesh_objects": 2,
+      "material_slots": 9,
+      "closed_meshes": true,
+      "original_source": "art_source/blender/levels/level_02_lake/enemies/controlled_mosquito.blend",
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_mosquito_lite.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_mosquito_lite.glb"
+    },
+    {
+      "id": "controlled_flying_ladybird",
+      "original_triangles": 9384,
+      "triangles": 4954,
+      "glb_triangles": 4954,
+      "reduction_percent": 47.2,
+      "mesh_objects": 2,
+      "material_slots": 10,
+      "closed_meshes": true,
+      "original_source": "art_source/blender/levels/level_01_garden/enemies/controlled_flying_ladybird.blend",
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_flying_ladybird_lite.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_flying_ladybird_lite.glb"
+    },
+    {
+      "id": "controlled_caterpillar",
+      "original_triangles": 20344,
+      "triangles": 4968,
+      "glb_triangles": 4968,
+      "reduction_percent": 75.6,
+      "mesh_objects": 2,
+      "material_slots": 9,
+      "closed_meshes": true,
+      "original_source": "art_source/blender/levels/level_03_forest/enemies/controlled_caterpillar.blend",
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_caterpillar_lite.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_caterpillar_lite.glb"
+    }
+  ]
+}

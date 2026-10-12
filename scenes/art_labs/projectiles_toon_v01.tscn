@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/projectiles_toon_lab.gd" id="1"]
+[node name="ProjectilesToonV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / PROYECTILES Y EXPLOSIONES"
+asset_folder = "projectiles_toon_v01"
+asset_ids = PackedStringArray("bee_bolt", "alien_bolt")
+asset_names = PackedStringArray("Disparo Bee", "Disparo alien")
+factors = PackedFloat32Array(4, 4)
+offsets = PackedFloat32Array(0.5, 0.5)
+removable_control = false

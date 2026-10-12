@@ -1,0 +1,194 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_enemy_worm_rose_v01",
+      "triangles": 4532,
+      "unique_mesh_triangles": 4532,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb",
+      "size_godot_xyz_m": [
+        3.01,
+        0.37,
+        0.367
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_enemy_worm_rose_v01_liberado",
+      "triangles": 4256,
+      "unique_mesh_triangles": 4256,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        3.01,
+        0.253,
+        0.367
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_enemy_worm_compost_v01",
+      "triangles": 3636,
+      "unique_mesh_triangles": 3636,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb",
+      "size_godot_xyz_m": [
+        2.162,
+        0.528,
+        0.65
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_enemy_worm_compost_v01_liberado",
+      "triangles": 3360,
+      "unique_mesh_triangles": 3360,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        2.162,
+        0.418,
+        0.65
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_environment_mushroom_button_v01",
+      "triangles": 584,
+      "unique_mesh_triangles": 584,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "sway"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb",
+      "size_godot_xyz_m": [
+        0.7,
+        0.703,
+        0.7
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_environment_mushroom_umbrella_v01",
+      "triangles": 584,
+      "unique_mesh_triangles": 584,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "sway"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb",
+      "size_godot_xyz_m": [
+        1.24,
+        1.013,
+        1.24
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_environment_mushroom_spotted_v01",
+      "triangles": 1184,
+      "unique_mesh_triangles": 1184,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "sway"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb",
+      "size_godot_xyz_m": [
+        1.82,
+        1.737,
+        1.82
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "worm_budget": 5000,
+  "mushroom_budget": 2000,
+  "original": true,
+  "gameplay_integrated": false
+}

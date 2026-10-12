@@ -88,7 +88,7 @@ func mounted_host(id: String, variant: String, pos: Vector3, factor: float, moun
 	var old := host.find_child("AlienControlDevice",true,false)
 	old.get_parent().remove_child(old)
 	old.free()
-	var kit := (load("res://assets/models/future_biomes_v09/canonical_implant_kit.glb") as PackedScene).instantiate()
+	var kit := (load("res://assets/models/shared/alien_tech/canonical_implant_kit.glb") as PackedScene).instantiate()
 	var mount := kit.find_child("Mount_"+variant,true,false) as Node3D
 	mount.get_parent().remove_child(mount)
 	mount.owner = null

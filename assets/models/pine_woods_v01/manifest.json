@@ -1,0 +1,59 @@
+{
+  "batch": "pine_woods_v01",
+  "assets": [
+    {
+      "id": "pine_cone",
+      "role": "Pine cone with forty overlapping rounded woody scales",
+      "triangles": 4992,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.902,
+        0.902,
+        0.923
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_03_forest/props/pine_cone.blend",
+      "glb": "assets/models/levels/level_03_forest/props/pine_cone.glb"
+    },
+    {
+      "id": "tall_pine",
+      "role": "Tall tiered pine with smooth lobed needle masses and visible trunk",
+      "triangles": 1564,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.7,
+        1.716,
+        2.98
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_03_forest/environment/tall_pine.blend",
+      "glb": "assets/models/levels/level_03_forest/environment/tall_pine.glb"
+    },
+    {
+      "id": "umbrella_pine",
+      "role": "Mediterranean umbrella pine; spreading crown and visible forked branches",
+      "triangles": 3176,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.72,
+        1.47,
+        2.822
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_03_forest/environment/umbrella_pine.blend",
+      "glb": "assets/models/levels/level_03_forest/environment/umbrella_pine.glb"
+    }
+  ]
+}

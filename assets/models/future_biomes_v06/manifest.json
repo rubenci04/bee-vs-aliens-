@@ -15,8 +15,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v06/garden_sapling.blend",
-      "glb": "assets/models/future_biomes_v06/garden_sapling.glb"
+      "source": "art_source/blender/levels/level_01_garden/environment/garden_sapling.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/garden_sapling.glb"
     },
     {
       "id": "flowering_shrub",
@@ -31,8 +31,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v06/flowering_shrub.blend",
-      "glb": "assets/models/future_biomes_v06/flowering_shrub.glb"
+      "source": "art_source/blender/levels/level_01_garden/environment/flowering_shrub.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/flowering_shrub.glb"
     },
     {
       "id": "empty_drink_can",
@@ -47,8 +47,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v06/empty_drink_can.blend",
-      "glb": "assets/models/future_biomes_v06/empty_drink_can.glb"
+      "source": "art_source/blender/levels/level_01_garden/props/empty_drink_can.blend",
+      "glb": "assets/models/levels/level_01_garden/props/empty_drink_can.glb"
     },
     {
       "id": "wrapped_candy",
@@ -63,8 +63,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v06/wrapped_candy.blend",
-      "glb": "assets/models/future_biomes_v06/wrapped_candy.glb"
+      "source": "art_source/blender/levels/level_01_garden/props/wrapped_candy.blend",
+      "glb": "assets/models/levels/level_01_garden/props/wrapped_candy.glb"
     }
   ]
 }

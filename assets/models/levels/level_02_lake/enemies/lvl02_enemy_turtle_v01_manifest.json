@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "id": "lvl02_enemy_turtle_v01",
+      "triangles": 4908,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "swim",
+        "attack",
+        "liberate"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01.glb",
+      "size_godot_xyz_m": [
+        2.706,
+        1.118,
+        2.12
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, hierarchical rigid limb/neck/tail rig or six original-derived mosquito roots with wing hinges",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl02_enemy_turtle_v01_liberado",
+      "triangles": 4580,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "swim",
+        "attack",
+        "liberate"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        2.706,
+        0.955,
+        2.12
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, hierarchical rigid limb/neck/tail rig or six original-derived mosquito roots with wing hinges",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 5000,
+  "emission_only": "implant* cyan hardware"
+}

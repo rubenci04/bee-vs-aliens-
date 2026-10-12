@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "id": "bee_bolt",
+      "role": "Bee honey-yellow bolt with cream tail",
+      "triangles": 864,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.608,
+        0.136,
+        0.175
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/projectiles/bee_bolt.blend",
+      "glb": "assets/models/shared/projectiles/bee_bolt.glb"
+    },
+    {
+      "id": "alien_bolt",
+      "role": "Alien cyan bolt with violet tail",
+      "triangles": 864,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.608,
+        0.136,
+        0.175
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/projectiles/alien_bolt.blend",
+      "glb": "assets/models/shared/projectiles/alien_bolt.glb"
+    }
+  ]
+}

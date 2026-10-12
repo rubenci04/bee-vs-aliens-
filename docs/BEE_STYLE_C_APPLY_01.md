@@ -3,7 +3,7 @@
 Estilo C (mid poly suave + toon + rim + contorno + alas translúcidas) aplicado a la abeja protagonista y a la avispa. Solo presentación: escala, hitboxes, velocidad y comportamiento no cambian.
 
 ## Qué cambió
-- `assets/style/models/bee_mid_poly.glb`, `wasp_mid_poly.glb`: modelos mid poly de la prueba (4540 / 4294 triángulos; los originales tenían 1144 / 1014). Mismos nombres de nodo (`Wing_L/R`, `Stinger`, `Model`...).
+- `assets/models/shared/bee/bee_mid_poly.glb`, `wasp_mid_poly.glb`: modelos mid poly de la prueba (4540 / 4294 triángulos; los originales tenían 1144 / 1014). Mismos nombres de nodo (`Wing_L/R`, `Stinger`, `Model`...).
 - `assets/style/toon_body.gdshader`, `toon_outline.gdshader`, `toon_wing.gdshader`: shaders de la prueba, ahora en carpeta del juego.
 - `scripts/style/bee_toon_style.gd` (`BeeToonStyle.apply(model, outline)`): reemplaza materiales de superficie; cachea y comparte materiales.
 - `scenes/bee_prototype/bee_player.tscn` y `visuals/wasp_enemy_visual.tscn`: apuntan a los GLB nuevos. Los GLB originales de `assets/models/bee_prototype/` siguen en disco.

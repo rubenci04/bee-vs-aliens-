@@ -1,0 +1,41 @@
+{
+  "batch": "alien_ships_v02",
+  "assets": [
+    {
+      "id": "alien_needle_interceptor",
+      "role": "Fast needle interceptor; swept fins, twin engines and ventral cannon",
+      "triangles": 4982,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        3.032,
+        1.186,
+        1.041
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/alien_tech/alien_needle_interceptor.blend",
+      "glb": "assets/models/shared/alien_tech/alien_needle_interceptor.glb"
+    },
+    {
+      "id": "alien_armoured_bomber",
+      "role": "Heavy armoured bomber; broad shell, twin engines, two payloads and drop markers",
+      "triangles": 4974,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.89,
+        1.2,
+        1.977
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/shared/alien_tech/alien_armoured_bomber.blend",
+      "glb": "assets/models/shared/alien_tech/alien_armoured_bomber.glb"
+    }
+  ]
+}

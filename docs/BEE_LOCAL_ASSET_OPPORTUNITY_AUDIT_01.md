@@ -17,7 +17,7 @@ proyecto lo marcado como USADO, con licencia local verificable.
 | `...\01_Extracted\nuevos\*` | `Male_Avatar_Character_Free.blend` (255 MB), `UFO.blend`, `Space_Rocket.blend`, `Stylized_Foliage_Coniferous_Kit.blend`, `Low Poly UFO Scene By EdwinRC.fbx/.3ds`, `UFO_Wavefront.obj` | sin licencia local — **LICENSE UNCLEAR / DO NOT USE** hasta tener texto de licencia |
 | `...\01_Extracted\audio\*` | Kenney (CC0), Lentikula y FX Laser (ya aprobados), Sonniss GDC 2026 | ver `docs/THIRD_PARTY_AUDIO_CREDITS.md`; no se agregó audio en esta pasada |
 | `02_Selected_For_Game\*` | selección curada previa (food-kit, nature-kit, space-kit, Alien, Robot Legs Gun, Sci-Fi Essentials, Nature MegaKit) | ídem origen |
-| Proyecto: `assets/models/human_reuse/hipster_poc.glb` | humano actual (del propio proyecto Tucumán Rush del usuario) | propio |
+| Proyecto: `assets/models/_unassigned/human/hipster_poc.glb` | humano actual (del propio proyecto Tucumán Rush del usuario) | propio |
 | Proyecto: `addons/sky_3d/`, `demo/` | plugin de cielo instalado por el usuario (sin habilitar) | fuera del alcance de este pase; no se tocó |
 
 Hojas de miniaturas (render en runtime, sin importar nada): `dev/arcade_rebuild_v02_review/asset_audit/{humans,fauna,props,alien}.png`

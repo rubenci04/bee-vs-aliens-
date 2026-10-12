@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/asset_catalog_lab.gd" id="1"]
+[node name="AlienShipsV02" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / INTERCEPTOR Y BOMBARDERO"
+asset_folder = "alien_ships_v02"
+asset_ids = PackedStringArray("alien_needle_interceptor", "alien_armoured_bomber")
+asset_names = PackedStringArray("Interceptor aguja", "Bombardero acorazado")
+factors = PackedFloat32Array(1.8, 1.8)
+offsets = PackedFloat32Array(-0.4, -0.4)
+single_camera_size = 5.6
+removable_control = false

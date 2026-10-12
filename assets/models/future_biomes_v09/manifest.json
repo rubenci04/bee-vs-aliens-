@@ -16,8 +16,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v09/controlled_ant.blend",
-      "glb": "assets/models/future_biomes_v09/controlled_ant.glb"
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_ant.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_ant.glb"
     },
     {
       "id": "controlled_caterpillar",
@@ -34,8 +34,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v09/controlled_caterpillar.blend",
-      "glb": "assets/models/future_biomes_v09/controlled_caterpillar.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_caterpillar.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_caterpillar.glb"
     },
     {
       "id": "amphibian_mount_study",
@@ -52,8 +52,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v09/amphibian_mount_study.blend",
-      "glb": "assets/models/future_biomes_v09/amphibian_mount_study.glb"
+      "source": "art_source/blender/levels/level_02_lake/bosses/amphibian_mount_study.blend",
+      "glb": "assets/models/levels/level_02_lake/bosses/amphibian_mount_study.glb"
     },
     {
       "id": "canonical_implant_kit",
@@ -70,8 +70,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v09/canonical_implant_kit.blend",
-      "glb": "assets/models/future_biomes_v09/canonical_implant_kit.glb"
+      "source": "art_source/blender/shared/alien_tech/canonical_implant_kit.blend",
+      "glb": "assets/models/shared/alien_tech/canonical_implant_kit.glb"
     }
   ]
 }

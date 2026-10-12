@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/asset_catalog_lab.gd" id="1"]
+[node name="SwarmLiteV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / VERSIONES LIGERAS · ~5K"
+asset_folder = "swarm_lite_v01"
+asset_ids = PackedStringArray("controlled_ant", "controlled_mosquito", "controlled_flying_ladybird", "controlled_caterpillar")
+asset_names = PackedStringArray("Hormiga", "Mosquito", "Mariquita", "Oruga")
+factors = PackedFloat32Array(2.1, 2.7, 2.5, 2.2)
+offsets = PackedFloat32Array(-0.7, -0.2, -0.4, -0.65)

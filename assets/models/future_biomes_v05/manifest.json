@@ -15,8 +15,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v05/controlled_octopus.blend",
-      "glb": "assets/models/future_biomes_v05/controlled_octopus.glb"
+      "source": "art_source/blender/_unassigned/coastal/controlled_octopus.blend",
+      "glb": "assets/models/_unassigned/coastal/controlled_octopus.glb"
     },
     {
       "id": "controlled_gull",
@@ -31,8 +31,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v05/controlled_gull.blend",
-      "glb": "assets/models/future_biomes_v05/controlled_gull.glb"
+      "source": "art_source/blender/_unassigned/coastal/controlled_gull.blend",
+      "glb": "assets/models/_unassigned/coastal/controlled_gull.glb"
     },
     {
       "id": "coastal_buoy",
@@ -47,8 +47,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v05/coastal_buoy.blend",
-      "glb": "assets/models/future_biomes_v05/coastal_buoy.glb"
+      "source": "art_source/blender/levels/level_02_lake/props/coastal_buoy.blend",
+      "glb": "assets/models/levels/level_02_lake/props/coastal_buoy.glb"
     }
   ]
 }

@@ -1,0 +1,58 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_boss_giant_spider_v01",
+      "triangles": 11652,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "walk",
+        "attack"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.glb",
+      "size_godot_xyz_m": [
+        6.44,
+        3.07,
+        4.32
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, eight editable leg pivots",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_boss_giant_spider_v01_liberado",
+      "triangles": 8584,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "walk",
+        "attack"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        6.44,
+        2.65,
+        4.32
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, eight editable leg pivots",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 12000,
+  "emission_only": "implant_core"
+}

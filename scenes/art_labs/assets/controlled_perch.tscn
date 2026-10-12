@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v01/controlled_perch.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_02_lake/enemies/controlled_perch.glb" id="2"]
 
 [node name="controlled_perch" type="Node3D"]
 script = ExtResource("1")

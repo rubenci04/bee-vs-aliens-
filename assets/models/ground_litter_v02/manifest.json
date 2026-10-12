@@ -1,0 +1,41 @@
+{
+  "batch": "ground_litter_v02",
+  "assets": [
+    {
+      "id": "banana_peel",
+      "role": "Empty yellow banana peel with three curved flaps, cream interiors and brown tips",
+      "triangles": 908,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.278,
+        1.324,
+        0.862
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/banana_peel.blend",
+      "glb": "assets/models/levels/level_01_garden/props/banana_peel.glb"
+    },
+    {
+      "id": "open_tuna_tin",
+      "role": "Empty low tuna can, open interior, ochre label and lifted pull-tab lid",
+      "triangles": 1584,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.658,
+        1.16,
+        1.744
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/open_tuna_tin.blend",
+      "glb": "assets/models/levels/level_01_garden/props/open_tuna_tin.glb"
+    }
+  ]
+}

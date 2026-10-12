@@ -1,0 +1,65 @@
+{
+  "budget_per_asset": 2000,
+  "assets": [
+    {
+      "id": "lvl02_environment_floating_branch_lite_v01",
+      "triangles": 708,
+      "materials": 3,
+      "size_godot_xyz_m": [
+        3.079,
+        0.46,
+        1.008
+      ],
+      "source": "art_source/blender/levels/level_02_lake/environment/lvl02_environment_floating_branch_lite_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/lvl02_environment_floating_branch_lite_v01.glb",
+      "animations": [
+        "idle"
+      ],
+      "waterline_y": 0.13,
+      "up": "+Y",
+      "origin": "base centre",
+      "emission": false,
+      "original": true
+    },
+    {
+      "id": "lvl02_environment_totoras_cluster_lite_v01",
+      "triangles": 1720,
+      "materials": 4,
+      "size_godot_xyz_m": [
+        2.118,
+        3.293,
+        0.43
+      ],
+      "source": "art_source/blender/levels/level_02_lake/environment/lvl02_environment_totoras_cluster_lite_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/lvl02_environment_totoras_cluster_lite_v01.glb",
+      "animations": [
+        "idle"
+      ],
+      "waterline_y": 0,
+      "up": "+Y",
+      "origin": "base centre",
+      "emission": false,
+      "original": true
+    },
+    {
+      "id": "lvl02_environment_flowering_lily_pads_lite_v01",
+      "triangles": 1540,
+      "materials": 4,
+      "size_godot_xyz_m": [
+        2.722,
+        0.485,
+        1.673
+      ],
+      "source": "art_source/blender/levels/level_02_lake/environment/lvl02_environment_flowering_lily_pads_lite_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/lvl02_environment_flowering_lily_pads_lite_v01.glb",
+      "animations": [
+        "idle"
+      ],
+      "waterline_y": 0.005,
+      "up": "+Y",
+      "origin": "base centre",
+      "emission": false,
+      "original": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_environment_mushroom_umbrella_v01",
+      "triangles": 584,
+      "unique_mesh_triangles": 584,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "sway"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb",
+      "size_godot_xyz_m": [
+        1.24,
+        1.013,
+        1.24
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 2000,
+  "emission_only": "none"
+}

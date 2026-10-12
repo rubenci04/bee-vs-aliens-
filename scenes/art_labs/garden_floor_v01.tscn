@@ -1,0 +1,46 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="Script" path="res://scripts/art/garden_floor_lab.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/garden_floor_v01/worm_rose.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/garden_floor_v01/worm_compost.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/garden_floor_v01/mushroom_button.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/garden_floor_v01/mushroom_umbrella.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/garden_floor_v01/mushroom_spotted.tscn" id="6"]
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.63, 0.65, 0.67, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.87, 0.90, 0.95, 1)
+ambient_light_energy = 0.5
+[sub_resource type="LabelSettings" id="Label"]
+font_size = 20
+font_color = Color(0.08, 0.09, 0.1, 1)
+[node name="GardenFloorArtLab" type="Node3D"]
+script = ExtResource("1")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45, -35, 0)
+light_color = Color(1, 0.93, 0.81, 1)
+light_energy = 1.0
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 3.4, 18)
+rotation_degrees = Vector3(-5, 0, 0)
+projection = 1
+size = 14.0
+current = true
+[node name="WormRose" parent="." instance=ExtResource("2")]
+position = Vector3(-4.4, 0.3, 0)
+[node name="WormCompost" parent="." instance=ExtResource("3")]
+position = Vector3(-0.9, 0.3, 0)
+[node name="MushroomButton" parent="." instance=ExtResource("4")]
+position = Vector3(1.8, 0.3, 0)
+[node name="MushroomUmbrella" parent="." instance=ExtResource("5")]
+position = Vector3(3.2, 0.3, 0)
+[node name="MushroomSpotted" parent="." instance=ExtResource("6")]
+position = Vector3(5.4, 0.3, 0)
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Instructions" type="Label" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 20.0
+text = "JARDÍN · DOS LOMBRICES / TRES HONGOS\n1 reposo · 2 reptar/balanceo · 3 reacción · L liberar lombrices"
+label_settings = SubResource("Label")

@@ -1,0 +1,76 @@
+{
+  "assets": [
+    {
+      "id": "garden_hose",
+      "role": "Coiled natural green hose with loose end and brass nozzle; ground-scale prop",
+      "triangles": 3424,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.353,
+        1.446,
+        0.252
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/garden_hose.blend",
+      "glb": "assets/models/levels/level_01_garden/props/garden_hose.glb"
+    },
+    {
+      "id": "garden_watering_can",
+      "role": "Sage watering can with recessed open top, overhead handle and long sprinkler spout",
+      "triangles": 2624,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.948,
+        0.92,
+        1.122
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/garden_watering_can.blend",
+      "glb": "assets/models/levels/level_01_garden/props/garden_watering_can.glb"
+    },
+    {
+      "id": "garden_fence_module",
+      "role": "Repeatable warm wooden fence, seven pointed pickets, two rails and two capped posts",
+      "triangles": 2404,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.98,
+        0.245,
+        1.48
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/environment/garden_fence_module.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/garden_fence_module.glb"
+    },
+    {
+      "id": "garden_distant_house",
+      "role": "Shallow muted house silhouette for distant parallax; natural roof and non-emissive windows",
+      "triangles": 2116,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        3.156,
+        0.537,
+        2.43
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/environment/garden_distant_house.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/garden_distant_house.glb"
+    }
+  ]
+}

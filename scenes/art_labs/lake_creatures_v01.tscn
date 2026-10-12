@@ -1,0 +1,40 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://scripts/art/lake_creatures_lab.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_creatures_v01/turtle.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_creatures_v01/salamander.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_creatures_v01/mosquito_cloud.tscn" id="4"]
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.63, 0.65, 0.67, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.87, 0.90, 0.95, 1)
+ambient_light_energy = 0.5
+[sub_resource type="LabelSettings" id="Label"]
+font_size = 20
+font_color = Color(0.08, 0.09, 0.1, 1)
+[node name="LakeCreaturesArtLab" type="Node3D"]
+script = ExtResource("1")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45, -35, 0)
+light_color = Color(1, 0.93, 0.81, 1)
+light_energy = 1.0
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 3.4, 18)
+rotation_degrees = Vector3(-5, 0, 0)
+projection = 1
+size = 9.4
+current = true
+[node name="Turtle" parent="." instance=ExtResource("2")]
+position = Vector3(-4.0, 1.3, 0)
+[node name="Salamander" parent="." instance=ExtResource("3")]
+position = Vector3(0, 1.3, 0)
+[node name="Cloud" parent="." instance=ExtResource("4")]
+position = Vector3(4.4, 0.3, 0)
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Instructions" type="Label" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 20.0
+text = "LAGUNA · TORTUGA / SALAMANDRA / NUBE DE MOSQUITOS\n1 reposo · 2 nadar/volar · 3 ataque · 4 liberación · L retirar implantes"
+label_settings = SubResource("Label")

@@ -18,6 +18,7 @@ tiene precedencia sobre las propuestas anteriores.
 | V06 | Árbol joven, arbusto con margaritas, lata vacía y caramelo envuelto | `scenes/art_labs/future_biomes_v06.tscn` |
 | V07 | Nube continua, sol, luna creciente y grupo de estrellas | `scenes/art_labs/future_biomes_v07.tscn` |
 | V08 | Barca hueca con remos, módulo de ola y roca con musgo | `scenes/art_labs/future_biomes_v08.tscn` |
+| Forest floor V01 · 2026-10-11 | Tronco hueco, helecho y campanilla coral; fuentes, GLB y revisión toon | `scenes/art_labs/forest_floor_v01.tscn` |
 
 Cada pieza tiene fuente `.blend`, GLB y escena visual de Godot. Las formas
 simples de fondo usadas dentro de las galerías son composiciones de revisión,
@@ -28,7 +29,7 @@ no modelos adicionales del catálogo.
 | Familia | POC siguiente propuesto | Criterio |
 |---|---|---|
 | Jardín / herramientas | Manguera, regadera, módulo de valla; casa después | Escala humana enorme para Bee, siluetas claras y fondo lejano de bajo contraste. |
-| Vegetación | Pino joven, arbusto denso, campanilla | Diversificar siluetas, alturas y formas de hoja/flor; evitar simples recolores. |
+| Vegetación | Pino joven, arbusto denso | Campanilla y helecho disponibles en Forest floor V01. Diversificar siluetas y alturas; evitar simples recolores. |
 | Objetos de suelo | Paquete de cigarrillos vacío, envoltorio abierto, lata deformada | Objetos genéricos sin marcas ni texto; formas limpias y escala humana. |
 
 Siguiente tanda sugerida: **manguera + regadera + módulo de valla**. La fauna

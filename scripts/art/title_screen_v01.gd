@@ -17,7 +17,7 @@ func show_page(_index: int) -> void:
 	stage.add_child(shrub)
 	shrub.position = Vector3(5,-4.0,0)
 	shrub.scale = Vector3.ONE*3.4
-	hero = load("res://assets/style/models/bee_mid_poly.glb").instantiate()
+	hero = load("res://assets/models/shared/bee/bee_mid_poly.glb").instantiate()
 	hero.name = "BeeTitleVisual"
 	stage.add_child(hero)
 	hero.position = Vector3(4.5,.3,2)

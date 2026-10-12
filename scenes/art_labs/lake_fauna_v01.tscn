@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/lake_fauna_lab.gd" id="1"]
+[node name="LakeFaunaV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / FAUNA DE LAS ORILLAS"
+asset_folder = "lake_fauna_v01"
+asset_ids = PackedStringArray("controlled_water_strider", "controlled_dragonfly_nymph", "submerged_root_module")
+asset_names = PackedStringArray("Zapatero de agua", "Ninfa de libélula", "Raíces sumergidas")
+factors = PackedFloat32Array(2.0, 2.4, 1.65)
+offsets = PackedFloat32Array(-0.6, -0.6, -0.5)
+single_camera_size = 5.5

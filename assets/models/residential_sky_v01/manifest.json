@@ -1,0 +1,77 @@
+{
+  "batch": "residential_sky_v01",
+  "assets": [
+    {
+      "id": "warm_star_set",
+      "role": "Five rounded cream stars for distant night backgrounds; no alien glow",
+      "triangles": 1800,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.864,
+        0.045,
+        1.382
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/environment/warm_star_set.blend",
+      "glb": "assets/models/levels/level_04_sky/environment/warm_star_set.glb"
+    },
+    {
+      "id": "warm_street_lamp",
+      "role": "Human-scale curved street lamp, graphite-green pole and warm amber bulb",
+      "triangles": 1288,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.24,
+        0.64,
+        3.172
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/props/warm_street_lamp.blend",
+      "glb": "assets/models/levels/level_04_sky/props/warm_street_lamp.glb"
+    },
+    {
+      "id": "residential_cottage",
+      "role": "Warm single-storey cottage with porch for distant parallax",
+      "triangles": 2988,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.795,
+        1.31,
+        1.79
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/environment/residential_cottage.blend",
+      "glb": "assets/models/levels/level_04_sky/environment/residential_cottage.glb"
+    },
+    {
+      "id": "residential_two_storey",
+      "role": "Two-storey brick house for distant parallax",
+      "triangles": 3364,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.275,
+        0.9,
+        2.59
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_04_sky/environment/residential_two_storey.blend",
+      "glb": "assets/models/levels/level_04_sky/environment/residential_two_storey.glb"
+    }
+  ]
+}

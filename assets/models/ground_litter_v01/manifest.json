@@ -1,0 +1,59 @@
+{
+  "batch": "ground_litter_v01",
+  "assets": [
+    {
+      "id": "glass_bottle",
+      "role": "Open green glass bottle with continuous wall, thick rim and stylized reflection",
+      "triangles": 1640,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        0.68,
+        0.68,
+        1.5
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/glass_bottle.blend",
+      "glb": "assets/models/levels/level_01_garden/props/glass_bottle.glb"
+    },
+    {
+      "id": "matchbox",
+      "role": "Generic partly open matchbox, striker, sliding tray and four unused matches",
+      "triangles": 2820,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.705,
+        0.667,
+        0.411
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/matchbox.blend",
+      "glb": "assets/models/levels/level_01_garden/props/matchbox.glb"
+    },
+    {
+      "id": "open_candy_wrapper",
+      "role": "Empty crumpled candy paper, coral edge bands and cream middle; closed thin sheet",
+      "triangles": 116,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.6,
+        0.237,
+        0.64
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/props/open_candy_wrapper.blend",
+      "glb": "assets/models/levels/level_01_garden/props/open_candy_wrapper.glb"
+    }
+  ]
+}

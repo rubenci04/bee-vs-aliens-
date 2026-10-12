@@ -15,8 +15,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v04/controlled_stick_insect.blend",
-      "glb": "assets/models/future_biomes_v04/controlled_stick_insect.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_stick_insect.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_stick_insect.glb"
     },
     {
       "id": "controlled_pigeon",
@@ -31,8 +31,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v04/controlled_pigeon.blend",
-      "glb": "assets/models/future_biomes_v04/controlled_pigeon.glb"
+      "source": "art_source/blender/levels/level_04_sky/enemies/controlled_pigeon.blend",
+      "glb": "assets/models/levels/level_04_sky/enemies/controlled_pigeon.glb"
     },
     {
       "id": "controlled_mouse",
@@ -47,8 +47,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v04/controlled_mouse.blend",
-      "glb": "assets/models/future_biomes_v04/controlled_mouse.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_mouse.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_mouse.glb"
     },
     {
       "id": "giant_bottle_cap",
@@ -63,8 +63,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v04/giant_bottle_cap.blend",
-      "glb": "assets/models/future_biomes_v04/giant_bottle_cap.glb"
+      "source": "art_source/blender/levels/level_01_garden/props/giant_bottle_cap.blend",
+      "glb": "assets/models/levels/level_01_garden/props/giant_bottle_cap.glb"
     }
   ]
 }

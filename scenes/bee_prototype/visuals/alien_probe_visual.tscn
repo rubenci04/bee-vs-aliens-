@@ -1,5 +1,5 @@
 [gd_scene load_steps=3 format=3]
-[ext_resource type="PackedScene" path="res://assets/models/bee_prototype/alien_probe_visual.glb" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/shared/alien_tech/alien_probe_visual.glb" id="1"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/alien_probe_visual.gd" id="2"]
 [node name="AlienProbeVisual" type="Node3D"]
 script = ExtResource("2")

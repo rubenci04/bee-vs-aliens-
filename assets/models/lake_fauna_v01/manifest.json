@@ -1,0 +1,58 @@
+{
+  "assets": [
+    {
+      "id": "controlled_water_strider",
+      "role": "Water-surface insect: six legs with long middle/hind pairs, slender body and removable thorax control",
+      "triangles": 4872,
+      "mesh_objects": 2,
+      "dimensions_xyz_blender": [
+        2.106,
+        1.928,
+        0.861
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_water_strider.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_water_strider.glb"
+    },
+    {
+      "id": "controlled_dragonfly_nymph",
+      "role": "Compact aquatic dragonfly nymph, broad head, segmented olive abdomen and six bent legs; external removable controller",
+      "triangles": 4842,
+      "mesh_objects": 2,
+      "dimensions_xyz_blender": [
+        1.817,
+        0.963,
+        0.706
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": true,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_dragonfly_nymph.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_dragonfly_nymph.glb"
+    },
+    {
+      "id": "submerged_root_module",
+      "role": "Warm natural branching root module for lake shallows; no emissive moss or technology",
+      "triangles": 1532,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.557,
+        0.695,
+        1.308
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_02_lake/environment/submerged_root_module.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/submerged_root_module.glb"
+    }
+  ]
+}

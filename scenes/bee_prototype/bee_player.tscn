@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/bee_prototype/bee_energy_projectile.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/components/hitbox_3d.tscn" id="6"]
 
-[ext_resource type="PackedScene" path="res://assets/style/models/bee_mid_poly.glb" id="7"]
+[ext_resource type="PackedScene" path="res://assets/models/shared/bee/bee_mid_poly.glb" id="7"]
 [ext_resource type="Script" path="res://scripts/bee_prototype/bee_visual.gd" id="8"]
 [sub_resource type="BoxShape3D" id="melee_shape"]
 size = Vector3(0.75, 0.5, 0.5)

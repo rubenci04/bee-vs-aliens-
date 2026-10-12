@@ -4,8 +4,8 @@ núcleo inferior y tres estabilizadores. Comparte metal gris verdoso y cian
 (.04, .75, .71) con el implante de Bee. Sin alas, texturas, rig ni postprocesado.
 
 - Generador: tools/bee_prototype/create_alien_probe_visual.py.
-- Fuente: art_source/blender/bee_prototype/alien_probe_visual.blend.
-- GLB: assets/models/bee_prototype/alien_probe_visual.glb.
+- Fuente: art_source/blender/shared/alien_tech/alien_probe_visual.blend.
+- GLB: assets/models/shared/alien_tech/alien_probe_visual.glb.
 - 920 triángulos, 18 mallas, 5 materiales.
 - Largo 1,215 m; ancho 1,22 m; alto 0,65 m. Escala 1:1.
 - Bee: 0,981 / 1,10 / 0,556 m; Wasp: 1,171 / 1,22 / 0,648 m.

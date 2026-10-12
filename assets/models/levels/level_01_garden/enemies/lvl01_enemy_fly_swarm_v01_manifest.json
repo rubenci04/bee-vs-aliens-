@@ -1,0 +1,58 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_enemy_fly_swarm_v01",
+      "triangles": 4896,
+      "materials": 3,
+      "animations": [
+        "hover",
+        "attack",
+        "liberate"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb",
+      "size_godot_xyz_m": [
+        2.862,
+        1.994,
+        1.955
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, fly roots, two wing hinges and six leg pivots per animal",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_enemy_fly_swarm_v01_liberado",
+      "triangles": 4320,
+      "materials": 1,
+      "animations": [
+        "hover",
+        "attack",
+        "liberate"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        2.862,
+        1.94,
+        1.955
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, fly roots, two wing hinges and six leg pivots per animal",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 5000,
+  "emission_only": "implant* cyan hardware"
+}

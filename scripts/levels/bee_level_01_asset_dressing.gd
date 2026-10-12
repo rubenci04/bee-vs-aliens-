@@ -28,8 +28,8 @@ const UMBRELLA_PINE := preload("res://scenes/art_labs/pine_woods_v01/umbrella_pi
 const HOLLOW_LOG := preload("res://scenes/art_labs/forest_floor_v01/hollow_fallen_log.tscn")
 const BELLFLOWER := preload("res://scenes/art_labs/forest_floor_v01/garden_bellflower.tscn")
 const SUN_MODEL := preload("res://scenes/art_labs/assets_v07/sky_sun.tscn")
-const MOON_MODEL := preload("res://assets/models/future_biomes_v07/sky_crescent_moon.glb")
-const STARS_MODEL := preload("res://assets/models/future_biomes_v07/sky_star_cluster.glb")
+const MOON_MODEL := preload("res://assets/models/levels/level_01_garden/environment/sky_crescent_moon.glb")
+const STARS_MODEL := preload("res://assets/models/levels/level_01_garden/environment/sky_star_cluster.glb")
 
 const RELAY_SCALE := 2.1 # The model is ~0.95 m tall; the old pylon column was 1.8 m.
 const SKY_DEPTH := 70.0

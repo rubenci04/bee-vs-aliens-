@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/requested_props_lab.gd" id="1"]
+[node name="ResidentialSkyV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / ESTRELLAS, POSTE Y CASAS"
+asset_folder = "residential_sky_v01"
+asset_ids = PackedStringArray("warm_star_set", "warm_street_lamp", "residential_cottage", "residential_two_storey")
+asset_names = PackedStringArray("Estrellas", "Poste de luz", "Casa con porche", "Casa de dos pisos")
+factors = PackedFloat32Array(2.0, 1.1, 1.2, 1.1)
+offsets = PackedFloat32Array(0, 0, 0, 0)
+removable_control = false

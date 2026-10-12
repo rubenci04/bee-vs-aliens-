@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/garden_backdrop_lab.gd" id="1"]
+[node name="GardenBackdropV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / OBJETOS DEL JARDÍN"
+asset_folder = "garden_backdrop_v01"
+asset_ids = PackedStringArray("garden_hose", "garden_watering_can", "garden_fence_module", "garden_distant_house")
+asset_names = PackedStringArray("Manguera", "Regadera", "Valla", "Casa lejana")
+factors = PackedFloat32Array(1.5, 1.9, 1.7, 1.1)
+offsets = PackedFloat32Array(0, -0.7, -0.6, -0.9)
+removable_control = false

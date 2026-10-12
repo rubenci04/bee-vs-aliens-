@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/eagle_sky_lab.gd" id="1"]
+[node name="EagleSkyLab" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / ÁGUILA DEL CIELO"
+asset_folder = "assets_eagle_sky_v01"
+asset_ids = PackedStringArray("controlled_eagle_flight")
+asset_names = PackedStringArray("Águila")
+factors = PackedFloat32Array(2.05)
+offsets = PackedFloat32Array(-0.6)
+single_camera_size = 6.5

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/asset_catalog_lab.gd" id="1"]
+[node name="FutureBiomesV11" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / ARAÑA COLGANTE Y ÁGUILA"
+asset_folder = "assets_v11"
+asset_ids = PackedStringArray("controlled_hanging_spider", "controlled_eagle")
+asset_names = PackedStringArray("Araña colgante", "Águila")
+factors = PackedFloat32Array(1.8, 2.05)
+offsets = PackedFloat32Array(-1.9, -0.6)
+single_camera_size = 6.5

@@ -6,8 +6,8 @@ Familia low-poly de BeePlayer; alas beige opacas y ojos marrón rojizo oscuro.
 
 ## Assets y reproducción
 - Generador: tools/bee_prototype/create_wasp_visual.py
-- Fuente: art_source/blender/bee_prototype/wasp_enemy_visual.blend
-- Exportación: assets/models/bee_prototype/wasp_enemy_visual.glb
+- Fuente: art_source/blender/levels/level_01_garden/enemies/wasp_enemy_visual.blend
+- Exportación: assets/models/levels/level_01_garden/enemies/wasp_enemy_visual.glb
 - Blender: ejecutar con --background --factory-startup --python-exit-code 1 --python.
 - 1.014 triángulos, 28 mallas, 5 materiales; sin texturas, rig ni subdivisión.
 - Largo 1,171 m (+19% frente a Bee), envergadura 1,22 m (+11%), alto 0,648 m (+17%).

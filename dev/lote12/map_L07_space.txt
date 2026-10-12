@@ -1,0 +1,3 @@
+mothership_v01/alien_mothership|levels/level_07_space/bosses
+future_biomes_v01/orbital_skimmer|levels/level_07_space/enemies
+future_biomes_v01/warm_asteroid|levels/level_07_space/environment

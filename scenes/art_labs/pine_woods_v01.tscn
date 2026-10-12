@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/requested_props_lab.gd" id="1"]
+[node name="PineWoodsV01" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / PIÑA Y PINOS"
+asset_folder = "pine_woods_v01"
+asset_ids = PackedStringArray("pine_cone", "tall_pine", "umbrella_pine")
+asset_names = PackedStringArray("Piña", "Pino alto", "Pino de copa")
+factors = PackedFloat32Array(2.5, 1.3, 1.3)
+offsets = PackedFloat32Array(0, 0, 0)
+removable_control = false

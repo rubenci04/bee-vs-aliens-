@@ -1,4 +1,8 @@
-# Plan de movimiento de assets (NO ejecutado)
+# Plan de movimiento de assets (EJECUTADO en el Lote 12)
+
+> Estado: la mudanza se ejecutó el 2026-10-12 con `git mv` (o `mv` para lo que nunca se había commiteado), reescribiendo todas las rutas. El reparto real difiere de la tabla de abajo en varios puntos y está en `AUDITORIA_ASSETS.md` y `ASSET_MANIFEST.md`; lo que quedó sin mover (manifiestos y generadores) está en «Pendientes de mover» de `docs/INFORME_LOTE_12.md`. El texto original se conserva como referencia histórica.
+
+## Plan original (Lote 11)
 
 Propuesta del Lote 11 para llevar lo existente a la estructura nueva (`levels/level_0N_*`, `shared/`, `rail_mode/`). No se movió ningún archivo. Reparto por nivel: `ASSET_MANIFEST.md`.
 

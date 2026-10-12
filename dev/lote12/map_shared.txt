@@ -1,0 +1,13 @@
+bee_prototype/bee_alien_visual|shared/bee
+bee_prototype/alien_probe_visual|shared/alien_tech
+alien_ships_v02/alien_needle_interceptor|shared/alien_tech
+alien_ships_v02/alien_armoured_bomber|shared/alien_tech
+future_biomes_v02/alien_seed_carrier|shared/alien_tech
+future_biomes_v02/alien_signal_relay|shared/alien_tech
+future_biomes_v09/canonical_implant_kit|shared/alien_tech
+pickups_toon_v01/pickup_bomb|shared/pickups
+pickups_toon_v01/pickup_healing|shared/pickups
+pickups_toon_v01/pickup_pollen|shared/pickups
+pickups_toon_v01/pickup_spread|shared/pickups
+projectiles_toon_v01/alien_bolt|shared/projectiles
+projectiles_toon_v01/bee_bolt|shared/projectiles

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/art/requested_props_lab.gd" id="1"]
+[node name="GroundLitterV02" type="Node3D"]
+script = ExtResource("1")
+catalog_title = "BEE ALIEN / CÁSCARA Y LATA DE ATÚN"
+asset_folder = "ground_litter_v02"
+asset_ids = PackedStringArray("banana_peel", "open_tuna_tin")
+asset_names = PackedStringArray("Cáscara de banana", "Lata de atún")
+factors = PackedFloat32Array(2.2, 2.5)
+offsets = PackedFloat32Array(0, 0)
+removable_control = false

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v03/controlled_manta_ray.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/_unassigned/coastal/controlled_manta_ray.glb" id="2"]
 
 [node name="controlled_manta_ray" type="Node3D"]
 script = ExtResource("1")

@@ -1,0 +1,112 @@
+assets/models/_unassigned/coastal/controlled_gull.glb	11348	11	0	1		no	no	scenes/art_labs/assets_v05/controlled_gull.tscn
+assets/models/_unassigned/coastal/controlled_manta_ray.glb	7280	8	0	1		no	no	scenes/art_labs/assets_v03/controlled_manta_ray.tscn
+assets/models/_unassigned/coastal/controlled_octopus.glb	20144	10	0	1		no	no	scenes/art_labs/assets_v05/controlled_octopus.tscn
+assets/models/_unassigned/human/hipster_poc.glb	2480	8	1	0	bee_prototype/bee_shmup_world_scale_human_poc.tscn, levels/giant_human_hazard.tscn	no	no	
+assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.glb	11652	4	0	22		no	no	scenes/art_labs/giant_spider_boss_v01/controlled.tscn
+assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01_liberado.glb	8584	1	0	1		no	no	scenes/art_labs/giant_spider_boss_v01/liberated.tscn
+assets/models/levels/level_01_garden/enemies/controlled_ant.glb	13456	8	0	2	asset_fauna.gd	si	no	scenes/art_labs/assets_v09/controlled_ant.tscn
+assets/models/levels/level_01_garden/enemies/controlled_ant_lite.glb	4980	8	0	2		no	si	scenes/art_labs/swarm_lite_v01/controlled_ant.tscn
+assets/models/levels/level_01_garden/enemies/controlled_flying_ladybird.glb	9384	10	0	1	asset_fauna.gd	si	no	scenes/art_labs/assets_v03/controlled_flying_ladybird.tscn
+assets/models/levels/level_01_garden/enemies/controlled_flying_ladybird_lite.glb	4954	10	0	2		no	si	scenes/art_labs/swarm_lite_v01/controlled_flying_ladybird.tscn
+assets/models/levels/level_01_garden/enemies/controlled_hanging_spider.glb	4930	9	0	2		no	no	scenes/art_labs/assets_v11/controlled_hanging_spider.tscn
+assets/models/levels/level_01_garden/enemies/controlled_mushroom_cannon.glb	11822	8	0	2	asset_fauna.gd	no	no	scenes/art_labs/assets_v10/controlled_mushroom_cannon.tscn
+assets/models/levels/level_01_garden/enemies/controlled_stag_beetle.glb	9952	10	0	1	asset_fauna.gd	no	no	scenes/art_labs/assets_v02/controlled_stag_beetle.tscn
+assets/models/levels/level_01_garden/enemies/controlled_woodland_snail.glb	7748	9	0	1	asset_fauna.gd	no	no	scenes/art_labs/assets_v02/controlled_woodland_snail.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01.glb	4104	4	0	5		no	no	scenes/art_labs/fly_trio_v01/common.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_common_v01_liberado.glb	3776	1	0	1		no	no	scenes/art_labs/fly_trio_v01/common_liberated.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01.glb	4104	4	0	5		no	no	scenes/art_labs/fly_trio_v01/green.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_green_v01_liberado.glb	3776	1	0	1		no	no	scenes/art_labs/fly_trio_v01/green_liberated.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01.glb	4896	3	0	25		no	no	scenes/art_labs/fly_trio_v01/swarm.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01_liberado.glb	4320	1	0	8		no	no	scenes/art_labs/fly_trio_v01/swarm_liberated.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01.glb	3636	4	0	5		no	no	scenes/art_labs/garden_floor_v01/worm_compost.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_compost_v01_liberado.glb	3360	1	0	1		no	no	scenes/art_labs/garden_floor_v01/worm_compost_liberated.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb	4532	4	0	5		no	no	scenes/art_labs/garden_floor_v01/worm_rose.tscn
+assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01_liberado.glb	4256	1	0	1		no	no	scenes/art_labs/garden_floor_v01/worm_rose_liberated.tscn
+assets/models/levels/level_01_garden/enemies/wasp_enemy_visual.glb	1014	5	0	0		no	no	
+assets/models/levels/level_01_garden/enemies/wasp_mid_poly.glb	4294	5	0	0	bee_prototype/visuals/wasp_enemy_visual.tscn	no	no	
+assets/models/levels/level_01_garden/environment/flowering_shrub.glb	11784	5	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v06/flowering_shrub.tscn
+assets/models/levels/level_01_garden/environment/forest_fern.glb	2940	3	0	0	bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/forest_floor_v01/forest_fern.tscn
+assets/models/levels/level_01_garden/environment/garden_bellflower.glb	2824	5	0	0	bee_level_01_asset_dressing.gd, bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/forest_floor_v01/garden_bellflower.tscn
+assets/models/levels/level_01_garden/environment/garden_distant_house.glb	2116	3	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/garden_backdrop_v01/garden_distant_house.tscn
+assets/models/levels/level_01_garden/environment/garden_fence_module.glb	2404	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/garden_backdrop_v01/garden_fence_module.tscn
+assets/models/levels/level_01_garden/environment/garden_sapling.glb	7904	5	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v06/garden_sapling.tscn
+assets/models/levels/level_01_garden/environment/hollow_fallen_log.glb	1972	4	0	0	bee_level_01_asset_dressing.gd, bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/forest_floor_v01/hollow_fallen_log.tscn
+assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_button_v01.glb	584	1	0	0		no	no	scenes/art_labs/garden_floor_v01/mushroom_button.tscn
+assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_spotted_v01.glb	1184	1	0	0		no	no	scenes/art_labs/garden_floor_v01/mushroom_spotted.tscn
+assets/models/levels/level_01_garden/environment/lvl01_environment_mushroom_umbrella_v01.glb	584	1	0	0		no	no	scenes/art_labs/garden_floor_v01/mushroom_umbrella.tscn
+assets/models/levels/level_01_garden/environment/sky_crescent_moon.glb	3692	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v07/sky_crescent_moon.tscn
+assets/models/levels/level_01_garden/environment/sky_star_cluster.glb	2640	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v07/sky_star_cluster.tscn
+assets/models/levels/level_01_garden/environment/sky_sun.glb	2208	1	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v07/sky_sun.tscn
+assets/models/levels/level_01_garden/props/banana_peel.glb	908	3	0	0	bee_level_01_asset_dressing.gd, destructible_obstacle_3d.gd	no	no	scenes/art_labs/ground_litter_v02/banana_peel.tscn
+assets/models/levels/level_01_garden/props/empty_drink_can.glb	4572	4	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v06/empty_drink_can.tscn
+assets/models/levels/level_01_garden/props/garden_hose.glb	3424	3	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/garden_backdrop_v01/garden_hose.tscn
+assets/models/levels/level_01_garden/props/garden_watering_can.glb	2624	5	0	0		no	no	scenes/art_labs/garden_backdrop_v01/garden_watering_can.tscn
+assets/models/levels/level_01_garden/props/giant_bottle_cap.glb	5984	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v04/giant_bottle_cap.tscn
+assets/models/levels/level_01_garden/props/glass_bottle.glb	1640	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/ground_litter_v01/glass_bottle.tscn
+assets/models/levels/level_01_garden/props/matchbox.glb	2820	6	0	0		no	no	scenes/art_labs/ground_litter_v01/matchbox.tscn
+assets/models/levels/level_01_garden/props/open_candy_wrapper.glb	116	2	0	0		no	no	scenes/art_labs/ground_litter_v01/open_candy_wrapper.tscn
+assets/models/levels/level_01_garden/props/open_tuna_tin.glb	1584	3	0	0	bee_level_01_asset_dressing.gd, destructible_obstacle_3d.gd	no	no	scenes/art_labs/ground_litter_v02/open_tuna_tin.tscn
+assets/models/levels/level_01_garden/props/wrapped_candy.glb	2024	2	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v06/wrapped_candy.tscn
+assets/models/levels/level_02_lake/bosses/amphibian_mount_study.glb	22136	10	0	2	levels/level_02_lake/lake_toad_miniboss_visual.tscn	no	no	scenes/art_labs/assets_v09/amphibian_mount_study.tscn
+assets/models/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01.glb	11992	4	0	28		no	no	scenes/art_labs/rococo_toad_boss_v01/controlled.tscn
+assets/models/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01_liberado.glb	7900	1	0	1		no	no	scenes/art_labs/rococo_toad_boss_v01/liberated.tscn
+assets/models/levels/level_02_lake/enemies/controlled_dragonfly.glb	16580	11	0	2	asset_fauna.gd	no	no	scenes/art_labs/assets_v10/controlled_dragonfly.tscn
+assets/models/levels/level_02_lake/enemies/controlled_dragonfly_nymph.glb	4842	8	0	2	asset_fauna.gd	no	no	scenes/art_labs/lake_fauna_v01/controlled_dragonfly_nymph.tscn
+assets/models/levels/level_02_lake/enemies/controlled_mosquito.glb	7840	9	0	1	asset_fauna.gd	si	no	scenes/art_labs/assets/controlled_mosquito.tscn
+assets/models/levels/level_02_lake/enemies/controlled_mosquito_lite.glb	4954	9	0	2		no	si	scenes/art_labs/swarm_lite_v01/controlled_mosquito.tscn
+assets/models/levels/level_02_lake/enemies/controlled_perch.glb	8236	12	0	1	asset_fauna.gd	no	no	scenes/art_labs/assets/controlled_perch.tscn
+assets/models/levels/level_02_lake/enemies/controlled_water_strider.glb	4872	8	0	2	asset_fauna.gd	no	no	scenes/art_labs/lake_fauna_v01/controlled_water_strider.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01.glb	5964	4	0	9		no	no	scenes/art_labs/giant_heron_v01/controlled.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01_liberado.glb	5212	1	0	1		no	no	scenes/art_labs/giant_heron_v01/liberated.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_mosquito_cloud_v01.glb	4680	4	0	13		no	no	scenes/art_labs/lake_creatures_v01/mosquito_cloud.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_mosquito_cloud_v01_liberado.glb	3696	1	0	6		no	no	scenes/art_labs/lake_creatures_v01/mosquito_cloud_liberated.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_salamander_v01.glb	4112	4	0	5		no	no	scenes/art_labs/lake_creatures_v01/salamander.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_salamander_v01_liberado.glb	3784	1	0	1		no	no	scenes/art_labs/lake_creatures_v01/salamander_liberated.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01.glb	4908	4	0	5		no	no	scenes/art_labs/lake_creatures_v01/turtle.tscn
+assets/models/levels/level_02_lake/enemies/lvl02_enemy_turtle_v01_liberado.glb	4580	1	0	1		no	no	scenes/art_labs/lake_creatures_v01/turtle_liberated.tscn
+assets/models/levels/level_02_lake/environment/cattails_cluster.glb	4272	5	0	0	bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/assets/cattails_cluster.tscn
+assets/models/levels/level_02_lake/environment/lotus_lily_pad.glb	7632	5	0	0	bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/assets/lotus_lily_pad.tscn
+assets/models/levels/level_02_lake/environment/lvl02_environment_floating_branch_lite_v01.glb	708	3	0	0		no	si	scenes/art_labs/lake_botanical_v01/floating_branch.tscn
+assets/models/levels/level_02_lake/environment/lvl02_environment_flowering_lily_pads_lite_v01.glb	1540	4	0	0		no	si	scenes/art_labs/lake_botanical_v01/flowering_lily_pads.tscn
+assets/models/levels/level_02_lake/environment/lvl02_environment_totoras_cluster_lite_v01.glb	1720	4	0	0		no	si	scenes/art_labs/lake_botanical_v01/totoras_cluster.tscn
+assets/models/levels/level_02_lake/environment/shore_rock.glb	5472	3	0	0		no	no	scenes/art_labs/assets_v08/shore_rock.tscn
+assets/models/levels/level_02_lake/environment/shore_wave_module.glb	7900	2	0	0		no	no	scenes/art_labs/assets_v08/shore_wave_module.tscn
+assets/models/levels/level_02_lake/environment/submerged_root_module.glb	1532	2	0	0	bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/lake_fauna_v01/submerged_root_module.tscn
+assets/models/levels/level_02_lake/props/coastal_buoy.glb	4592	4	0	0		no	no	scenes/art_labs/assets_v05/coastal_buoy.tscn
+assets/models/levels/level_02_lake/props/coastal_rowboat.glb	5412	5	0	0		no	no	scenes/art_labs/assets_v08/coastal_rowboat.tscn
+assets/models/levels/level_03_forest/enemies/controlled_bomb_moth.glb	23592	10	0	2	asset_fauna.gd	no	no	scenes/art_labs/assets_v10/controlled_bomb_moth.tscn
+assets/models/levels/level_03_forest/enemies/controlled_caterpillar.glb	20344	9	0	2		si	no	scenes/art_labs/assets_v09/controlled_caterpillar.tscn
+assets/models/levels/level_03_forest/enemies/controlled_caterpillar_lite.glb	4968	9	0	2		no	si	scenes/art_labs/swarm_lite_v01/controlled_caterpillar.tscn
+assets/models/levels/level_03_forest/enemies/controlled_firefly.glb	8864	11	0	1	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v03/controlled_firefly.tscn
+assets/models/levels/level_03_forest/enemies/controlled_mouse.glb	10748	9	0	1		no	no	scenes/art_labs/assets_v04/controlled_mouse.tscn
+assets/models/levels/level_03_forest/enemies/controlled_owl.glb	13540	12	0	1		no	no	scenes/art_labs/assets_v03/controlled_owl.tscn
+assets/models/levels/level_03_forest/enemies/controlled_stick_insect.glb	7416	7	0	1		no	no	scenes/art_labs/assets_v04/controlled_stick_insect.tscn
+assets/models/levels/level_03_forest/enemies/moth_stationary_bomb.glb	2528	4	0	2	asset_fauna.gd	no	no	scenes/art_labs/assets_v10/moth_stationary_bomb.tscn
+assets/models/levels/level_03_forest/environment/tall_pine.glb	1564	3	0	0	bee_level_01_asset_dressing.gd, bee_level_02_lake_scenery.gd	no	no	scenes/art_labs/pine_woods_v01/tall_pine.tscn
+assets/models/levels/level_03_forest/environment/umbrella_pine.glb	3176	3	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/pine_woods_v01/umbrella_pine.tscn
+assets/models/levels/level_03_forest/props/pine_cone.glb	4992	3	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/pine_woods_v01/pine_cone.tscn
+assets/models/levels/level_04_sky/enemies/controlled_eagle.glb	6914	11	0	2		no	no	scenes/art_labs/assets_v11/controlled_eagle.tscn
+assets/models/levels/level_04_sky/enemies/controlled_eagle_flight.glb	6914	11	0	2		no	no	scenes/art_labs/assets_eagle_sky_v01/controlled_eagle_flight.tscn
+assets/models/levels/level_04_sky/enemies/controlled_pigeon.glb	11008	12	0	1		no	no	scenes/art_labs/assets_v04/controlled_pigeon.tscn
+assets/models/levels/level_04_sky/environment/residential_cottage.glb	2988	6	0	0		no	no	scenes/art_labs/residential_sky_v01/residential_cottage.tscn
+assets/models/levels/level_04_sky/environment/residential_two_storey.glb	3364	5	0	0		no	no	scenes/art_labs/residential_sky_v01/residential_two_storey.tscn
+assets/models/levels/level_04_sky/environment/sky_cloud.glb	5888	1	0	0		no	no	scenes/art_labs/assets_v07/sky_cloud.tscn
+assets/models/levels/level_04_sky/environment/warm_star_set.glb	1800	1	0	0		no	no	scenes/art_labs/residential_sky_v01/warm_star_set.tscn
+assets/models/levels/level_04_sky/props/warm_street_lamp.glb	1288	2	0	0		no	no	scenes/art_labs/residential_sky_v01/warm_street_lamp.tscn
+assets/models/levels/level_07_space/bosses/alien_mothership.glb	6764	5	0	2		no	no	scenes/art_labs/mothership_v01/alien_mothership.tscn
+assets/models/levels/level_07_space/enemies/orbital_skimmer.glb	5548	4	0	0		no	no	scenes/art_labs/assets/orbital_skimmer.tscn
+assets/models/levels/level_07_space/environment/warm_asteroid.glb	3752	3	0	0		no	no	scenes/art_labs/assets/warm_asteroid.tscn
+assets/models/shared/alien_tech/alien_armoured_bomber.glb	4974	5	0	2		no	no	scenes/art_labs/alien_ships_v02/alien_armoured_bomber.tscn
+assets/models/shared/alien_tech/alien_needle_interceptor.glb	4982	5	0	2	asset_fauna.gd	no	no	scenes/art_labs/alien_ships_v02/alien_needle_interceptor.tscn
+assets/models/shared/alien_tech/alien_probe_visual.glb	920	5	0	0	bee_prototype/visuals/alien_probe_visual.tscn	no	no	
+assets/models/shared/alien_tech/alien_seed_carrier.glb	9108	4	0	0	asset_fauna.gd	no	no	scenes/art_labs/assets_v02/alien_seed_carrier.tscn
+assets/models/shared/alien_tech/alien_signal_relay.glb	4520	4	0	0	bee_level_01_asset_dressing.gd	no	no	scenes/art_labs/assets_v02/alien_signal_relay.tscn
+assets/models/shared/alien_tech/canonical_implant_kit.glb	28288	5	0	9		no	no	scenes/art_labs/assets_v09/canonical_implant_kit.tscn
+assets/models/shared/bee/bee_alien_visual.glb	1144	6	0	1		no	no	
+assets/models/shared/bee/bee_mid_poly.glb	4540	6	0	1	bee_prototype/bee_player.tscn	no	no	
+assets/models/shared/pickups/pickup_bomb.glb	2068	3	0	0	items/toon/bomb.tscn, bee_prototype/bee_alien_bomb.gd	no	no	scenes/art_labs/pickups_toon_v01/pickup_bomb.tscn
+assets/models/shared/pickups/pickup_healing.glb	1656	5	0	0	items/toon/healing.tscn	no	no	scenes/art_labs/pickups_toon_v01/pickup_healing.tscn
+assets/models/shared/pickups/pickup_pollen.glb	2096	2	0	0	items/toon/pollen.tscn	no	no	scenes/art_labs/pickups_toon_v01/pickup_pollen.tscn
+assets/models/shared/pickups/pickup_spread.glb	1564	3	0	0	items/toon/spread.tscn	no	no	scenes/art_labs/pickups_toon_v01/pickup_spread.tscn
+assets/models/shared/projectiles/alien_bolt.glb	864	3	0	2	projectiles/toon/alien_bolt.tscn	no	no	scenes/art_labs/projectiles_toon_v01/alien_bolt.tscn
+assets/models/shared/projectiles/bee_bolt.glb	864	2	0	0	projectiles/toon/bee_bolt.tscn	no	no	scenes/art_labs/projectiles_toon_v01/bee_bolt.tscn

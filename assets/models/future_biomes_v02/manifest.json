@@ -15,8 +15,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v02/controlled_stag_beetle.blend",
-      "glb": "assets/models/future_biomes_v02/controlled_stag_beetle.glb"
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_stag_beetle.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_stag_beetle.glb"
     },
     {
       "id": "controlled_woodland_snail",
@@ -31,8 +31,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v02/controlled_woodland_snail.blend",
-      "glb": "assets/models/future_biomes_v02/controlled_woodland_snail.glb"
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_woodland_snail.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_woodland_snail.glb"
     },
     {
       "id": "alien_seed_carrier",
@@ -47,8 +47,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v02/alien_seed_carrier.blend",
-      "glb": "assets/models/future_biomes_v02/alien_seed_carrier.glb"
+      "source": "art_source/blender/shared/alien_tech/alien_seed_carrier.blend",
+      "glb": "assets/models/shared/alien_tech/alien_seed_carrier.glb"
     },
     {
       "id": "alien_signal_relay",
@@ -63,8 +63,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v02/alien_signal_relay.blend",
-      "glb": "assets/models/future_biomes_v02/alien_signal_relay.glb"
+      "source": "art_source/blender/shared/alien_tech/alien_signal_relay.blend",
+      "glb": "assets/models/shared/alien_tech/alien_signal_relay.glb"
     }
   ]
 }

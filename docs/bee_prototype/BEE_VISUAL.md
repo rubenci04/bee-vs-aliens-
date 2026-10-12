@@ -1,8 +1,8 @@
 # Bee alien visual — primera presentación low-poly
 
 Modelo reproducible: tools/bee_prototype/create_bee_visual.py.
-Fuente: art_source/blender/bee_prototype/bee_alien_visual.blend.
-Exportación: assets/models/bee_prototype/bee_alien_visual.glb.
+Fuente: art_source/blender/shared/bee/bee_alien_visual.blend.
+Exportación: assets/models/shared/bee/bee_alien_visual.glb.
 
 1.144 triángulos, 35 piezas, seis materiales planos, sin texturas ni rig.
 Abeja dorada con bandas oscuras, cabeza grande, seis patas de dos segmentos,

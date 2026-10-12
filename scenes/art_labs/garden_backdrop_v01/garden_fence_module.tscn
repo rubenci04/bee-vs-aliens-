@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/garden_backdrop_v01/garden_fence_module.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_01_garden/environment/garden_fence_module.glb" id="2"]
 [node name="garden_fence_module" type="Node3D"]
 script = ExtResource("1")
 [node name="Model" parent="." instance=ExtResource("2")]

@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "id": "lvl02_boss_rococo_toad_v01",
+      "triangles": 11992,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "hop",
+        "plasma_fire",
+        "tongue_attack"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01.glb",
+      "size_godot_xyz_m": [
+        3.953,
+        2.91,
+        3.8
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, four limb pivots, head, jaw, throat, tongue and two cannon pivots",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl02_boss_rococo_toad_v01_liberado",
+      "triangles": 7900,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "hop",
+        "plasma_fire",
+        "tongue_attack"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/bosses/lvl02_boss_rococo_toad_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        3.953,
+        2.58,
+        3.8
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, four limb pivots, head, jaw, throat, tongue and two cannon pivots",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 12000,
+  "emission_only": "implant* cyan hardware"
+}

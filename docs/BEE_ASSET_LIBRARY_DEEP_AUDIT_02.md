@@ -154,7 +154,7 @@ Contact sheets: `dev/asset_audit_02/sheets/`. Datos exactos por modelo: `data/mo
 ### 5.1 Humanos (`humans_toon.png`, `human_compare_giant.png`)
 | Candidato | Licencia | Tris | Rig / clips | Visual |
 |---|---|---:|---|---|
-| **Hipster actual** (`assets/models/human_reuse/hipster_poc.glb`) | propio | 2.480 | 18 huesos, 6 clips (Idle, Run, Jump, Fall, Melee, Throw; sin Walk) | adulto, piernas largas, **muy cúbico** (cajas, bota-bloque) |
+| **Hipster actual** (`assets/models/_unassigned/human/hipster_poc.glb`) | propio | 2.480 | 18 huesos, 6 clips (Idle, Run, Jump, Fall, Melee, Throw; sin Walk) | adulto, piernas largas, **muy cúbico** (cajas, bota-bloque) |
 | KayKit Rogue/Ranger/Barbarian/Knight/Mage/Rogue_Hooded | CC0 | 5.800–8.900 | 23 huesos; 0 clips propios, 26 en los rigs (`Running_A/B`, `Walking_A/B/C`…) | **excelente factura**, suave, pero **chibi**: cabeza ≈ 40 % de la altura |
 | UPP "Character" | CC0 | 2.908 | 29 huesos, 18 clips | **es un conejo azul con pijama**, no un humano |
 | Kenney archer / astronauts / figurines | CC0 | 150–574 | 32 / 0 / 27 clips | bloques de juguete; peor que el actual |

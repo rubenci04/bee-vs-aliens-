@@ -12,8 +12,8 @@
         1.039,
         0.888
       ],
-      "source": "art_source/blender/future_biomes_v01/controlled_mosquito.blend",
-      "glb": "assets/models/future_biomes_v01/controlled_mosquito.glb",
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_mosquito.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_mosquito.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false
@@ -28,8 +28,8 @@
         0.76,
         1.546
       ],
-      "source": "art_source/blender/future_biomes_v01/controlled_perch.blend",
-      "glb": "assets/models/future_biomes_v01/controlled_perch.glb",
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_perch.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_perch.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false
@@ -44,8 +44,8 @@
         1.329,
         1.035
       ],
-      "source": "art_source/blender/future_biomes_v01/orbital_skimmer.blend",
-      "glb": "assets/models/future_biomes_v01/orbital_skimmer.glb",
+      "source": "art_source/blender/levels/level_07_space/enemies/orbital_skimmer.blend",
+      "glb": "assets/models/levels/level_07_space/enemies/orbital_skimmer.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false
@@ -60,8 +60,8 @@
         1.619,
         0.335
       ],
-      "source": "art_source/blender/future_biomes_v01/lotus_lily_pad.blend",
-      "glb": "assets/models/future_biomes_v01/lotus_lily_pad.glb",
+      "source": "art_source/blender/levels/level_02_lake/environment/lotus_lily_pad.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/lotus_lily_pad.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false
@@ -76,8 +76,8 @@
         0.415,
         2.611
       ],
-      "source": "art_source/blender/future_biomes_v01/cattails_cluster.blend",
-      "glb": "assets/models/future_biomes_v01/cattails_cluster.glb",
+      "source": "art_source/blender/levels/level_02_lake/environment/cattails_cluster.blend",
+      "glb": "assets/models/levels/level_02_lake/environment/cattails_cluster.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false
@@ -92,8 +92,8 @@
         1.558,
         1.696
       ],
-      "source": "art_source/blender/future_biomes_v01/warm_asteroid.blend",
-      "glb": "assets/models/future_biomes_v01/warm_asteroid.glb",
+      "source": "art_source/blender/levels/level_07_space/environment/warm_asteroid.blend",
+      "glb": "assets/models/levels/level_07_space/environment/warm_asteroid.glb",
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false

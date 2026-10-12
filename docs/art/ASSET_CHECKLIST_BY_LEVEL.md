@@ -1,55 +1,82 @@
 # Checklist de assets por nivel
 
-Estados según el disco al 2026-10-12 (ver `ASSET_MANIFEST.md`): ✅ en juego · ⚠️ listo (fuente, GLB y laboratorio) pero sin integrar · ❌ no existe · ❓ no verificable por archivos (depende de revisión visual/playtest).
+Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITORIA_ASSETS.md` y `ASSET_MANIFEST.md`): ✅ en juego · ⚠️ listo (fuente, GLB y laboratorio) pero sin integrar · ❌ no existe · ❓ no verificable por archivos. El elenco del Nivel 1 lo fija `LEVEL_01_ROSTER.md`.
 
-Este archivo no existía al empezar el Lote 11; se creó desde `LEVEL01_ART_PRIORITIES.md`, los roadmaps y el contenido real de `assets/models/`.
+## Nivel 1 — Jardín de una casa (`level_01_garden`)
 
-## Nivel 01 — Jardín
+### Elenco
 
-| Categoría | Asset | Estado | Nota |
+| Unidad | Estado | Archivo / código | Nota |
 |---|---|---|---|
-| enemigo | Mosquito, mariquita voladora, hormiga, escarabajo ciervo, caracol, libélula, polilla bomba, hongo cañón | ✅ | `asset_fauna.gd` |
-| enemigo | Araña colgante (carril vertical) | ✅ | nodo propio `controlled_spider.tscn`; GLB `controlled_hanging_spider` (V11) ⚠️ sin conectar |
-| enemigo | Avispa, sonda alien, caza interceptor, ojo, walker, torreta, speeder | ✅ | |
-| enemigo | Rana de jardín (encuentro) | ✅ | `garden_toad_encounter.gd` |
-| enemigo | Oruga blindada | ⚠️ | V09 / swarm_lite |
-| enemigo | Bombardero blindado alien | ⚠️ | `alien_ships_v02` |
-| jefe | UFO / NODO ALIEN | ✅ | `ufo_boss_01` |
-| jefe | Nave nodriza | ⚠️ | `mothership_v01` |
-| jefe | Águila (mini-jefe del cielo) | ⚠️ | `eagle_sky_v01`, `future_biomes_v11/controlled_eagle` |
-| entorno | Manguera, valla, casa lejana | ✅ | `garden_backdrop_v01` |
-| entorno | Regadera | ⚠️ | GLB listo; el evento de la regadera (Lote 11 C5) la usa |
-| entorno | Botella, lata de atún, cáscara de banana, lata de gaseosa, caramelo, tapa gigante | ✅ | |
-| entorno | Caja de cerillos, envoltorio abierto | ⚠️ | reemplazados en el nivel por atún y banana |
-| entorno | Tronco hueco, campanilla, pino, arbusto, brote | ✅ | |
-| entorno | Helecho | ⚠️ | solo en Nivel 02 |
-| entorno | Sol, luna, estrellas | ✅ | |
-| entorno | Nube | ⚠️ | |
-| entorno | Casas residenciales y farol | ⚠️ | `residential_sky_v01` |
-| entorno | Humano gigante | ✅ | `hipster_poc` (sin `.blend`) |
-| ítem | Polen, Spread, bomba, curación | ✅ | `pickups_toon_v01` |
-| fx | Proyectiles toon de Bee y alien | ✅ | `projectiles_toon_v01` |
-| fx | Impactos y explosiones toon | ✅ | `scenes/vfx/toon/` |
-| ui | Barra de vida POC | ⚠️ | `future_health_bar.tscn` |
-| ui | Logo, iconos de armas, marcos de vida | ❌ | |
-| ui | Pantalla de título y HUD de armas | ✅ | construidos por script/escena |
+| Mariquita | ✅ | `enemies/controlled_flying_ladybird` (+ `_lite`) | el juego usa la versión completa (9.384 tris) |
+| Mosca común | ⚠️ | `enemies/lvl01_enemy_fly_common_v01` (+ liberada) | falta escena jugable, IA, HP |
+| Mosca verde | ⚠️ | `enemies/lvl01_enemy_fly_green_v01` (+ liberada) | falta escena jugable, IA, gota apuntada |
+| Nube de moscas | ⚠️ | `enemies/lvl01_enemy_fly_swarm_v01` (+ liberada) | falta unidad de grupo jugable |
+| Avispa | ✅ | `enemies/wasp_mid_poly`, `wasp_enemy.tscn` | |
+| Hormiga | ✅ | `enemies/controlled_ant` (+ `_lite`) | |
+| Caracol | ✅ | `enemies/controlled_woodland_snail` | 7.748 tris, sin `_lite` |
+| Gusano A (rosado) | ⚠️ | `enemies/lvl01_enemy_worm_rose_v01` (+ liberado) | falta emerger con marca, escena, IA |
+| Gusano B (compost) | ⚠️ | `enemies/lvl01_enemy_worm_compost_v01` (+ liberado) | falta patrón propio, escena, IA |
+| Escarabajo ciervo | ✅ | `enemies/controlled_stag_beetle` | 9.952 tris, sin `_lite` |
+| Hongos de jardín | ⚠️ | `environment/lvl01_environment_mushroom_{button,spotted,umbrella}_v01` | falta destructible que suelta polen |
+| Hongo cañón | ✅ | `enemies/controlled_mushroom_cannon` | 11.822 tris, sin `_lite` |
+| Araña colgante | ✅ / ⚠️ | nodo `controlled_spider.tscn`; GLB `enemies/controlled_hanging_spider` sin conectar | |
+| Tortuga de jardín | ⚠️ | solo código (`bee_aftermath_turtle.gd`) | falta modelo/escena de tanque |
+| Robot caminante | ✅ | `ground_walker_enemy.tscn` (procedural) | falta mini-jefe con escoltas |
+| Tarántula (jefe) | ⚠️ | `bosses/lvl01_boss_giant_spider_v01` (+ liberada) | modelo con exoesqueleto alien; el contrato pide solo implante; sin combate |
 
-## Nivel 02 — Lago
+### Decorado de jardín
 
-✅ lago, nenúfar, juncos, raíz sumergida, perca, ninfa de libélula, zancudo; ⚠️ barca, roca de orilla, módulo de ola, boya (V05/V08), pulpo, manta; ✅ rana (sapo del lago).
+| Asset | Estado | Carpeta |
+|---|---|---|
+| Valla, casa lejana | ✅ | `environment/garden_fence_module`, `garden_distant_house` |
+| Manguera | ✅ | `props/garden_hose` |
+| Regadera gigante | ⚠️ | `props/garden_watering_can` (el evento de Lote 11 la usa como escena procedural) |
+| Botella, lata de atún, cáscara de banana, lata de gaseosa, caramelo, tapa gigante | ✅ | `props/` |
+| Caja de cerillos, envoltorio abierto | ⚠️ | `props/` (reserva) |
+| Tronco hueco, campanilla, helecho | ✅ | `environment/` |
+| Arbusto florido, brote | ✅ | `environment/` |
+| Sol, luna, estrellas | ✅ | `environment/` |
+| Props domésticos externos (macetas, regaderas, vegetación) | ✅ | `assets/external/approved/` (Tiny Treats, KayKit) |
 
-## Niveles 03–07
+Ítems, proyectiles, FX y UI: ver `shared/` y el manifiesto.
 
-Sin contenido jugable. En disco, reserva ⚠️ por tema: L03 bosque (pinos, búho, ratón, insecto palo, escarabajo), L04 cielo/barrio (águila, paloma, gaviota, casas, farol), L05 invasión (nodriza, bombardero, portador de semillas, relé), L06 atmósfera (manta, pulpo — sin asignación clara), L07 espacio (asteroide, patinador orbital). ❌ para todo lo demás (escenarios, jefes propios de cada nivel).
+## Nivel 2 — Laguna (`level_02_lake`)
+
+✅ perca, ninfa de libélula, zancudo, mosquito, libélula controlada, nenúfar, juncos, raíz sumergida, sapo (modelo `amphibian_mount_study`, escena `scenes/levels/level_02_lake/lake_toad_miniboss_visual.tscn`, código `scripts/levels/level_02_lake/`). ⚠️ listos sin integrar: garza gigante, nube de mosquitos, tortuga, salamandra, sapo Rococó (jefe), tres variantes ligeras de botánica, barca, boya, roca de orilla, módulo de ola, mosquito `_lite`.
+
+## Nivel 3 — Bosque (`level_03_forest`)
+
+✅ polilla bomba, polilla estacionaria, luciérnaga (en el Nivel 1 hasta la etapa 2), pinos, piña. ⚠️ búho, ratón, insecto palo, oruga (+ `_lite`).
+
+## Nivel 4 — Cielo (`level_04_sky`)
+
+⚠️ águila (dos modelos), paloma, nube, casas residenciales, farol, estrellas cálidas.
+
+## Niveles 5 y 6
+
+❌ sin contenido. La tecnología alien reutilizable está en `shared/alien_tech`.
+
+## Nivel 7 — Espacio (`level_07_space`)
+
+⚠️ nave nodriza, patinador orbital, asteroide. El UFO (código y escena) se conserva para este nivel.
+
+## shared
+
+✅ `bee/` (Bee y avispa mid poly), `pickups/` (polen, Spread, bomba, miel), `projectiles/` (disparo de Bee, orbe alien). `alien_tech/`: ✅ caza interceptor, semillero (en juego hoy), sonda; ⚠️ bombardero blindado, relé de señal, kit de implantes (referencia).
+
+## `_unassigned`
+
+`coastal/` (gaviota, pulpo, mantarraya: sin nivel marino en el plan) y `human/` (humano gigante, hoy apagado).
 
 ## Discrepancias
 
-Entre los documentos de arte y el disco:
-
-1. `LEVEL01_ART_PRIORITIES.md` lista como pendientes manguera, regadera, valla y casa: los cuatro existen en `garden_backdrop_v01` (manguera, valla y casa ya en juego).
-2. Lo mismo para el águila (existe en V11 y `eagle_sky_v01`), la araña colgante (V11 y nodo propio en juego) y la nave nodriza (`mothership_v01`).
-3. `ENVIRONMENT_ROADMAP.md` propone «manguera + regadera + módulo de valla» como siguiente tanda y pino/campanilla/residuos como pendientes: hechos en `garden_backdrop_v01`, `pine_woods_v01`, `forest_floor_v01`, `ground_litter_v01/v02`.
-4. `LEVEL01_ART_PRIORITIES.md` marca pendiente el sapo gigante; el encuentro de la rana está integrado (Lote 10 C).
-5. Logo, iconos de arma y marcos de vida siguen pendientes (coincide con el disco).
-6. `CLAUDE.md` habla de «52 validaciones»; hay 82 suites `validate_*.gd`.
-7. `docs/art/` tiene PNG de revisión para tandas sin manifest propio en `assets/models/` (`future_biomes_v01`–`v03` anteriores al flujo de manifests por tanda); sus triángulos figuran como `—` en el manifiesto cuando falta el dato.
+1. El checklist del Lote 11 ponía en el Nivel 1 la rana, el UFO, el mosquito, la libélula, la polilla, la sonda, el caza y el semillero: el contrato los saca (rana → N2, UFO → N7, mosquito/libélula → N2, polilla/luciérnaga → N3, resto → `shared/alien_tech`).
+2. El contrato pide la carpeta `level_02_lagoon`; se conserva `level_02_lake` porque Codex ya entregó assets ahí y los manifiestos/documentos la citan. Si se prefiere el otro nombre es un renombre de carpeta.
+3. El contrato dice que la tortuga de jardín «ya existe»: solo existe como pieza procedural de una escena de secuela, no como tanque jugable.
+4. La tarántula entregada lleva exoesqueleto alien (placas, núcleo cian, nodos); el contrato dice «con implante, sin exoesqueleto alien».
+5. El contrato propone gusanos que «emergen con marca» y escupen/embisten, pero los modelos son solo arte (3 clips, sin escena ni IA).
+6. El Nivel 1 todavía instancia pinos (N3), luciérnaga (N3) y la fauna de N2/N3 desde `asset_fauna.gd`: se apaga en la etapa 2.
+7. Helecho, campanilla y tronco (decorado de jardín) también los usa la laguna.
+8. `CLAUDE.md` habla de 52 validaciones; hay 91 scripts `validate_*.gd`.
+9. Hongos: los tres hongos de jardín de Codex son naturales (sin alien); el «hongo de color» del contrato (Nivel 3) no existe como modelo todavía.

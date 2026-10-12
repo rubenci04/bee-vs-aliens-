@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_botanical_v01/floating_branch.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_botanical_v01/totoras_cluster.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/art_labs/lake_botanical_v01/flowering_lily_pads.tscn" id="3"]
+[sub_resource type="Environment" id="Env"]
+background_mode = 1
+background_color = Color(0.65,0.67,0.69,1)
+ambient_light_source = 3
+ambient_light_color = Color(0.87,0.9,0.95,1)
+ambient_light_energy = 0.45
+[sub_resource type="LabelSettings" id="Label"]
+font_size = 22
+font_color = Color(0.08,0.09,0.10,1)
+[node name="LakeBotanicalArtLab" type="Node3D"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-45,-35,0)
+light_color = Color(1,0.93,0.81,1)
+light_energy = 1.0
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0,4.6,14)
+rotation_degrees = Vector3(-12,0,0)
+projection = 1
+size = 7.8
+current = true
+[node name="floating_branch" parent="." instance=ExtResource("1")]
+position = Vector3(-3.6,0,0)
+[node name="totoras_cluster" parent="." instance=ExtResource("2")]
+position = Vector3(0,0,0)
+[node name="flowering_lily_pads" parent="." instance=ExtResource("3")]
+position = Vector3(3.5,0,0)
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Label" type="Label" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 20.0
+text = "LAGO · RAMA FLOTANTE / TOTORAS / NENÚFARES
+Variantes ligeras · animación de reposo en loop"
+label_settings = SubResource("Label")

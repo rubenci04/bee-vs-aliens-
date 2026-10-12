@@ -16,8 +16,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v10/controlled_dragonfly.blend",
-      "glb": "assets/models/future_biomes_v10/controlled_dragonfly.glb"
+      "source": "art_source/blender/levels/level_02_lake/enemies/controlled_dragonfly.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/controlled_dragonfly.glb"
     },
     {
       "id": "controlled_bomb_moth",
@@ -34,8 +34,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v10/controlled_bomb_moth.blend",
-      "glb": "assets/models/future_biomes_v10/controlled_bomb_moth.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_bomb_moth.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_bomb_moth.glb"
     },
     {
       "id": "controlled_mushroom_cannon",
@@ -52,8 +52,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v10/controlled_mushroom_cannon.blend",
-      "glb": "assets/models/future_biomes_v10/controlled_mushroom_cannon.glb"
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_mushroom_cannon.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_mushroom_cannon.glb"
     },
     {
       "id": "moth_stationary_bomb",
@@ -70,8 +70,8 @@
       "rigged": false,
       "emissive": true,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v10/moth_stationary_bomb.blend",
-      "glb": "assets/models/future_biomes_v10/moth_stationary_bomb.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/moth_stationary_bomb.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/moth_stationary_bomb.glb"
     }
   ]
 }

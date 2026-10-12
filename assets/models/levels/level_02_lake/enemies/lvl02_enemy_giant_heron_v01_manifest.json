@@ -1,0 +1,62 @@
+{
+  "assets": [
+    {
+      "id": "lvl02_enemy_giant_heron_v01",
+      "triangles": 5964,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "walk",
+        "fly",
+        "wind_attack",
+        "peck_attack"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01.glb",
+      "size_godot_xyz_m": [
+        4.437,
+        4.855,
+        5.352
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, 21 articulated rigid nodes: neck, head, jaw, wings, legs, toes, tail and body",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl02_enemy_giant_heron_v01_liberado",
+      "triangles": 5212,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "walk",
+        "fly",
+        "wind_attack",
+        "peck_attack"
+      ],
+      "source": "art_source/blender/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01.blend",
+      "glb": "assets/models/levels/level_02_lake/enemies/lvl02_enemy_giant_heron_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        4.437,
+        4.855,
+        5.352
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, 21 articulated rigid nodes: neck, head, jaw, wings, legs, toes, tail and body",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 6000,
+  "emission_only": "implant* cyan hardware"
+}

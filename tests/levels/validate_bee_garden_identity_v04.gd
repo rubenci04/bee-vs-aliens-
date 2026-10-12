@@ -12,7 +12,7 @@ extends SceneTree
 ##   godot --headless --path . --script res://tests/levels/validate_bee_garden_identity_v04.gd
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const HIPSTER := preload("res://assets/models/human_reuse/hipster_poc.glb")
+const HIPSTER := preload("res://assets/models/_unassigned/human/hipster_poc.glb")
 const FERN := preload("res://assets/external/approved/nature/quaternius/Stylized Nature MegaKit[Standard]/glTF/Fern_1.gltf")
 const HUMAN_OBJECTS := ["pot_A", "pot_C", "pots_stacked", "saucer", "can_yellow", "can_grey", "shovel", "apple", "cup", "wrapper", "stick"]
 var failed := false

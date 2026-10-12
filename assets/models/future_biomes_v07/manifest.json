@@ -17,8 +17,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v07/sky_cloud.blend",
-      "glb": "assets/models/future_biomes_v07/sky_cloud.glb"
+      "source": "art_source/blender/levels/level_04_sky/environment/sky_cloud.blend",
+      "glb": "assets/models/levels/level_04_sky/environment/sky_cloud.glb"
     },
     {
       "id": "sky_sun",
@@ -35,8 +35,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v07/sky_sun.blend",
-      "glb": "assets/models/future_biomes_v07/sky_sun.glb"
+      "source": "art_source/blender/levels/level_01_garden/environment/sky_sun.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/sky_sun.glb"
     },
     {
       "id": "sky_crescent_moon",
@@ -53,8 +53,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v07/sky_crescent_moon.blend",
-      "glb": "assets/models/future_biomes_v07/sky_crescent_moon.glb"
+      "source": "art_source/blender/levels/level_01_garden/environment/sky_crescent_moon.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/sky_crescent_moon.glb"
     },
     {
       "id": "sky_star_cluster",
@@ -71,8 +71,8 @@
       "rigged": false,
       "emissive": false,
       "closed_meshes": true,
-      "source": "art_source/blender/future_biomes_v07/sky_star_cluster.blend",
-      "glb": "assets/models/future_biomes_v07/sky_star_cluster.glb"
+      "source": "art_source/blender/levels/level_01_garden/environment/sky_star_cluster.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/sky_star_cluster.glb"
     }
   ]
 }

@@ -15,8 +15,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v03/controlled_firefly.blend",
-      "glb": "assets/models/future_biomes_v03/controlled_firefly.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_firefly.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_firefly.glb"
     },
     {
       "id": "controlled_flying_ladybird",
@@ -31,8 +31,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v03/controlled_flying_ladybird.blend",
-      "glb": "assets/models/future_biomes_v03/controlled_flying_ladybird.glb"
+      "source": "art_source/blender/levels/level_01_garden/enemies/controlled_flying_ladybird.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/controlled_flying_ladybird.glb"
     },
     {
       "id": "controlled_owl",
@@ -47,8 +47,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v03/controlled_owl.blend",
-      "glb": "assets/models/future_biomes_v03/controlled_owl.glb"
+      "source": "art_source/blender/levels/level_03_forest/enemies/controlled_owl.blend",
+      "glb": "assets/models/levels/level_03_forest/enemies/controlled_owl.glb"
     },
     {
       "id": "controlled_manta_ray",
@@ -63,8 +63,8 @@
       "forward": "-X",
       "up_godot": "+Y",
       "rigged": false,
-      "source": "art_source/blender/future_biomes_v03/controlled_manta_ray.blend",
-      "glb": "assets/models/future_biomes_v03/controlled_manta_ray.glb"
+      "source": "art_source/blender/_unassigned/coastal/controlled_manta_ray.blend",
+      "glb": "assets/models/_unassigned/coastal/controlled_manta_ray.glb"
     }
   ]
 }

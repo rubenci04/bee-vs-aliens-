@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/art/future_asset_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v09/amphibian_mount_study.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_02_lake/bosses/amphibian_mount_study.glb" id="2"]
 [node name="amphibian_mount_study" type="Node3D"]
 script = ExtResource("1")
 [node name="Model" parent="." instance=ExtResource("2")]

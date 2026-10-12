@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "id": "lvl01_enemy_worm_rose_v01",
+      "triangles": 4532,
+      "unique_mesh_triangles": 4532,
+      "materials": 4,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.glb",
+      "size_godot_xyz_m": [
+        3.01,
+        0.37,
+        0.367
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    },
+    {
+      "id": "lvl01_enemy_worm_rose_v01_liberado",
+      "triangles": 4256,
+      "unique_mesh_triangles": 4256,
+      "materials": 1,
+      "animations": [
+        "idle",
+        "crawl",
+        "recoil"
+      ],
+      "source": "art_source/blender/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01.blend",
+      "glb": "assets/models/levels/level_01_garden/enemies/lvl01_enemy_worm_rose_v01_liberado.glb",
+      "size_godot_xyz_m": [
+        3.01,
+        0.253,
+        0.367
+      ],
+      "up": "+Y",
+      "forward": "-X",
+      "rig": "rigid node animation, independent soft worm segment pivots or one mushroom sway pivot",
+      "original": true,
+      "palette_texture": [
+        8,
+        2
+      ],
+      "texture_embedded": true
+    }
+  ],
+  "budget": 5000,
+  "emission_only": "implant* cyan hardware"
+}

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/art/future_sky_visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/future_biomes_v07/sky_sun.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/levels/level_01_garden/environment/sky_sun.glb" id="2"]
 
 [node name="sky_sun" type="Node3D"]
 script = ExtResource("1")

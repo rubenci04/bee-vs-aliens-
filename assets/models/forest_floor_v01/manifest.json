@@ -1,0 +1,59 @@
+{
+  "batch": "forest_floor_v01",
+  "assets": [
+    {
+      "id": "hollow_fallen_log",
+      "role": "Warm hollow fallen log with continuous bore, end cuts, one branch and broad moss patches",
+      "triangles": 1972,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.4,
+        1.558,
+        1.159
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/environment/hollow_fallen_log.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/hollow_fallen_log.glb"
+    },
+    {
+      "id": "forest_fern",
+      "role": "Five curved fern fronds with forty rounded leaflets; natural green, non-emissive",
+      "triangles": 2940,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        2.028,
+        0.374,
+        1.48
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/environment/forest_fern.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/forest_fern.glb"
+    },
+    {
+      "id": "garden_bellflower",
+      "role": "Warm coral bellflowers with real open corollas, cream interiors, stamens and lance leaves",
+      "triangles": 2824,
+      "mesh_objects": 1,
+      "dimensions_xyz_blender": [
+        1.547,
+        0.556,
+        1.935
+      ],
+      "up_godot": "+Y",
+      "view_godot": "XY",
+      "rigged": false,
+      "emissive": false,
+      "closed_meshes": true,
+      "source": "art_source/blender/levels/level_01_garden/environment/garden_bellflower.blend",
+      "glb": "assets/models/levels/level_01_garden/environment/garden_bellflower.glb"
+    }
+  ]
+}
