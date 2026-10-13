@@ -4,6 +4,8 @@ extends Control
 @onready var bee: BeePlayer = get_node(bee_path)
 var taught: Dictionary = {}
 var debug_visible := false
+var death_panel: Panel
+var death_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -18,12 +20,16 @@ func _ready() -> void:
 	$Hint.add_theme_constant_override("outline_size", 5)
 	$Hint.position = Vector2(BeeGameSettings.HUD_PANEL_POSITION.x, BeeGameSettings.HUD_PANEL_POSITION.y + BeeGameSettings.HUD_PANEL_SIZE.y + BeeGameSettings.HUD_HINT_GAP)
 	$Hint.offset_right = 620.0
+	_build_death_message()
+	bee.defeated.connect(_show_death_message)
 	_sync_text_debug()
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(BeeGameSettings.HUD_DEBUG_ACTION):
 		debug_visible = not debug_visible
 	_sync_text_debug()
+	if death_panel != null and death_panel.visible:
+		death_label.text = _death_prompt()
 	queue_redraw()
 	if not taught.has(&"roll") and get_tree().get_nodes_in_group("alien_projectiles").size() >= BeeGameSettings.PIRUETA_HINT_SHOT_COUNT:
 		taught[&"roll"] = true
@@ -48,6 +54,47 @@ func _sync_text_debug() -> void:
 		var label: Variant = juice.get(property)
 		if label is Label:
 			(label as Label).visible = debug_visible and (property != &"combo_label" or int(juice.get("combo")) >= 2)
+
+func _build_death_message() -> void:
+	death_panel = Panel.new()
+	death_panel.name = "DeathMessage"
+	death_panel.visible = false
+	death_panel.set_anchors_preset(Control.PRESET_CENTER)
+	death_panel.offset_left = -BeeGameSettings.HUD_TERMINAL_PANEL_SIZE.x * 0.5
+	death_panel.offset_right = BeeGameSettings.HUD_TERMINAL_PANEL_SIZE.x * 0.5
+	death_panel.offset_top = -BeeGameSettings.HUD_TERMINAL_PANEL_SIZE.y * 0.5
+	death_panel.offset_bottom = BeeGameSettings.HUD_TERMINAL_PANEL_SIZE.y * 0.5
+	var style := StyleBoxFlat.new()
+	style.bg_color = BeeGameSettings.HUD_TERMINAL_PANEL_COLOR
+	style.border_color = BeeGameSettings.HUD_PANEL_BORDER
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(12)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	death_panel.add_theme_stylebox_override("panel", style)
+	add_child(death_panel)
+	death_label = Label.new()
+	death_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	death_label.add_theme_font_size_override("font_size", BeeGameSettings.HUD_TERMINAL_FONT_SIZE)
+	death_label.add_theme_color_override("font_color", BeeGameSettings.HUD_LABEL_COLOR)
+	death_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	death_label.add_theme_constant_override("outline_size", 6)
+	death_panel.add_child(death_label)
+
+func _death_prompt() -> String:
+	var button := "Y" if BeeGameSettings.last_input_joypad else "R"
+	var stage := bee.get_parent()
+	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
+	var verb := "REAPARECER" if checkpoint != null and checkpoint.checkpoint_active else "REINICIAR"
+	return "PULSÁ %s PARA %s" % [button, verb]
+
+func _show_death_message() -> void:
+	if death_panel == null:
+		return
+	death_label.text = _death_prompt()
+	death_panel.show()
 
 func _draw() -> void:
 	if not is_instance_valid(bee):

@@ -119,10 +119,12 @@ func _physics_process(delta: float) -> void:
 		if clear_banner == null:
 			_show_clear_banner() # LOTE 9: the big closing card after the UFO explosion.
 		section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO"
+		_layout_victory_title()
 		_secure_victory()
 		if BeeGameSettings.from_title:
 			# NOCHE 01 · ETAPA 2: back to the title (Enter, or after RETURN_TO_TITLE_SECONDS); R still replays.
 			section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO · ENTER — MENÚ"
+			_layout_victory_title()
 			_victory_seconds += delta
 			if _victory_seconds >= BeeGameSettings.RETURN_TO_TITLE_SECONDS or Input.is_action_just_pressed("ui_accept"):
 				get_tree().change_scene_to_file(BeeGameSettings.TITLE_SCENE)
@@ -219,9 +221,12 @@ func _show_clear_banner() -> void:
 	clear_banner.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() + "\n" + ($Juice as BeeLevel01Juice).summary_text()
 	clear_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	clear_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	clear_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
-	clear_banner.offset_bottom = -120.0
-	clear_banner.add_theme_font_size_override("font_size", 46)
+	clear_banner.set_anchors_preset(Control.PRESET_CENTER)
+	clear_banner.offset_left = -480.0
+	clear_banner.offset_right = 480.0
+	clear_banner.offset_top = BeeGameSettings.HUD_VICTORY_BANNER_TOP
+	clear_banner.offset_bottom = BeeGameSettings.HUD_VICTORY_BANNER_BOTTOM
+	clear_banner.add_theme_font_size_override("font_size", BeeGameSettings.HUD_VICTORY_FONT_SIZE)
 	clear_banner.add_theme_color_override("font_color", Color(1.0, 0.9, 0.45))
 	clear_banner.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.02))
 	clear_banner.add_theme_constant_override("outline_size", 10)
@@ -233,6 +238,18 @@ func _show_clear_banner() -> void:
 	var pop := clear_banner.create_tween().set_parallel(true)
 	pop.tween_property(clear_banner, "modulate:a", 1.0, 0.35)
 	pop.tween_property(clear_banner, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _layout_victory_title() -> void:
+	section_label.set_anchors_preset(Control.PRESET_CENTER)
+	section_label.offset_left = -450.0
+	section_label.offset_right = 450.0
+	section_label.offset_top = BeeGameSettings.HUD_VICTORY_TITLE_TOP
+	section_label.offset_bottom = BeeGameSettings.HUD_VICTORY_TITLE_BOTTOM
+	section_label.add_theme_font_size_override("font_size", 28)
+	section_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	section_label.z_index = 2
+	if checkpoint.controls_hint != null:
+		checkpoint.controls_hint.hide()
 
 ## LOTE 13: pollen clusters on the way (a respawn finds the ones ahead of it again, like the valley supplies).
 func _place_pollen_clusters() -> void:
