@@ -26,3 +26,7 @@ Thumbs.db
 
 # Builds exportados (NOCHE 01)
 builds/
+
+# Cachés locales de validación/art tooling (se conservan en disco)
+dev/godot_user_lote10/
+tools/art/__pycache__/

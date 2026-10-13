@@ -5,15 +5,20 @@ extends Node3D
 ## Spread does not trivialise it, bomb = BOMB_FRACTION of its life, honey between phases, boss checkpoint. It is an ANIMAL with an
 ## implant: it is never killed, breaking the implant FREES it (it calms down and walks away) and the level ends with
 ## "SECTOR DESPEJADO · LIBERADOS n/N".
-##   PHASE 1  100-75 %  web fan from the mouth, stomp (a wave along the ground), small hanging spiders dropping from above
-##   PHASE 2   75-50 %  threads drop from the top and SWEEP the screen (warning first), it summons flies; after every big attack
-##                      (stomp, threads, charge) the implant on the abdomen is EXPOSED for EXPOSE_SECONDS (x2 damage);
-##                      the legs are ARMOURED from here on (shots on them are absorbed)
-##   PHASE 3   50-20 %  CHARGE across the whole width: it backs up during a CHARGE_TELEGRAPH warning, then rushes to the other
-##                      side; honey appears when the phase starts (half of the fight)
-##   PHASE 4    <20 %   FURY: a web CURTAIN with safe gaps and chained charges
-## Every attack is announced >= MIN_TELEGRAPH s before it can hurt. The stomp wave and the charge are not projectiles: the Lote 11
-## roll never destroys them (web shots are common shots and the roll still destroys them).
+## LOTE 15 · ETAPA 5.3 — DYNAMIC, not harder: it moves in every direction and hunts Bee (same damage per hit as before).
+##   MOVES   on the GROUND it stalks towards Bee's zone; it JUMPS diagonally from one corner to the opposite one (band along the
+##           path + landing shadow, JUMP_TELEGRAPH s) and CLIMBS along the top edge (upside down, crawling above Bee); from the
+##           top it DROPS on a thread and swings as a PENDULUM (the thread is drawn first, HANG_TELEGRAPH s).
+##   AIMED   every phase has attacks aimed at Bee: web fan from the mouth, the TRAPPING NET (TarantulaWebNet: warned 0.5 s; Bee is
+##           stuck up to 2 s, can shoot but not move; shooting the net or mashing the movement keys frees her; then 1.5 s of grace
+##           in which no net can trap her), small spiders dropping on Bee's column, the charge across the ground.
+##   PHASE 1  100-75 %  ground: stalk, fan, net, stomp; first jump to the ceiling, spider rain, fan from above
+##   PHASE 2   75-50 %  ceiling: crawl over Bee, spiders, pendulum swing (+ fan), net; the legs are ARMOURED from here on and after
+##                      every big attack (stomp, charge, swing, jump) the implant is EXPOSED for EXPOSE_SECONDS (x2); flies
+##   PHASE 3   50-20 %  everything mixed: charges, jumps corner to corner, swings, nets; honey when it starts
+##   PHASE 4    <20 %   FURY: COMBOS of two dodgeable attacks (jump + fan, charge + spiders, swing + two fans) and the curtain
+## Every attack is announced >= MIN_TELEGRAPH s before it can hurt. The stomp wave, the charge, the jump and the swing are not
+## projectiles: the Lote 11 roll never destroys them (web shots and the flying net are common shots: the roll destroys them).
 ## Model: lvl01_boss_giant_spider_v01.glb (its implant group is a separate piece; the alien plates the roster contract does not
 ## want - flanks, thorax guard, sensor housing - are hidden at runtime; the leg bracers read as the armour of phase 2).
 
@@ -37,8 +42,8 @@ const PHASE_2_RATIO := 0.75
 const PHASE_3_RATIO := 0.50
 const PHASE_4_RATIO := 0.20
 ## Sustained damage budget on the body (fraction of max HP per second) and its reserve; an exposed implant pays half.
-const HULL_DPS_RATIO := 0.013
-const EASY_HULL_DPS_RATIO := 0.0115
+const HULL_DPS_RATIO := 0.0095
+const EASY_HULL_DPS_RATIO := 0.009
 const HULL_BURST := 18.0
 const BOMB_FRACTION := 0.08
 const MIN_TELEGRAPH := 0.42
@@ -46,11 +51,12 @@ const CONTACT_DAMAGE := 8
 
 const MODEL_SCALE := 0.8
 const GROUND_Y := -0.1
-const ANCHOR_DX := 3.3 # |x| of the body centre from the camera centre on its side.
-const MOVE_X := 0.7
+const CEILING_MARGIN := 0.15 # The feet grip this far above the visible top edge.
+const ANCHOR_DX := 3.3 # |x| of a corner (camera-relative) for jumps and charges.
+const SCREEN_INSET := 2.2 # It never walks closer than this to a screen edge (camera-relative).
 const APPROACH_SECONDS := 3.0
 const TRANSITION_SECONDS := 1.1
-## Model-space parts (forward -X, metres at scale 1): body box, implant, leg band, mouth.
+## Model-space parts (forward -X, metres at scale 1): body box, implant, leg band, mouth, thread attachment (abdomen tip).
 const BODY_CENTRE := Vector2(-0.03, 1.75)
 const BODY_SIZE := Vector2(3.95, 1.8)
 const IMPLANT_CENTRE := Vector2(0.55, 2.88)
@@ -58,21 +64,26 @@ const IMPLANT_RADIUS := 0.6
 const LEGS_CENTRE := Vector2(0.3, 0.45)
 const LEGS_SIZE := Vector2(5.2, 0.9)
 const MOUTH := Vector2(-1.95, 1.0)
+const ATTACH := Vector2(1.9, 1.9)
 
 ## Per phase: [cooldown between attacks, web fan shots, fan step (deg)].
 const PHASE_TUNING := {
-	State.PHASE_1: [1.3, 5, 15.0],
-	State.PHASE_2: [1.2, 5, 15.0],
-	State.PHASE_3: [1.05, 6, 13.0],
-	State.PHASE_4: [0.9, 7, 12.0],
+	State.PHASE_1: [1.2, 5, 15.0],
+	State.PHASE_2: [1.1, 5, 15.0],
+	State.PHASE_3: [1.0, 6, 13.0],
+	State.PHASE_4: [0.9, 6, 13.0],
 }
+## The pattern of each phase. Moves that need the other surface insert a corner-to-corner JUMP first (see _start_attack).
 const PATTERNS := {
-	State.PHASE_1: [&"fan", &"stomp", &"fan", &"spiders"],
-	State.PHASE_2: [&"threads", &"fan", &"stomp", &"spiders", &"threads", &"fan"],
-	State.PHASE_3: [&"charge", &"fan", &"threads", &"stomp", &"charge", &"spiders"],
-	State.PHASE_4: [&"curtain", &"double_charge", &"fan", &"stomp", &"curtain", &"spiders"],
+	State.PHASE_1: [&"stalk", &"fan", &"net", &"stomp", &"stalk", &"fan", &"crawl", &"spiders", &"fan", &"net"],
+	State.PHASE_2: [&"crawl", &"spiders", &"hang", &"net", &"crawl", &"fan", &"hang", &"stalk", &"charge", &"fan"],
+	State.PHASE_3: [&"charge", &"net", &"crawl", &"hang", &"fan", &"stalk", &"charge", &"spiders", &"net", &"fan"],
+	State.PHASE_4: [&"jump_fan", &"charge_spiders", &"net", &"hang_fan", &"jump_fan", &"curtain", &"charge_spiders", &"fan"],
 }
-const BIG_ATTACKS := [&"stomp", &"threads", &"charge", &"double_charge"]
+const GROUND_MOVES := [&"stalk", &"stomp", &"charge", &"double_charge", &"charge_spiders"]
+const CEILING_MOVES := [&"crawl", &"hang", &"hang_fan"]
+const COMBOS := [&"jump_fan", &"charge_spiders", &"hang_fan"]
+const BIG_ATTACKS := [&"stomp", &"hang", &"hang_fan", &"jump", &"jump_fan"] # Charges expose the implant when they land.
 
 const FAN_TELEGRAPH := 0.6
 const FAN_SPEED := 5.4
@@ -81,9 +92,8 @@ const STOMP_TELEGRAPH := 0.65
 const STOMP_DAMAGE := 8
 const STOMP_SPEED := 7.0
 const STOMP_HEIGHT := 1.3
-const SPIDERS_BY_PHASE := {State.PHASE_1: 2, State.PHASE_2: 2, State.PHASE_3: 2, State.PHASE_4: 3}
-const THREAD_TELEGRAPH := 0.75
-const THREAD_BOTTOM := 3.0 # The threads hang down to this height: the corridor under them is safe.
+const SPIDERS_BY_PHASE := {State.PHASE_1: 2, State.PHASE_2: 3, State.PHASE_3: 2, State.PHASE_4: 3}
+const THREAD_BOTTOM := 3.0 # (Lote 12 sweeping threads, no longer in the patterns.)
 const THREAD_SPEED := 3.4
 const THREAD_DAMAGE := 6
 const THREAD_COUNT := 2
@@ -97,6 +107,28 @@ const CURTAIN_TELEGRAPH := 0.6
 const CURTAIN_SPEED := 4.0
 const CURTAIN_STEP := 0.55
 const CURTAIN_GAP := 1.7
+const STALK_SPEED := 2.6
+const STALK_SECONDS := 1.6
+const STALK_GAP := 3.2 # It stops this far from Bee's X (on its own side): Bee's zone, not her body.
+const CRAWL_SPEED := 3.0
+const CRAWL_SECONDS := 1.8
+const JUMP_TELEGRAPH := 0.8
+const JUMP_SECONDS := 0.75
+const JUMP_DAMAGE := 10
+const HANG_TELEGRAPH := 0.6
+const HANG_DROP := 0.45
+const HANG_SWING := 3.0
+const HANG_UP := 0.45
+const HANG_ROPE := 1.0 # Thread length to the abdomen tip at the bottom of the drop.
+const HANG_AMPLITUDE := 0.5 # rad (~29 degrees).
+const HANG_PERIOD := 2.2
+const HANG_DAMAGE := 8
+const HANG_FAN_AT := [1.0] # Swing seconds at which a fan leaves the mouth (hang_fan: two).
+const HANG_COMBO_FAN_AT := [0.8, 2.2]
+const NET_IN_PHASE_1 := true
+const TRAP_FOLLOW_UP := 0.15 ## Seconds after a trap before the follow-up fan starts its warning.
+const SPIT_EVERY := 0.9 ## While it stalks or crawls it spits a single aimed web shot this often...
+const SPIT_WARNING := 0.45 ## ...after the mouth glows this long.
 const EXPOSE_SECONDS := 1.8
 const EXPOSE_MULTIPLIER := 2.0
 const SUMMON_COOLDOWN := 14.0
@@ -112,7 +144,8 @@ const FREED_WALK_SECONDS := 3.4
 var state := State.APPROACH
 var camera: Camera3D
 var target: BeePlayer
-var side := 1.0 # +1 right of the camera centre, -1 left (after a charge).
+var side := 1.0 # +1: it stands right of Bee and faces left (towards her); -1: the other way.
+var mode := &"ground" # &"ground", &"ceiling", &"hang", &"air" (jumping).
 var visual_root: Node3D
 var model: Node3D
 var body_hurtbox: DamageHurtbox3D
@@ -132,6 +165,7 @@ var honey_spawned := 0
 var summons := 0
 var minions_alive := 0 # Written by the level director.
 var fired_fan := 0
+var fans := 0
 var stomps := 0
 var threads := 0
 var charges := 0
@@ -140,19 +174,32 @@ var spiders_dropped := 0
 var exposures := 0
 var exposed_damage := 0
 var legs_absorbed := 0
+var jumps := 0
+var hangs := 0
+var crawls := 0
+var stalks := 0
+var nets := 0
+var traps := 0
+var combos := 0
+var modes_seen := {}
 var implant_exposed := false
 var legs_armoured := false
-var thread_nodes: Array[Dictionary] = [] # {"line", "box", "x", "active"} (bot reads x / active).
+var thread_nodes: Array[Dictionary] = [] # {"line", "box", "x", "active"} (Lote 12 threads; bot reads x / active).
 var curtain_gaps: Array[float] = [] # Gap centres (world Y) of the last curtain.
 var charge_band: Vector2 = Vector2(GROUND_Y, CHARGE_TOP)
 var charge_dir := -1.0
+var jump_band := [Vector3.ZERO, Vector3.ZERO] # Body centre at take-off and landing (warning band; bot reads it).
+var hang_pivot_x := 0.0 # X of the thread while it drops / swings (bot reads it).
+var net_line := [Vector3.ZERO, Vector3.ZERO] # Mouth -> locked point of the net warning (bot reads it).
+var web_net: TarantulaWebNet
+var _web_immune_left := 0.0
 var _next_state := State.PHASE_1
 var _state_time := 0.0
 var _step := &"cooldown"
 var _left := 0.8
 var _pattern_index := 0
 var _bob := 0.0
-var _home_x := 0.0
+var _goal_x := 0.0
 var _charge_from := 0.0
 var _charge_to := 0.0
 var _charges_left := 0
@@ -173,6 +220,22 @@ var _contact_refresh := 0.0
 var _freed_left := 0.0
 var _rng := RandomNumberGenerator.new() # Seeded: every fight plays the same (bot measurements are reproducible).
 var summons_this_phase := 0
+var _tilt := 0.0
+var _flip := 0.0 # 0 on the ground, PI upside down on the ceiling (lerped during a jump).
+var _swing := 0.0
+var _jump_from := Vector3.ZERO
+var _jump_to := Vector3.ZERO
+var _jump_to_mode := &"ground"
+var _jump_fan := false
+var _hang_t := 0.0
+var _hang_rope := 0.0
+var _hang_fans: Array = []
+var _hang_line: MeshInstance3D
+var _net_aim: MeshInstance3D
+var _follow_up := false
+var follow_ups := 0
+var spits := 0
+var _spit_clock := 0.0
 
 
 func _ready() -> void:
@@ -193,9 +256,9 @@ func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 	camera = stage_camera
 	target = bee
 	side = 1.0
-	_home_x = _cam_x() + ANCHOR_DX
+	mode = &"ground"
 	global_position = Vector3(_cam_x() + _half_width() + 4.5, GROUND_Y, 0.0)
-	_face()
+	_apply_pose()
 	state = State.APPROACH
 	_state_time = 0.0
 	_play(&"walk")
@@ -233,12 +296,33 @@ func health_bar_visible() -> bool:
 func freeze() -> void:
 	set_physics_process(false)
 	contact.set_enabled(false)
+	_charge_box.set_enabled(false)
 	for thread in thread_nodes:
 		(thread["box"] as DamageHitbox3D).set_enabled(false)
 	for node in get_tree().get_nodes_in_group("tarantula_hazards"):
-		node.set_physics_process(false)
+		if node is TarantulaWebNet:
+			node.call("dismiss")
+		else:
+			node.set_physics_process(false)
 	if _anim != null:
 		_anim.pause()
+
+
+## LOTE 15: no net can trap Bee while she is stuck or during the grace after it (nothing chains the trap).
+func web_immune() -> bool:
+	return _web_immune_left > 0.0 or (is_instance_valid(target) and target.web_locked)
+
+
+func on_web_trapped(_net: TarantulaWebNet) -> void:
+	traps += 1
+	_web_immune_left = TarantulaWebNet.TRAP_SECONDS + TarantulaWebNet.GRACE_SECONDS
+	if _step == &"cooldown" and is_active() and state != State.TRANSITION:
+		_follow_up = true # The trap sets up an aimed fan right away: breaking free fast (shots + keys) dodges it.
+		_left = minf(_left, TRAP_FOLLOW_UP)
+
+
+func on_web_released(_net: TarantulaWebNet) -> void:
+	_web_immune_left = TarantulaWebNet.GRACE_SECONDS
 
 
 func _cam_x() -> float:
@@ -249,18 +333,54 @@ func _half_width() -> float:
 	return BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
 
 
-## World offset of a model-space X (forward -X) on the current side.
+func _ceiling_y() -> float:
+	return BeeLevel01Framing.top_y() + CEILING_MARGIN
+
+
+## World offset of a model-space X (forward -X) on the current side (ground pose).
 func _mx(x: float) -> float:
 	return x * side * MODEL_SCALE
 
 
+## World position of a model-space point in the current pose (ground, upside down, hanging, mid-jump).
 func _world(part: Vector2) -> Vector3:
-	return global_position + Vector3(_mx(part.x), part.y * MODEL_SCALE, 0.0)
+	return global_position + visual_root.basis * Vector3(part.x * MODEL_SCALE, part.y * MODEL_SCALE, 0.0)
+
+
+## The pose basis: facing (yaw), upside down (flip about X), roll (hanging head down + swing, rear-up tilt).
+func _pose_basis(face: float, flip: float, roll: float) -> Basis:
+	return Basis(Vector3.BACK, roll) * Basis(Vector3.RIGHT, flip) * Basis(Vector3.UP, 0.0 if face > 0.0 else PI)
+
+
+func _apply_pose() -> void:
+	var roll := _tilt * side
+	if mode == &"hang":
+		roll = side * PI * 0.5 + _swing
+	visual_root.basis = _pose_basis(side, _flip if mode != &"hang" else 0.0, roll)
+	_place_areas()
 
 
 func _face() -> void:
-	visual_root.rotation.y = 0.0 if side > 0.0 else PI
-	_place_areas()
+	_apply_pose()
+
+
+## Turns towards Bee (hysteresis: it does not flicker when she is right above or below it).
+func _face_bee() -> void:
+	if target == null:
+		return
+	var dx := global_position.x - target.global_position.x
+	if absf(dx) > 1.2 and signf(dx) != side:
+		side = signf(dx)
+
+
+func _body_centre_at(root: Vector3, at_mode: StringName, face: float) -> Vector3:
+	var flip := PI if at_mode == &"ceiling" else 0.0
+	return root + _pose_basis(face, flip, 0.0) * Vector3(BODY_CENTRE.x * MODEL_SCALE, BODY_CENTRE.y * MODEL_SCALE, 0.0)
+
+
+func _clamp_x(x: float) -> float:
+	var half := _half_width() - SCREEN_INSET
+	return clampf(x, _cam_x() - half, _cam_x() + half)
 
 
 # --- main loop ----------------------------------------------------------------------------------------------------------
@@ -268,17 +388,18 @@ func _face() -> void:
 func _physics_process(delta: float) -> void:
 	var easy := BeeGameSettings.difficulty == BeeGameSettings.EASY
 	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (EASY_HULL_DPS_RATIO if easy else HULL_DPS_RATIO) * delta)
+	_web_immune_left = maxf(0.0, _web_immune_left - delta)
 	_state_time += delta
 	match state:
 		State.APPROACH:
 			var t := clampf(_state_time / APPROACH_SECONDS, 0.0, 1.0)
 			var start := _cam_x() + _half_width() + 4.5
-			_home_x = _cam_x() + ANCHOR_DX
-			global_position.x = lerpf(start, _home_x, 1.0 - pow(1.0 - t, 2.0))
+			global_position.x = lerpf(start, _cam_x() + ANCHOR_DX, 1.0 - pow(1.0 - t, 2.0))
 			if t >= 1.0:
 				_enter_fight()
 		State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4:
 			fight_seconds += delta
+			modes_seen[mode] = true
 			_update_expose(delta)
 			_update_threads(delta)
 			_attack(delta)
@@ -286,17 +407,18 @@ func _physics_process(delta: float) -> void:
 		State.TRANSITION:
 			fight_seconds += delta
 			_update_threads(delta)
-			visual_root.rotation.z = 0.12 * sin(clampf(_state_time / TRANSITION_SECONDS, 0.0, 1.0) * PI) * side # Rears up.
+			_tilt = 0.12 * sin(clampf(_state_time / TRANSITION_SECONDS, 0.0, 1.0) * PI) # Rears up.
 			if _state_time >= TRANSITION_SECONDS:
-				visual_root.rotation.z = 0.0
+				_tilt = 0.0
 				_change_state(_next_state)
 				_step = &"cooldown"
 				_left = 0.6
 		State.FREED:
 			_freed_left -= delta
-			global_position.x += side * 2.6 * delta # Calm walk away towards its edge.
+			global_position.x += signf(global_position.x - _cam_x() + 0.001) * 2.6 * delta # Calm walk away towards its edge.
 			if _freed_left <= 0.0:
 				_finish()
+	_apply_pose()
 
 
 func _enter_fight() -> void:
@@ -316,7 +438,7 @@ func _change_state(value: int) -> void:
 	_state_time = 0.0
 	if value in [State.PHASE_1, State.PHASE_2, State.PHASE_3, State.PHASE_4] and not (value in phases_seen):
 		phases_seen.append(value)
-		_pattern_index = 0 # Every phase opens with its signature attack (threads, charge, curtain).
+		_pattern_index = 0 # Every phase opens with its signature move.
 		if value == State.PHASE_2:
 			_armour_legs()
 		elif value == State.PHASE_3:
@@ -331,18 +453,26 @@ func _tuning() -> Array:
 	return PHASE_TUNING.get(state, PHASE_TUNING[State.PHASE_1])
 
 
-## Idle: a slow sway around its home on its side (never towards Bee's half).
+## Between attacks it never stands still: on the ground it drifts towards Bee's zone, on the ceiling it follows her from above.
 func _idle_move(delta: float) -> void:
 	_bob += delta
-	var cam_x := _cam_x()
-	_home_x = cam_x + side * ANCHOR_DX
-	var goal := _home_x + side * sin(_bob * 0.7) * MOVE_X
-	global_position.x = move_toward(global_position.x, goal, 1.6 * delta)
-	_play(&"walk" if absf(goal - global_position.x) > 0.05 else &"idle")
+	_face_bee()
+	if target == null:
+		return
+	if mode == &"ceiling":
+		var goal := _clamp_x(target.global_position.x + sin(_bob * 1.3) * 0.8)
+		global_position.x = move_toward(global_position.x, goal, 1.4 * delta)
+		global_position.y = _ceiling_y()
+	else:
+		var goal := _clamp_x(target.global_position.x + side * (STALK_GAP + 0.6) + sin(_bob * 0.9) * 0.7)
+		global_position.x = move_toward(global_position.x, goal, 1.6 * delta)
+		global_position.y = GROUND_Y
+		_play(&"walk" if absf(goal - global_position.x) > 0.05 else &"idle")
 
 
 func _refresh_contact(delta: float) -> void:
-	if _step == &"charge_run":
+	if _step in [&"charge_run", &"jump_run", &"hang_drop", &"hang_swing", &"hang_up"]:
+		contact.set_enabled(false)
 		return
 	_contact_refresh -= delta
 	if _contact_refresh <= 0.0:
@@ -368,6 +498,16 @@ func _attack(delta: float) -> void:
 					summon_requested.emit(SUMMON_FAMILY, MAX_MINIONS - minions_alive)
 					BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.3)
 				_start_attack()
+		&"stalk", &"crawl":
+			var speed := CRAWL_SPEED if _step == &"crawl" else STALK_SPEED
+			_face_bee()
+			_goal_x = _clamp_x(target.global_position.x + (0.0 if _step == &"crawl" else side * STALK_GAP))
+			global_position.x = move_toward(global_position.x, _goal_x, speed * delta)
+			_play(&"walk" if absf(global_position.x - _goal_x) > 0.05 else &"idle")
+			_update_spit(delta)
+			if _left <= 0.0:
+				_mouth_glow.scale = Vector3.ONE * 0.01
+				_end_attack(-0.5)
 		&"fan_tele":
 			_mouth_glow.scale = Vector3.ONE * lerpf(0.4, 1.6, 1.0 - _left / FAN_TELEGRAPH)
 			_mouth_glow.global_position = _world(MOUTH)
@@ -375,12 +515,23 @@ func _attack(delta: float) -> void:
 				_mouth_glow.scale = Vector3.ONE * 0.01
 				_fire_fan()
 				_end_attack()
-		&"stomp_tele":
-			visual_root.rotation.z = 0.16 * sin(clampf(1.0 - _left / STOMP_TELEGRAPH, 0.0, 1.0) * PI * 0.5) * side
+		&"net_tele":
+			_mouth_glow.global_position = _world(MOUTH)
+			_mouth_glow.scale = Vector3.ONE * lerpf(0.3, 1.1, 1.0 - _left / TarantulaWebNet.WARNING)
+			net_line = [_world(MOUTH), target.global_position]
+			if is_instance_valid(_net_aim):
+				BeeAttackVisuals.place_line(_net_aim, net_line[0], net_line[0] + (net_line[1] - net_line[0]).normalized() * 14.0)
 			if _left <= 0.0:
-				visual_root.rotation.z = 0.0
+				_mouth_glow.scale = Vector3.ONE * 0.01
 				_clear_warnings()
-				_stamp()
+				_fire_net()
+				_end_attack()
+		&"stomp_tele":
+			_tilt = 0.16 * sin(clampf(1.0 - _left / STOMP_TELEGRAPH, 0.0, 1.0) * PI * 0.5)
+			if _left <= 0.0:
+				_tilt = 0.0
+				_clear_warnings()
+				_stamp(STOMP_TELEGRAPH)
 				_end_attack()
 		&"threads_tele":
 			if _left <= 0.0:
@@ -403,11 +554,10 @@ func _attack(delta: float) -> void:
 				BeeCameraShake.kick(self, 0.05, 0.3)
 		&"charge_run":
 			global_position.x = move_toward(global_position.x, _charge_to, CHARGE_SPEED * delta)
-			_charge_box.global_position = _world(BODY_CENTRE) - Vector3(0.0, 0.25, 0.0)
+			_place_hazard_box()
 			if is_equal_approx(global_position.x, _charge_to):
 				_charge_box.set_enabled(false)
 				side = -side # It ends on the other side, facing back into the screen.
-				_face()
 				_charges_left -= 1
 				_expose_implant()
 				if _charges_left > 0:
@@ -419,22 +569,105 @@ func _attack(delta: float) -> void:
 				_clear_warnings()
 				_fire_curtain()
 				_end_attack()
+		&"jump_tele":
+			_tilt = -0.18 * smoothstep(0.0, 1.0, 1.0 - _left / JUMP_TELEGRAPH) # Crouches.
+			if _jump_fan:
+				_mouth_glow.global_position = _world(MOUTH)
+				_mouth_glow.scale = Vector3.ONE * lerpf(0.4, 1.6, 1.0 - _left / JUMP_TELEGRAPH)
+			if _left <= 0.0:
+				_tilt = 0.0
+				_clear_warnings()
+				if _jump_fan:
+					_mouth_glow.scale = Vector3.ONE * 0.01
+					_fire_fan(JUMP_TELEGRAPH)
+				hazards.append({"kind": &"jump", "telegraph": JUMP_TELEGRAPH})
+				jumps += 1
+				mode = &"air"
+				_step = &"jump_run"
+				_left = JUMP_SECONDS
+				_charge_box.damage = JUMP_DAMAGE
+				_charge_box.set_enabled(true)
+				contact.set_enabled(false)
+				BeeAudio.play(get_parent(), &"organic_charge", global_position, 0.8)
+		&"jump_run":
+			var t := clampf(1.0 - _left / JUMP_SECONDS, 0.0, 1.0)
+			global_position = _jump_from.lerp(_jump_to, smoothstep(0.0, 1.0, t))
+			_flip = lerpf(0.0 if _jump_to_mode == &"ceiling" else PI, PI if _jump_to_mode == &"ceiling" else 0.0, t)
+			_apply_pose()
+			_place_hazard_box()
+			if _left <= 0.0:
+				_charge_box.set_enabled(false)
+				mode = _jump_to_mode
+				_flip = PI if mode == &"ceiling" else 0.0
+				global_position = _jump_to
+				_face_bee()
+				if mode == &"ground":
+					_stamp(JUMP_TELEGRAPH) # The landing shakes the ground (warned by the landing shadow).
+				else:
+					BeeCombatVFX.spawn(get_parent(), _world(BODY_CENTRE), &"rock_break", Vector3.DOWN, 1.4)
+				_end_attack(0.1)
+		&"hang_tele":
+			if _left <= 0.0:
+				_clear_warnings()
+				hazards.append({"kind": &"swing", "telegraph": HANG_TELEGRAPH})
+				hangs += 1
+				mode = &"hang"
+				_swing = 0.0
+				_hang_rope = 0.0
+				_step = &"hang_drop"
+				_left = HANG_DROP
+				_charge_box.damage = HANG_DAMAGE
+				_charge_box.set_enabled(true)
+				_hang_line = BeeAttackVisuals.line(get_parent(), Vector3(hang_pivot_x, _ceiling_y() + 0.5, 0.0), Vector3(hang_pivot_x, _ceiling_y(), 0.0), 0.05, Color(0.96, 0.96, 0.9, 0.9))
+				BeeAudio.play(get_parent(), &"spider_drop", global_position, 0.7)
+		&"hang_drop", &"hang_swing", &"hang_up":
+			_update_hang(delta)
 
 
+## The next pattern move. If it needs the other surface, a corner-to-corner jump comes first (the move waits for it).
 func _start_attack() -> void:
 	var pattern: Array = PATTERNS.get(state, PATTERNS[State.PHASE_1])
 	var kind: StringName = pattern[_pattern_index % pattern.size()]
-	_pattern_index += 1
-	if not thread_nodes.is_empty() and kind in [&"stomp", &"charge", &"double_charge", &"curtain"]:
-		kind = &"fan" # Never a second lane-closing attack while threads still sweep (under them = low, over a charge = high).
+	if _follow_up:
+		_follow_up = false
+		_start_follow_up()
+		return
+	var needs := &"ground" if kind in GROUND_MOVES else (&"ceiling" if kind in CEILING_MOVES else &"")
+	if needs != &"" and needs != mode:
+		kind = &"jump"
+	else:
+		_pattern_index += 1
+	if kind == &"net" and (web_immune() or not (NET_IN_PHASE_1 or state != State.PHASE_1)):
+		kind = &"fan" # Nothing chains the trap: no new net while Bee is stuck or in her grace.
+	if not thread_nodes.is_empty() and kind in [&"stomp", &"charge", &"double_charge", &"curtain", &"charge_spiders"]:
+		kind = &"fan"
 	attacks_started += 1
 	attack_kind = kind
+	if kind in COMBOS:
+		combos += 1
 	_play(&"attack")
 	match kind:
+		&"stalk":
+			stalks += 1
+			_step = &"stalk"
+			_left = STALK_SECONDS
+			_spit_clock = 0.0
+		&"crawl":
+			crawls += 1
+			_spit_clock = 0.0
+			_step = &"crawl"
+			_left = CRAWL_SECONDS
 		&"fan":
 			_step = &"fan_tele"
 			_left = FAN_TELEGRAPH
 			BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 0.8)
+		&"net":
+			_step = &"net_tele"
+			_left = TarantulaWebNet.WARNING
+			net_line = [_world(MOUTH), target.global_position]
+			_net_aim = BeeAttackVisuals.line(get_parent(), net_line[0], net_line[1], 0.05, Color(0.96, 0.96, 0.9, 0.45))
+			_warnings.append(_net_aim)
+			BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 1.1)
 		&"stomp":
 			_step = &"stomp_tele"
 			_left = STOMP_TELEGRAPH
@@ -446,27 +679,35 @@ func _start_attack() -> void:
 			_end_attack(0.4)
 		&"threads":
 			_step = &"threads_tele"
-			_left = THREAD_TELEGRAPH
+			_left = 0.75
 			_prepare_threads()
 		&"charge", &"double_charge":
 			_charges_left = 2 if kind == &"double_charge" else 1
+			_begin_charge()
+		&"charge_spiders":
+			_drop_spiders() # Spiders on Bee's column while the band below warns: fly above the band, beside the threads.
+			_charges_left = 1
 			_begin_charge()
 		&"curtain":
 			_step = &"curtain_tele"
 			_left = CURTAIN_TELEGRAPH
 			_prepare_curtain()
+		&"jump", &"jump_fan":
+			_begin_jump(kind == &"jump_fan")
+		&"hang", &"hang_fan":
+			_begin_hang(kind == &"hang_fan")
 
 
 func _end_attack(extra := 0.0) -> void:
-	if attack_kind in BIG_ATTACKS and attack_kind != &"charge" and attack_kind != &"double_charge":
+	if attack_kind in BIG_ATTACKS:
 		_expose_implant() # Charges expose it on landing (see charge_run).
 	_step = &"cooldown"
-	_left = float(_tuning()[0]) + extra
+	_left = maxf(0.2, float(_tuning()[0]) + extra)
 	attack_kind = &"none"
 
 
 # Web fan from the mouth, centred on Bee.
-func _fire_fan() -> void:
+func _fire_fan(telegraph := FAN_TELEGRAPH) -> void:
 	if target == null:
 		return
 	var origin := _world(MOUTH)
@@ -475,7 +716,8 @@ func _fire_fan() -> void:
 	var base := atan2(to_bee.y, to_bee.x)
 	var count := int(_tuning()[1])
 	var step := deg_to_rad(float(_tuning()[2]))
-	hazards.append({"kind": &"fan", "telegraph": FAN_TELEGRAPH})
+	hazards.append({"kind": &"fan", "telegraph": telegraph})
+	fans += 1
 	for i in count:
 		var angle := base + step * (float(i) - float(count - 1) * 0.5)
 		_spawn_web(origin, Vector3(cos(angle), sin(angle), 0.0), FAN_SPEED)
@@ -499,15 +741,25 @@ func _spawn_web(origin: Vector3, direction: Vector3, speed: float, lifetime := 3
 	return projectile
 
 
-func _stamp() -> void:
+## LOTE 15: the trapping net leaves along the line locked at the end of its warning.
+func _fire_net() -> void:
+	nets += 1
+	hazards.append({"kind": &"net", "telegraph": TarantulaWebNet.WARNING})
+	var origin := Vector3(net_line[0].x, net_line[0].y, 0.0)
+	var direction: Vector3 = net_line[1] - origin
+	web_net = TarantulaWebNet.launch(get_parent(), self, target, origin, direction if direction.length() > 0.01 else Vector3(-side, 0.0, 0.0))
+	BeeAudio.play(get_parent(), &"spider_retract", origin, 0.7)
+
+
+func _stamp(telegraph: float) -> void:
 	stomps += 1
-	hazards.append({"kind": &"stomp", "telegraph": STOMP_TELEGRAPH})
+	hazards.append({"kind": &"stomp", "telegraph": telegraph})
 	var half := _half_width()
-	var front := _world(Vector2(-2.0, 0.0)).x
-	var back := _world(Vector2(2.6, 0.0)).x
+	var front := global_position.x - side * 1.6
+	var back := global_position.x + side * 2.1
 	BeeGroundShockwave.launch(get_parent(), self, front, _cam_x() - side * (half + 1.0), STOMP_DAMAGE, STOMP_SPEED, STOMP_HEIGHT)
 	BeeGroundShockwave.launch(get_parent(), self, back, _cam_x() + side * (half + 1.0), STOMP_DAMAGE, STOMP_SPEED, STOMP_HEIGHT)
-	BeeCombatVFX.spawn(get_parent(), _world(Vector2(-1.6, 0.2)) + Vector3(0, 0, 0.4), &"rock_break", Vector3.UP, 2.0)
+	BeeCombatVFX.spawn(get_parent(), Vector3(global_position.x - side * 1.3, 0.2, 0.4), &"rock_break", Vector3.UP, 2.0)
 	BeeCameraShake.kick(self, 0.06, 0.3)
 	BeeAudio.play(get_parent(), &"human_step", global_position, 1.1)
 
@@ -517,7 +769,7 @@ func _drop_spiders() -> void:
 	var half := _half_width()
 	var top := BeeLevel01Framing.top_y() + 0.6
 	for i in count:
-		# The first one on Bee's column, the others beside it (inside Bee's half of the screen).
+		# The first one on Bee's column, the others beside it.
 		var x := target.global_position.x + (0.0 if i == 0 else (2.4 * float((i + 1) / 2) * (1.0 if i % 2 == 1 else -1.0)))
 		x = clampf(x, _cam_x() - half + 0.8, _cam_x() + half - 0.8)
 		var hang := clampf(target.global_position.y + _rng.randf_range(-0.6, 0.6), 1.4, BeeLevel01Framing.top_y() - 1.2)
@@ -530,13 +782,113 @@ func _drop_spiders() -> void:
 		hazards.append({"kind": &"spider", "telegraph": TarantulaDropSpider.TELEGRAPH})
 
 
-# --- threads (phase 2+) ------------------------------------------------------------------------------------------------
+# --- LOTE 15: jumps, the pendulum ---------------------------------------------------------------------------------------
+
+## Diagonal jump to the opposite corner (ground <-> ceiling): the band along the path and the landing shadow warn it.
+func _begin_jump(with_fan: bool) -> void:
+	_step = &"jump_tele"
+	_left = JUMP_TELEGRAPH
+	_jump_fan = with_fan
+	_jump_from = global_position
+	_jump_to_mode = &"ground" if mode == &"ceiling" else &"ceiling"
+	var corner := -signf(global_position.x - _cam_x() + 0.001) # The opposite half of the screen.
+	var to_x := _cam_x() + corner * ANCHOR_DX
+	_jump_to = Vector3(to_x, GROUND_Y if _jump_to_mode == &"ground" else _ceiling_y(), 0.0)
+	var land_face := signf(to_x - target.global_position.x) if target != null else -corner
+	jump_band = [_world(BODY_CENTRE), _body_centre_at(_jump_to, _jump_to_mode, land_face if land_face != 0.0 else -corner)]
+	_warnings.append(BeeAttackVisuals.line(get_parent(), jump_band[0], jump_band[1], BODY_SIZE.y * MODEL_SCALE, Color(1.0, 0.3, 0.2, 0.22)))
+	if _jump_to_mode == &"ground":
+		_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(to_x, 0.03, 0.0), 1.8, Color(0.05, 0.02, 0.02, 0.55)))
+	else:
+		var top := BeeLevel01Framing.top_y() - 0.15
+		_warnings.append(BeeAttackVisuals.line(get_parent(), Vector3(to_x - 1.8, top, 0.0), Vector3(to_x + 1.8, top, 0.0), 0.3, Color(0.05, 0.02, 0.02, 0.6)))
+	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.75)
+
+
+## From the ceiling it drops on a thread (the thread is drawn first), swings as a pendulum and climbs back.
+func _begin_hang(combo: bool) -> void:
+	_step = &"hang_tele"
+	_left = HANG_TELEGRAPH
+	hang_pivot_x = _clamp_x(_world(ATTACH).x) # The abdomen tip, where the thread comes out.
+	_hang_fans = (HANG_COMBO_FAN_AT if combo else HANG_FAN_AT).duplicate()
+	_hang_t = 0.0
+	var top := _ceiling_y()
+	var bottom := top - HANG_ROPE - (ATTACH.x - MOUTH.x) * MODEL_SCALE
+	var warn := BeeAttackVisuals.line(get_parent(), Vector3(hang_pivot_x, top, 0.0), Vector3(hang_pivot_x, bottom, 0.0), 0.08, Color(1.0, 0.62, 0.2, 0.5))
+	_warnings.append(warn)
+	BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 0.6)
+
+
+func _update_hang(delta: float) -> void:
+	_hang_t += delta
+	var pivot := Vector3(hang_pivot_x, _ceiling_y(), 0.0)
+	match _step:
+		&"hang_drop":
+			_hang_rope = HANG_ROPE * smoothstep(0.0, 1.0, 1.0 - _left / HANG_DROP)
+			_swing = 0.0
+			if _left <= 0.0:
+				_step = &"hang_swing"
+				_left = HANG_SWING
+				_hang_t = 0.0
+				_charge_box.set_enabled(false)
+				_charge_box.set_enabled(true) # One more hit allowed for the swing itself.
+		&"hang_swing":
+			_hang_rope = HANG_ROPE
+			_swing = HANG_AMPLITUDE * sin(_hang_t * TAU / HANG_PERIOD)
+			if not _hang_fans.is_empty():
+				var at := float(_hang_fans[0])
+				var glow := clampf(1.0 - (at - _hang_t) / FAN_TELEGRAPH, 0.0, 1.0)
+				_mouth_glow.scale = Vector3.ONE * (0.01 if _hang_t < at - FAN_TELEGRAPH else lerpf(0.4, 1.6, glow))
+				if _hang_t >= at:
+					_hang_fans.pop_front()
+					_mouth_glow.scale = Vector3.ONE * 0.01
+					_fire_fan(minf(FAN_TELEGRAPH, at))
+			if _left <= 0.0:
+				_step = &"hang_up"
+				_left = HANG_UP
+		&"hang_up":
+			_swing = lerpf(_swing, 0.0, clampf(delta * 8.0, 0.0, 1.0))
+			_hang_rope = HANG_ROPE * smoothstep(0.0, 1.0, _left / HANG_UP)
+			if _left <= 0.0:
+				_end_hang()
+				_end_attack(-0.2)
+				return
+	_mouth_glow.global_position = _world(MOUTH)
+	# The abdomen tip hangs from the pivot on the rope; the body follows the swing angle.
+	var tip := pivot + Vector3(sin(_swing), -cos(_swing), 0.0) * _hang_rope
+	_apply_pose()
+	global_position = tip - visual_root.basis * Vector3(ATTACH.x * MODEL_SCALE, ATTACH.y * MODEL_SCALE, 0.0)
+	_apply_pose()
+	_place_hazard_box()
+	if is_instance_valid(_hang_line):
+		BeeAttackVisuals.place_line(_hang_line, pivot + Vector3(0.0, 0.5, 0.0), tip)
+
+
+## Back on the ceiling (end of the swing, a phase change or the liberation).
+func _end_hang() -> void:
+	_charge_box.set_enabled(false)
+	_mouth_glow.scale = Vector3.ONE * 0.01
+	if is_instance_valid(_hang_line):
+		_hang_line.queue_free()
+	_hang_line = null
+	if mode == &"hang":
+		mode = &"ceiling"
+		_swing = 0.0
+		_flip = PI
+		global_position = Vector3(_clamp_x(hang_pivot_x - _mx(ATTACH.x)), _ceiling_y(), 0.0)
+		_apply_pose()
+
+
+func _place_hazard_box() -> void:
+	_charge_box.global_transform = Transform3D(visual_root.basis.orthonormalized(), _world(BODY_CENTRE))
+
+
+# --- threads (Lote 12; kept for reference, not in the patterns) ---------------------------------------------------------
 
 func _prepare_threads() -> void:
 	_clear_threads()
 	var top := BeeLevel01Framing.top_y() + 0.4
 	for i in THREAD_COUNT:
-		# Hanging just in front of it, then they sweep across the screen towards the far edge.
 		var x := _world(Vector2(-2.4, 0.0)).x - side * THREAD_SPACING * float(i)
 		var line := BeeAttackVisuals.line(get_parent(), Vector3(x, top, 0.0), Vector3(x, THREAD_BOTTOM, 0.0), 0.06, Color(1.0, 0.62, 0.2, 0.4))
 		var shape := BoxShape3D.new()
@@ -549,7 +901,7 @@ func _prepare_threads() -> void:
 
 
 func _release_threads() -> void:
-	hazards.append({"kind": &"threads", "telegraph": THREAD_TELEGRAPH})
+	hazards.append({"kind": &"threads", "telegraph": 0.75})
 	for thread in thread_nodes:
 		thread["active"] = true
 		(thread["line"] as MeshInstance3D).mesh.material = BeeAttackVisuals.material(Color(0.95, 0.95, 0.9, 0.9))
@@ -582,17 +934,22 @@ func _clear_threads() -> void:
 		_free_thread(thread)
 
 
-# --- charge (phase 3+) -------------------------------------------------------------------------------------------------
+# --- charge ------------------------------------------------------------------------------------------------------------
 
 var _charge_box: DamageHitbox3D
 
 
+## Ground rush across Bee's zone to the far corner (the band shows the lane: fly above it).
 func _begin_charge() -> void:
+	_face_bee()
 	_step = &"charge_tele"
 	_left = CHARGE_TELEGRAPH
 	_charge_from = global_position.x
 	charge_dir = -side
 	_charge_to = _cam_x() - side * ANCHOR_DX
+	if absf(_charge_to - global_position.x) < 3.0:
+		_charge_to = _cam_x() - side * (_half_width() - SCREEN_INSET + 0.8)
+	_charge_box.damage = CHARGE_DAMAGE
 	var half := _half_width()
 	charge_band = Vector2(GROUND_Y, CHARGE_TOP)
 	var band := BeeAttackVisuals.line(get_parent(), Vector3(_cam_x() - half - 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0),
@@ -611,7 +968,7 @@ func _prepare_curtain() -> void:
 	var first := clampf(target.global_position.y + _rng.randf_range(-1.2, 1.2), low + CURTAIN_GAP, high - CURTAIN_GAP)
 	var second := low + CURTAIN_GAP * 0.6 if first > (low + high) * 0.5 else high - CURTAIN_GAP * 0.6
 	curtain_gaps = [first, second]
-	var x := _world(Vector2(-2.2, 0.0)).x
+	var x := _world(MOUTH).x
 	var y := low
 	while y <= high:
 		if not _in_gap(y):
@@ -632,11 +989,12 @@ func _fire_curtain() -> void:
 	hazards.append({"kind": &"curtain", "telegraph": CURTAIN_TELEGRAPH})
 	var low := BeeLevel01Framing.bottom_y() + 0.9
 	var high := BeeLevel01Framing.top_y() - 0.6
-	var x := _world(Vector2(-2.2, 0.0)).x
+	var x := _world(MOUTH).x
+	var dir := signf(target.global_position.x - x) if target != null else -side
 	var y := low
 	while y <= high:
 		if not _in_gap(y):
-			_spawn_web(Vector3(x, y, 0.0), Vector3(-side, 0.0, 0.0), CURTAIN_SPEED, 4.2)
+			_spawn_web(Vector3(x, y, 0.0), Vector3(dir if dir != 0.0 else -side, 0.0, 0.0), CURTAIN_SPEED, 4.2)
 		y += CURTAIN_STEP
 	BeeAudio.play(get_parent(), &"spider_retract", global_position, 0.9)
 
@@ -707,8 +1065,8 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		wanted = State.PHASE_2
 	wanted = mini(wanted, state + 1) # One phase at a time.
 	if wanted > state:
-		if _step == &"charge_run":
-			return # Never stops in the middle of a rush; the phase changes when it lands.
+		if _step == &"charge_run" or _step == &"jump_run":
+			return # Never stops in the middle of a rush or a jump; the phase changes when it lands.
 		_next_state = wanted
 		transitions += 1
 		_cancel_attack()
@@ -719,13 +1077,19 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 func _cancel_attack() -> void:
 	_clear_warnings()
 	_mouth_glow.scale = Vector3.ONE * 0.01
-	visual_root.rotation.z = 0.0
+	_tilt = 0.0
 	if _charge_box != null:
 		_charge_box.set_enabled(false)
+	if mode == &"hang":
+		_end_hang()
+	elif mode == &"air":
+		mode = _jump_to_mode
+		_flip = PI if mode == &"ceiling" else 0.0
+		global_position = _jump_to
 	_charges_left = 0
 	_step = &"cooldown"
 	attack_kind = &"none"
-	# A charge that was only warned leaves it where it backed up to: walk home normally.
+	# A charge that was only warned leaves it where it backed up to: it walks on normally.
 
 
 func _clear_warnings() -> void:
@@ -780,9 +1144,9 @@ func limit_hull_damage(amount: int, source: DamageHitbox3D) -> int:
 func _free_tarantula() -> void:
 	if is_defeated():
 		return
+	_cancel_attack()
 	state = State.FREED
 	_close_implant()
-	_cancel_attack()
 	_clear_threads()
 	health.damage_blocked = true
 	contact.set_enabled(false)
@@ -802,6 +1166,7 @@ func _free_tarantula() -> void:
 	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 1.4)
 	BeeCameraShake.kick(self, 0.08, 0.4)
 	_freed_left = FREED_WALK_SECONDS
+	side = -signf(global_position.x - _cam_x() + 0.001) # Faces the edge it walks to.
 	_play(&"walk")
 	liberated_now.emit(self)
 	phase_changed.emit(state)
@@ -833,6 +1198,8 @@ func live_spiders() -> Array:
 func _exit_tree() -> void:
 	_clear_warnings()
 	_clear_threads()
+	if is_instance_valid(_hang_line):
+		_hang_line.queue_free()
 
 
 # --- building ------------------------------------------------------------------------------------------------------------
@@ -884,7 +1251,7 @@ func _build_areas() -> void:
 	contact.set_enabled(false)
 	contact.hit_confirmed.connect(func(h: DamageHurtbox3D, applied: int): if h.owner_entity is BeePlayer: untelegraphed_damage += applied)
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(BODY_SIZE.x * MODEL_SCALE, (CHARGE_TOP - GROUND_Y) * 0.9, 1.2)
+	shape.size = Vector3(BODY_SIZE.x * MODEL_SCALE, BODY_SIZE.y * MODEL_SCALE * 1.1, 1.2)
 	_charge_box = BeeAttackVisuals.hazard_area(self, self, CHARGE_DAMAGE, shape)
 	_charge_box.top_level = true
 	_place_areas()
@@ -910,13 +1277,15 @@ func _box(size: Vector2) -> BoxShape3D:
 	return box
 
 
+## Hurtboxes and the contact box follow the pose (on the ground, upside down on the ceiling, head down on the thread).
 func _place_areas() -> void:
 	if body_hurtbox == null:
 		return
-	body_hurtbox.position = Vector3(_mx(BODY_CENTRE.x), BODY_CENTRE.y * MODEL_SCALE, 0.0)
-	implant_hurtbox.position = Vector3(_mx(IMPLANT_CENTRE.x), IMPLANT_CENTRE.y * MODEL_SCALE, 0.0)
-	legs_hurtbox.position = Vector3(_mx(LEGS_CENTRE.x), LEGS_CENTRE.y * MODEL_SCALE, 0.0)
-	contact.position = body_hurtbox.position
+	var basis := visual_root.basis.orthonormalized()
+	body_hurtbox.global_transform = Transform3D(basis, _world(BODY_CENTRE))
+	implant_hurtbox.global_transform = Transform3D(basis, _world(IMPLANT_CENTRE))
+	legs_hurtbox.global_transform = Transform3D(basis, _world(LEGS_CENTRE))
+	contact.global_transform = body_hurtbox.global_transform
 
 
 func _play(clip: StringName) -> void:
@@ -971,3 +1340,30 @@ func _build_health_bar() -> void:
 	_phase_label.add_theme_constant_override("outline_size", 4)
 	box.add_child(_phase_label)
 	_update_phase_label()
+
+
+## LOTE 15: right after a trap, an aimed fan (normal warning). Not a pattern step: the pattern goes on after it.
+func _start_follow_up() -> void:
+	follow_ups += 1
+	attacks_started += 1
+	attack_kind = &"fan"
+	_play(&"attack")
+	_step = &"fan_tele"
+	_left = FAN_TELEGRAPH
+	BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 0.8)
+
+
+## LOTE 15: moving is not resting: a single aimed web shot every SPIT_EVERY s while it stalks or crawls (mouth glow first).
+func _update_spit(delta: float) -> void:
+	_spit_clock += delta
+	var glow := clampf(1.0 - (SPIT_EVERY - _spit_clock) / SPIT_WARNING, 0.0, 1.0)
+	_mouth_glow.global_position = _world(MOUTH)
+	_mouth_glow.scale = Vector3.ONE * (0.01 if glow <= 0.0 else lerpf(0.3, 1.0, glow))
+	if _spit_clock >= SPIT_EVERY and target != null:
+		_spit_clock = 0.0
+		spits += 1
+		hazards.append({"kind": &"spit", "telegraph": SPIT_WARNING})
+		var origin := _world(MOUTH)
+		origin.z = 0.0
+		_spawn_web(origin, (target.global_position - origin).normalized(), FAN_SPEED)
+		_mouth_glow.scale = Vector3.ONE * 0.01

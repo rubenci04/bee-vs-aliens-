@@ -117,6 +117,11 @@ var aim_point := Vector3.ZERO # World point under the crosshair (z = 0), valid w
 var _aim_left := 0.0
 var _aim_screen := Vector2.ZERO
 var _aim_from_screen := false
+## LOTE 15: web trap (the tarantula's net, BeeWebTrap). While locked Bee can shoot but cannot move, roll or lunge; every press of
+## a movement key is a struggle (the trap reads `web_struggles`).
+var web_locked := false
+var web_struggles := 0
+var fire_trigger_count := 0 ## Taps + bursts started.
 
 
 func _ready() -> void:
@@ -141,6 +146,13 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 		return
 	var input := Input.get_vector("move_left", "move_right", "move_back", "move_forward")
+	if web_locked:
+		for action in [&"move_left", &"move_right", &"move_back", &"move_forward"]:
+			if Input.is_action_just_pressed(action):
+				web_struggle()
+		input = Vector2.ZERO
+		velocity = Vector3.ZERO
+		_lunge_left = 0.0
 	var desired := Vector2(input.x * horizontal_speed, input.y * vertical_speed)
 	var rate := acceleration if desired.length_squared() > 0.0 else deceleration
 	velocity.x = move_toward(velocity.x, desired.x, rate * delta)
@@ -224,6 +236,7 @@ func fire() -> BeeEnergyProjectile:
 	if honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, spread_shot) # LOTE 11: honey mode = double shot.
 	shots_fired += 1
+	fire_trigger_count += 1
 	return projectile
 
 
@@ -308,7 +321,7 @@ func nearest_melee_target() -> Node3D:
 
 
 func start_melee() -> bool:
-	if is_defeated or _melee_cooldown_left > 0.0:
+	if is_defeated or web_locked or _melee_cooldown_left > 0.0:
 		return false
 	melee_target = nearest_melee_target()
 	var chrome_dir := Vector3(facing_x, 0.0, 0.0)
@@ -584,7 +597,7 @@ func _update_free_aim(delta: float) -> void:
 ## Barrel roll: `roll_duration` s of invulnerability (HealthComponent.invulnerable; common enemy shots that touch Bee are
 ## destroyed, see DamageHurtbox3D), then `roll_cooldown` s until the next one.
 func start_roll() -> bool:
-	if is_defeated or not roll_enabled or is_rolling or _roll_cooldown_left > 0.0:
+	if is_defeated or web_locked or not roll_enabled or is_rolling or _roll_cooldown_left > 0.0:
 		return false
 	is_rolling = true
 	roll_count += 1
@@ -621,6 +634,17 @@ func roll_ready_ratio() -> float:
 	if is_rolling:
 		return 0.0
 	return 1.0 - clampf(_roll_cooldown_left / maxf(roll_cooldown, 0.001), 0.0, 1.0)
+
+
+## LOTE 15: one tug against the web (a movement key pressed while trapped; bots call it directly).
+func web_struggle() -> void:
+	if web_locked:
+		web_struggles += 1
+
+
+## LOTE 15: fire triggers so far (a tap or a whole burst counts once): the web trap tears one piece per trigger.
+func fire_triggers() -> int:
+	return fire_trigger_count
 
 
 func absorb_shot() -> void:
@@ -685,6 +709,7 @@ func start_burst() -> bool:
 		return false
 	_burst_cooldown = 1.0 / maxf(burst_rate, 0.1)
 	burst_count += 1
+	fire_trigger_count += 1
 	if spread_ammo > 0:
 		_fire_spread_burst()
 	else:

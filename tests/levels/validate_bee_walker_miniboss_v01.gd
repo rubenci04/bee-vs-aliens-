@@ -5,14 +5,18 @@ extends SceneTree
 # the shot - and the yellow eye x2, it explodes when it falls) and four bot fights (Normal/Easy x Base/Spread) measuring the robot's
 # fight (activation -> fall) and the damage Bee takes at the gate. Target: 25-40 s in the four combinations.
 # Bot: three taps/s, 60 % aimed at the nearest target on screen (escorts too), it reacts to every warning but every other time
-# LATE (half of the warning gone), it sees half of the shots coming. Dev: -- report · -- first
+# LATE (half of the warning gone), it sees half of the shots coming. Dev: -- report · -- first · -- expert · -- trace
+# LOTE 15 · ETAPA 5.2 — the dynamic robot: it strides across the whole screen, jumps (warned) to Bee's column, aimed burst, mortars
+# with shadows, eye laser sweep. Expert bot fights 30-45 s (Base and Spread, Normal and Easy). A STILL bot parked in a corner
+# (top-left / bottom-left, never moves, shoots like the expert) must lose >= 40 on Normal: every attack is aimed at Bee.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const BOT_TAPS_PER_SECOND := 3.0
 const AIM_PATTERN := [true, true, false, true, false]
 const LATE_FRACTION := 0.5
 const BULLET_LOOKAHEAD := 0.9
-const FIGHT_SECONDS := Vector2(25.0, 45.0) # LOTE 14: 40 -> 45 (the wider camera gives the escorts more room to live)
+const FIGHT_SECONDS := Vector2(30.0, 45.0) # LOTE 15: 30-45 s (user target).
+const STILL_MIN_DAMAGE := 40
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -70,9 +74,16 @@ func run() -> void:
 				continue
 			use_spread = spread
 			var label := ("NORMAL" if difficulty == BeeGameSettings.NORMAL else "EASY") + (" SPREAD" if spread else " BASE")
-			var result := await fight(label)
-			print("MEASURE ", label, " ", result)
-			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 25-45 s: " + str(result.seconds))
+			var result := await fight(label, &"expert")
+			print("MEASURE EXPERT ", label, " ", result)
+			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 30-45 s: " + str(result.seconds))
+			if "expert" in OS.get_cmdline_user_args():
+				continue
+			for corner in [&"still_top", &"still_bottom"]:
+				var still := await fight(label, corner)
+				print("MEASURE ", str(corner).to_upper(), " ", label, " ", still)
+				if difficulty == BeeGameSettings.NORMAL:
+					check(int(still.damage) >= STILL_MIN_DAMAGE, label + " " + str(corner) + ": a bot parked in a corner must lose >= 40 (lost %d)" % still.damage)
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	for line in lines:
 		print(line)
@@ -128,19 +139,20 @@ func test_structure() -> void:
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
 	bee.global_position = Vector3(stage.camera.global_position.x - 3.6, 3.4, 0.0)
+	var spawned_before := int(wave.spawn_history.size()) # The second escort wave may come by its fallback timer during the attack loop.
 	# Let it walk in and attack: cannon (warned 0.5 s) and stomp (band + wave).
 	var saw_band := false
 	var wave_node: BeeGroundShockwave
-	for i in 60 * 14:
+	for i in 60 * 40:
 		await physics_frame
 		if robot._step == &"stomp_tele" and is_instance_valid(robot._stomp_band):
 			saw_band = true
 		for node in stage.get_children():
 			if node is BeeGroundShockwave and wave_node == null:
 				wave_node = node
-		if robot.cannon_shots >= 1 and robot.stomps >= 1:
+		if robot.cannon_shots >= 1 and robot.stomps >= 1 and robot.mortars >= 1 and robot.lasers >= 1 and robot.jumps >= 1:
 			break
-	check(robot.cannon_shots >= 1 and robot.stomps >= 1 and saw_band, "Cannon burst and stomp with its warning band (shots %d stomps %d)" % [robot.cannon_shots, robot.stomps])
+	check(robot.cannon_shots >= 1 and robot.stomps >= 1 and saw_band and robot.mortars >= 1 and robot.lasers >= 1 and robot.jumps >= 1, "Burst, mortars, laser, jump and stomp with its warning band (shots %d stomps %d mortars %d lasers %d jumps %d)" % [robot.cannon_shots, robot.stomps, robot.mortars, robot.lasers, robot.jumps])
 	var min_tele := INF
 	for hazard in robot.hazards:
 		min_tele = minf(min_tele, float(hazard["telegraph"]))
@@ -163,7 +175,6 @@ func test_structure() -> void:
 	check(is_equal_approx(robot.hurtbox.multiplier_for(at_eye), WalkerMiniboss.EYE_MULTIPLIER), "The yellow eye takes x2")
 	at_eye.queue_free()
 	# Second escort wave at 60 % HP.
-	var spawned_before := int(wave.spawn_history.size())
 	robot.health.take_damage(int(robot.health.max_health * 0.45))
 	await frames(180)
 	await frames(240)
@@ -178,9 +189,11 @@ func test_structure() -> void:
 	for gun: Node3D in robot.visual_root.find_children("Cylinder", "MeshInstance3D", true, false):
 		check(not gun.visible, "The broken cannon is hidden")
 	var shots := robot.cannon_shots
-	for i in 60 * 6:
+	var mortars_before := robot.mortars
+	var lasers_before := robot.lasers
+	for i in 60 * 10:
 		await physics_frame
-	check(robot.cannon_shots == shots and robot.stomps >= 2, "No more cannon shots after it broke, the stomp goes on")
+	check(robot.cannon_shots == shots and robot.mortars == mortars_before and robot.lasers > lasers_before, "No more cannon shots or mortars after it broke, the laser goes on")
 	# It explodes when it falls (technology: never freed).
 	var freed_before := wave.liberated_count
 	robot.health.take_damage(99999)
@@ -192,9 +205,10 @@ func test_structure() -> void:
 			(BeeLevel01Controller.EVENTS_ROSTER[gate_index()]["units"] as Array).size() - 1, (BeeLevel01Controller.EVENTS_ROSTER[gate_index()]["escort_wave"]["units"] as Array).size()])
 
 
-func fight(label: String) -> Dictionary:
+func fight(label: String, bot: StringName) -> Dictionary:
 	var robot := await start_gate()
 	check(robot != null, label + ": no robot")
+	var still := bot != &"expert"
 	bee.set_physics_process(false)
 	bee.bomb_charges = 0
 	bee.spread_ammo = 0
@@ -203,9 +217,15 @@ func fight(label: String) -> Dictionary:
 	bee.health.current_health = 1000
 	bee.health.damage_blocked = false
 	var damage := [0]
+	var by_kind := {}
 	bee.health.health_changed.connect(func(_c: int, _m: int, change: int):
 		if change < 0:
-			damage[0] += -change)
+			damage[0] += -change
+			var kind := str(robot.attack_kind) if is_instance_valid(robot) else "?"
+			for unit in wave.active_units:
+				if is_instance_valid(unit) and unit != robot and unit.global_position.distance_to(bee.global_position) < 1.6:
+					kind = "escort"
+			by_kind[kind] = int(by_kind.get(kind, 0)) + -change)
 	var tick := 1.0 / float(Engine.physics_ticks_per_second)
 	var clock := 0.0
 	var fire_left := 0.0
@@ -218,62 +238,102 @@ func fight(label: String) -> Dictionary:
 	var bullet_seen := {}
 	var bullet_until := 0.0
 	var bullet_goal := Vector3.ZERO
+	var corner := Vector3(bee.flight_min.x + 0.3, (bee.flight_max.y - 0.3) if bot == &"still_top" else (bee.flight_min.y + 0.3), 0.0)
+	var robot_sides := {}
 	while clock < 120.0 and is_instance_valid(robot) and not robot.is_defeated():
 		await physics_frame
 		clock += tick
 		var cam_x := stage.camera.global_position.x
+		robot_sides[signi(int(round((robot.global_position.x - cam_x) / 3.0)))] = true
 		if "trace" in OS.get_cmdline_user_args() and int(clock * 60.0) % 60 == 0:
-			print("T %.0f hp=%d step=%s robot_x=%.1f active=%s units=%s" % [clock, robot.health.current_health, robot._step, robot.global_position.x - cam_x, robot.is_active(), str(wave.active_units.map(func(u): return str(u.name).get_slice("_", 0)))])
-		if robot.attacks_started != last_attack:
-			last_attack = robot.attacks_started
-			react_kind = robot._step
-			var late := last_attack % 2 == 1
-			react_at = clock + (robot._left * LATE_FRACTION if late else 0.0)
-		var goal := Vector3(cam_x - 3.6, clampf(3.4 + 1.2 * sin(clock * TAU / 3.6), 1.6, 5.6), 0.0)
-		if react_at >= 0.0 and clock >= react_at:
-			react_at = -1.0
-			if react_kind == &"stomp_tele":
-				dodge_goal = Vector3(bee.global_position.x, 3.0, 0.0)
-				dodge_until = clock + maxf(robot._left, 0.0) + 1.4
-			elif react_kind == &"cannon_tele":
-				dodge_goal = Vector3(bee.global_position.x, bee.global_position.y + (1.8 if bee.global_position.y < 3.6 else -1.8), 0.0)
-				dodge_until = clock + maxf(robot._left, 0.0) + 0.7
-		if clock < dodge_until:
-			goal = dodge_goal
-		for unit in wave.active_units:
-			if is_instance_valid(unit) and unit != robot and unit.global_position.distance_to(bee.global_position) < 2.0 and clock >= dodge_until:
-				goal.y = clampf(bee.global_position.y + (1.8 if unit.global_position.y < bee.global_position.y else -1.8), 1.6, 5.8)
-		if clock >= bullet_until:
-			for node in get_nodes_in_group("alien_projectiles"):
-				var shot := node as AlienEnemyProjectile
-				if shot == null or not is_instance_valid(shot) or shot.is_queued_for_deletion():
-					continue
-				if not bullet_seen.has(shot.get_instance_id()):
-					bullet_seen[shot.get_instance_id()] = bullet_seen.size()
-				if int(bullet_seen[shot.get_instance_id()]) % 2 == 1:
-					continue
-				var v := Vector2(shot.travel_direction.x, shot.travel_direction.y) * shot.speed
-				var r := Vector2(shot.global_position.x - bee.global_position.x, shot.global_position.y - bee.global_position.y)
-				var closest_t := -r.dot(v) / maxf(v.length_squared(), 0.001)
-				if closest_t <= 0.0 or closest_t > BULLET_LOOKAHEAD:
-					continue
-				var miss := r + v * closest_t
-				if miss.length() > 0.8:
-					continue
-				var perp := Vector2(-v.y, v.x).normalized()
-				if perp.dot(-miss) > 0.0:
-					perp = -perp
-				bullet_goal = bee.global_position + Vector3(perp.x, perp.y, 0.0) * 1.6
-				bullet_until = clock + 0.4
-				break
-		if clock < bullet_until and clock >= dodge_until:
-			goal = bullet_goal
-		goal.x = clampf(goal.x, bee.flight_min.x, bee.flight_max.x)
-		goal.y = clampf(goal.y, bee.flight_min.y, bee.flight_max.y)
-		var p := bee.global_position
-		p.x = move_toward(p.x, goal.x, bee.horizontal_speed * tick)
-		p.y = move_toward(p.y, goal.y, bee.vertical_speed * tick)
-		bee.global_position = p
+			print("T %.0f hp=%d step=%s robot_x=%.1f bee=(%.1f,%.1f) dmg=%d" % [clock, robot.health.current_health, robot._step, robot.global_position.x - cam_x, bee.global_position.x - cam_x, bee.global_position.y, damage[0]])
+		if still:
+			bee.global_position = corner
+		else:
+			if robot.attacks_started != last_attack:
+				last_attack = robot.attacks_started
+				react_kind = robot.attack_kind
+				var late := last_attack % 2 == 1
+				react_at = clock + (robot.attack_left * LATE_FRACTION if late else 0.0)
+			# Home: on the side away from the robot, drifting up and down.
+			var home := cam_x - signf(robot.global_position.x - cam_x + 0.001) * 3.6
+			var goal := Vector3(home, clampf(3.4 + 1.2 * sin(clock * TAU / 3.6), 1.6, 5.6), 0.0)
+			if react_at >= 0.0 and clock >= react_at:
+				react_at = -1.0
+				var here := bee.global_position
+				match react_kind:
+					&"stomp":
+						dodge_goal = Vector3(here.x, 3.0, 0.0)
+						dodge_until = clock + maxf(robot.attack_left, 0.0) + 1.4
+					&"cannon":
+						dodge_goal = Vector3(here.x, here.y + (1.8 if here.y < 3.6 else -1.8), 0.0)
+						dodge_until = clock + maxf(robot.attack_left, 0.0) + 0.7
+					&"mortars":
+						var x := here.x
+						for i in 12: # Step sideways until no shadow is within 0.9 m.
+							var clear := true
+							for mx in robot.mortar_xs:
+								if absf(x - mx) < 0.9:
+									clear = false
+							if clear:
+								break
+							x += 0.5 if i % 2 == 0 else -0.5 * float(i + 1)
+						dodge_goal = Vector3(x, here.y, 0.0)
+						dodge_until = clock + maxf(robot.attack_left, 0.0) + 0.3
+					&"laser":
+						# Out of the sector, past the edge nearest to Bee.
+						var to_bee := Vector2(here.x - robot.laser_origin.x, here.y - robot.laser_origin.y)
+						var a := atan2(to_bee.y, to_bee.x)
+						var lo := minf(robot.laser_angles.x, robot.laser_angles.y)
+						var hi := maxf(robot.laser_angles.x, robot.laser_angles.y)
+						var out_angle := (hi + 0.25) if a > (lo + hi) * 0.5 else (lo - 0.25)
+						var r := maxf(to_bee.length(), 3.0)
+						dodge_goal = robot.laser_origin + Vector3(cos(out_angle), sin(out_angle), 0.0) * r
+						dodge_until = clock + maxf(robot.attack_left, 0.0) + WalkerMiniboss.LASER_SWEEP + 0.1
+					&"jump":
+						dodge_goal = Vector3(here.x + (2.6 if here.x < robot.jump_to_x else -2.6), maxf(here.y, 3.2), 0.0)
+						if absf(here.x - robot.jump_to_x) > 2.0:
+							dodge_goal = Vector3(here.x, maxf(here.y, 3.2), 0.0)
+						dodge_until = clock + maxf(robot.attack_left, 0.0) + WalkerMiniboss.JUMP_SECONDS + 1.0
+			if clock < dodge_until:
+				goal = dodge_goal
+			for unit in wave.active_units:
+				if is_instance_valid(unit) and unit != robot and unit.global_position.distance_to(bee.global_position) < 2.0 and clock >= dodge_until:
+					goal.y = clampf(bee.global_position.y + (1.8 if unit.global_position.y < bee.global_position.y else -1.8), 1.6, 5.8)
+			if clock >= bullet_until:
+				for node in get_nodes_in_group("alien_projectiles"):
+					var shot := node as AlienEnemyProjectile
+					if shot == null or not is_instance_valid(shot) or shot.is_queued_for_deletion():
+						continue
+					if not bullet_seen.has(shot.get_instance_id()):
+						bullet_seen[shot.get_instance_id()] = bullet_seen.size()
+					if int(bullet_seen[shot.get_instance_id()]) % 2 == 1:
+						continue
+					var v := Vector2(shot.travel_direction.x, shot.travel_direction.y) * shot.speed
+					var r := Vector2(shot.global_position.x - bee.global_position.x, shot.global_position.y - bee.global_position.y)
+					var closest_t := -r.dot(v) / maxf(v.length_squared(), 0.001)
+					if closest_t <= 0.0 or closest_t > BULLET_LOOKAHEAD:
+						continue
+					var miss := r + v * closest_t
+					if miss.length() > 0.8:
+						continue
+					var perp := Vector2(-v.y, v.x).normalized()
+					if perp.dot(-miss) > 0.0:
+						perp = -perp
+					bullet_goal = bee.global_position + Vector3(perp.x, perp.y, 0.0) * 1.6
+					bullet_until = clock + 0.4
+					break
+			if clock < bullet_until and clock >= dodge_until:
+				goal = bullet_goal
+			# Over the robot's body when it walks through Bee's side (it is ~2.7 m tall).
+			if absf(goal.x - robot.global_position.x) < 1.4 and goal.y < 3.4 and clock >= dodge_until:
+				goal.y = 3.6
+			goal.x = clampf(goal.x, bee.flight_min.x, bee.flight_max.x)
+			goal.y = clampf(goal.y, bee.flight_min.y, bee.flight_max.y)
+			var p := bee.global_position
+			p.x = move_toward(p.x, goal.x, bee.horizontal_speed * tick)
+			p.y = move_toward(p.y, goal.y, bee.vertical_speed * tick)
+			bee.global_position = p
 		bee.spread_ammo = 9999 if use_spread else 0
 		fire_left -= tick
 		if fire_left <= 0.0:
@@ -286,9 +346,19 @@ func fight(label: String) -> Dictionary:
 			bee.set_aim_point(target_point)
 			bee.fire()
 	var seconds := wave.miniboss_seconds
-	lines.append("WALKER %s fight=%.1fs damage=%d cannon_shots=%d stomps=%d cannon_alive=%s escort_waves=%d taps=%d" % [label, seconds, damage[0],
+	if is_instance_valid(robot) and not still:
+		var min_tele := INF
+		for hazard in robot.hazards:
+			min_tele = minf(min_tele, float(hazard["telegraph"]))
+		check(min_tele >= WalkerMiniboss.MIN_TELEGRAPH - 0.001, label + ": an attack warned only %.2f s" % min_tele)
+		check(robot.strides >= 2 and robot.stride_span >= 8.0, label + ": it must walk across the whole screen (strides %d, longest %.1f m)" % [robot.strides, robot.stride_span])
+		check(robot.jumps >= 1 and robot.lasers >= 1 and robot.mortars >= 1 and robot.cannon_shots >= 1, label + ": jump, laser, mortars and burst (%d/%d/%d/%d)" % [robot.jumps, robot.lasers, robot.mortars, robot.cannon_shots])
+		check(robot_sides.has(-1) and robot_sides.has(1), label + ": it stands on both sides of the screen")
+	lines.append("WALKER %s %s fight=%.1fs damage=%d strides=%d longest=%.1fm jumps=%d lasers=%d mortars=%d cannon_shots=%d stomps=%d cannon_alive=%s escort_waves=%d taps=%d by=%s" % [bot, label, seconds, damage[0],
+			robot.strides if is_instance_valid(robot) else -1, robot.stride_span if is_instance_valid(robot) else -1.0, robot.jumps if is_instance_valid(robot) else -1,
+			robot.lasers if is_instance_valid(robot) else -1, robot.mortars if is_instance_valid(robot) else -1,
 			robot.cannon_shots if is_instance_valid(robot) else -1, robot.stomps if is_instance_valid(robot) else -1,
-			str(robot.cannon_alive) if is_instance_valid(robot) else "?", wave.escort_waves, taps])
+			str(robot.cannon_alive) if is_instance_valid(robot) else "?", wave.escort_waves, taps, str(by_kind)])
 	return {"seconds": seconds, "damage": damage[0]}
 
 

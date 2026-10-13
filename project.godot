@@ -8,15 +8,15 @@
 
 config_version=5
 
-[autoload]
-
-MusicManager="*res://scripts/audio/music_manager.gd"
-
 [application]
 
 config/name="Bee Alien 3D"
 run/main_scene="res://scenes/game/bee_title_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+MusicManager="*res://scripts/audio/music_manager.gd"
 
 [input]
 
