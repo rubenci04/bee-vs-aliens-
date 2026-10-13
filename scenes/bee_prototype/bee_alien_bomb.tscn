@@ -4,9 +4,9 @@
 [sub_resource type="StandardMaterial3D" id="energy"]
 shading_mode = 0
 transparency = 1
-albedo_color = Color(0.65, 1, 1, 0.8)
+albedo_color = Color(1, 0.72, 0.24, 0.8)
 emission_enabled = true
-emission = Color(0.2, 0.9, 1, 1)
+emission = Color(1, 0.55, 0.12, 1)
 [sub_resource type="TorusMesh" id="ring"]
 inner_radius = 0.92
 outer_radius = 1.0

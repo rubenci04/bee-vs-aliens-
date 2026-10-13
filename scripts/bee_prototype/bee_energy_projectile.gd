@@ -33,7 +33,7 @@ func _ready() -> void:
 		var material := StandardMaterial3D.new()
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		material.albedo_color = Color(0.15, 0.95, 1, 0.65)
+		material.albedo_color = Color(1.0, 0.62, 0.12, 0.72)
 		material.vertex_color_use_as_albedo = true
 		_shared_trail_mesh.material = material
 	trail.mesh = _shared_trail_mesh
@@ -78,6 +78,6 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 	var feedback := hurtbox.owner_entity.get_node_or_null("CombatFeedback")
 	var organic := feedback != null and bool(feedback.get("organic"))
 	BeeAudio.play(get_parent(), &"organic_hit" if organic else &"tech_hit", global_position)
-	BeeCombatVFX.spawn(get_parent(), global_position, &"impact_organic" if organic else &"impact", travel_direction)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"impact_organic" if organic else &"bee_impact", travel_direction)
 	hitbox.set_enabled(false)
 	queue_free()

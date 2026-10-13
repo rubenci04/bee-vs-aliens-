@@ -223,7 +223,8 @@ func fire() -> BeeEnergyProjectile:
 	var spread_shot := spread_ammo > 0
 	var projectile := _spawn_projectile(direction)
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
-	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle_spread" if spread_ammo > 0 else &"muzzle", direction)
+	var bee_visual := $VisualRoot/BeeVisual as BeeVisual
+	bee_visual.play_muzzle_effect(projectile.global_position, direction, spread_shot)
 	if spread_ammo > 0:
 		projectile.set_spread_visual()
 		var reduced_damage := maxi(1, roundi(projectile.damage * spread_damage_ratio))
@@ -245,7 +246,10 @@ func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyPr
 	if damage_override >= 0:
 		projectile.damage = damage_override
 	get_parent().add_child(projectile)
-	if is_free_aiming():
+	var visual := $VisualRoot/BeeVisual as BeeVisual
+	if visual != null and visual.muzzle != null:
+		projectile.global_position = visual.firing_origin(global_position)
+	elif is_free_aiming():
 		projectile.global_position = global_position + direction.normalized() * absf(muzzle_offset.x) + Vector3(0.0, muzzle_offset.y, 0.0)
 	else:
 		projectile.global_position = global_position + Vector3(facing_x * absf(muzzle_offset.x), muzzle_offset.y, 0.0)
@@ -377,8 +381,8 @@ func melee_ready_ratio() -> float:
 
 func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
-	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"melee", Vector3(facing_x, 0, 0))
-	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"impact", Vector3(facing_x, 0, 0), 1.6) # Chrome flash on the strike.
+	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_melee", Vector3(facing_x, 0, 0))
+	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_impact", Vector3(facing_x, 0, 0), 1.6)
 	if stinger != null:
 		if _stinger_flash != null:
 			_stinger_flash.kill()
@@ -649,7 +653,7 @@ func fire_triggers() -> int:
 
 func absorb_shot() -> void:
 	roll_absorbed_shots += 1
-	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0.0, 0.2, 0.0), &"impact")
+	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0.0, 0.2, 0.0), &"bee_impact")
 
 
 func activate_honey(seconds := -1.0) -> void:
@@ -730,7 +734,7 @@ func _fire_burst_shot() -> void:
 	var direction := aim_direction()
 	var projectile := _spawn_projectile(direction, _scaled_damage(hold_damage_ratio, base_shot_damage))
 	BeeAudio.play(get_parent(), &"base")
-	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle", direction)
+	($VisualRoot/BeeVisual as BeeVisual).play_muzzle_effect(projectile.global_position, direction)
 	if honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, false)
 	shots_fired += 1
@@ -749,7 +753,7 @@ func _fire_spread_burst() -> void:
 		if first == null:
 			first = pellet
 	BeeAudio.play(get_parent(), &"spread")
-	BeeCombatVFX.spawn(get_parent(), first.global_position, &"muzzle_spread", direction)
+	($VisualRoot/BeeVisual as BeeVisual).play_muzzle_effect(first.global_position, direction, true)
 	spread_ammo -= 1
 	weapon_state_changed.emit()
 	if honey_left > 0.0:

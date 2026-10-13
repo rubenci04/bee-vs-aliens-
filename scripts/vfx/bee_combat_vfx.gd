@@ -43,6 +43,11 @@ func _ready() -> void:
 	var amount := 8
 	var reach := 0.45
 	match kind:
+		&"bee_muzzle", &"bee_muzzle_spread":
+			duration = 0.07
+			var flash := _sphere(Color(1.0, 0.9, 0.52), Vector3(0.16, 0.06, 0.06) if kind == &"bee_muzzle" else Vector3(0.19, 0.105, 0.07))
+			flash.rotation.z = atan2(direction.y, direction.x)
+			_fade(flash, duration)
 		&"muzzle", &"muzzle_spread":
 			duration = 0.07
 			var flash := _sphere(Color(0.85, 1, 1), Vector3(0.2, 0.075, 0.075) if kind == &"muzzle" else Vector3(0.23, 0.14, 0.09))
@@ -85,9 +90,9 @@ func _ready() -> void:
 		&"impact_organic":
 			color = Color(0.95, 0.9, 0.55)
 			reach = 0.3
-		&"melee":
+		&"bee_melee":
 			duration = 0.18
-			color = Color(0.85, 1, 1)
+			color = Color(1.0, 0.72, 0.2)
 			reach = 0.3
 			var arc := MeshInstance3D.new()
 			var mesh := TorusMesh.new()
@@ -101,6 +106,10 @@ func _ready() -> void:
 			arc.scale = Vector3(0.6, 1.0, 1.0)
 			add_child(arc)
 			_fade(arc, duration)
+		&"bee_impact":
+			color = Color(1.0, 0.7, 0.18)
+			amount = 8
+			reach = 0.36
 		&"crate":
 			duration = 0.45
 			color = Color(0.62, 0.43, 0.23)
@@ -132,7 +141,7 @@ func _ready() -> void:
 			color = Color(1, 0.85, 0.22)
 			amount = 5
 			reach = 0.2
-	if not kind in [&"muzzle", &"muzzle_spread"]:
+	if not kind in [&"muzzle", &"muzzle_spread", &"bee_muzzle", &"bee_muzzle_spread"]:
 		_burst(color, amount, reach)
 	var cleanup := create_tween()
 	cleanup.tween_interval(duration + 0.08)

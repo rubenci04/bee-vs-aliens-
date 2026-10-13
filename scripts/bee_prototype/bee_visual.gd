@@ -21,6 +21,9 @@ var muzzle: Node3D
 var drill: Node3D
 var drill_tip: Node3D
 var helmet_socket: Node3D
+var blaster: Node3D
+var _blaster_rest_position := Vector3.ZERO
+var _blaster_recoil_tween: Tween
 var nozzles: Dictionary = {}
 var elapsed := 0.0
 var _rim_materials: Array[ShaderMaterial] = []
@@ -53,6 +56,7 @@ func apply_model_version(version := "") -> bool:
 	drill = null
 	drill_tip = null
 	helmet_socket = null
+	blaster = null
 	var packed := load(MODEL_PATHS[chosen]) as PackedScene
 	if packed == null:
 		push_error("Bee model failed to load: "+MODEL_PATHS[chosen])
@@ -77,6 +81,9 @@ func apply_model_version(version := "") -> bool:
 	drill = model.find_child("stinger_drill", true, false) as Node3D
 	drill_tip = model.find_child("stinger_tip", true, false) as Node3D
 	helmet_socket = model.find_child("helmet_socket", true, false) as Node3D
+	blaster = model.find_child("antenna_R_blaster", true, false) as Node3D
+	if blaster != null:
+		_blaster_rest_position = blaster.position
 	for side in ["L", "R"]:
 		var nozzle := model.find_child("nozzle_"+side, true, false) as Node3D
 		if nozzle != null:
@@ -88,6 +95,27 @@ func apply_model_version(version := "") -> bool:
 	if chosen == "v02":
 		_play_model_animation(&"wingbeat")
 	return true
+
+
+func firing_origin(fallback: Vector3) -> Vector3:
+	if muzzle == null:
+		return fallback
+	var point := muzzle.global_position
+	point.z = actor.global_position.z if actor != null else fallback.z
+	return point
+
+
+func play_muzzle_effect(fallback: Vector3, direction: Vector3, spread := false) -> void:
+	var point := firing_origin(fallback)
+	BeeCombatVFX.spawn(actor.get_parent(), point, &"bee_muzzle_spread" if spread else &"bee_muzzle", direction)
+	if blaster == null:
+		return
+	if _blaster_recoil_tween != null:
+		_blaster_recoil_tween.kill()
+	blaster.position = _blaster_rest_position
+	_blaster_recoil_tween = create_tween()
+	_blaster_recoil_tween.tween_property(blaster, "position", _blaster_rest_position + Vector3(0.0, 0.0, 0.045), 0.035)
+	_blaster_recoil_tween.tween_property(blaster, "position", _blaster_rest_position, 0.075)
 
 
 func _play_model_animation(clip: StringName) -> void:
