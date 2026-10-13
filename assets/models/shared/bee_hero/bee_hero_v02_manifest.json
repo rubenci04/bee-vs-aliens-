@@ -1,0 +1,64 @@
+{
+  "assets": [
+    {
+      "id": "shared_hero_bee_v02",
+      "triangles": 17576,
+      "materials": 6,
+      "raw_length_height_width_m": [
+        1.166667,
+        0.988459,
+        0.720637
+      ],
+      "visual_scale": 1.2,
+      "visual_length_height_width_m": [
+        1.4,
+        1.186151,
+        0.864764
+      ],
+      "forward_godot": "-Z",
+      "up_godot": "+Y",
+      "origin": "thorax center",
+      "animations": {
+        "wingbeat": 0.5,
+        "drill_spin": 0.5
+      },
+      "wing_frequency_hz": 16.0,
+      "source": "art_source/blender/shared/bee_hero/shared_hero_bee_v02.blend",
+      "glb": "assets/models/shared/bee_hero/shared_hero_bee_v02.glb"
+    },
+    {
+      "id": "shared_hero_bee_v02_lite",
+      "triangles": 4838,
+      "materials": 6,
+      "raw_length_height_width_m": [
+        1.166984,
+        0.990029,
+        0.719238
+      ],
+      "visual_scale": 1.2,
+      "visual_length_height_width_m": [
+        1.40038,
+        1.188034,
+        0.863086
+      ],
+      "forward_godot": "-Z",
+      "up_godot": "+Y",
+      "origin": "thorax center",
+      "animations": {
+        "wingbeat": 0.5,
+        "drill_spin": 0.5
+      },
+      "wing_frequency_hz": 16.0,
+      "source": "art_source/blender/shared/bee_hero/shared_hero_bee_v02_lite.blend",
+      "glb": "assets/models/shared/bee_hero/shared_hero_bee_v02_lite.glb"
+    }
+  ],
+  "target_full": [
+    16000,
+    18000
+  ],
+  "hard_max": 20000,
+  "lite_max": 6000,
+  "source_scale_factor": 0.7374341399900841,
+  "emission_only": "blaster_muzzle_gold"
+}
