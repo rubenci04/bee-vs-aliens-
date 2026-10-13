@@ -22,16 +22,16 @@ const SFX_BUS := &"SFX"
 const MUSIC_DEFAULT_DB := -8.0 ## Default volume of the music bus (default_bus_layout.tres says the same).
 const SFX_DEFAULT_DB := -3.0
 const SILENT_DB := -80.0
-const FADE_IN_SECONDS := 1.0 ## A theme starting from silence.
+const FADE_IN_SECONDS := BeeGameSettings.MUSIC_FADE_IN_SEC
 const CROSSFADE_SECONDS := BeeMusic.CROSSFADE_SECONDS ## Level -> boss.
 const DEATH_FADE_SECONDS := BeeMusic.DEATH_FADE_SECONDS
 const VICTORY_FADE_IN_SECONDS := BeeMusic.VICTORY_FADE_IN_SECONDS
 const VICTORY_TAIL_FADE := 3.0 ## The victory theme fades out over its last seconds.
 const PAUSE_DUCK_DB := -12.0
 const PAUSE_DUCK_SPEED := 40.0 ## dB per second the pause duck moves at.
-const EXPLOSION_DUCK_DB := -4.0 ## Slight attenuation under a big explosion...
+const EXPLOSION_DUCK_DB := BeeGameSettings.MUSIC_DUCK_DB
 const EXPLOSION_ATTACK_SECONDS := 0.05
-const EXPLOSION_HOLD_SECONDS := 0.35
+const EXPLOSION_HOLD_SECONDS := BeeGameSettings.MUSIC_DUCK_SEC
 const EXPLOSION_RELEASE_SECONDS := 0.8
 
 var current_track: StringName = &"" ## The theme that is audible now (the incoming one during a crossfade); &"" = silence.
@@ -50,6 +50,7 @@ var crossfades := 0
 
 
 func _ready() -> void:
+	BeeGameSettings.load_audio_settings()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for i in 2:
 		var player := AudioStreamPlayer.new()
@@ -74,7 +75,7 @@ func _process(delta: float) -> void:
 			var left := player.stream.get_length() - player.get_playback_position()
 			if left < VICTORY_TAIL_FADE:
 				gain = minf(gain, clampf(left / VICTORY_TAIL_FADE, 0.0, 1.0))
-		player.volume_db = maxf(linear_to_db(maxf(gain, 0.0001)) + _duck_db + _explosion_db, SILENT_DB)
+		player.volume_db = maxf(linear_to_db(maxf(gain, 0.0001)) + float(BeeGameSettings.MUSIC_TRACK_GAIN_DB.get(_tracks[i], 0.0)) + _duck_db + _explosion_db, SILENT_DB)
 
 
 ## Starts (or switches to) a theme. From silence it fades in over `fade_in` seconds; with another theme playing it crossfades over `crossfade`.
@@ -85,7 +86,7 @@ func play_track(track: StringName, fade: float = -1.0, restart := false) -> void
 		return
 	if current_track == track and _players[_active].playing and not restart:
 		return
-	var seconds := fade if fade >= 0.0 else (CROSSFADE_SECONDS if _players[_active].playing and _fade_gain[_active] > 0.05 else FADE_IN_SECONDS)
+	var seconds := fade if fade >= 0.0 else (FADE_IN_SECONDS if track in [&"title", &"level"] else CROSSFADE_SECONDS)
 	var incoming := 1 - _active
 	var outgoing := _active
 	var crossfading := _players[outgoing].playing and _fade_gain[outgoing] > 0.001 and current_track != &""

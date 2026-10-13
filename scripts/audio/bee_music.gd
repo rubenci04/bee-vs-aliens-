@@ -57,6 +57,7 @@ static func duck_for_explosion() -> void:
 ## Pause-menu sliders (0..1): stored in BeeGameSettings (the session) and applied to the buses when the manager exists.
 static func set_music_volume(value: float) -> void:
 	BeeGameSettings.music_volume = clampf(value, 0.0, 1.0)
+	BeeGameSettings.save_audio_settings()
 	var node := manager()
 	if node != null:
 		node.call("apply_volumes")
@@ -64,6 +65,7 @@ static func set_music_volume(value: float) -> void:
 
 static func set_sfx_volume(value: float) -> void:
 	BeeGameSettings.sfx_volume = clampf(value, 0.0, 1.0)
+	BeeGameSettings.save_audio_settings()
 	var node := manager()
 	if node != null:
 		node.call("apply_volumes")

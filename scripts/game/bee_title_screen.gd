@@ -60,6 +60,27 @@ func _make_ui() -> void:
 		play.get_parent().move_child(lake, difficulty_button.get_index() + 1)
 		lake.pressed.connect(_play_lake)
 	_refresh_difficulty()
+	for spec in [["MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume], ["EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume]]:
+		var row := HBoxContainer.new()
+		var caption := Label.new()
+		caption.text = "%s %d %%" % [spec[0], roundi(float(spec[1]) * 100.0)]
+		caption.custom_minimum_size.x = 145
+		row.add_child(caption)
+		var slider := HSlider.new()
+		slider.min_value = 0.0
+		slider.max_value = 1.0
+		slider.step = 0.05
+		slider.value = spec[1]
+		slider.custom_minimum_size = Vector2(180, 24)
+		slider.focus_mode = Control.FOCUS_ALL
+		var setter: Callable = spec[2]
+		var title: String = spec[0]
+		slider.value_changed.connect(func(value: float):
+			caption.text = "%s %d %%" % [title, roundi(value * 100.0)]
+			setter.call(value))
+		row.add_child(slider)
+		play.get_parent().add_child(row)
+	play.grab_focus()
 
 
 func _toggle_shake() -> void:

@@ -34,6 +34,23 @@ const POST_ROBOT_MIN_POLLEN := 10
 const POST_ROBOT_PICKUP_OFFSETS := [Vector2(3.0, 3.2), Vector2(7.0, 4.4), Vector2(11.0, 3.8)]
 const ROBOT_LASER_WARNING_SEC := 0.85
 const ROBOT_LASER_COLOR := Color(0.72, 1.0, 1.0, 0.95)
+const MUSIC_DEFAULT_VOLUME := 0.25
+const SFX_DEFAULT_VOLUME := 1.0
+const MUSIC_FADE_IN_SEC := 2.5
+const MUSIC_DUCK_DB := -4.0
+const MUSIC_DUCK_SEC := 0.3
+const AUDIO_SETTINGS_PATH := "user://audio_settings.cfg"
+const MUSIC_TRACK_GAIN_DB := {&"title": -3.7, &"level": -3.7, &"boss": -3.7, &"victory": -3.7}
+const JOYPAD_DEADZONE := 0.2
+const JOYPAD_TRIGGER_THRESHOLD := 0.3
+const JOYPAD_AIM_SMOOTH_SEC := 0.12
+const JOYPAD_NOTICE_SEC := 3.0
+const JOYPAD_VIBRATION_SEC := 0.15
+const JOYPAD_VIBRATION_STRENGTH := 0.2
+const MOUSE_AIM_IDLE_SEC := 1.5
+static var vibration_enabled := true
+static var last_input_joypad := false
+static var last_joypad_device := -1
 ## Bee model can be changed live with set_bee_model_version().
 static var BEE_MODEL_VERSION := "v02"
 const BEE_VISUAL_SCALE := 1.0
@@ -134,8 +151,20 @@ static func label() -> String:
 
 
 ## LOTE 14 · ETAPA 4: pause-menu sliders (0..1). 1.0 = the default level of each bus (music -8 dB, effects -3 dB); see MusicManager.
-static var music_volume := 1.0
-static var sfx_volume := 1.0
+static var music_volume := MUSIC_DEFAULT_VOLUME
+static var sfx_volume := SFX_DEFAULT_VOLUME
+
+static func load_audio_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(AUDIO_SETTINGS_PATH) == OK:
+		music_volume = clampf(float(config.get_value("audio", "music", MUSIC_DEFAULT_VOLUME)), 0.0, 1.0)
+		sfx_volume = clampf(float(config.get_value("audio", "sfx", SFX_DEFAULT_VOLUME)), 0.0, 1.0)
+
+static func save_audio_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value("audio", "music", music_volume)
+	config.set_value("audio", "sfx", sfx_volume)
+	config.save(AUDIO_SETTINGS_PATH)
 
 
 static func set_bee_model_version(version: String) -> bool:

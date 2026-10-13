@@ -626,6 +626,7 @@ func _attack(delta: float) -> void:
 
 ## The next pattern move. If it needs the other surface, a corner-to-corner jump comes first (the move waits for it).
 func _start_attack() -> void:
+	BeeMusic.duck_for_explosion()
 	var pattern: Array = PATTERNS.get(state, PATTERNS[State.PHASE_1])
 	var kind: StringName = pattern[_pattern_index % pattern.size()]
 	if _follow_up:
