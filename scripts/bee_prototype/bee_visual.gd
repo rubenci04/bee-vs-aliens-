@@ -29,6 +29,7 @@ var elapsed := 0.0
 var _rim_materials: Array[ShaderMaterial] = []
 var _rim_applied := -1.0
 var buzz_player: AudioStreamPlayer
+var _roll_burst_left := 0.0
 
 
 func _ready() -> void:
@@ -87,7 +88,7 @@ func apply_model_version(version := "") -> bool:
 	for side in ["L", "R"]:
 		var nozzle := model.find_child("nozzle_"+side, true, false) as Node3D
 		if nozzle != null:
-			nozzles[side] = nozzle
+			nozzles[side] = {"node": nozzle, "rest": nozzle.rotation, "particles": _make_thruster(nozzle, side)}
 	var facing := actor.facing_x if actor != null else 1.0
 	get_parent().rotation.y = -facing * PI * 0.5
 	get_parent().scale = Vector3.ONE * (BeeGameSettings.BEE_V01_VISUAL_SCALE if chosen == "v01" else BeeGameSettings.BEE_VISUAL_SCALE)
@@ -137,6 +138,65 @@ func _process(delta: float) -> void:
 	if model_version == "v01":
 		for i in wings.size():
 			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
+	_update_thrusters(delta)
+
+
+func _make_thruster(nozzle: Node3D, side: String) -> CPUParticles3D:
+	var particles := CPUParticles3D.new()
+	particles.name = "BeeThruster_"+side
+	particles.amount = BeeGameSettings.BEE_THRUSTER_PARTICLES
+	particles.lifetime = 0.22
+	particles.local_coords = true
+	particles.explosiveness = 0.0
+	particles.randomness = 0.18
+	particles.direction = Vector3(0.0, 0.0, 1.0)
+	particles.spread = 9.0
+	particles.gravity = Vector3.ZERO
+	particles.initial_velocity_min = BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED
+	particles.initial_velocity_max = 0.65
+	particles.scale_amount_min = 0.035
+	particles.scale_amount_max = 0.075
+	particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	particles.emission_sphere_radius = 0.018
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color(1.0, 0.98, 0.68, 0.96), Color(1.0, 0.58, 0.12, 0.78), Color(0.78, 0.16, 0.025, 0.0)])
+	particles.color_ramp = gradient
+	var spark := SphereMesh.new()
+	spark.radius = 0.045
+	spark.height = 0.09
+	spark.radial_segments = 6
+	spark.rings = 3
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.vertex_color_use_as_albedo = true
+	spark.material = material
+	particles.mesh = spark
+	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	nozzle.add_child(particles)
+	particles.emitting = BeeGameSettings.BEE_THRUSTERS_ENABLED
+	particles.visible = BeeGameSettings.BEE_THRUSTERS_ENABLED
+	return particles
+
+
+func _update_thrusters(delta: float) -> void:
+	_roll_burst_left = maxf(0.0, _roll_burst_left - delta)
+	var speed := Vector2(actor.velocity.x, actor.velocity.y).length()
+	var max_speed := maxf(Vector2(actor.horizontal_speed, actor.vertical_speed).length(), 0.1)
+	var speed_ratio := clampf(speed / max_speed, 0.0, 1.0)
+	var intensity := lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_INTENSITY, BeeGameSettings.BEE_THRUSTER_MAX_INTENSITY, speed_ratio)
+	if _roll_burst_left > 0.0:
+		intensity = 1.0
+	for entry: Dictionary in nozzles.values():
+		var nozzle: Node3D = entry["node"]
+		var rest: Vector3 = entry["rest"]
+		var particles: CPUParticles3D = entry["particles"]
+		var vertical := clampf(actor.velocity.y / maxf(actor.vertical_speed, 0.1), -1.0, 1.0)
+		nozzle.rotation = rest + Vector3(-vertical * BeeGameSettings.BEE_THRUSTER_MAX_TILT_RADIANS, 0.0, 0.0)
+		particles.visible = BeeGameSettings.BEE_THRUSTERS_ENABLED
+		particles.emitting = BeeGameSettings.BEE_THRUSTERS_ENABLED
+		particles.scale = Vector3.ONE * lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_SCALE, BeeGameSettings.BEE_THRUSTER_FULL_SCALE, intensity)
+		particles.initial_velocity_min = lerpf(BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED, 1.3, intensity)
+		particles.initial_velocity_max = lerpf(0.65, BeeGameSettings.BEE_THRUSTER_MAX_PARTICLE_SPEED, intensity)
 
 
 func _own_rim_materials() -> void:
