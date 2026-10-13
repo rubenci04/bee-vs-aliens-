@@ -62,6 +62,9 @@ func _process(_delta: float) -> void:
 	if absf(x - _last_x) > 0.01:
 		_apply(x)
 
+func apply_distance(progress: float) -> void:
+	_apply(progress)
+
 
 func _apply(x: float) -> void:
 	_last_x = x

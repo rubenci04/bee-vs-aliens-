@@ -322,6 +322,9 @@ func restore_snapshot() -> void:
 	stage.elapsed_seconds = snapshot["elapsed"]
 	stage.pollen_count = snapshot["pollen"]
 	stage._update_camera_and_bounds()
+	var light_progression := stage.get_node_or_null("LightProgression") as BeeLevel01LightProgression
+	if light_progression != null:
+		light_progression.apply_distance(stage.distance)
 	var bee := stage.bee
 	bee.global_position = snapshot["bee_position"]
 	bee.velocity = Vector3.ZERO
