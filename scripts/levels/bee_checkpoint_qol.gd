@@ -38,9 +38,9 @@ var debug_label: Label
 func setup(value: BeeShmupStage) -> void:
 	stage = value
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	notice = label("CheckpointNotice", "", Vector2(430, 180), 28)
+	notice = label("CheckpointNotice", "", Vector2(430, 112), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
-	controls_hint = label("ControlsHint", "X / CLIC DISPARO · MOUSE APUNTA · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 165), 18)
+	controls_hint = label("ControlsHint", "X / CLIC DISPARO · MOUSE APUNTA · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 212), 18)
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
 	debug_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.2))
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) · NO ES EL JUEGO NORMAL", Vector2(330, 6), 20)

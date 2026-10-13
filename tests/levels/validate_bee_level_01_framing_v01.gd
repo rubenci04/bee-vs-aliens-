@@ -29,13 +29,13 @@ func run() -> void:
 	var aspect := BeeLevel01Framing.view_aspect(root)
 	var camera := stage.camera
 	var preset: Dictionary = BeeLevel01Framing.PRESETS[BeeLevel01Framing.DEFAULT_PRESET]
-	check(BeeLevel01Framing.DEFAULT_PRESET == &"E" and is_equal_approx(camera.global_position.z, preset["distance"]) and is_equal_approx(camera.global_position.y, preset["height"]), "Camera distance/height is not preset E")
-	check(is_equal_approx(rad_to_deg(camera.rotation.x), preset["pitch"]) and is_equal_approx(camera.fov, preset["fov"]), "Camera pitch/FOV is not preset E")
+	check(BeeLevel01Framing.DEFAULT_PRESET == &"F" and is_equal_approx(camera.global_position.z, preset["distance"]) and is_equal_approx(camera.global_position.y, preset["height"]), "Camera distance/height is not preset F (LOTE 14: E pulled back 12 %)")
+	check(is_equal_approx(rad_to_deg(camera.rotation.x), preset["pitch"]) and is_equal_approx(camera.fov, preset["fov"]), "Camera pitch/FOV is not preset F")
 	var top := BeeLevel01Framing.top_y()
 	var bottom := BeeLevel01Framing.bottom_y()
 	var half_min := BeeLevel01Framing.half_width_min(aspect)
 	var half_max := BeeLevel01Framing.half_width_max(aspect)
-	# REBUILD 03: preset E must give 15-25 % more width and height than preset D on the flight plane.
+	# REBUILD 03: preset E gave 15-25 % more width and height than preset D; LOTE 14: the default F is E pulled back 12 % (so 29-40 % over D).
 	BeeLevel01Framing.use_preset(&"D")
 	var d_height := BeeLevel01Framing.top_y() - BeeLevel01Framing.bottom_y()
 	var d_half := BeeLevel01Framing.half_width_min(aspect)
@@ -43,7 +43,7 @@ func run() -> void:
 	BeeLevel01Framing.use_preset(BeeLevel01Framing.DEFAULT_PRESET)
 	var width_gain := half_min / d_half
 	var height_gain := (top - bottom) / d_height
-	check(width_gain >= 1.15 and width_gain <= 1.25 and height_gain >= 1.15 and height_gain <= 1.25, "Camera E gain outside 15-25 %% (w %.2f h %.2f)" % [width_gain, height_gain])
+	check(width_gain >= 1.29 and width_gain <= 1.40 and height_gain >= 1.29 and height_gain <= 1.40, "Camera F gain outside 29-40 %% over D (w %.2f h %.2f)" % [width_gain, height_gain])
 	check(bottom < 0.0, "The ground line must stay in frame")
 	# Horizontal flight uses 95 % of the visible width with equal left/right margins at both supported aspect ratios.
 	var m := BeeLevel01Framing.FLIGHT_MARGIN

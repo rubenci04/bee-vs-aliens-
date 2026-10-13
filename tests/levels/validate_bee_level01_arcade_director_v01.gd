@@ -263,7 +263,7 @@ func test_moments() -> void:
 		var box: AABB = mesh.global_transform * mesh.get_aabb()
 		can_box = box if first else can_box.merge(box)
 		first = false
-	check(can_box.size.y >= 2.2 and can_box.size.x >= 3.0, "The giant can is not giant (%s)" % str(can_box.size))
+	check(can_box.size.y >= 1.9 and can_box.size.x >= 2.6, "The giant can is not giant (%s)" % str(can_box.size))
 	check(can_box.end.z < -1.0 and moments.giant_can.find_children("*", "CollisionObject3D", true, false).is_empty(), "The can must stay behind the flight plane, without collision")
 	stage.scroll_speed = 0.0
 	wave.set_physics_process(false)

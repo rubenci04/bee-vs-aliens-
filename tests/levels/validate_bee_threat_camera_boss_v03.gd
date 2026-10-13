@@ -90,14 +90,14 @@ func place(unit: Node3D, rel_x: float, y: float) -> void:
 
 func test_camera() -> void:
 	var aspect := BeeLevel01Framing.DESIGN_ASPECT
-	check(BeeLevel01Framing.preset_name == &"E", "Camera E must be the default framing")
+	check(BeeLevel01Framing.preset_name == &"F", "Camera F (E pulled back 12 %, LOTE 14) must be the default framing")
 	var half := BeeLevel01Framing.half_width_min(aspect)
 	var height := BeeLevel01Framing.top_y() - BeeLevel01Framing.bottom_y()
 	BeeLevel01Framing.use_preset(&"D")
 	var d_half := BeeLevel01Framing.half_width_min(aspect)
 	var d_height := BeeLevel01Framing.top_y() - BeeLevel01Framing.bottom_y()
-	BeeLevel01Framing.use_preset(&"E")
-	check(half / d_half >= 1.15 and half / d_half <= 1.25 and height / d_height >= 1.15 and height / d_height <= 1.25, "Camera E gain outside 15-25 %")
+	BeeLevel01Framing.use_preset(BeeLevel01Framing.DEFAULT_PRESET)
+	check(half / d_half >= 1.29 and half / d_half <= 1.40 and height / d_height >= 1.29 and height / d_height <= 1.40, "Camera F gain outside 29-40 % over D")
 	arena(60.0)
 	var width := 2.0 * half
 	var right_fraction := (bee.flight_max.x - stage.distance + half) / width

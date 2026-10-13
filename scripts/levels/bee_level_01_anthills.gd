@@ -7,7 +7,7 @@ extends Node3D
 
 const CRATER := preload("res://scenes/art_labs/anthills_v01/crater.tscn")
 const SIDE_TUNNEL := preload("res://scenes/art_labs/anthills_v01/side_tunnel.tscn")
-const HILL_SCALE := 1.8 ## The Codex mounds are 2.4 m wide at scale 1; at Bee's scale (1.18 m) they read better larger.
+const HILL_SCALE := 1.44 ## LOTE 14: 20 % smaller than the 1.8 of Lote 13 (small screens); the Codex mounds are 2.4 m wide at scale 1.
 const HILL_Z := -0.9 ## Just behind the flight plane: the ant walks in front of the mound.
 const GROUND_Y := -0.2
 const EMERGE_SECONDS := 0.7
@@ -20,11 +20,11 @@ const HOP_HEIGHT := 0.5
 const VISIBLE_BEHIND := 3.0
 const VISIBLE_AHEAD := 6.5
 const PREFERRED_AHEAD := 4.0
-## [kind, X]: placed near every group of ants of the roster table.
+## LOTE 14 · ETAPA 3.1: 5 mounds (were 8) at least MIN_SPACING m of scroll (20 s at cruise) apart, each in a gap between the solid objects of the
+## flight plane (crates, rocks, mushrooms, log, bottle, litter, can) - validate_bee_lote14_anthills_v01 measures both. [kind, X]: placed near the ant groups.
+const MIN_SPACING := 25.0
 const PLACEMENTS := [
-	[&"crater", 19.5], [&"side_tunnel", 36.5], [&"crater", 54.5], [&"side_tunnel", 61.0],
-	[&"side_tunnel", 118.0], [&"crater", 122.0],
-	[&"crater", 262.0], [&"side_tunnel", 273.0],
+	[&"crater", 28.0], [&"side_tunnel", 69.45], [&"crater", 114.4], [&"side_tunnel", 143.4], [&"crater", 265.5],
 ]
 
 var hills: Array[Dictionary] = [] # {node, kind, x, entrance}

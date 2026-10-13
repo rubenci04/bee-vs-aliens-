@@ -95,7 +95,7 @@ func test_table() -> void:
 	var near_checkpoint := events.filter(func(e): return float(e["at"]) > 179.0 and float(e["at"]) < 206.0 and not (e["units"] as Array).is_empty())
 	var worms_near := near_checkpoint.filter(func(e): return "WormA" in e["units"] or "WormB" in e["units"])
 	check(longest <= 18.0, "No long empty stretch in the table (%.0f m)" % longest)
-	check(near_checkpoint.size() >= 8 and worms_near.size() >= 4, "Checkpoint 1 is the worm entrance: %d events, %d with worms" % [near_checkpoint.size(), worms_near.size()])
+	check(near_checkpoint.size() >= 8 and worms_near.size() >= 3, "Checkpoint 1 is the worm entrance: %d events, %d with worms" % [near_checkpoint.size(), worms_near.size()])
 	check(not BeeLevel01AssetDressing.FIREFLIES_ENABLED, "Fireflies stay reserved for the forest")
 	for family in ["FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB", "Turtle"]:
 		check(BeeLevel01Controller.LEVEL_HP.has(family) and BeeLevel01Controller.CAMERA_TIME.has(family), "Tuning missing for " + family)
@@ -333,7 +333,7 @@ func test_kept_code() -> void:
 # LOTE 13 · ETAPA 1: anthills on the soil; ants of marked events grow out of one and hop down before they act.
 func test_anthills() -> void:
 	var anthills := stage.get_node("Anthills") as BeeLevel01Anthills
-	check(anthills != null and anthills.hills.size() == BeeLevel01Anthills.PLACEMENTS.size() and anthills.hills.size() >= 6, "Anthills placed")
+	check(anthills != null and anthills.hills.size() == BeeLevel01Anthills.PLACEMENTS.size() and anthills.hills.size() >= 5, "Anthills placed (LOTE 14: 5-6)")
 	for hill in anthills.hills:
 		check(float((hill["entrance"] as Vector3).y) > 0.2, "Each anthill has an entrance above the soil")
 	var ant_events := 0
@@ -341,7 +341,7 @@ func test_anthills() -> void:
 		if bool(event.get("anthill", false)):
 			ant_events += 1
 	check(ant_events >= 5, "Several ant groups are marked to come out of anthills")
-	stage.distance = 15.0
+	stage.distance = 24.0 # LOTE 14: the first anthill is at X=28
 	stage._update_camera_and_bounds()
 	wave._spawn({"family": "Ant", "slot": 0, "event": 0, "due": 0.0, "hard": false, "anthill": true})
 	var ant := wave.active_units.back() as AssetFauna

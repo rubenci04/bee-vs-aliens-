@@ -4,6 +4,8 @@ extends BreakableRock
 ## mushroom is the only one that shoots; it is an enemy family). It is a BreakableRock (checkpoint restore, hit flash, break
 ## VFX) that is NOT solid: Bee flies through it and only her shots break it. Models: the three Codex garden mushrooms.
 
+## LOTE 14 · ETAPA 3.2: small screens - mushrooms and flowers are SIZE_SCALE of what they were (visual and collider).
+const SIZE_SCALE := 0.8
 const KINDS := {
 	&"button": {"scene": "res://scenes/art_labs/garden_floor_v01/mushroom_button.tscn", "hp": 20, "scale": 1.6, "radius": 0.8},
 	&"spotted": {"scene": "res://scenes/art_labs/garden_floor_v01/mushroom_spotted.tscn", "hp": 30, "scale": 1.4, "radius": 1.0},
@@ -29,9 +31,9 @@ static func place(parent: Node3D, label: String, mushroom_kind: StringName, x: f
 	node.global_position = Vector3(x, GROUND_Y, 0.0)
 	var model := (load(str(spec["scene"])) as PackedScene).instantiate() as Node3D
 	model.name = "Model"
-	model.scale = Vector3.ONE * float(spec["scale"])
+	model.scale = Vector3.ONE * float(spec["scale"]) * SIZE_SCALE
 	node.add_child(model)
-	var radius := float(spec["radius"])
+	var radius := float(spec["radius"]) * SIZE_SCALE
 	var shape := SphereShape3D.new()
 	shape.radius = radius
 	var collider := CollisionShape3D.new()

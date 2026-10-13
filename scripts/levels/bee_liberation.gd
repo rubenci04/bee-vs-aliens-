@@ -14,6 +14,9 @@ const TEXT := "LIBERADO"
 const TEXT_SECONDS := 1.3
 const TEXT_RISE := 0.9
 const TEXT_COLOR := Color(1.0, 0.9, 0.45)
+## LOTE 14 · ETAPA 3.3: never more than MAX_TEXTS "LIBERADO" signs at once; further liberations merge into ONE "+N LIBERADOS" sign.
+const MAX_TEXTS := 3
+const GROUP_TEXT := "+%d LIBERADOS"
 const CHIME_PITCH := 1.45
 ## LOTE 9 — every hit on a controlled animal (body, shell, wings, legs) damages its implant at BODY_MULTIPLIER; a
 ## direct hit on the implant / weak point does IMPLANT_MULTIPLIER. Area damage (the bomb) is always 1x.
@@ -63,8 +66,19 @@ static func warm_colours(visual: Node3D) -> void:
 			mesh.set_surface_override_material(surface, own)
 
 
-## A short "LIBERADO" that rises and fades (billboard, always readable, no depth test).
+## A short "LIBERADO" that rises and fades (billboard, always readable, no depth test). With MAX_TEXTS signs alive, the new ones merge into "+N LIBERADOS".
 static func float_text(host: Node, at: Vector3) -> Label3D:
+	var singles := 0
+	var group: Label3D
+	for node in host.get_tree().get_nodes_in_group("bee_liberated_text"):
+		if not is_instance_valid(node) or (node as Node).is_queued_for_deletion():
+			continue
+		if (node as Node).has_meta("liberated_group"):
+			group = node as Label3D
+		else:
+			singles += 1
+	if singles >= MAX_TEXTS or group != null:
+		return _group_text(host, at, group)
 	var label := Label3D.new()
 	label.name = "LiberatedText"
 	label.text = TEXT
@@ -92,3 +106,38 @@ static func explode_tech(host: Node, at: Vector3, size := 1.0) -> void:
 	BeeCombatVFX.spawn(host, at, &"tech_death", Vector3.UP, size)
 
 	BeeAudio.play(host, &"tech_death", at)
+
+
+## LOTE 14: the merged sign. One Label3D counts the liberations that did not get a sign of their own; every new one refreshes its text and its lifetime.
+static func _group_text(host: Node, at: Vector3, group: Label3D) -> Label3D:
+	if group == null:
+		group = Label3D.new()
+		group.name = "LiberatedGroupText"
+		group.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		group.no_depth_test = true
+		group.font_size = 44
+		group.outline_size = 12
+		group.pixel_size = 0.0075
+		group.outline_modulate = Color(0.16, 0.09, 0.03)
+		group.add_to_group("bee_liberated_text")
+		group.set_meta("liberated_group", true)
+		group.set_meta("liberated_count", 0)
+		host.add_child(group)
+		group.global_position = at
+	var count := int(group.get_meta("liberated_count")) + 1
+	group.set_meta("liberated_count", count)
+	group.text = GROUP_TEXT % count
+	group.modulate = TEXT_COLOR
+	group.outline_modulate.a = 1.0
+	if group.has_meta("liberated_tween"):
+		var old := group.get_meta("liberated_tween") as Tween
+		if old != null and old.is_valid():
+			old.kill()
+	var tween := group.create_tween()
+	group.set_meta("liberated_tween", tween)
+	tween.set_parallel(true)
+	tween.tween_property(group, "global_position", group.global_position + Vector3(0, TEXT_RISE * 0.5, 0), TEXT_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(group, "modulate:a", 0.0, TEXT_SECONDS * 0.45).set_delay(TEXT_SECONDS * 0.55)
+	tween.tween_property(group, "outline_modulate:a", 0.0, TEXT_SECONDS * 0.45).set_delay(TEXT_SECONDS * 0.55)
+	tween.chain().tween_callback(group.queue_free)
+	return group

@@ -22,6 +22,8 @@ const ERUPT_DEPTH := 1.5
 const STAND_ANGLE := 90.0 ## degrees: the worm stands up out of the soil
 const LEAN_DEGREES := 22.0 ## ...and its head leans towards Bee
 const LASER_WARN := 0.6
+const LINE_WIDTH := 0.04 ## LOTE 14 · ETAPA 3.3: thin aim line (was 0.07)...
+const LINE_DODGE_CLEARANCE := 0.9 ## ...that disappears once Bee is this far off the locked line.
 const LOCK_BEFORE := 0.25
 const LASER_ACTIVE := 0.2
 const LASER_WIDTH := 0.14
@@ -222,7 +224,7 @@ func _begin_erupt() -> void:
 func _begin_peek() -> void:
 	_locked = false
 	_lock_point = fauna.target.global_position
-	_line = BeeAttackVisuals.line(fauna.get_parent(), _head(), _lock_point, 0.07, WARN_COLOR)
+	_line = BeeAttackVisuals.line(fauna.get_parent(), _head(), _lock_point, LINE_WIDTH, WARN_COLOR)
 	_set_step(Step.PEEK, LASER_WARN)
 
 
@@ -235,6 +237,8 @@ func _update_aim() -> void:
 			_locked = true # ...and locks (orange) a moment before the shot.
 			(_line.mesh as BoxMesh).material = BeeAttackVisuals.material(LOCK_COLOR)
 	BeeAttackVisuals.place_line(_line, _head(), _lock_point)
+	if _locked:
+		BeeAttackVisuals.hide_when_dodged(_line, _head(), _lock_point, fauna.target.global_position, LINE_DODGE_CLEARANCE, LASER_LENGTH)
 	# The head looks along the line: the model faces its horizontal side.
 	fauna._facing = signf(_lock_point.x - fauna.global_position.x) if absf(_lock_point.x - fauna.global_position.x) > 0.15 else fauna._facing
 

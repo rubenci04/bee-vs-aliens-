@@ -25,9 +25,9 @@ func _build_roll_label() -> void:
 	roll_label = Label.new()
 	roll_label.name = "RollLabel"
 	roll_label.offset_left = 18.0
-	roll_label.offset_top = 80.0
+	roll_label.offset_top = 88.0
 	roll_label.offset_right = 520.0
-	roll_label.offset_bottom = 106.0
+	roll_label.offset_bottom = 114.0
 	roll_label.add_theme_font_size_override("font_size", 20)
 	roll_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	roll_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -39,9 +39,9 @@ func _build_sting_label() -> void:
 	sting_label = Label.new()
 	sting_label.name = "StingLabel"
 	sting_label.offset_left = 18.0
-	sting_label.offset_top = 106.0
+	sting_label.offset_top = 118.0
 	sting_label.offset_right = 520.0
-	sting_label.offset_bottom = 132.0
+	sting_label.offset_bottom = 144.0
 	sting_label.add_theme_font_size_override("font_size", 20)
 	sting_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	sting_label.add_theme_constant_override("shadow_offset_x", 1)

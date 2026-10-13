@@ -58,8 +58,8 @@ fog_light_color = Color(0.86, 0.87, 0.78, 1)
 fog_density = 0.88
 fog_sky_affect = 0.35
 fog_depth_curve = 1.4
-fog_depth_begin = 13.0
-fog_depth_end = 55.0
+fog_depth_begin = 14.2
+fog_depth_end = 56.2
 glow_enabled = true
 glow_levels/1 = 0.0
 glow_levels/2 = 1.0
@@ -220,19 +220,29 @@ position = Vector3(343, 0, 0)
 [node name="GiantHuman" parent="." instance=ExtResource("5")]
 
 [node name="Section" type="Label" parent="CanvasLayer"]
-offset_left = 18.0
-offset_top = 87.0
-offset_right = 930.0
-offset_bottom = 120.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -450.0
+offset_top = 10.0
+offset_right = 450.0
+offset_bottom = 43.0
+grow_horizontal = 2
+horizontal_alignment = 1
 theme_override_font_sizes/font_size = 22
 text = "JARDÍN · APRENDÉ A VOLAR"
 
 [node name="HumanWarning" type="Label" parent="CanvasLayer"]
 visible = false
-offset_left = 310.0
-offset_top = 125.0
-offset_right = 1250.0
-offset_bottom = 171.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -470.0
+offset_top = 78.0
+offset_right = 470.0
+offset_bottom = 124.0
+grow_horizontal = 2
+horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 0.72, 0.22, 1)
 theme_override_font_sizes/font_size = 28
 text = "¡ALGO ENORME CRUZA DESDE LA DERECHA!"

@@ -105,8 +105,8 @@ func _build_hud() -> void:
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_label.hide()
 	layer.add_child(combo_label)
-	pollen_label = _hud_label(layer, "PollenLabel", 108.0, POLLEN_COLOR)
-	frenzy_label = _hud_label(layer, "FrenzyLabel", 136.0, FRENZY_COLOR)
+	pollen_label = _hud_label(layer, "PollenLabel", 148.0, POLLEN_COLOR)
+	frenzy_label = _hud_label(layer, "FrenzyLabel", 178.0, FRENZY_COLOR)
 
 
 func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> Label:

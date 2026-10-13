@@ -12,7 +12,7 @@ const GROUP_P2 := 0.65
 const GROUP_P3 := 1.0
 const BEAT_EARLY := 3.6 ## Beat spacing (m) before the dense part.
 const BEAT_MID := 2.8
-const BEAT_DENSE := 2.0 ## From minute 2 (X ~ 138).
+const BEAT_DENSE := 2.2 ## From minute 2 (X ~ 138).
 const DEBUT_SPAN := 10.0 ## Metres a solo window covers (8 s of cruise).
 var rng := RandomNumberGenerator.new()
 var events: Array[Dictionary] = []
@@ -174,6 +174,7 @@ func build() -> void:
 	add(6.5, event_line(6.5, "CÉSPED", ["FlyCommon"]))
 	add(11.5, event_line(11.5, "CÉSPED", ["FlyCommon", "FlyCommon"]))
 	add(16.5, event_line(16.5, "CÉSPED", ["FlyCommon", "FlyCommon"]))
+	add(22.0, event_line(22.0, "CÉSPED", ["FlyCommon"]))
 	# --- One species at a time ---------------------------------------------------------------------------------------------
 	debut(26.0, "Ant", [1, 1, 2], "CÉSPED")
 	beats(41.0, 50.0, BEAT_EARLY, ["FlyCommon", "Ant"], "CÉSPED")

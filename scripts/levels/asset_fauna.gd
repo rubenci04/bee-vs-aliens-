@@ -21,6 +21,9 @@ const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const HITBOX_SCENE := preload("res://scenes/components/hitbox_3d.tscn")
 const BOMB_MODEL := preload("res://scenes/art_labs/assets_v10/moth_stationary_bomb.tscn")
 const WARN_COLOR := Color(1.0, 0.55, 0.15, 0.8)
+## LOTE 14 · ETAPA 3.3: the aim lines are thin (AIM_LINE_WIDTH, was 0.08) and vanish once Bee has stepped AIM_DODGE_CLEARANCE m off the locked line.
+const AIM_LINE_WIDTH := 0.04
+const AIM_DODGE_CLEARANCE := 0.9
 const FACE_MIN_SPEED := 0.5 # m/s (screen-relative for flyers) before the body turns to its motion.
 const FACE_SMOOTHING := 0.18 # s
 ## NOCHE 01 — liberation: a freed animal leaves relaxed for LEAVE_SECONDS (walking or flying off to the left).
@@ -556,7 +559,7 @@ func _start_telegraph() -> void:
 	_aim_line = null
 	if _is_aimed_attack():
 		_aim_lock_point = bee
-		_aim_line = BeeAttackVisuals.line(get_parent(), _muzzle(), bee, 0.08, WARN_COLOR)
+		_aim_line = BeeAttackVisuals.line(get_parent(), _muzzle(), bee, AIM_LINE_WIDTH, WARN_COLOR)
 		_warn.append(_aim_line)
 
 
@@ -574,6 +577,8 @@ func _telegraph(delta: float) -> void:
 				_aim_locked = true # ...until the lock: it turns orange and stops.
 				(_aim_line.mesh as BoxMesh).material = BeeAttackVisuals.material(LOCK_COLOR)
 		BeeAttackVisuals.place_line(_aim_line, _muzzle(), _aim_lock_point)
+		if _aim_locked:
+			BeeAttackVisuals.hide_when_dodged(_aim_line, _muzzle(), _aim_lock_point, target.global_position, AIM_DODGE_CLEARANCE)
 	if config["mode"] == &"lunge" or config["mode"] == &"charge":
 		rig.rotation.z = (0.25 if config["mode"] == &"lunge" else -0.12) * progress * -_facing # Rears up / lowers its head.
 	if _left <= 0.0:

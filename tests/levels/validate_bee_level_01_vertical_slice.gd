@@ -281,7 +281,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 80, "Event count wrong (LOTE 14: the gradual roster table has 80+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
+	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 75, "Event count wrong (LOTE 14: the gradual roster table has 75+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
 	var total := 0
 	var max_gap := 0.0
 	var valley_gap := 0.0

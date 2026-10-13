@@ -17,7 +17,7 @@ const BULLET_LOOKAHEAD := 0.9
 const DRIFT := 1.0
 const DRIFT_PERIOD := 3.4
 const FIGHT_SECONDS := Vector2(70.0, 100.0) # LOTE 14: 75 -> 70 (the nerfed summons / spiders of the roster make the bot kill it ~7 s sooner; the boss itself is untouched)
-const NORMAL_DAMAGE := Vector2(50.0, 70.0)
+const NORMAL_DAMAGE := Vector2(35.0, 70.0) # LOTE 14: 50 -> 35 (the wider camera and the real-damage roster make the spiders and summons hit less)
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -76,7 +76,7 @@ func run() -> void:
 			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": duration outside 70-100 s: " + str(result.seconds))
 			if difficulty == BeeGameSettings.NORMAL:
 				normal.append(result)
-				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": damage outside 50-70: " + str(result.damage))
+				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": damage outside 35-70: " + str(result.damage))
 			elif normal.size() > int(spread):
 				check(int(result.damage) < int(normal[int(spread)].damage), label + ": Easy must hurt less")
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL

@@ -58,6 +58,12 @@ const FIREFLY_Z := [-1.8, -2.4, -2.1]
 const FAR_LIGHTS := 16
 const FIREFLY_MODEL_LENGTH := 1.293 # controlled_firefly.glb body length at scale 1 (catalogue).
 
+## LOTE 14 · ETAPA 3.2: the large human-scale pieces (can, bottle, watering can, hollow log) are 20 % smaller and sit a metre further back
+## (small screens: they filled the frame). Applied to the scenes in BIG_PROPS when the litter is built.
+const BIG_PROP_SCALE := 0.8
+const BIG_PROP_PUSH_BACK := 1.0
+var BIG_PROPS: Array = [CAN, GREEN_BOTTLE, WATERING_CAN, HOLLOW_LOG]
+
 ## [scene, x, z, scale, yaw (rad), tilt (rad, z axis)]. All z < 0: behind the flight plane.
 const LITTER := [
 	[CAP, 22.0, -2.4, 2.0, 0.3, 0.0], [CAP, 176.0, -2.9, 2.2, 2.2, 0.12],
@@ -166,8 +172,9 @@ func _build_litter() -> void:
 		var item := (entry[0] as PackedScene).instantiate() as Node3D
 		item.name = "Litter%d" % litter.size()
 		add_child(item)
-		item.position = Vector3(float(entry[1]), -0.05, float(entry[2]))
-		item.scale = Vector3.ONE * float(entry[3])
+		var big: bool = entry[0] in BIG_PROPS
+		item.position = Vector3(float(entry[1]), -0.05, float(entry[2]) - (BIG_PROP_PUSH_BACK if big else 0.0))
+		item.scale = Vector3.ONE * float(entry[3]) * (BIG_PROP_SCALE if big else 1.0)
 		item.rotation = Vector3(0.0, float(entry[4]), float(entry[5]))
 		litter.append(item)
 

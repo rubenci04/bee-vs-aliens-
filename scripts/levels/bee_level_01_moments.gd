@@ -23,6 +23,7 @@ const POWER_HINT := "¡PREPARATE! · SPREAD+"
 @export var stage_path: NodePath = ^".."
 
 var stage: BeeShmupStage
+const CAN_SCALE := 0.8
 var giant_can: Node3D
 var beetle: Node3D
 var moments_played: Array[StringName] = []
@@ -104,7 +105,8 @@ func _build_giant_can() -> void:
 	BeeToonStyle.apply(giant_can, true)
 	# Lying along X (the loft is built along +Y), resting on the mulch behind the flight plane.
 	giant_can.rotation = Vector3(0.0, -0.35, -PI * 0.5) # Lid end turned towards the camera.
-	giant_can.position = Vector3(CAN_X - 1.8, 1.2, CAN_Z)
+	giant_can.scale = Vector3.ONE * CAN_SCALE # LOTE 14 · ETAPA 3.2: 20 % smaller (small screens).
+	giant_can.position = Vector3(CAN_X - 1.8, 1.2 * CAN_SCALE, CAN_Z)
 
 
 func _opening_can() -> void:

@@ -41,6 +41,24 @@ static func place_line(node: Node3D, from: Vector3, to: Vector3) -> void:
 	node.scale = Vector3(length, 1.0, 1.0)
 
 
+## LOTE 14 · ETAPA 3.3: distance (m, XY) from `point` to the segment from -> to.
+static func segment_distance(point: Vector3, from: Vector3, to: Vector3) -> float:
+	var a := Vector2(from.x, from.y)
+	var ab := Vector2(to.x, to.y) - a
+	var p := Vector2(point.x, point.y)
+	if ab.length_squared() < 0.0001:
+		return (p - a).length()
+	var t := clampf((p - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+	return (p - (a + ab * t)).length()
+
+
+## A locked warning line disappears once Bee has dodged it (she stands more than `clearance` m from the line the shots will take).
+static func hide_when_dodged(line: MeshInstance3D, from: Vector3, locked_point: Vector3, bee: Vector3, clearance: float, length := 14.0) -> void:
+	var direction := Vector3(locked_point.x - from.x, locked_point.y - from.y, 0.0)
+	var to := from + (direction.normalized() * length if direction.length() > 0.01 else Vector3.ZERO)
+	line.visible = segment_distance(bee, from, to) <= clearance
+
+
 ## A ring facing the side camera (XY plane), radius in metres.
 static func ring(parent: Node, center: Vector3, radius: float, thickness: float, color: Color) -> MeshInstance3D:
 	var node := MeshInstance3D.new()

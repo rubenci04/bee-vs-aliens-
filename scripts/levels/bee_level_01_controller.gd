@@ -135,7 +135,10 @@ const DEBUT_CLEAR_MAX := 0.8
 const SPECIES_NAME_SECONDS := 1.5
 ## LOTE 14 · ETAPA 2.3: with real damage (scale 1.0) the dense table is lethal, so the roster attacks less often: this multiplies the rests between attacks
 ## (idle / recovery / restalk of every unit and the implant cooldown). Warnings, projectile speed and damage are untouched.
-const ROSTER_FIRE_SLOWDOWN := 2.32
+const ROSTER_FIRE_SLOWDOWN := 2.79
+## LOTE 14: the rests start shorter (ROSTER_FIRE_SLOWDOWN_FROM at X=0: the first minutes already bite a little) and ramp up to ROSTER_FIRE_SLOWDOWN by X=ROSTER_FIRE_RAMP_X.
+const ROSTER_FIRE_SLOWDOWN_FROM := 1.2
+const ROSTER_FIRE_RAMP_X := 200.0
 const ROSTER_REST_KEYS := ["idle_time", "recovery_time", "arcade_recovery", "restalk_time"]
 ## Slower enemy shots on the roster (dodgeable, longer on screen). Applies to every shot a roster unit fires through BeeEnemyPatterns.
 const ROSTER_SHOT_SPEED_SCALE := 0.8
@@ -375,109 +378,106 @@ const EVENTS_ROSTER = [
 	{"at": 6.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.6]},
 	{"at": 11.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 0.9], "y": [5.0, 4.4]},
 	{"at": 16.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 0.6], "y": [4.4, 4.6]},
+	{"at": 22.0, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [5.2]},
 	{"at": 26.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true, "debut": "Ant"},
 	{"at": 29.3, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
 	{"at": 32.7, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant", "Ant"], "delays": [0.0, 0.8], "y": [0.0, 0.0], "anthill": true},
-	{"at": 41.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 44.6, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "FlyCommon", "Ant"], "delays": [0.0, 0.6, 1.6], "y": [4.6, 4.6, 0.0], "anthill": true},
-	{"at": 48.2, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
-	{"at": 52.0, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8], "debut": "Ladybird"},
-	{"at": 55.3, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8]},
+	{"at": 41.0, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.9], "y": [3.0, 0.0], "anthill": true},
+	{"at": 44.6, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant", "FlyCommon"], "delays": [0.0, 0.9, 1.4], "y": [5.2, 0.0, 5.2], "anthill": true},
+	{"at": 48.2, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.9], "y": [5.0, 0.0], "anthill": true},
+	{"at": 52.0, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [3.4], "debut": "Ladybird"},
+	{"at": 55.3, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [5.0]},
 	{"at": 58.7, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8]},
-	{"at": 65.0, "act": 2, "label": "MACIZO · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 0.6], "y": [4.6, 0.0], "anthill": true},
-	{"at": 68.6, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird"], "delays": [0.0, 0.6], "y": [0.0, 4.6], "anthill": true},
-	{"at": 72.2, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ant", "Ladybird"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 0.0, 3.0], "anthill": true},
-	{"at": 76.0, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [4.0], "debut": "Wasp"},
-	{"at": 79.3, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.0]},
-	{"at": 82.7, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp", "Wasp"], "delays": [0.0, 0.8], "y": [2.8, 4.0]},
-	{"at": 89.0, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [2.8, 0.0], "anthill": true},
-	{"at": 92.6, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [4.4, 0.0], "anthill": true},
-	{"at": 96.2, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [3.4]},
-	{"at": 100.0, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0], "debut": "FlyGreen"},
-	{"at": 103.3, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
-	{"at": 106.7, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen", "FlyGreen"], "delays": [0.0, 0.8], "y": [4.4, 4.4]},
-	{"at": 113.0, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [3.0, 0.0], "anthill": true},
-	{"at": 115.8, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
-	{"at": 118.6, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [5.0, 0.0], "anthill": true},
-	{"at": 121.4, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant", "Ant"], "delays": [0.0, 0.8, 1.5], "y": [5.2, 0.0, 0.0], "anthill": true},
-	{"at": 124.2, "act": 3, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [5.0]},
+	{"at": 65.0, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird", "Ladybird"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 3.0, 4.6], "anthill": true},
+	{"at": 68.6, "act": 2, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
+	{"at": 72.2, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird", "Ladybird"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.6, 5.2], "anthill": true},
+	{"at": 76.0, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [3.4], "debut": "Wasp"},
+	{"at": 79.3, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.2]},
+	{"at": 82.7, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp", "Wasp"], "delays": [0.0, 0.7], "y": [4.6, 5.0]},
+	{"at": 89.0, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.7], "y": [3.0, 0.0], "anthill": true},
+	{"at": 92.6, "act": 2, "label": "MACIZO · HORMIGA Y AVISPA", "units": ["Ant", "Wasp", "Ant"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 5.0, 0.0], "anthill": true},
+	{"at": 96.2, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.6], "y": [3.0, 0.0], "anthill": true},
+	{"at": 100.0, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.6], "debut": "FlyGreen"},
+	{"at": 103.3, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [2.8]},
+	{"at": 106.7, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen", "FlyGreen"], "delays": [0.0, 0.8], "y": [5.2, 4.0]},
+	{"at": 113.0, "act": 2, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen"], "delays": [0.0, 0.7], "y": [0.0, 3.0], "anthill": true},
+	{"at": 115.8, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [2.8, 0.0, 5.0], "anthill": true},
+	{"at": 118.6, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
+	{"at": 121.4, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.8], "y": [2.8, 0.0], "anthill": true},
+	{"at": 124.2, "act": 3, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 4.4, 2.8], "anthill": true},
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
-	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.3], "y": [4.0, 4.4, 3.0],
+	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.8, 1.5], "y": [3.0, 4.6, 2.8],
 			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
-			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 4.4, 2.8]},
-			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 3.4, 3.0]},
-			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 0.0], "anthill": true},
-			{"units": ["Ant", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 2.8], "anthill": true},
-			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 0.0, 0.0], "anthill": true},
-			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.6, 0.0, 3.4], "anthill": true},
-			{"units": ["FlyCloud", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 3.4, 0.0], "anthill": true},
+			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 4.6, 5.0]},
+			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 3.0, 5.0]},
+			{"units": ["Ant", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
+			{"units": ["Ant", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 4.4], "anthill": true},
+			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 3.4], "anthill": true},
+			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.6, 0.0, 5.0], "anthill": true},
+			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 0.0], "anthill": true},
 		]},
-	{"at": 149.0, "act": 3, "label": "MACIZO · NUBE", "units": ["FlyCloud"], "y": [4.6]},
-	{"at": 151.0, "act": 3, "label": "MACIZO · HORMIGA Y AVISPA", "units": ["Ant", "Wasp"], "delays": [0.0, 0.6], "y": [0.0, 4.4], "anthill": true},
-	{"at": 153.0, "act": 3, "label": "MACIZO · HORMIGA Y NUBE", "units": ["Ant", "FlyCloud"], "delays": [0.0, 0.7], "y": [0.0, 3.4], "anthill": true},
-	{"at": 156.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA", "WormA"], "delays": [0.0, 0.8, 1.3, 2.3], "y": [0.0, 0.0, 0.0, 0.0], "debut": "WormA"},
-	{"at": 159.3, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 0.0, 0.0]},
-	{"at": 162.7, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.3], "y": [0.0, 0.0, 0.0]},
-	{"at": 169.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA", "units": ["WormA", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 5.2, 3.4]},
-	{"at": 171.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA Y MARIQUITA", "units": ["WormA", "FlyCommon", "Ladybird"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 2.8, 3.0]},
-	{"at": 173.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
-	{"at": 175.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
-	{"at": 177.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MARIQUITA Y MOSCA", "units": ["WormA", "Ladybird", "FlyCommon"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 4.4, 4.4]},
-	{"at": 179.0, "act": 3, "label": "MACIZO · MOSCA Y GUSANO ROSA Y MARIQUITA", "units": ["FlyCommon", "WormA", "Ladybird"], "delays": [0.0, 0.6, 1.4], "y": [4.0, 0.0, 3.4]},
-	{"at": 181.0, "act": 4, "label": "MACIZO · MOSCA Y GUSANO ROSA", "units": ["FlyCommon", "WormA", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [4.0, 0.0, 3.0]},
-	{"at": 183.0, "act": 4, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
-	{"at": 185.0, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail", "Snail"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 0.0, 0.0], "debut": "Snail"},
-	{"at": 188.3, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
-	{"at": 191.7, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
-	{"at": 198.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.7], "y": [4.6, 0.0]},
-	{"at": 200.0, "act": 4, "label": "HUERTA · GUSANO ROSA", "units": ["WormA"]},
-	{"at": 202.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.9], "y": [3.4, 0.0]},
-	{"at": 204.0, "act": 4, "label": "HUERTA · GUSANO ROSA Y MOSCA VERDE", "units": ["WormA", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.0, 3.4]},
-	{"at": 206.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.7], "y": [4.4, 0.0]},
-	{"at": 208.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail", "Snail"], "delays": [0.0, 0.7, 1.5], "y": [2.8, 0.0, 0.0]},
-	{"at": 210.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.6]},
+	{"at": 149.0, "act": 3, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.2]},
+	{"at": 151.2, "act": 3, "label": "MACIZO · HORMIGA Y AVISPA Y NUBE", "units": ["Ant", "Wasp", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 4.0], "anthill": true},
+	{"at": 153.4, "act": 3, "label": "MACIZO · NUBE Y HORMIGA", "units": ["FlyCloud", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
+	{"at": 156.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.5, 2.1], "y": [0.0, 0.0, 0.0, 0.0], "debut": "WormA"},
+	{"at": 159.3, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.9, 1.5], "y": [0.0, 0.0, 0.0]},
+	{"at": 162.7, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 0.0]},
+	{"at": 169.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA", "units": ["WormA", "FlyCommon"], "delays": [0.0, 0.7], "y": [0.0, 4.6]},
+	{"at": 171.2, "act": 3, "label": "MACIZO · MARIQUITA Y GUSANO ROSA", "units": ["Ladybird", "WormA"], "delays": [0.0, 0.7], "y": [5.2, 0.0]},
+	{"at": 173.4, "act": 3, "label": "MACIZO · MOSCA Y GUSANO ROSA Y MARIQUITA", "units": ["FlyCommon", "WormA", "Ladybird"], "delays": [0.0, 0.6, 1.4], "y": [4.0, 0.0, 3.4]},
+	{"at": 175.6, "act": 3, "label": "MACIZO · MOSCA Y GUSANO ROSA", "units": ["FlyCommon", "WormA", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [4.0, 0.0, 3.0]},
+	{"at": 177.8, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
+	{"at": 180.0, "act": 3, "label": "MACIZO · MARIQUITA Y GUSANO ROSA", "units": ["Ladybird", "WormA", "WormA"], "delays": [0.0, 0.6, 1.3], "y": [5.2, 0.0, 0.0]},
+	{"at": 182.2, "act": 4, "label": "MACIZO · GUSANO ROSA Y MARIQUITA", "units": ["WormA", "Ladybird"], "delays": [0.0, 0.8], "y": [0.0, 5.2]},
+	{"at": 185.0, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail", "Snail"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 0.0, 0.0], "debut": "Snail"},
+	{"at": 188.3, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
+	{"at": 191.7, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
+	{"at": 198.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 0.0, 4.0]},
+	{"at": 200.2, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [5.2]},
+	{"at": 202.4, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO ROSA", "units": ["FlyGreen", "WormA", "FlyGreen"], "delays": [0.0, 0.7, 1.3], "y": [5.0, 0.0, 5.0]},
+	{"at": 204.6, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "FlyGreen", "Snail"], "delays": [0.0, 0.9, 1.4], "y": [4.6, 4.0, 0.0]},
+	{"at": 206.8, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.4]},
+	{"at": 209.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "FlyGreen", "Snail"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 5.0, 0.0]},
 	{"at": 214.0, "act": 4, "label": "ZONA · INICIO · ESCARABAJO", "units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0],
 			"debut": "StagBeetle", "arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
 			{"units": ["StagBeetle", "StagBeetle", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 0.0]},
 			{"units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
-			{"units": ["StagBeetle", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.0]},
-			{"units": ["Wasp", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 4.6, 0.0]},
-			{"units": ["WormA", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.0, 0.0]},
-			{"units": ["Wasp", "WormA", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 0.0]},
-			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 3.0]},
+			{"units": ["Wasp", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 3.4]},
+			{"units": ["Wasp", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 4.6]},
+			{"units": ["WormA", "Wasp", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 5.2, 5.2]},
+			{"units": ["Wasp", "WormA", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 0.0]},
+			{"units": ["WormA", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 4.6]},
 		]},
-	{"at": 227.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.6], "y": [4.6, 0.0]},
-	{"at": 229.0, "act": 4, "label": "HUERTA · AVISPA Y ESCARABAJO", "units": ["Wasp", "StagBeetle"], "delays": [0.0, 0.9], "y": [2.8, 0.0]},
-	{"at": 231.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.8], "y": [4.0, 0.0]},
-	{"at": 233.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.6], "y": [2.8, 0.0]},
-	{"at": 235.0, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB", "WormB"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 0.0, 0.0], "debut": "WormB"},
-	{"at": 238.3, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
-	{"at": 241.7, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.6], "y": [0.0, 0.0]},
-	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y ESCARABAJO", "units": ["FlyCommon", "StagBeetle"], "delays": [0.0, 0.8], "y": [3.4, 0.0]},
-	{"at": 250.0, "act": 4, "label": "HUERTA · MOSCA Y ESCARABAJO", "units": ["FlyCommon", "StagBeetle"], "delays": [0.0, 0.7], "y": [5.0, 0.0]},
-	{"at": 252.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [2.8]},
-	{"at": 254.0, "act": 4, "label": "HUERTA · ESCARABAJO Y MOSCA", "units": ["StagBeetle", "StagBeetle", "FlyCommon"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 0.0, 2.8]},
-	{"at": 256.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [5.0]},
-	{"at": 258.0, "act": 4, "label": "HUERTA · MOSCA Y MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyCommon", "FlyGreen", "WormB"], "delays": [0.0, 0.6, 1.6], "y": [5.0, 5.2, 0.0]},
-	{"at": 260.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "WormB"], "delays": [0.0, 0.7, 1.6], "y": [3.4, 0.0, 0.0]},
-	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider"], "y": [4.0], "x": [1.2],
+	{"at": 227.0, "act": 4, "label": "HUERTA · GUSANO ROSA Y AVISPA", "units": ["WormA", "Wasp"], "delays": [0.0, 0.9], "y": [0.0, 4.0]},
+	{"at": 229.2, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "Wasp", "WormA"], "delays": [0.0, 0.7, 1.3], "y": [5.2, 4.0, 0.0]},
+	{"at": 231.4, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.7], "y": [4.6, 0.0]},
+	{"at": 235.0, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB", "WormB"], "delays": [0.0, 0.6, 1.5], "y": [0.0, 0.0, 0.0], "debut": "WormB"},
+	{"at": 238.3, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
+	{"at": 241.7, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
+	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST Y MOSCA VERDE", "units": ["FlyCommon", "WormB", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 4.0]},
+	{"at": 250.2, "act": 4, "label": "HUERTA · MOSCA", "units": ["FlyCommon"], "y": [5.0]},
+	{"at": 252.4, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
+	{"at": 254.6, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "FlyCommon"], "delays": [0.0, 0.8, 1.5], "y": [4.0, 0.0, 4.4]},
+	{"at": 256.8, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "WormB"], "delays": [0.0, 0.9, 1.6], "y": [4.4, 0.0, 0.0]},
+	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
+	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider"], "y": [5.2], "x": [1.2],
 			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
-			{"units": ["Spider"], "delays": [0.0], "y": [2.8], "x": [0.6]},
-			{"units": ["Spider"], "delays": [0.0], "y": [5.2], "x": [0.6]},
-			{"units": ["Wasp", "StagBeetle", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 0.0], "anthill": true},
-			{"units": ["Wasp", "StagBeetle", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0]},
-			{"units": ["Wasp", "Wasp", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 4.4, 4.6]},
-			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 3.0]},
-			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 3.0]},
+			{"units": ["Spider"], "delays": [0.0], "y": [4.0], "x": [0.6]},
+			{"units": ["Spider"], "delays": [0.0], "y": [3.4], "x": [0.6]},
+			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0], "anthill": true},
+			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 0.0], "anthill": true},
+			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.4, 0.0], "anthill": true},
+			{"units": ["Wasp", "Ant", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 3.0], "anthill": true},
+			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
 		]},
-	{"at": 276.0, "act": 4, "label": "SOMBRA · AVISPA Y ESCARABAJO", "units": ["Wasp", "StagBeetle"], "delays": [0.0, 0.6], "y": [3.4, 0.0]},
-	{"at": 278.0, "act": 4, "label": "SOMBRA · ESCARABAJO Y AVISPA", "units": ["StagBeetle", "Wasp"], "delays": [0.0, 0.9], "y": [0.0, 5.0]},
-	{"at": 280.0, "act": 4, "label": "SOMBRA · HORMIGA Y AVISPA", "units": ["Ant", "Wasp", "Wasp"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 4.0, 2.8], "anthill": true},
+	{"at": 276.0, "act": 4, "label": "SOMBRA · AVISPA", "units": ["Wasp"], "y": [3.4]},
+	{"at": 278.2, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
+	{"at": 280.4, "act": 4, "label": "SOMBRA · ESCARABAJO Y AVISPA", "units": ["StagBeetle", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.2]},
 	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
-	{"at": 284.5, "act": 4, "label": "SOMBRA · ESCARABAJO", "units": ["StagBeetle"]},
-	{"at": 286.5, "act": 4, "label": "SOMBRA · HORMIGA Y AVISPA", "units": ["Ant", "Ant", "Wasp"], "delays": [0.0, 0.9, 1.5], "y": [0.0, 0.0, 5.2], "anthill": true},
-	{"at": 288.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant", "Wasp"], "delays": [0.0, 0.7, 1.3], "y": [4.4, 0.0, 4.0], "anthill": true},
-	{"at": 290.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
+	{"at": 284.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Wasp", "Ant"], "delays": [0.0, 0.8, 1.3], "y": [3.4, 5.0, 0.0], "anthill": true},
+	{"at": 286.7, "act": 4, "label": "SOMBRA · AVISPA", "units": ["Wasp"], "y": [4.4]},
+	{"at": 288.9, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [3.0, 0.0], "anthill": true},
+	{"at": 291.1, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Wasp", "Ant"], "delays": [0.0, 0.8, 1.6], "y": [2.8, 4.0, 0.0], "anthill": true},
 	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · MINIJEFE CON ESCOLTA", "units": ["Walker", "Wasp", "FlyCommon", "FlyCommon"], "hard": true, "miniboss": true,
 			"delays": [0.0, 1.2, 2.4, 3.4], "y": [0.0, 4.6, 5.4, 3.0],
 			"escort_wave": {"units": ["Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.9, 1.8], "y": [5.0, 3.4, 4.4]}},
@@ -762,8 +762,8 @@ func _announce_species(family: String) -> void:
 		species_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 		species_label.offset_left = -200.0
 		species_label.offset_right = 200.0
-		species_label.offset_top = 64.0
-		species_label.offset_bottom = 90.0
+		species_label.offset_top = 50.0
+		species_label.offset_bottom = 74.0
 		species_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		species_label.add_theme_font_size_override("font_size", 15)
 		species_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
@@ -798,6 +798,10 @@ func camera_time(family: String) -> float:
 ## Threats alive at once at this point of the route (popcorn excluded).
 ## LOTE 14: the gradual roster table keeps up to ROSTER_ROUTE_THREATS enemies alive on the route from X=96 (and the old caps before it).
 const ROSTER_ROUTE_THREATS := 7
+## Rest multiplier of a roster unit spawned at `distance`.
+static func fire_slowdown(distance: float) -> float:
+	return lerpf(ROSTER_FIRE_SLOWDOWN_FROM, ROSTER_FIRE_SLOWDOWN, clampf(distance / ROSTER_FIRE_RAMP_X, 0.0, 1.0))
+
 static func threat_cap(distance: float) -> int:
 	if roster_only and distance >= THREE_AT_ONCE_FROM:
 		return ROSTER_ROUTE_THREATS
@@ -925,11 +929,11 @@ func _spawn(request: Dictionary) -> void:
 		for key in (ROSTER_REST_KEYS if not bool(request["hard"]) else []): # The robot gate (and its escorts) keeps its own rhythm (mini-boss test).
 			var rest: Variant = unit.get(key)
 			if rest is float and not roster_tuning.has(key + "_fixed"):
-				unit.set(key, float(rest) * ROSTER_FIRE_SLOWDOWN)
+				unit.set(key, float(rest) * fire_slowdown(stage.distance))
 	if family in ["Mosquito", "Ladybird", "WaveDragonfly", "Ant", "StagBeetle", "Dragonfly", "Spider", "Speeder"]:
 		var gun := BeeImplantShooter.new()
 		gun.family = family
-		gun.cooldown_scale = ROSTER_FIRE_SLOWDOWN if roster_only else 1.0
+		gun.cooldown_scale = fire_slowdown(stage.distance) if roster_only and not bool(request["hard"]) else 1.0
 		gun.target = bee
 		unit.add_child(gun)
 	if unit is AssetFauna:

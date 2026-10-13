@@ -9,6 +9,9 @@ uniform float fade : hint_range(0.0, 1.0) = 0.3;
 uniform float feather : hint_range(0.05, 1.0) = 0.55;
 uniform float sway_amount = 0.12;
 uniform float sway_speed = 1.1;
+// LOTE 14: the blade fades out over the middle of the screen (half size, fractions of the screen, and feather) so it never covers the action.
+uniform vec2 center_half = vec2(0.30, 0.34);
+uniform float center_feather : hint_range(0.01, 0.5) = 0.10;
 
 void vertex() {
 	float tip = 1.0 - UV.y; // 0 at the base, 1 at the tip
@@ -23,5 +26,7 @@ void fragment() {
 	float body = 1.0 - smoothstep(half_width * (1.0 - feather), half_width, d);
 	float ends = smoothstep(0.0, 0.12, UV.y) * smoothstep(0.0, 0.08, 1.0 - UV.y);
 	ALBEDO = blade_color.rgb;
-	ALPHA = body * ends * fade;
+	vec2 away = abs(SCREEN_UV - vec2(0.5, 0.5)) - center_half;
+	float outside = smoothstep(0.0, center_feather, max(away.x, away.y));
+	ALPHA = body * ends * fade * outside;
 }

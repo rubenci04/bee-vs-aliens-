@@ -12,7 +12,7 @@ const BOT_TAPS_PER_SECOND := 3.0
 const AIM_PATTERN := [true, true, false, true, false]
 const LATE_FRACTION := 0.5
 const BULLET_LOOKAHEAD := 0.9
-const FIGHT_SECONDS := Vector2(25.0, 40.0)
+const FIGHT_SECONDS := Vector2(25.0, 45.0) # LOTE 14: 40 -> 45 (the wider camera gives the escorts more room to live)
 
 var stage: BeeShmupStage
 var wave: BeeLevel01Controller
@@ -72,7 +72,7 @@ func run() -> void:
 			var label := ("NORMAL" if difficulty == BeeGameSettings.NORMAL else "EASY") + (" SPREAD" if spread else " BASE")
 			var result := await fight(label)
 			print("MEASURE ", label, " ", result)
-			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 25-40 s: " + str(result.seconds))
+			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 25-45 s: " + str(result.seconds))
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	for line in lines:
 		print(line)

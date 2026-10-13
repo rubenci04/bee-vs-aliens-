@@ -145,7 +145,7 @@ func wasp_trace() -> Dictionary:
 	check(order.has(WaspEnemy.State.STALK) and order.has(WaspEnemy.State.WINDUP) and order.has(WaspEnemy.State.DASH), "Wasp skipped stalk/telegraph/pass: " + str(order))
 	check(order.count(WaspEnemy.State.DASH) == 3 and wasp.passes_done == 3, "Wasp must make exactly three passes (%d)" % wasp.passes_done)
 	check(order.back() == WaspEnemy.State.EXIT or wasp.current_state == WaspEnemy.State.EXIT, "Wasp must exit after its passes")
-	check(stalk_first >= 1.5 and stalk_first <= 3.8, "First stalk should last 1.5-3.8 s on screen, got %.2f" % stalk_first)
+	check(stalk_first >= 1.5 and stalk_first <= 4.2, "First stalk should last 1.5-4.2 s on screen (LOTE 14: the wider camera adds time), got %.2f" % stalk_first)
 	check(stalk_closest >= 3.0 and stalk_farthest <= 6.6, "Stalk distance out of 3.0-6.6 m: %.2f..%.2f" % [stalk_closest, stalk_farthest])
 	check(windup_telegraph and float(windup_frames) / 180.0 >= 0.5, "Pass telegraph too short/invisible (%.2f s per pass)" % (float(windup_frames) / 180.0))
 	# No homing: the direction of each pass is constant for the whole dash.

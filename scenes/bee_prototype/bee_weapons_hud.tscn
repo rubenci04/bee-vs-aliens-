@@ -6,9 +6,9 @@ script = ExtResource("1")
 bee_path = NodePath("../../BeePlayer")
 [node name="State" type="Label" parent="."]
 offset_left = 18.0
-offset_top = 52.0
+offset_top = 56.0
 offset_right = 880.0
-offset_bottom = 82.0
+offset_bottom = 86.0
 theme_override_colors/font_color = Color(0.3, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
@@ -18,9 +18,9 @@ text = "BASE · BOMB x1 · C BOMB"
 [node name="Hint" type="Label" parent="."]
 visible = false
 offset_left = 18.0
-offset_top = 138.0
+offset_top = 244.0
 offset_right = 500.0
-offset_bottom = 170.0
+offset_bottom = 276.0
 theme_override_colors/font_color = Color(0.3, 1, 1, 1)
 theme_override_font_sizes/font_size = 22
 [node name="HintTimer" type="Timer" parent="."]
