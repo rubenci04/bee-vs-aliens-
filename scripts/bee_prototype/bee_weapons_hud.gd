@@ -50,6 +50,7 @@ func _build_sting_label() -> void:
 	add_child(sting_label)
 
 func _process(_delta: float) -> void:
+	refresh()
 	if roll_label == null or bee == null:
 		return
 	var ratio := bee.roll_ready_ratio()
@@ -64,7 +65,7 @@ func _process(_delta: float) -> void:
 	sting_label.add_theme_color_override("font_color", STING_READY_COLOR if sting_ready else ROLL_CHARGING_COLOR)
 
 func refresh() -> void:
-	var weapon := "SPREAD x%d" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
+	var weapon := "SPREAD %.1f s" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
 	var action := "C — DETONAR" if is_instance_valid(bee.active_bomb) else "C — BOMBA"
 	$State.text = "%s · BOMB x%d · %s" % [weapon, bee.bomb_charges, action]
 

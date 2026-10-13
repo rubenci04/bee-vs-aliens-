@@ -87,7 +87,8 @@ var current_auto_target: Node3D
 var shots_fired := 0
 var melee_count := 0
 var is_defeated := false
-var spread_ammo := 0
+## Legacy property name retained for checkpoint/bot compatibility; value is now SECONDS.
+var spread_ammo := 0.0
 var bomb_charges := 0
 var active_bomb: BeeAlienBomb
 var _melee_active_left := 0.0
@@ -139,6 +140,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	spread_ammo = maxf(0.0, spread_ammo - delta)
 	_update_melee(delta)
 	_update_roll(delta)
 	_update_honey(delta)
@@ -232,7 +234,6 @@ func fire() -> BeeEnergyProjectile:
 		projectile.hitbox.damage = reduced_damage
 		for angle in [-spread_angle_degrees, spread_angle_degrees]:
 			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), reduced_damage).set_spread_visual()
-		spread_ammo -= 1
 		weapon_state_changed.emit()
 	if honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, spread_shot) # LOTE 11: honey mode = double shot.
@@ -260,7 +261,7 @@ func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyPr
 func collect_spread() -> bool:
 	if is_defeated:
 		return false
-	spread_ammo = spread_max_shots
+	spread_ammo = minf(BeeGameSettings.SPREAD_MAX_DURATION_SEC, spread_ammo + BeeGameSettings.SPREAD_EXTEND_SEC) if spread_ammo > 0.0 else BeeGameSettings.SPREAD_DURATION_SEC
 	weapon_state_changed.emit()
 	powerup_collected.emit(&"spread")
 	return true
@@ -269,12 +270,7 @@ func collect_spread() -> bool:
 ## ARCADE REBUILD 02: the pre-boss power capsule. Base -> overcharged Spread (spread_max_shots + bonus); with Spread ->
 ## refill + extend. Never lowers the current ammo; bounded at twice the normal load.
 func collect_spread_overcharge() -> bool:
-	if is_defeated:
-		return false
-	spread_ammo = maxi(spread_ammo, mini(maxi(spread_ammo, spread_max_shots) + spread_overcharge_bonus, spread_max_shots * 2))
-	weapon_state_changed.emit()
-	powerup_collected.emit(&"spread")
-	return true
+	return collect_spread()
 
 
 func collect_bomb() -> bool:
@@ -761,7 +757,6 @@ func _fire_spread_burst() -> void:
 			first = pellet
 	BeeAudio.play(get_parent(), &"spread")
 	($VisualRoot/BeeVisual as Node3D).call("play_muzzle_effect", first.global_position, direction, true)
-	spread_ammo -= 1
 	weapon_state_changed.emit()
 	if honey_left > 0.0:
 		_spawn_honey_twin(first, direction, true)

@@ -10,6 +10,9 @@ const EASY_DAMAGE_TAKEN := 0.6
 const EASY_ENEMY_HP := 0.75
 ## Lote 15: health measured against one BASE tap (10 damage), body hits.
 const SMALL_ENEMY_HP := {"FlyCommon": 10, "FlyCloud": 10, "FlyGreen": 20, "Wasp": 20, "Ant": 20}
+const SPREAD_DURATION_SEC := 20.0
+const SPREAD_EXTEND_SEC := 10.0
+const SPREAD_MAX_DURATION_SEC := 45.0
 ## Bee model can be changed live with set_bee_model_version().
 static var BEE_MODEL_VERSION := "v02"
 const BEE_VISUAL_SCALE := 1.0
