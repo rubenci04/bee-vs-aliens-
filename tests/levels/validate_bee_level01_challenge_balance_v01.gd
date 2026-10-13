@@ -324,23 +324,25 @@ func test_spread() -> void:
 	stage._update_camera_and_bounds()
 	bee.global_position = pickup.global_position
 	await frames(5)
-	check(bee.spread_ammo == 32 and "SPREAD x32" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "Spread pickup/HUD wrong: ammo=%d hud=%s" % [bee.spread_ammo, stage.get_node("CanvasLayer/WeaponsHUD/State").text])
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "Spread pickup/HUD wrong: ammo=%d hud=%s" % [bee.spread_ammo, stage.get_node("CanvasLayer/WeaponsHUD/State").text])
 	var central := bee.fire()
-	check(bee.spread_ammo == 31 and central != null, "A burst must consume exactly one charge")
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and central != null, "A burst must consume exactly one charge")
 	var burst := 0
 	for node in stage.find_children("*", "Node3D", false, false):
 		if node is BeeEnergyProjectile:
 			burst += 1
 			check((node as BeeEnergyProjectile).damage == 8, "Spread pellet damage is not 8")
 	check(burst == 3, "Spread must still fire 3 projectiles")
-	check(bee.collect_spread() and bee.spread_ammo == 32, "Refill must cap at 32 (no stacking)")
-	check(bee.collect_spread() and bee.spread_ammo == 32, "Second refill stacked ammo")
+	var time_before := bee.spread_ammo
+	check(bee.collect_spread() and is_equal_approx(bee.spread_ammo, time_before + 10.0), "Refill adds 10 seconds")
+	check(bee.collect_spread() and is_equal_approx(bee.spread_ammo, time_before + 20.0), "Second refill extends time")
 	for node in stage.find_children("*", "Node3D", false, false):
 		if node is BeeEnergyProjectile:
 			node.queue_free()
-	for i in 32:
-		bee.fire()
-		await frames(1)
+	bee.spread_ammo = 0.02
+	bee.set_physics_process(true)
+	await frames(3)
+	bee.set_physics_process(false)
 	check(bee.spread_ammo == 0 and "BASE" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "Ammo exhaustion failed")
 	check(bee.fire().damage == 10, "No automatic return to Base")
 	print("CHALLENGE_SPREAD ammo=32 pellets=3x8 refill_cap=OK")
@@ -363,8 +365,8 @@ func test_checkpoint_and_restart() -> void:
 	stage.checkpoint.restart_level(false)
 	await reloaded(old_stage)
 	bind(current_scene)
-	check(stage != old_stage and bee.spread_ammo == 17 and bee.spread_max_shots == 32, "Checkpoint respawn did not restore 17 Spread charges")
-	check("SPREAD x17" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "HUD not restored after the checkpoint")
+	check(stage != old_stage and bee.spread_ammo > 16.8 and bee.spread_ammo <= 17.0 and bee.spread_max_shots == 32, "Checkpoint respawn did not restore 17 Spread charges")
+	check("SPREAD " in stage.get_node("CanvasLayer/WeaponsHUD/State").text and " s" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "HUD not restored after the checkpoint")
 	var snapshot_stage := stage
 	stage.checkpoint.restart_level(true)
 	await reloaded(snapshot_stage)

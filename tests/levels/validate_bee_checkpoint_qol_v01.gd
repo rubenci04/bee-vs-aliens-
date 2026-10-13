@@ -144,7 +144,7 @@ func run() -> void:
 	stage.wave.set_physics_process(false)
 	check(stage.get_instance_id() != old_id and absf(stage.distance - 190) < 0.5 and absf(stage.camera.global_position.x - 190) < 0.5, "Camera/progress restore")
 	check(bee.global_position.is_equal_approx(Vector3(190, 5.4, 0)), "Safe spawn position")
-	check(bee.health.current_health == 60 and bee.spread_ammo == 5 and bee.bomb_charges == 0 and stage.pollen_count == 1, "Restore inventory/HP/pollen")
+	check(bee.health.current_health == 60 and bee.spread_ammo > 4.8 and bee.spread_ammo <= 5.0 and bee.bomb_charges == 0 and stage.pollen_count == 1, "Restore inventory/HP/pollen")
 	check(stage.wave.event_index == checkpoint_event() and stage.wave.active_units.is_empty() and stage.wave._pending.is_empty(), "Old/future encounters not reset")
 	check(stage.wave.human.current_phase == GiantHumanCrossingHazard.Phase.EXITED and not stage.wave._waiting_for_human, "Human repeated")
 	check(bee.current_auto_target == null and not bee.target_indicator.visible, "Old target survived")

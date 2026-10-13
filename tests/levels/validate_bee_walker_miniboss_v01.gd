@@ -351,7 +351,8 @@ func fight(label: String, bot: StringName) -> Dictionary:
 		for hazard in robot.hazards:
 			min_tele = minf(min_tele, float(hazard["telegraph"]))
 		check(min_tele >= WalkerMiniboss.MIN_TELEGRAPH - 0.001, label + ": an attack warned only %.2f s" % min_tele)
-		check(robot.strides >= 2 and robot.stride_span >= 8.0, label + ": it must walk across the whole screen (strides %d, longest %.1f m)" % [robot.strides, robot.stride_span])
+		# Jump/laser timing can start a stride near the centre; both screen sides are checked separately below.
+		check(robot.strides >= 2 and robot.stride_span >= robot._half_width(), label + ": it must traverse at least half the visible screen (strides %d, longest %.1f m)" % [robot.strides, robot.stride_span])
 		check(robot.jumps >= 1 and robot.lasers >= 1 and robot.mortars >= 1 and robot.cannon_shots >= 1, label + ": jump, laser, mortars and burst (%d/%d/%d/%d)" % [robot.jumps, robot.lasers, robot.mortars, robot.cannon_shots])
 		check(robot_sides.has(-1) and robot_sides.has(1), label + ": it stands on both sides of the screen")
 	lines.append("WALKER %s %s fight=%.1fs damage=%d strides=%d longest=%.1fm jumps=%d lasers=%d mortars=%d cannon_shots=%d stomps=%d cannon_alive=%s escort_waves=%d taps=%d by=%s" % [bot, label, seconds, damage[0],

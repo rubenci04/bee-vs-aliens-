@@ -15,4 +15,6 @@
 
 Zona muerta de ambos sticks: 0,2. El autoapuntado elige el enemigo hostil más cercano dentro del cono frontal y del rango; sin blanco apunta hacia adelante. Mouse conserva puntería libre al moverse. Los dispositivos se escuchan sin restringir su índice y admiten reconexión: aparece «Mando detectado: nombre» por 3 s. Vibración breve al recibir daño; interruptor `BeeGameSettings.vibration_enabled` (botón en título).
 
+El HUD actualiza los nombres de disparo, bomba y pirueta al último teclado/mouse o mando usado.
+
 Pirueta: 0,35 s de invulnerabilidad, rompe proyectiles comunes y redes en vuelo; no destruye ondas ni rayos. Impulso de 3 m si se está moviendo; espera 1,2 s. Aguijón: siempre disponible con intervalo de animación de 0,35 s, daño 30. Una red que ya atrapó a Bee mantiene su restricción de movimiento y habilidades; disparar / pulsar movimiento la rompe.

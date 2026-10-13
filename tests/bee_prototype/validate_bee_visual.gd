@@ -26,7 +26,8 @@ func run() -> void:
 	Input.action_press("move_left")
 	bee._physics_process(1.0 / 60.0)
 	Input.action_release("move_left")
-	require(is_equal_approx(bee.visual_root.rotation.y,PI/2),"Left facing is wrong")
+	for i in 20: await physics_frame
+	require(absf(bee.visual_root.rotation.y-PI/2)<0.01,"Left facing is wrong after the smooth turn")
 	require(visual.is_visible_in_tree() and not bee.has_node("VisualRoot/Body"),"Visual hidden or proxy duplicated")
 	var flash := bee.get_node("HitFlash3D") as HitFlash3D
 	bee.health.take_damage(1)

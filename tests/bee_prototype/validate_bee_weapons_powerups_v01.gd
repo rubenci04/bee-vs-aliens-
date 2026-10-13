@@ -109,16 +109,16 @@ func run() -> void:
 	await frames(3)
 	await capture("01_spread_pickup")
 	await touch_pickup("Powerups/SpreadFirst")
-	check(bee.spread_ammo == 32 and "SPREAD x32" in hud.get_node("State").text, "Spread pickup/HUD wrong")
-	check(hud.get_node("Hint").visible and "X — FIRE" in hud.get_node("Hint").text, "Spread hint missing")
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in hud.get_node("State").text, "Spread pickup/HUD wrong")
+	check(hud.get_node("Hint").visible and "DISPARAR" in hud.get_node("Hint").text, "Spread hint missing")
 	await capture("02_bee_spread")
 	await capture("08_hud_spread_bomb")
 	var aim_target := enemy(BeeLevel01Controller.WASP, Vector3(27, 5, 0))
 	await frames(3)
-	var direction := (aim_target.get_node("Hurtbox3D").global_position - bee.global_position).normalized() as Vector3
+	var direction := (aim_target.get_node("Hurtbox3D").global_position - bee.get_node("VisualRoot/BeeVisual").call("firing_origin", bee.global_position)).normalized() as Vector3
 	var central := bee.fire()
 	var burst := shots()
-	check(burst.size() == 3 and bee.spread_ammo == 31, "Spread count/ammo wrong")
+	check(burst.size() == 3 and bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0, "Spread count/ammo wrong")
 	check(central.travel_direction.is_equal_approx(direction), "Central lost auto-aim")
 	for shot in burst:
 		check(shot.damage == 8 and shot.hitbox.damage == 8, "Spread damage is not 80 percent")
@@ -137,10 +137,12 @@ func run() -> void:
 	check(aim_target.get_node("HealthComponent").current_health == spread_hp - 8, "Spread central did not apply exactly 8 HP on real overlap")
 	aim_target.queue_free()
 	await clear_shots()
-	check(bee.collect_spread() and bee.spread_ammo == 32, "Refill did not cap")
-	for i in 32:
-		bee.fire()
-		await clear_shots()
+	var time_before := bee.spread_ammo
+	check(bee.collect_spread() and is_equal_approx(bee.spread_ammo, time_before + 10.0), "Refill adds 10 seconds")
+	bee.spread_ammo = 0.02
+	bee.set_physics_process(true)
+	await frames(3)
+	bee.set_physics_process(false)
 	check(bee.spread_ammo == 0 and "BASE" in hud.get_node("State").text, "Ammo exhaustion failed")
 	check(bee.fire().damage == 10 and shots().size() == 1, "No automatic return to Base")
 	await clear_shots()
@@ -151,7 +153,7 @@ func run() -> void:
 	await capture("04_bomb_pickup")
 	await touch_pickup("Powerups/BombFirst")
 	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
-	check("C — USE" in hud.get_node("Hint").text, "Bomb hint missing")
+	check("C — USAR" in hud.get_node("Hint").text, "Bomb hint missing")
 	check(bee.collect_bomb() and bee.bomb_charges == 5 and not bee.collect_bomb(), "Charge cap failed (LOTE 9: cap 5)")
 	var capped := PICKUP.instantiate() as BeePowerupPickup
 	capped.kind = BeePowerupPickup.Kind.BOMB

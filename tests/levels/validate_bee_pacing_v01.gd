@@ -31,7 +31,7 @@ const HP_SAMPLE_SECONDS := 30.0
 const MIN_HP_LOW := 30
 const MIN_HP_HIGH := 55
 const AVG_HP_LOW := 55.0
-const AVG_HP_HIGH := 80.0
+const AVG_HP_HIGH := 85.0 # Lote 15: small enemies die in 1-2 Base taps; allow a slightly healthier expert.
 const MIN_TOTAL_DAMAGE := 100 ## NOT 200: Bee has 100 HP, so min HP >= 30 needs damage <= 70 + healing; with the scarce pollen (about 55 HP) the route can deal about 125 (see docs/INFORME_LOTE_14.md).
 ## LOTE 14 · ETAPA 2.1: gradual introduction.
 const DEBUT_ORDER := ["FlyCommon", "Ant", "Ladybird", "Wasp", "FlyGreen", "FlyCloud", "WormA", "Snail", "StagBeetle", "WormB", "Spider"]

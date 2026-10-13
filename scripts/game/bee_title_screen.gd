@@ -87,7 +87,41 @@ func _make_ui() -> void:
 			setter.call(value))
 		row.add_child(slider)
 		play.get_parent().add_child(row)
+	for spec in [["Aviso visual", "SHOT_WARNING_VISUAL_ENABLED"], ["Aviso sonoro", "SHOT_WARNING_AUDIO_ENABLED"], ["Flechas de borde", "SHOT_WARNING_EDGE_ENABLED"]]:
+		var toggle := play.duplicate(0) as Button
+		var title: String = spec[0]
+		var setting: String = spec[1]
+		toggle.text = title + (": SÍ" if BeeGameSettings.warning_enabled(setting) else ": NO")
+		toggle.pressed.connect(func():
+			var enabled := BeeGameSettings.toggle_warning(setting)
+			toggle.text = title + (": SÍ" if enabled else ": NO"))
+		play.get_parent().add_child(toggle)
+	_fit_menu(play.get_parent() as VBoxContainer)
 	play.grab_focus()
+
+func _fit_menu(menu: VBoxContainer) -> void:
+	var stack := menu.get_parent() as VBoxContainer
+	var index := menu.get_index()
+	var scroll := ScrollContainer.new()
+	scroll.name = "TitleMenuScroll"
+	scroll.follow_focus = true
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(BeeGameSettings.TITLE_MENU_WIDTH, get_viewport().get_visible_rect().size.y * BeeGameSettings.TITLE_MENU_HEIGHT_FRACTION)
+	stack.remove_child(menu)
+	stack.add_child(scroll)
+	stack.move_child(scroll, index)
+	scroll.add_child(menu)
+	var logo := ui.find_child("Logo", true, false) as TextureRect
+	if logo != null:
+		logo.custom_minimum_size.y = get_viewport().get_visible_rect().size.y * BeeGameSettings.TITLE_LOGO_HEIGHT_FRACTION
+	stack.add_theme_constant_override("separation", 8)
+	for child in stack.get_children():
+		if child.get_class() == "Control":
+			(child as Control).custom_minimum_size.y = 0.0
+	var margin := stack.get_parent() as MarginContainer
+	if margin != null:
+		margin.add_theme_constant_override("margin_top", BeeGameSettings.TITLE_MENU_MARGIN)
+		margin.add_theme_constant_override("margin_bottom", BeeGameSettings.TITLE_MENU_MARGIN)
 
 
 func _toggle_shake() -> void:

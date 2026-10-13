@@ -141,7 +141,7 @@ func run() -> void:
 
 	bee.collect_spread()
 	var spread := bee.fire()
-	check(effects(&"muzzle_spread").size() == 1 and spread.trail.amount == 14 and bee.spread_ammo == 31, "Spread visual/state wrong")
+	check(effects(&"muzzle_spread").size() == 1 and spread.trail.amount == 14 and bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0, "Spread visual/state wrong")
 	await frames(4)
 	await capture("04_spread")
 	await clear_shots()
@@ -205,11 +205,12 @@ func run() -> void:
 	await clear_shots()
 
 	stage.camera.set_stage_x(22)
+	bee.spread_ammo = 0.0
 	var pickup: BeePowerupPickup = stage.get_node("Powerups/SpreadFirst")
 	check(pickup.collect(bee) and not pickup.collect(bee), "Pickup duplication")
 	await frames(3)
 	var toon_feedback := stage.get_node("Powerups").get_children().any(func(n): return n.has_signal("finished")) # NOCHE 01: Codex toon pickup = warm toon burst.
-	check((effects(&"pickup").size() == 1 or toon_feedback) and bee.spread_ammo == 32, "Pickup feedback/state wrong")
+	check((effects(&"pickup").size() == 1 or toon_feedback) and bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0, "Pickup feedback/state wrong")
 	await capture("10_pickup")
 	await clear_shots()
 	var pollen: BeePollenPickup = stage.get_node("Pollen/PollenA")

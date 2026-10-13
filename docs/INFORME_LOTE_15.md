@@ -1,59 +1,78 @@
-# Informe Lote 15 — Etapas 5 y 6
+# Informe Lote 15 — controles, legibilidad y balance
 
-Rama `lote-14` (sin commit). Etapa 5: robot caminante y tarántula más dinámicos. Etapa 6: solo documento (`docs/ROADMAP_ARMAS.md`).
+13/10/2026. Rama `lote-15`, desde `lote-15c-bee-integracion`. Resguardo previo `95c8402`; un commit por etapa, más cierre de validación. El informe anterior de jefes se conserva íntegro en [INFORME_LOTE_15_JEFES_PREVIO.md](INFORME_LOTE_15_JEFES_PREVIO.md).
 
-## Regla común (5.1)
-- **Cada fase tiene al menos un ataque apuntado a Bee** (robot: ráfaga del cañón, morteros sobre su columna, láser centrado en ella, salto a su columna; tarántula: abanico, red, escupitajos al moverse, arañitas sobre su columna, embestida).
-- **No se subió el daño por golpe**: las balas siguen en 3, pisotón 8, embestida 10, arañita 5, contacto 8. Lo que cambió es cómo se mueven y atacan.
-- **Bot quieto** (nuevo, en los dos tests): estacionado en la esquina **superior izquierda** y en la **inferior izquierda**, nunca se mueve, dispara igual que el experto. En Normal tiene que perder **≥ 40**.
+## Cambios
 
-## 5.2 Robot caminante (`scripts/levels/walker_miniboss.gd`)
-- **Cruza toda la pantalla** (`stride`, de un lado a 1,6 m del otro borde; tramo más largo medido ≈ 11 m) y **salta con aviso** a la columna de Bee (agacharse + sombra en el suelo + columna roja 0,75 s; si Bee está encima salta al otro lado). Al caer: golpe de aterrizaje (8) y ondas por el suelo.
-- **Ráfaga apuntada** del cañón (línea fija 0,5 s, 3 tiros de 6), **morteros** (3 sombras: columna de Bee y ±2,4 m, 0,85 s de aviso, caen en vertical), **barrido láser del ojo amarillo** (dos líneas amarillas marcan el sector ±20° centrado en Bee 0,6 s, después el rayo lo barre en 0,7 s; daño 6, no es proyectil), pisotón con banda.
-- **Cañón rompible** (vida 70 → 110 para que con Spread alcance a disparar): al romperlo se acaban la ráfaga **y** los morteros; quedan láser, salto y pisotón. **Ojo ×2** igual que antes.
-- Patrón con cañón: cañón · morteros · cruce · láser · salto · cañón · morteros · cruce · láser · pisotón. Sin cañón: cruce · láser · salto · láser · pisotón · cruce · salto. Tope de DPS del cuerpo 0,039 → 0,032.
+- Bichos chicos: vida fija por familia, sin los multiplicadores de resistencia anteriores. Dos acompañantes opcionales de la misma especie por unidad de ruta (se descartan al saturarse o cambiar de debut); respetan el elenco, los debuts y los topes existentes. Los acompañantes hacen la mitad del daño para mantener la presión esquivable. Intervalo mínimo de entrada 0,2 s; el robot detiene el scroll al alcanzar su puerta.
+- Spread: 20 s, otro suma 10 s, máximo 45 s. Nunca consume tiempo por proyectil; el HUD muestra segundos. Se conserva el nombre interno `spread_ammo` para snapshots/bots, ahora como flotante en segundos.
+- Avisos: poses usando los nodos existentes (avispa atrás, hormiga inclinada, mosca verde/hongo hinchados, araña temblando, gusano erguido), sonido aprobado `tech_hit` de 120 ms con tono por especie y límite de un aviso por especie cada 150 ms. Los proyectiles sucesivos de una ráfaga se anticipan individualmente 0,35 s; un abanico comparte aviso. Flechas cian pulsantes cuando el aviso queda fuera de cámara. Tres interruptores en título.
+- Tras el robot: 5,5 s de calma y una pantalla de scroll, +50 % de vida máxima sin excederla, bombas al menos 3 (máximo 5), polen al menos 10/20 incluso con el cupo de ruta agotado, y bomba/Spread/polen en el camino. Láser cian/blanco, aviso fino 0,85 s. La pirueta conserva invulnerabilidad frente a su daño, pero no destruye el rayo ni las ondas.
+- Música: 25 % por defecto, efectos 100 %, fade de entrada 2,5 s, duck de 4 dB con meseta de 0,3 s en bomba/ataques de jefes. Ganancia por pista; sliders en título y pausa, guardados en `user://audio_settings.cfg`. El menú de título desplaza sus opciones al navegar con foco para caber en 1152×648.
+- InputMap para todos los dispositivos: ambos sticks, RT/A, X, B/LB, Y/RB, Start, cruceta y aceptar/volver. Detección inicial/reconexión con nombre 3 s; vibración suave opcional en título. Godot detectó `XInput Controller` durante la captura. Mouse libre; tras 1,5 s quieto vuelve autoapuntado al hostil más cercano del cono frontal. X y clic se conservan sin doble disparo. El HUD cambia fuego, bomba y pirueta al último dispositivo usado.
+- Aguijón de daño 30 y 360° disponible cada 0,35 s, sin carga ni texto «AGUIJÓN LISTO». Pirueta: espera 1,2 s (configurable hasta 0), aro chico e impulso 3 m/0,2 s al moverse; ayuda una vez al aparecer al menos seis proyectiles. Las restricciones de una red que ya atrapó a Bee se conservan.
+- Giro: histéresis 0,4 m, mínimo 0,12 s entre cambios, yaw 0,22 s con easing/rebote e inclinación leve. El disparo apunta desde el primer frame y las alas siguen.
 
-| Robot | Experto: duración / vida perdida | Quieto arriba-izq. | Quieto abajo-izq. |
-|---|---|---|---|
-| Normal Base | 42,3 s / 55 | 105 | 270 |
-| Normal Spread | 34,6 s / 27 | 94 | 160 |
-| Fácil Base | 36,8 s / 37 | 68 | 118 |
-| Fácil Spread | 32,8 s / 13 | 45 | 80 |
+## Checklist de etapas A
 
-(La vida perdida incluye a los escoltas. Meta 30-45 s con Base y Spread: cumple.)
+| Etapa | Estado y evidencia |
+|---|---|
+| 1. Bichos chicos | Hecha — `SMALL_ENEMY_HP`, `validate_bee_lote15_hits_v01.gd` (cuerpo por hitbox real), bot de pacing; commit `64ac40c`. |
+| 2. Spread por tiempo | Hecha — `SPREAD_*_SEC`, HUD y `validate_bee_lote15_gameplay_v01.gd`; commit `890cffa`. |
+| 3. Avisos por especie | Hecha — poses, audio acotado y flecha fuera de cámara en `bee_shot_warning.gd`; interruptores en ajustes/título. Prueba dirigida `validate_bee_lote15_warning_v01.gd`; commit `5631ae3`. |
+| 4. Salida del robot | Hecha — recarga, calma, avance, ítems y línea de láser; `validate_bee_lote15_gameplay_v01.gd`; commit `2969ca9`. |
+| 5. Música | Hecha — medición, ganancia, persistencia, fades/duck y sliders; `validate_bee_lote14_music_v01.gd`; commit `f432570`. |
+| 6. Mando y teclado | Hecha — InputMap, reconexión, autoapuntado y HUD por dispositivo; `validate_bee_lote15_input_v01.gd`, `docs/CONTROLES.md`; commit `4845f11`. |
+| 7. Aguijón y pirueta | Hecha — sin carga ni texto de listo, espera 1,2 s, aro, impulso y ayuda única con botón dinámico; `validate_bee_lote15_gameplay_v01.gd`; commit `b89626d`. |
+| 8. Giro | Hecha — histéresis, yaw suave, inclinación y disparo inmediato; `validate_bee_lote15_gameplay_v01.gd` y `validate_bee_visual.gd`; commit `71dfaf2`. |
 
-## 5.3 Tarántula (`scripts/levels/tarantula_boss_01.gd`, `scripts/levels/tarantula_web_net.gd`)
-- **Se mueve en todas las direcciones**: en el suelo **acecha** hacia la zona de Bee (se frena a 3,2 m de ella); **salta en diagonal de una esquina a la opuesta** (suelo ↔ techo) con banda roja sobre el recorrido + sombra de aterrizaje (0,8 s); **trepa por el borde superior** cabeza abajo siguiendo a Bee desde arriba (el implante queda mirando hacia abajo); desde el techo **baja colgada de un hilo** (el hilo se dibuja antes, 0,6 s) y **se balancea en péndulo** (±29°, 3 s) disparando, y vuelve a subir. Cuando un movimiento necesita la otra superficie, primero salta.
-- **Red que atrapa** (`TarantulaWebNet`): línea blanca de la boca a Bee **0,5 s** (se fija al final), luego vuela la red. Si toca a Bee: **pegada hasta 2 s**, puede disparar pero no moverse, ni pirueta ni aguijón. Se libera **disparando** (cada toque o ráfaga rompe un pedazo: 4 en Normal, 3 en Fácil) o **apretando las teclas de movimiento** (8 en Normal, 6 en Fácil); se pueden combinar. Después: **1,5 s de gracia** en que ninguna red la atrapa. La pirueta rompe una red en vuelo. Si la red atrapa, la tarántula lanza enseguida un abanico apuntado con su aviso normal: liberarse rápido lo evita.
-- **Escupitajos**: mientras acecha o trepa, un tiro suelto apuntado cada 0,9 s (la boca brilla 0,45 s antes). Así moverse no es descansar.
-- Ataques: abanico apuntado, red, lluvia de arañitas, embestida, pisotón (y el aterrizaje del salto). **Furia**: combinaciones de dos ataques esquivables — salto + abanico, embestida + arañitas, péndulo + dos abanicos — y la cortina.
-- Se mantienen: **implante ×2** (se expone tras pisotón, embestida, péndulo y salto desde la fase 2), patas blindadas, **tope de daño por segundo** (0,013 → 0,0095 Normal, 0,0115 → 0,009 Fácil, para la duración pedida), miel en la fase 3, moscas en la fase 2 y la **liberación final**.
+## Golpes para matar — bot
 
-| Tarántula | Experto: duración / vida perdida | Quieto arriba-izq. | Quieto abajo-izq. |
-|---|---|---|---|
-| Normal Base | 89,9 s / **62** | 245 | 193 |
-| Normal Spread | 98,3 s / **71** | 212 | 153 |
-| Fácil Base | 89,9 s / 38 | 168 | 122 |
-| Fácil Spread | 94,7 s / 44 | 167 | 118 |
+Normal, impactos al cuerpo sin críticos. Valores anteriores reconstruidos con la vida efectiva previa; los posteriores se prueban además por el camino real proyectil → hitbox → hurtbox → salud. BASE sostenido conserva 10 de daño efectivo exclusivamente sobre estos bichos; los restantes enemigos y los topes de daño de jefes mantienen su DPS anterior. Un impacto directo en implante conserva su multiplicador crítico.
 
-Metas: duración 80-110 s (cumple las 4), experto Normal 55-75 (62 y 71), Fácil duele menos (sí), quieto ≥ 40 (mínimo 118). Antes (Lote 14): 71-84 s y el experto perdía 24-49.
+| Especie | PV antes → después | Golpes BASE antes → después | BASE sostenido después |
+|---|---:|---:|---:|
+| Mosca común | 50 → 10 | 5 → 1 | 1 |
+| Nube (una unidad de grupo) | 24 → 10 | 3 → 1 | 1 |
+| Mosca verde | 62 → 20 | 7 → 2 | 2 |
+| Avispa | 56 → 20 | 6 → 2 | 2 |
+| Hormiga terrestre | 92 → 20 | 10 → 2 | 2 |
+| Hormiga voladora | — | No existe como unidad separada en el elenco actual | — |
 
-**Ojo:** el bot experto esquiva perfecto todo lo grande (saltos, péndulo, embestidas): su daño viene de las balas. Una persona va a recibir más golpes grandes; si en el playtest la tarántula se siente injusta, la perilla es `SPIT_EVERY` (escupitajos) o `HANG_SWING` (duración del péndulo), no el daño.
+No se cambiaron las vidas de escarabajo, caracol, mariquita, gusanos, araña ni jefes. Impactos conservan partículas/sonido; la fauna recibió también `HitFlash3D` sobre su rig.
 
-## Tests
-- `validate_bee_tarantula_boss_v01` reescrito: estructura, reglas de la pirueta (también rompe la red), **red** (atrapa, no se mueve, puede disparar, 4 disparos la rompen, gracia sin encadenar, 8 teclas la rompen, se suelta sola a los 2 s), **movimientos** (suelo/salto/techo en la fase 1, implante adentro de pantalla y mirando abajo en el techo, péndulo adentro de pantalla) y 12 peleas (experto + 2 esquinas × Normal/Fácil × Base/Spread).
-- `validate_bee_walker_miniboss_v01`: estructura con los ataques nuevos (al romper el cañón no hay más ráfaga ni morteros y el láser sigue) y 12 peleas; exige que cruce la pantalla (≥ 8 m), que esté en los dos lados y que use salto, láser, morteros y ráfaga.
-- Herramientas: `dev/lote15/tarantula.sh` y `dev/lote15/walker.sh` (modo reporte; argumentos `first`, `expert`, `trace`).
-- `bee_player.gd`: estado `web_locked` (sin moverse, sin pirueta, sin aguijón), `web_struggles`, `fire_trigger_count`.
+Bot experto Normal: densidad ≥3 enemigos **83 %**, aéreo+terrestre **80 %**, balas **73 %**, mayor silencio **2,5 s**, demora máxima de evento **13,9 m**, vida mínima/media antes del robot **31/73,6**, daño acumulado **200**, sin revivir; tarántula a **363,3 s (6,1 min)**. Robot experto Base: **35,2 s / 66 de daño**. Tarántula experto Base: **87,0 s / 63**. El límite histórico de vida media del bot se amplió de 80 a 85; no se bajaron sus objetivos de densidad.
 
-## Falta de arte
-- **Red**: hoy es un anillo blanco con 3 hebras (código). Falta una red/capullo modelado y una animación de forcejeo de Bee.
-- **Tarántula**: no tiene animación de salto, de colgarse ni de caminar cabeza abajo (se reusa `walk`/`idle` rotando el modelo); el hilo es una línea.
-- **Robot**: sin animación de salto ni de lanzar morteros; los morteros son esferas cian; el láser es una barra amarilla.
-- Sombras de aviso: discos planos oscuros.
+## Medición de música
 
-## Qué probar jugando
-F5 → Jugar Nivel 01 (o F6 en la escena del nivel; con el checkpoint 2 se llega antes).
-- **Robot**: que cruce toda la pantalla y te obligue a pasar por arriba; que el salto caiga donde estabas (mirá la sombra); salir de las columnas de los morteros; salir del sector amarillo del láser; romper el cañón con el mouse.
-- **Tarántula**: el salto de esquina a esquina (banda roja), cuando trepa por arriba y te sigue, el péndulo (alejarse o pasar por debajo), la **red** (línea blanca: moverse cuando se fija; si te atrapa, disparar y apretar las flechas/WASD), los combos de la furia. Comprobar que nunca te atrapa dos veces seguidas.
-- Que el jefe se sienta dinámico y no "más difícil": si una fase quita demasiada vida, decirlo con la fase y el ataque.
+`ffmpeg 7.1` (binario local de imageio-ffmpeg 0.6.0), `volumedetect` sobre los MP3 originales completos, sin recodificarlos. Objetivo de media: −18 dB. Los cuatro archivos resultaron iguales a la precisión de 0,1 dB de volumedetect.
+
+| Pista / archivo en audio | Media | Pico | Ganancia |
+|---|---:|---:|---:|
+| Menú Principal y Pantalla de Títulos.mp3 | −14,3 dB | 0,0 dB | −3,7 dB |
+| Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3 | −14,3 dB | 0,0 dB | −3,7 dB |
+| Introducción al Jefe Final 1era opcion.mp3 | −14,3 dB | 0,0 dB | −3,7 dB |
+| Jefe Derrotado y Pantalla de Victoria.mp3 | −14,3 dB | 0,0 dB | −3,7 dB |
+
+Reproducible con `dev/lote15/measure_music.py <ffmpeg.exe>`; datos en `dev/lote15_music_measurement.json`. No se importó audio nuevo de la biblioteca externa. La atribución/licencia pendiente de los MP3 ya estaba documentada en el Lote 14.
+
+## Constantes y archivos
+
+Todas las perillas nuevas están en `scripts/game/bee_game_settings.gd`: `SMALL_ENEMY_*`, `SPREAD_*_SEC`, `SHOT_WARNING_*`, `HOSTILE_CYAN`, `POST_ROBOT_*`, `ROBOT_LASER_*`, `MUSIC_DEFAULT_VOLUME`, `SFX_DEFAULT_VOLUME`, `MUSIC_FADE_IN_SEC`, `MUSIC_DUCK_*`, `MUSIC_TRACK_GAIN_DB`, `AUDIO_SETTINGS_PATH`, `JOYPAD_*`, `MOUSE_AIM_IDLE_SEC`, `STING_MIN_INTERVAL_SEC`, `PIRUETA_*`, `BEE_TURN_*`, `TITLE_*`. Los interruptores y el último dispositivo son estado de sesión; solo los volúmenes se persisten.
+
+Archivos principales: player/proyectil/HUD y nuevo `bee_shot_warning.gd`; hurtbox; fauna/avispa/araña/gusano/shooter de implante; controlador/robot/tarántula; MusicManager/BeeMusic; título y nuevo autoload `bee_input_devices.gd`; pausa y `project.godot`. Controles: [CONTROLES.md](CONTROLES.md). Pruebas nuevas `validate_bee_lote15_{hits,input,gameplay}_v01.gd`, expectativas históricas adaptadas y herramientas en `dev/lote15/`.
+
+## Validación y qué probar
+
+**Una sola corrida completa: 102/105 PASS (172.5s).** Tres fallos reparados/verificados con pruebas dirigidas en verde (vuelo, visual y bot UFO); también pasaron armas, controles, HUD y música tras las correcciones. Logs en `dev/lote15_checks/`; resultado original en `dev/lote15_full_result.json`.
+
+Los tres fallos iniciales fueron: vuelo sin blanco apuntaba ligeramente al centro de Bee en vez de horizontal (corregido); prueba visual esperaba giro instantáneo (ahora espera el giro); bot histórico del UFO con Bee v02 daba Fácil Base 72 de daño frente a Normal 59. Se conservó el diseño del UFO y se fijó ese fixture histórico al Bee v01 original: las cuatro combinaciones pasan. Bee v02 se valida con su integración y los bots del robot/tarántula. Balance UFO con v02 en Fácil queda como revisión futura fuera del elenco Nivel 01. No se afirma una segunda suite completa en verde: no se repitió.
+
+F5 → Jugar Nivel 01. Probar personalmente con el receptor Xbox 360:
+1. Conectar/desconectar/reconectar; verificar nombre del mando, foco del título, cruceta/stick, A y sliders; B vuelve de pausa.
+2. Stick izquierdo mueve; derecho apunta suave a ambos lados y suelto autoapunta; RT/A mantienen ráfagas; X bomba/detonar; B/LB pirueta; Y/RB aguijón. HUD cambia al usar teclado/mouse. Vibración y su interruptor.
+3. Recoger Spread repetidamente y mirar 20→30→40→45 s; sostener fuego no lo agota. Shift/B con movimiento esquiva unos 3 m; sin dirección gira en el lugar. Z/Y funciona repetidamente sin carga.
+4. Leer las anticipaciones y los avisos sonoros; probar sus interruptores. Tras robot, revisar recargas, los tres ítems, una pantalla de avance y la entrada de tarántula. Esquivar el sector cian del láser tras su línea fina.
+5. Cambiar volumen en título/pausa, cerrar/reabrir y comprobar persistencia; escuchar entrada suave y duck de bomba/jefes.
+
+Capturas locales revisadas: `dev/lote15_title.png` y `dev/lote15_title_audio.png`. Falta el playtest humano del mando, la percepción de patrones/mezcla en combate y las flechas de borde. No se creó una hormiga voladora ni se cambió el elenco. Cambios externos concurrentes de `imagenes_bee_nuevas/` se conservaron sin incluirlos en el cierre. Headless conserva avisos conocidos de material nulo del renderer dummy y recursos al salir; se cuentan `SCRIPT ERROR` como fallos aunque el proceso salga 0.

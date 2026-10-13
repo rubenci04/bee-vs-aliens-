@@ -129,7 +129,7 @@ func test_roll() -> void:
 		if event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_SHIFT:
 			shift = true
 	check(shift, "bee_roll must be Shift")
-	check(is_equal_approx(bee.roll_duration, 0.35) and is_equal_approx(bee.roll_cooldown, 2.5), "Roll constants must be 0.35 s / 2.5 s")
+	check(is_equal_approx(bee.roll_duration, 0.35) and is_equal_approx(bee.roll_cooldown, BeeGameSettings.PIRUETA_COOLDOWN_SEC), "Roll constants must be 0.35 s / 2.5 s")
 	bee.set_physics_process(true)
 	check(bee.roll_ready_ratio() >= 1.0, "Roll must start ready")
 	check(bee.start_roll(), "Roll did not start")
@@ -162,9 +162,9 @@ func test_roll() -> void:
 	check(bee.health.take_damage(5) == 5, "Damage applies again after the roll")
 	bee.health.restore_health(5)
 	check(not bee.start_roll() and bee.roll_ready_ratio() < 1.0, "No new roll while recharging")
-	await frames(120)
-	check(not bee.start_roll(), "Still recharging at ~2.4 s")
-	await frames(40)
+	await frames(30)
+	check(not bee.start_roll(), "Still recharging before 1.2 s")
+	await frames(35)
 	check(bee.roll_ready_ratio() >= 1.0 and bee.start_roll(), "The roll must be ready ~2.5 s after the previous one")
 	await frames(5)
 	var hud := stage.get_node("CanvasLayer/WeaponsHUD")

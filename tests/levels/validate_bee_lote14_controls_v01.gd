@@ -35,7 +35,7 @@ func run() -> void:
 
 	# --- Constants (configurable) -----------------------------------------------------------------------------------------
 	check(is_equal_approx(bee.burst_rate, 2.5) and bee.burst_size == 3 and bee.spread_burst_size == 5, "Burst constants: 2.5/s, 3 shots, fan of 5")
-	check(is_equal_approx(bee.melee_cooldown, 0.9) and is_equal_approx(bee.melee_lunge_time, 0.2) and is_equal_approx(bee.melee_reach_factor, 1.6), "Sting constants: 0.9 s recharge, 0.2 s lunge, reach 1.6 Bee lengths")
+	check(is_equal_approx(bee.melee_cooldown, BeeGameSettings.STING_MIN_INTERVAL_SEC) and is_equal_approx(bee.melee_lunge_time, 0.2) and is_equal_approx(bee.melee_reach_factor, 1.6), "Sting constants: 0.9 s recharge, 0.2 s lunge, reach 1.6 Bee lengths")
 	check(bee.melee_damage == 3 * bee.base_shot_damage, "Sting damage must be 3 base shots (%d)" % bee.melee_damage)
 
 	# --- Sustained fire: Base ---------------------------------------------------------------------------------------------
@@ -81,14 +81,14 @@ func run() -> void:
 	var ammo_after_tap := bee.spread_ammo
 	await frames(4)
 	var before_burst := bee.spread_ammo
-	check(ammo_after_tap == ammo - 1, "A Spread tap uses one charge")
+	check(absf(ammo_after_tap - (ammo - 3.0 / 60.0)) < 0.04, "A Spread tap consumes time only")
 	await frames(30)
 	var pellets: Array = []
 	for node in stage.get_children():
 		if node is BeeEnergyProjectile:
 			pellets.append(node)
 	Input.action_release("throw_orange")
-	check(bee.spread_ammo < before_burst, "A Spread burst uses a charge (%d -> %d)" % [before_burst, bee.spread_ammo])
+	check(bee.spread_ammo < before_burst, "Spread continues counting time during a burst (%d -> %d)" % [before_burst, bee.spread_ammo])
 	var angles := {}
 	for p in pellets:
 		angles[snappedf(rad_to_deg(atan2((p as BeeEnergyProjectile).travel_direction.y, (p as BeeEnergyProjectile).travel_direction.x)), 1.0)] = true
@@ -135,9 +135,9 @@ func run() -> void:
 	check(behind.health.current_health == hp_behind - bee.melee_damage or behind.is_defeated(), "The enemy behind took the sting damage (%d -> %d)" % [hp_behind, behind.health.current_health])
 	check(front.health.current_health == front.health.max_health and far.health.current_health == far.health.max_health, "Only the nearest enemy is hit")
 	check(bee.facing_x < 0.0, "Bee turns towards the target")
-	await frames(25)
-	check(bee.melee_ready_ratio() < 1.0, "Sting still recharging before 0.9 s")
-	await frames(25)
+	await frames(3)
+	check(bee.melee_ready_ratio() < 1.0, "Sting animation interval still active")
+	await frames(8)
 	check(bee.melee_ready_ratio() >= 1.0, "Sting ready after 0.9 s (AGUIJÓN LISTO)")
 	check(not bee.stinger.visible, "The stinger hides after the strike")
 	# Nothing within reach: forward swing as before.

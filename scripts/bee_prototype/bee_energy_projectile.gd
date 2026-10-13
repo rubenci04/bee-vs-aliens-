@@ -7,6 +7,7 @@ extends Node3D
 
 @onready var hitbox: DamageHitbox3D = $Hitbox3D
 var travel_direction := Vector3.RIGHT
+var is_spread_shot := false
 var _time_left := 0.0
 var trail: CPUParticles3D
 static var _shared_trail_mesh: SphereMesh
@@ -46,6 +47,7 @@ func _ready() -> void:
 
 
 func set_spread_visual() -> void:
+	is_spread_shot = true
 	trail.amount = 14
 	trail.scale_amount_min = 0.75
 	trail.scale_amount_max = 0.9

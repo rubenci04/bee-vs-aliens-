@@ -787,6 +787,7 @@ func _drop_spiders() -> void:
 
 ## Diagonal jump to the opposite corner (ground <-> ceiling): the band along the path and the landing shadow warn it.
 func _begin_jump(with_fan: bool) -> void:
+	BeeMusic.duck_for_explosion()
 	_step = &"jump_tele"
 	_left = JUMP_TELEGRAPH
 	_jump_fan = with_fan
@@ -808,6 +809,7 @@ func _begin_jump(with_fan: bool) -> void:
 
 ## From the ceiling it drops on a thread (the thread is drawn first), swings as a pendulum and climbs back.
 func _begin_hang(combo: bool) -> void:
+	BeeMusic.duck_for_explosion()
 	_step = &"hang_tele"
 	_left = HANG_TELEGRAPH
 	hang_pivot_x = _clamp_x(_world(ATTACH).x) # The abdomen tip, where the thread comes out.
@@ -942,6 +944,7 @@ var _charge_box: DamageHitbox3D
 
 ## Ground rush across Bee's zone to the far corner (the band shows the lane: fly above it).
 func _begin_charge() -> void:
+	BeeMusic.duck_for_explosion()
 	_face_bee()
 	_step = &"charge_tele"
 	_left = CHARGE_TELEGRAPH

@@ -3,6 +3,20 @@ extends RefCounted
 
 static var last_sound: Dictionary = {}
 
+## Each projectile of a burst gets its own 0.35-second anticipation; a fan shares one cue.
+static func volley(enemy: Node3D, species: StringName, pose: Node3D, first_shot_in: float, count := 1, gap := 0.0) -> void:
+	var enemy_ref: WeakRef = weakref(enemy)
+	var pose_ref: WeakRef = weakref(pose) if pose != null else null
+	var token := int(enemy.get_meta("shot_warning_token", 0)) + 1
+	enemy.set_meta("shot_warning_token", token)
+	for i in count:
+		var delay := maxf(0.0, first_shot_in + i * gap - BeeGameSettings.SHOT_WARNING_SECONDS)
+		enemy.get_tree().create_timer(delay, false).timeout.connect(func():
+			var unit := enemy_ref.get_ref() as Node3D
+			var body := pose_ref.get_ref() as Node3D if pose_ref != null else null
+			if is_instance_valid(unit) and int(unit.get_meta("shot_warning_token", 0)) == token and unit.is_inside_tree() and (not unit.has_method("is_active") or bool(unit.call("is_active"))):
+				begin(unit, species, body))
+
 static func begin(enemy: Node3D, species: StringName, pose: Node3D = null) -> void:
 	if BeeGameSettings.SHOT_WARNING_VISUAL_ENABLED and is_instance_valid(pose):
 		var base := pose.scale
@@ -28,10 +42,12 @@ static func begin(enemy: Node3D, species: StringName, pose: Node3D = null) -> vo
 			var voice := BeeAudio.play(enemy.get_parent(), &"tech_hit", enemy.global_position, float(BeeGameSettings.SHOT_WARNING_PITCH.get(species, 1.0)))
 			if is_instance_valid(voice):
 				voice.set("volume_db", float(voice.get("volume_db")) + BeeGameSettings.SHOT_WARNING_SOUND_DB)
+				var voice_ref: WeakRef = weakref(voice)
 				enemy.get_tree().create_timer(BeeGameSettings.SHOT_WARNING_SOUND_SECONDS).timeout.connect(func():
-					if is_instance_valid(voice):
-						voice.call("stop")
-						voice.queue_free())
+					var playing: Node = voice_ref.get_ref()
+					if is_instance_valid(playing):
+						playing.call("stop")
+						playing.queue_free())
 	if BeeGameSettings.SHOT_WARNING_EDGE_ENABLED:
 		var camera := enemy.get_viewport().get_camera_3d()
 		if camera == null:

@@ -41,7 +41,7 @@ func run_checks() -> void:
 	var wasp_b := poc.get_node("Enemies/WaspB") as WaspEnemy
 	var probe_b := poc.get_node("Enemies/ProbeB") as AlienProbeRanged
 	check(bee.health.current_health == 100 and not bee.is_defeated, "BeePlayer did not start at 100 HP")
-	check(bee.melee_damage == 30 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, 0.9), "Bee melee values changed (LOTE 14: 30 damage, 0.9 s)")
+	check(bee.melee_damage == 30 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, BeeGameSettings.STING_MIN_INTERVAL_SEC), "Bee melee values changed (LOTE 14: 30 damage, 0.9 s)")
 	check(not wasp_a.is_active() and not probe_a.is_active() and not wasp_b.is_active() and not probe_b.is_active(), "Enemies began active")
 	check(poc.get_node("Pollen").get_child_count() == 2, "Combat POC must have two pollen pickups")
 

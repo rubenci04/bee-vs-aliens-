@@ -265,6 +265,10 @@ func _build() -> void:
 		(hurtbox.get_child(0) as CollisionShape3D).shape.set("radius", radius)
 	health.died.connect(_on_died)
 	health.health_changed.connect(_on_health_changed)
+	var hit_flash := HitFlash3D.new()
+	hit_flash.name = "HitFlash3D"
+	hit_flash.visual_root_path = ^"../Rig"
+	add_child(hit_flash)
 	if _has_implant:
 		# LOTE 9: the implant takes 2x; the body below it (shell, legs, wings) also damages the implant at 1x (it was a
 		# neutral shield). Body and implant share `health`; one shot hits one area.
@@ -490,11 +494,16 @@ func _start_telegraph() -> void:
 	_token_held = mode in [&"charge", &"wave", &"sweep"]
 	attacks_started += 1
 	state = State.TELEGRAPH
-	BeeShotWarning.begin(self, kind, visual)
 	_variant = _pick_variant()
 	if first_telegraph_clock < 0.0:
 		first_telegraph_clock = _clock
 	_left = maxf(float(config["telegraph"]), MIN_TELEGRAPH)
+	var warning_count := int(config.get("burst", 1))
+	var warning_gap := float(config.get("burst_gap", 0.0))
+	if _variant == &"spit" and config.has("spit"):
+		warning_count = int(config["spit"].get("shots", 1))
+		warning_gap = float(config["spit"].get("gap", 0.0))
+	BeeShotWarning.volley(self, kind, visual, _left, warning_count, warning_gap)
 	_tele_started = BeeAttackTokens.now()
 	_lock_from = global_position
 	var bee := target.global_position

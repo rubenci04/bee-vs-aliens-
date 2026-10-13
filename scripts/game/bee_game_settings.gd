@@ -10,13 +10,15 @@ const EASY_DAMAGE_TAKEN := 0.6
 const EASY_ENEMY_HP := 0.75
 ## Lote 15: health measured against one BASE tap (10 damage), body hits.
 const SMALL_ENEMY_HP := {"FlyCommon": 10, "FlyCloud": 10, "FlyGreen": 20, "Wasp": 20, "Ant": 20}
+## Sustained BASE pellets keep the same hit count on small fauna; other targets retain the existing burst DPS.
+const SMALL_ENEMY_BASE_HIT_DAMAGE := 10
 const SPREAD_DURATION_SEC := 20.0
 const SPREAD_EXTEND_SEC := 10.0
 const SPREAD_MAX_DURATION_SEC := 45.0
 const SHOT_WARNING_SECONDS := 0.35
-const SHOT_WARNING_VISUAL_ENABLED := true
-const SHOT_WARNING_AUDIO_ENABLED := true
-const SHOT_WARNING_EDGE_ENABLED := true
+static var SHOT_WARNING_VISUAL_ENABLED := true
+static var SHOT_WARNING_AUDIO_ENABLED := true
+static var SHOT_WARNING_EDGE_ENABLED := true
 const SHOT_WARNING_SOUND_SECONDS := 0.12
 const SHOT_WARNING_SOUND_GAP_SEC := 0.15
 const SHOT_WARNING_SOUND_DB := -9.0
@@ -45,6 +47,7 @@ const JOYPAD_DEADZONE := 0.2
 const JOYPAD_TRIGGER_THRESHOLD := 0.3
 const JOYPAD_AIM_SMOOTH_SEC := 0.12
 const JOYPAD_NOTICE_SEC := 3.0
+const JOYPAD_NOTICE_POSITION := Vector2(24.0, 72.0)
 const JOYPAD_VIBRATION_SEC := 0.15
 const JOYPAD_VIBRATION_STRENGTH := 0.2
 const MOUSE_AIM_IDLE_SEC := 1.5
@@ -54,14 +57,38 @@ const PIRUETA_DASH_DISTANCE := 3.0
 const PIRUETA_DASH_SEC := 0.2
 const PIRUETA_HINT_SHOT_COUNT := 6
 const PIRUETA_RING_RADIUS := 9.0
-const PIRUETA_RING_POSITION := Vector2(200.0, 102.0)
+const PIRUETA_RING_POSITION := Vector2(250.0, 102.0)
 const BEE_TURN_HYSTERESIS_METERS := 0.4
 const BEE_TURN_MIN_INTERVAL_SEC := 0.12
 const BEE_TURN_DURATION_SEC := 0.22
 const BEE_TURN_ROLL := 0.1
+## Same species companions retain the roster and debut order, replacing HP with quantity.
+const SMALL_ENEMY_COMPANIONS := 2
+const SMALL_ENEMY_COMPANION_GAP_SEC := 0.7
+const SMALL_ENEMY_COMPANION_MAX_DELAY_SEC := 4.0
+const SMALL_ENEMY_COMPANION_DAMAGE_SCALE := 0.5
+const SMALL_ENEMY_MIN_ENTRY_GAP_SEC := 0.2
+const TITLE_MENU_HEIGHT_FRACTION := 0.45
+const TITLE_LOGO_HEIGHT_FRACTION := 0.16
+const TITLE_MENU_WIDTH := 440.0
+const TITLE_MENU_MARGIN := 24
 static var vibration_enabled := true
 static var last_input_joypad := false
 static var last_joypad_device := -1
+
+static func warning_enabled(setting: String) -> bool:
+	match setting:
+		"SHOT_WARNING_VISUAL_ENABLED": return SHOT_WARNING_VISUAL_ENABLED
+		"SHOT_WARNING_AUDIO_ENABLED": return SHOT_WARNING_AUDIO_ENABLED
+		_: return SHOT_WARNING_EDGE_ENABLED
+
+static func toggle_warning(setting: String) -> bool:
+	var value := not warning_enabled(setting)
+	match setting:
+		"SHOT_WARNING_VISUAL_ENABLED": SHOT_WARNING_VISUAL_ENABLED = value
+		"SHOT_WARNING_AUDIO_ENABLED": SHOT_WARNING_AUDIO_ENABLED = value
+		_: SHOT_WARNING_EDGE_ENABLED = value
+	return value
 ## Bee model can be changed live with set_bee_model_version().
 static var BEE_MODEL_VERSION := "v02"
 const BEE_VISUAL_SCALE := 1.0

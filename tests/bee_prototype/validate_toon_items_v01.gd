@@ -25,7 +25,7 @@ func run() -> void:
 	bee.is_defeated = true
 	check(not spread.collect(bee),"Defeated Bee can consume Spread")
 	bee.is_defeated = false
-	check(spread.collect(bee) and bee.spread_ammo==bee.spread_max_shots,"Spread didn't refill existing weapon")
+	check(spread.collect(bee) and is_equal_approx(bee.spread_ammo, BeeGameSettings.SPREAD_DURATION_SEC),"Spread didn't refill existing weapon")
 	check(not spread.collect(bee),"Spread consumed twice")
 	for effect in world.get_children():
 		if effect.get_script()==preload("res://scripts/art/toon_burst_visual.gd"):
@@ -71,7 +71,8 @@ func run() -> void:
 	var material := halo.get_surface_override_material(0) as ShaderMaterial
 	var energy: Variant = material.get_shader_parameter("emission_energy")
 	check(energy==null or float(energy)==0,"Bee overcharge halo must not use alien glow")
-	check(charged.collect(bee) and bee.spread_ammo>bee.spread_max_shots,"Existing overcharge behavior lost")
+	var spread_before := bee.spread_ammo
+	check(charged.collect(bee) and is_equal_approx(bee.spread_ammo, minf(BeeGameSettings.SPREAD_MAX_DURATION_SEC, spread_before + BeeGameSettings.SPREAD_EXTEND_SEC)),"Spread capsule must extend duration")
 	await settle()
 	stranger.queue_free()
 	bee.queue_free()

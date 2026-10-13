@@ -389,7 +389,7 @@ func _another_wasp_attacking() -> bool:
 # --- Threat rebuild 03: implant sting and overload -----------------------------------------------------------
 
 func _begin_sting() -> void:
-	BeeShotWarning.begin(self, &"wasp", visual_root)
+	BeeShotWarning.volley(self, &"wasp", visual_root, sting_windup, 1 if sting_fan_count > 0 else sting_shots, sting_gap)
 	_sting_done = true
 	_sting_fired = 0
 	_stalk_resume = _state_left # COMBAT VARIETY 01 fix: the sting no longer eats the stalk timer (the hover kept its length).

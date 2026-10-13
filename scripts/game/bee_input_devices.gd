@@ -11,7 +11,7 @@ func _ready() -> void:
 	layer.layer = 30
 	add_child(layer)
 	notice = Label.new()
-	notice.position = Vector2(24, 240)
+	notice.position = BeeGameSettings.JOYPAD_NOTICE_POSITION
 	notice.add_theme_font_size_override("font_size", 20)
 	layer.add_child(notice)
 	for device in Input.get_connected_joypads():

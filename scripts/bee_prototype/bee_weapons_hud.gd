@@ -71,9 +71,10 @@ func _draw() -> void:
 
 func refresh() -> void:
 	var weapon := "SPREAD %.1f s" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
-	var button := "X" if BeeGameSettings.last_input_joypad else "C"
-	var action := button + (" — DETONAR" if is_instance_valid(bee.active_bomb) else " — BOMBA")
-	$State.text = "%s · BOMB x%d · %s" % [weapon, bee.bomb_charges, action]
+	var fire_button := "A / RT" if BeeGameSettings.last_input_joypad else "X / CLIC"
+	var bomb_button := "X" if BeeGameSettings.last_input_joypad else "C"
+	var action := bomb_button + (" — DETONAR" if is_instance_valid(bee.active_bomb) else " — BOMBA")
+	$State.text = "%s · FUEGO %s · BOMB x%d · %s" % [weapon, fire_button, bee.bomb_charges, action]
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):

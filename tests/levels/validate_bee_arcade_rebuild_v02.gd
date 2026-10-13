@@ -222,15 +222,15 @@ func test_power() -> void:
 	check(bee.spread_ammo == 0, "Bee should start with Base")
 	check(bee.collect_spread_overcharge(), "Overcharge refused")
 	var from_base := bee.spread_ammo
-	check(from_base > bee.spread_max_shots, "Base -> overcharged Spread (%d)" % from_base)
+	check(is_equal_approx(from_base, BeeGameSettings.SPREAD_DURATION_SEC), "Base -> overcharged Spread (%d)" % from_base)
 	# Spread with little ammo -> refill + extend (never less than before).
 	bee.spread_ammo = 5
 	bee.collect_spread_overcharge()
-	check(bee.spread_ammo == from_base, "Spread must refill and extend (%d)" % bee.spread_ammo)
+	check(is_equal_approx(bee.spread_ammo, 15.0), "Spread must refill and extend (%d)" % bee.spread_ammo)
 	# Already overcharged -> never a downgrade.
 	var before := bee.spread_ammo
 	bee.collect_spread_overcharge()
-	check(bee.spread_ammo >= before and bee.spread_ammo <= bee.spread_max_shots * 2, "Never a downgrade, bounded (%d)" % bee.spread_ammo)
+	check(bee.spread_ammo >= before and bee.spread_ammo <= BeeGameSettings.SPREAD_MAX_DURATION_SEC, "Never a downgrade, bounded (%d)" % bee.spread_ammo)
 	bee.spread_ammo = 0
 	# Real pickup through the director moment.
 	arena(331.0)
@@ -241,7 +241,7 @@ func test_power() -> void:
 	bee.global_position = capsule.global_position
 	await frames(4)
 	check(not is_instance_valid(capsule) or capsule.was_collected, "Capsule not collected")
-	check(bee.spread_ammo > bee.spread_max_shots, "Pre-boss pickup must give an overcharged Spread")
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0, "Pre-boss pickup must give an overcharged Spread")
 	print("REBUILD_POWER base_to=%d refill_extend=OK no_downgrade=OK" % from_base)
 
 # --- set pieces ------------------------------------------------------------------------------------------

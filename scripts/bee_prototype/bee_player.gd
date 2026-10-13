@@ -128,6 +128,7 @@ var _roll_dash_left := 0.0
 var _roll_dash_velocity := Vector3.ZERO
 var _turn_left := 0.0
 var _turn_tween: Tween
+var _mouse_tap_handled := false
 
 
 func _ready() -> void:
@@ -183,8 +184,9 @@ func _physics_process(delta: float) -> void:
 	refresh_auto_aim()
 	if not is_free_aiming() and is_instance_valid(current_auto_target):
 		_face_towards(_target_point(current_auto_target).x - global_position.x)
-	if Input.is_action_just_pressed("throw_orange"):
+	if Input.is_action_just_pressed("throw_orange") and not _mouse_tap_handled:
 		fire()
+	_mouse_tap_handled = false
 	_update_sustained_fire(delta)
 	if Input.is_action_just_pressed("debug_attack"):
 		start_melee()
@@ -543,6 +545,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_aim_at_screen((event as InputEventMouseMotion).position)
 	elif event is InputEventMouseButton and event.is_action_pressed("throw_orange"):
 		_aim_at_screen((event as InputEventMouseButton).position)
+		fire()
+		_mouse_tap_handled = true
 
 
 func _aim_at_screen(screen: Vector2) -> void:
@@ -581,7 +585,7 @@ func _update_joypad_aim(delta: float) -> void:
 	var stick := Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down", BeeGameSettings.JOYPAD_DEADZONE)
 	if stick.length_squared() > 0.0:
 		var desired := Vector2(stick.x, -stick.y).normalized()
-		_stick_aim = _stick_aim.lerp(desired, 1.0 - exp(-delta / BeeGameSettings.JOYPAD_AIM_SMOOTH_SEC)).normalized()
+		_stick_aim = Vector2.from_angle(lerp_angle(_stick_aim.angle(), desired.angle(), 1.0 - exp(-delta / BeeGameSettings.JOYPAD_AIM_SMOOTH_SEC)))
 		set_aim_point(global_position + Vector3(_stick_aim.x, _stick_aim.y, 0.0) * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE)
 	elif BeeGameSettings.last_input_joypad:
 		clear_aim()
@@ -593,6 +597,8 @@ func is_free_aiming() -> bool:
 
 ## Direction of the next shot: free aim if active, else the auto-aim target, else straight ahead.
 func aim_direction() -> Vector3:
+	if not is_free_aiming() and not is_instance_valid(current_auto_target):
+		return Vector3(facing_x, 0.0, 0.0)
 	var target_point := global_position + Vector3(facing_x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE, 0.0, 0.0)
 	if is_free_aiming():
 		if Vector2(aim_point.x - global_position.x, aim_point.y - global_position.y).length() > 0.05:

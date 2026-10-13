@@ -155,11 +155,13 @@ func duck_for_explosion() -> void:
 ## Pause-menu sliders (0..1). 1.0 keeps the default level of each bus (music -8 dB, effects -3 dB); 0.0 mutes it.
 func set_music_volume(value: float) -> void:
 	BeeGameSettings.music_volume = clampf(value, 0.0, 1.0)
+	BeeGameSettings.save_audio_settings()
 	apply_volumes()
 
 
 func set_sfx_volume(value: float) -> void:
 	BeeGameSettings.sfx_volume = clampf(value, 0.0, 1.0)
+	BeeGameSettings.save_audio_settings()
 	apply_volumes()
 
 

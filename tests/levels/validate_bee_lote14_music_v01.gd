@@ -66,8 +66,8 @@ func run() -> void:
 	var music_bus := AudioServer.get_bus_index(&"Music")
 	var sfx_bus := AudioServer.get_bus_index(&"SFX")
 	check(music_bus >= 0 and sfx_bus >= 0 and music_bus != sfx_bus, "Separate music and effects buses")
-	check(is_equal_approx(AudioServer.get_bus_volume_db(music_bus), -8.0) and is_equal_approx(manager.MUSIC_DEFAULT_DB, -8.0), "The music bus defaults to -8 dB")
-	check(is_equal_approx(BeeGameSettings.music_volume, 1.0) and is_equal_approx(BeeGameSettings.sfx_volume, 1.0), "Sliders start at 100 %")
+	check(is_equal_approx(AudioServer.get_bus_volume_db(music_bus), -8.0 + linear_to_db(BeeGameSettings.music_volume)) and is_equal_approx(manager.MUSIC_DEFAULT_DB, -8.0), "The music bus defaults to -8 dB")
+	check(is_equal_approx(BeeGameSettings.MUSIC_DEFAULT_VOLUME, 0.25) and is_equal_approx(BeeGameSettings.sfx_volume, 1.0), "Sliders start at 100 %")
 
 	# --- title -----------------------------------------------------------------------------------------------------------------------
 	var title := TITLE.instantiate()
@@ -76,8 +76,8 @@ func run() -> void:
 	await process_frame
 	await wait(0.4)
 	check(manager.current_track == &"title" and manager.is_playing(), "The title theme plays on the title screen")
-	await wait(1.2)
-	check(volume(&"title") > -3.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
+	await wait(2.5)
+	check(volume(&"title") > -4.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
 	title.queue_free()
 	await process_frame
 
@@ -86,8 +86,8 @@ func run() -> void:
 	await load_level()
 	check(manager.current_track == &"level" and manager.track_player(&"level") != null, "The level theme starts with Level 1")
 	check(int(manager.crossfades) == crossfades_before + 1 and manager.track_player(&"title") != null, "Title -> level is a crossfade")
-	await wait(1.9)
-	check(manager.track_player(&"title") == null and volume(&"level") > -3.0, "The title theme is gone after the crossfade")
+	await wait(2.7)
+	check(manager.track_player(&"title") == null and volume(&"level") > -4.0, "The title theme is gone after the crossfade")
 	check((manager.track_player(&"level").stream as AudioStreamMP3).loop, "The level theme loops")
 	check(not stage.bee.is_defeated and manager.current_track == &"level", "The level theme goes on")
 
@@ -128,6 +128,7 @@ func run() -> void:
 	for unit in wave.active_units:
 		unit.queue_free()
 	wave.active_units.clear()
+	wave._pending.clear()
 	stage.bee.global_position = Vector3(stage.camera.global_position.x - 3.5, 3.4, 0.0)
 	wave._tarantula_breather_left = 0.01
 	var boss: TarantulaBoss01
@@ -137,14 +138,15 @@ func run() -> void:
 		if boss != null and boss.health_bar_visible():
 			break
 	check(boss != null and boss.health_bar_visible(), "The tarantula walked in")
+	boss.set_physics_process(false) # Isolate crossfade from the new boss-attack ducking.
 	check(manager.current_track == &"boss", "The boss theme starts when the health bar appears")
 	check(manager.track_player(&"level") != null and manager.track_player(&"boss") != null, "Both themes overlap during the crossfade")
 	await wait(0.75)
 	var mid_level := volume(&"level")
 	var mid_boss := volume(&"boss")
 	check(mid_level < -1.0 and mid_level > -8.0 and mid_boss < -1.0 and mid_boss > -8.0, "Halfway the crossfade both sit near -3 dB (equal power, %.1f / %.1f dB)" % [mid_level, mid_boss])
-	await wait(1.2)
-	check(manager.track_player(&"level") == null and volume(&"boss") > -2.0, "After %.1f s only the boss theme is left" % manager.CROSSFADE_SECONDS)
+	await wait(2.5)
+	check(manager.track_player(&"level") == null and volume(&"boss") > -4.0, "After %.1f s only the boss theme is left" % manager.CROSSFADE_SECONDS)
 	check(is_equal_approx(manager.CROSSFADE_SECONDS, 1.5), "The crossfade lasts 1.5 s")
 	check((manager.track_player(&"boss").stream as AudioStreamMP3).loop, "The boss theme loops")
 

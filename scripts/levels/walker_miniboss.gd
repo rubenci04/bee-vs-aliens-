@@ -295,6 +295,7 @@ func _rest(seconds: float) -> void:
 
 
 func _next_attack() -> void:
+	BeeMusic.duck_for_explosion()
 	var pattern: Array = PATTERN if cannon_alive else PATTERN_NO_CANNON
 	var kind: StringName = pattern[_attack_index % pattern.size()]
 	_attack_index += 1
@@ -379,7 +380,6 @@ func _drop_mortars() -> void:
 
 ## The yellow eye: the sector edges (centred on Bee) first, then the beam sweeps it.
 func _begin_laser() -> void:
-	BeeMusic.duck_for_explosion()
 	_step = &"laser_tele"
 	_left = LASER_WARNING
 	laser_origin = global_position + Vector3(_facing_x * 0.35, EYE_HEIGHT, 0.0)

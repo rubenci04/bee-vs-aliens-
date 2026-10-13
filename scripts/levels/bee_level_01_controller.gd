@@ -553,6 +553,7 @@ var tarantula: TarantulaBoss01
 var tarantula_freed := false
 var _tarantula_breather_left := -1.0
 var _post_robot_target_x := 0.0
+var _last_roster_entry_clock := -INF
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -599,12 +600,17 @@ func _physics_process(delta: float) -> void:
 			_advance_boss(delta) # Level complete only after the UFO is destroyed.
 		return
 	var event: Dictionary = events_table()[event_index]
-	if stage.distance < float(event["at"]) or not _pending.is_empty():
+	if roster_only and bool(event.get("hard", false)) and stage.distance >= float(event["at"]):
+		stage.scroll_speed = 0.0
+	var authored_pending := _pending.any(func(r: Dictionary): return not bool(r.get("companion", false)))
+	if stage.distance < float(event["at"]) or authored_pending:
 		return
 	if _event_blocked_by_solo(event["units"]):
 		return # LOTE 14: a new species is debuting alone.
 	if (event.has("debut") or bool(event.get("clear", false))) and not _debut_ready(delta):
 		return # LOTE 14: a debut (or a pool change, key "clear") waits for a clear field.
+	if roster_only and (event.has("debut") or bool(event.get("clear", false))):
+		_pending = _pending.filter(func(r: Dictionary): return not bool(r.get("companion", false)))
 	if bool(event.get("human", false)) and not giant_human_enabled:
 		# NOCHE 01 · ETAPA 2: the Giant Human is switched off (GIANT_HUMAN_ENABLED); its event is skipped, nothing waits.
 		event_index += 1
@@ -679,6 +685,15 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 			_swarm_pending.append(request) # Popcorn has its own queue: never waits behind (or blocks) threats.
 		else:
 			_pending.append(request)
+			if roster_only and not _hard_gate and BeeGameSettings.SMALL_ENEMY_HP.has(str(units[i])):
+				for extra in BeeGameSettings.SMALL_ENEMY_COMPANIONS:
+					var companion := request.duplicate(true)
+					companion["slot"] = slot_base + units.size() + i * BeeGameSettings.SMALL_ENEMY_COMPANIONS + extra
+					companion["due"] = float(request["due"]) + (extra + 1) * BeeGameSettings.SMALL_ENEMY_COMPANION_GAP_SEC
+					companion["companion"] = true
+					companion["expires"] = float(companion["due"]) + BeeGameSettings.SMALL_ENEMY_COMPANION_MAX_DELAY_SEC
+					_pending.append(companion)
+	_pending.sort_custom(func(a: Dictionary, b: Dictionary): return float(a["due"]) < float(b["due"]))
 	_spawn_pending()
 
 # --- LOTE 7: combat zones ------------------------------------------------------------------------------------------
@@ -830,6 +845,9 @@ func _spawn_swarm_pending() -> void:
 		_spawn(_swarm_pending.pop_front())
 
 func _spawn_pending() -> void:
+	_pending = _pending.filter(func(r: Dictionary): return not bool(r.get("companion", false)) or _clock <= float(r["expires"]))
+	if roster_only and _clock < _last_roster_entry_clock + BeeGameSettings.SMALL_ENEMY_MIN_ENTRY_GAP_SEC:
+		return
 	_spawn_swarm_pending()
 	var cap := MAX_ON_SCREEN_ARENA if in_arena() else threat_cap(stage.distance)
 	while not _pending.is_empty() and active_units.size() < cap and alive_count() < on_screen_cap():
@@ -838,12 +856,13 @@ func _spawn_pending() -> void:
 		var request: Dictionary = _pending.pop_front()
 		var late := _clock - float(request["due"]) > 0.1
 		_spawn(request)
+		_last_roster_entry_clock = _clock
 		# A full cap can delay several requests past their original due time.
 		# Still separate actual entries instead of releasing them in one frame.
 		# REBUILD 02: on-time requests keep their authored spacing (formations such as a V arrive together, never in the
 		# same frame: at least MIN_FORMATION_GAP); only a backlog is spread by `group_delay`.
 		if not _pending.is_empty():
-			var gap := group_delay if late else MIN_FORMATION_GAP
+			var gap := group_delay if late else (BeeGameSettings.SMALL_ENEMY_MIN_ENTRY_GAP_SEC if roster_only else MIN_FORMATION_GAP)
 			_pending[0]["due"] = maxf(float(_pending[0]["due"]), _clock + gap)
 		return
 
@@ -866,6 +885,8 @@ func _spawn(request: Dictionary) -> void:
 		"FlyCommon", "FlyGreen", "FlyCloud", "WormA", "WormB": scene = ASSET_FAUNA[family]
 		_: return
 	var unit := scene.instantiate() as Node3D
+	if roster_only and BeeGameSettings.SMALL_ENEMY_HP.has(family):
+		unit.set_meta("small_enemy_base_hit_damage", BeeGameSettings.SMALL_ENEMY_BASE_HIT_DAMAGE)
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
 	get_node("../Enemies").add_child(unit)
 	var air := family in ["Wasp", "Probe", "EyeDrone", "Speeder", "OrganicAlien", "Dragonfly", "Swarm"] or family in ASSET_AIR
@@ -883,7 +904,7 @@ func _spawn(request: Dictionary) -> void:
 		# Drops in from above the top edge INSIDE the screen (its thread is seen first); `x` is camera-relative here.
 		unit.global_position = Vector3(stage.camera.global_position.x + float(request.get("x", SPIDER_ENTRY_X)), BeeLevel01Framing.top_y() + 1.6, 0)
 	if not bool(request.get("minion", false)):
-		_scale_bee_damage(unit, ROUTE_DAMAGE_SCALE)
+		_scale_bee_damage(unit, ROUTE_DAMAGE_SCALE * (BeeGameSettings.SMALL_ENEMY_COMPANION_DAMAGE_SCALE if bool(request.get("companion", false)) else 1.0))
 	unit.set_meta("level_hard", bool(request["hard"]))
 	if roster_only:
 		unit.set_meta("shot_speed_scale", ROSTER_SHOT_SPEED_SCALE)
@@ -1212,7 +1233,9 @@ func _post_robot_supplies() -> void:
 	bee.weapon_state_changed.emit()
 	var juice := stage.get_node_or_null("Juice") as BeeLevel01Juice
 	if juice != null and juice.pollen_progress() < BeeGameSettings.POST_ROBOT_MIN_POLLEN:
-		juice.add_pollen(BeeGameSettings.POST_ROBOT_MIN_POLLEN - juice.pollen_progress())
+		# Guaranteed refill even when the route's rolling pollen cap is exhausted.
+		juice.pollen_total += BeeGameSettings.POST_ROBOT_MIN_POLLEN - juice.pollen_progress()
+		juice._refresh_pollen()
 	for i in BeeGameSettings.POST_ROBOT_PICKUP_OFFSETS.size():
 		var item: Node3D
 		if i == 2:

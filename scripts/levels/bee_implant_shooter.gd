@@ -53,6 +53,10 @@ func _physics_process(delta: float) -> void:
 		locked_point = target.global_position
 		warning = BeeAttackVisuals.ring(unit, _origin(unit), 0.45, 0.07, Color(0.2, 0.9, 1.0, 0.9))
 		warnings_started += 1
+		var pose := unit.get_node_or_null("VisualRoot") as Node3D
+		if unit is AssetFauna:
+			pose = (unit as AssetFauna).visual
+		BeeShotWarning.volley(unit, StringName(family.to_snake_case()), pose, WARNING_SECONDS)
 		clock = WARNING_SECONDS
 		return
 	_cancel()

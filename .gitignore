@@ -30,3 +30,13 @@ builds/
 # Cachés locales de validación/art tooling (se conservan en disco)
 dev/godot_user_lote10/
 tools/art/__pycache__/
+
+# Lote 15: local tooling binaries and isolated Godot profiles (never ship these).
+dev/
+dev/lote15_tools/
+dev/lote15_test_users/
+dev/lote15_user/
+dev/lote15_checks/
+dev/lote15/__pycache__/
+dev/lote15_*_result.json
+dev/lote15_old_expectations.txt

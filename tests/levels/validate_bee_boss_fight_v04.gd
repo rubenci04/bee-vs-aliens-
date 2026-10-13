@@ -59,6 +59,9 @@ func load_level() -> void:
 	bee = stage.bee
 
 func run() -> void:
+	# Legacy UFO balance fixture predates Bee v02 (the UFO is outside the Level 01 roster).
+	# Keep its original shooter geometry; v02 is covered by hero integration and the two garden-boss bots.
+	BeeGameSettings.BEE_MODEL_VERSION = "v01"
 	create_timer(1200.0, true, false, true).timeout.connect(func(): quit(1))
 	Engine.max_physics_steps_per_frame = 16
 	var normal: Array[Dictionary] = []

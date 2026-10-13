@@ -190,7 +190,7 @@ func test_cloud() -> void:
 	check(cloud.hurtbox.get_child(0).shape is BoxShape3D and cloud.body_hurtbox == null, "One hurtbox over the whole cloud, no implant weak point")
 	await frames(30)
 	var hp := cloud.health.max_health
-	check(hp == BeeGameSettings.scaled_hp(24) and hp <= 32, "A bomb (32) clears the cloud (HP %d)" % hp)
+	check(hp == BeeGameSettings.scaled_hp(10) and hp <= 32, "A bomb (32) clears the cloud (HP %d)" % hp)
 	# Anywhere on the cloud is a normal hit.
 	cloud.set_physics_process(false)
 	cloud.global_position = bee.global_position + Vector3(4.0, 0.4, 0.0)

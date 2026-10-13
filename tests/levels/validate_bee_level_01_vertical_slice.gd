@@ -377,7 +377,7 @@ func run() -> void:
 			bee.global_position.y = 7.0
 			bee.global_position.x = stage.distance - 5.1
 		elif not wave._hard_gate and not wave.roster_complete: # LOTE 12: the run-out after the walking robot uses ROSTER_RUN_OUT_SCROLL.
-			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL * BeeGardenToadEncounter.SCROLL_FACTOR) or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
+			check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.ARENA_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.POST_BOSS_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.HOLD_SCROLL) or is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL * BeeGardenToadEncounter.SCROLL_FACTOR) or wave._tarantula_breather_left >= 0.0 or stage.scroll_speed == 0.0, "Soft scroll changed speed (%.2f)" % stage.scroll_speed) # HOLD_SCROLL: showcase Walker (REBUILD 02).
 		if stage.distance >= 180 and not captured.has("vegetation"):
 			await capture("density02_06_vegetation.png")
 			captured["vegetation"] = true
@@ -390,7 +390,7 @@ func run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.ROSTER_ROUTE_THREATS and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	var roster_families := {}
@@ -411,7 +411,7 @@ func run() -> void:
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
 	var escorts := 3 if wave.escort_waves >= 2 else 0 # The robot calls its 2nd escort wave at 60 % HP (the harness kills it at once).
-	check(planned >= 190 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
+	check(planned >= 190 and spawned >= planned + escorts, "Authored units plus optional small-enemy companions spawned: expected >=%d got %d" % [planned + escorts, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -427,12 +427,13 @@ func run() -> void:
 	# Real Area3D collection after progression coverage, avoiding any change
 	# to the existing combat/geometry diagnostics above.
 	bee.set_physics_process(false)
+	bee.spread_ammo = 0.0 # Isolate the fixed pickups from the new post-robot supplies.
 	for pickup: BeePowerupPickup in stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup):
 		if pickup.kind == BeePowerupPickup.Kind.BOMB:
 			bee.bomb_charges = 0 # LOTE 9: +3 per pickup up to 5: a full Bee leaves the pickup for later (by design).
 		bee.global_position = pickup.global_position
 		await frames(4)
-	check(stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup and not n.is_queued_for_deletion()).is_empty() and bee.spread_ammo == bee.spread_max_shots + bee.spread_overcharge_bonus and bee.bomb_charges == bee.bomb_pickup_charges, "Level pickups cannot be collected (left %d, spread %d, bombs %d)" % [stage.get_node("Powerups").get_child_count(), bee.spread_ammo, bee.bomb_charges]) # REBUILD 02: the S+ capsule overcharges Spread.
+	check(stage.get_node("Powerups").get_children().filter(func(n): return n is BeePowerupPickup and not n.is_queued_for_deletion()).is_empty() and bee.spread_ammo == BeeGameSettings.SPREAD_MAX_DURATION_SEC and bee.bomb_charges == bee.bomb_pickup_charges, "Level pickups cannot be collected (left %d, spread %d, bombs %d)" % [stage.get_node("Powerups").get_child_count(), bee.spread_ammo, bee.bomb_charges])
 	bee.set_physics_process(true)
 	bee.health.damage_blocked = false # Victory protection is covered by validate_bee_terminal_states_v01.gd.
 	bee.health.take_damage(9999)
