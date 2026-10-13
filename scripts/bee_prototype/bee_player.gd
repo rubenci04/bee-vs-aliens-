@@ -26,7 +26,7 @@ signal honey_changed
 ## LOTE 7 — FREE AIM: the mouse (or set_aim_point) aims in any direction of the X/Y plane. Without aiming input for
 ## AIM_HOLD_SECONDS the weapon goes back to the usual auto-aim. Left click fires too (X still fires).
 @export var mouse_aim_enabled := true
-const AIM_HOLD_SECONDS := 2.5
+const AIM_HOLD_SECONDS := BeeGameSettings.MOUSE_AIM_IDLE_SEC
 
 @export_category("Temporary powerups")
 @export var spread_max_shots := 32 # CHALLENGE & BALANCE PASS 01: 24 -> 32 bursts (still 3 pellets, no stacking).
@@ -123,6 +123,7 @@ var _aim_from_screen := false
 var web_locked := false
 var web_struggles := 0
 var fire_trigger_count := 0 ## Taps + bursts started.
+var _stick_aim := Vector2.RIGHT
 
 
 func _ready() -> void:
@@ -172,6 +173,7 @@ func _physics_process(delta: float) -> void:
 	position.y = clampf(position.y, flight_min.y, flight_max.y)
 	position.z = 0.0
 	_update_free_aim(delta)
+	_update_joypad_aim(delta)
 	refresh_auto_aim()
 	if Input.is_action_just_pressed("throw_orange"):
 		fire()
@@ -181,7 +183,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("bee_roll"):
 		start_roll()
 	if Input.is_action_just_pressed("bee_bomb"):
-		if mouse_aim_enabled and not is_instance_valid(active_bomb):
+		if mouse_aim_enabled and is_free_aiming() and not BeeGameSettings.last_input_joypad and not is_instance_valid(active_bomb):
 			_aim_at_screen(get_viewport().get_mouse_position())
 		use_bomb()
 
@@ -206,7 +208,7 @@ func refresh_auto_aim() -> Node3D:
 		var angle := absf(forward.angle_to(delta.normalized()))
 		if angle > half_cone:
 			continue
-		var score := distance + angle * 3.0
+		var score := distance
 		if score < best_score:
 			best_score = score
 			best = candidate
@@ -497,6 +499,8 @@ func _update_target_indicator() -> void:
 func _on_health_changed(current: int, maximum: int, change: int) -> void:
 	if change < 0 and current > 0:
 		BeeAudio.play(get_parent(), &"bee_damage")
+		if BeeGameSettings.vibration_enabled and BeeGameSettings.last_joypad_device in Input.get_connected_joypads():
+			Input.start_joy_vibration(BeeGameSettings.last_joypad_device, BeeGameSettings.JOYPAD_VIBRATION_STRENGTH, 0.0, BeeGameSettings.JOYPAD_VIBRATION_SEC)
 	health_changed.emit(current, maximum)
 
 
@@ -530,9 +534,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		_aim_at_screen((event as InputEventMouseMotion).position)
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+	elif event is InputEventMouseButton and event.is_action_pressed("throw_orange"):
 		_aim_at_screen((event as InputEventMouseButton).position)
-		fire()
 
 
 func _aim_at_screen(screen: Vector2) -> void:
@@ -564,6 +567,17 @@ func set_aim_point(point: Vector3) -> void:
 
 func clear_aim() -> void:
 	_aim_left = 0.0
+
+func _update_joypad_aim(delta: float) -> void:
+	if not InputMap.has_action("aim_left"):
+		return
+	var stick := Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down", BeeGameSettings.JOYPAD_DEADZONE)
+	if stick.length_squared() > 0.0:
+		var desired := Vector2(stick.x, -stick.y).normalized()
+		_stick_aim = _stick_aim.lerp(desired, 1.0 - exp(-delta / BeeGameSettings.JOYPAD_AIM_SMOOTH_SEC)).normalized()
+		set_aim_point(global_position + Vector3(_stick_aim.x, _stick_aim.y, 0.0) * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE)
+	elif BeeGameSettings.last_input_joypad:
+		clear_aim()
 
 
 func is_free_aiming() -> bool:
@@ -686,7 +700,7 @@ func _spawn_honey_twin(main: BeeEnergyProjectile, direction: Vector3, spread_loo
 # --- LOTE 14: sustained fire ----------------------------------------------------------------------------------------------
 
 func is_fire_held() -> bool:
-	return Input.is_action_pressed("throw_orange") or (mouse_aim_enabled and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
+	return Input.is_action_pressed("throw_orange")
 
 
 ## Holding fire (past `hold_start_delay`) shoots bursts at `burst_rate`; releasing stops it at once. Taps keep their single shot.
@@ -697,8 +711,6 @@ func _update_sustained_fire(delta: float) -> void:
 		_hold_time = 0.0
 		_burst_left = 0
 		return
-	if mouse_aim_enabled and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		_aim_at_screen(get_viewport().get_mouse_position()) # Keeps the free aim alive while the button is held.
 	_hold_time += delta
 	if _burst_left > 0:
 		_burst_gap_left -= delta

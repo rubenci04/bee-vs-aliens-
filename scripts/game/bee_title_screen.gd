@@ -60,6 +60,13 @@ func _make_ui() -> void:
 		play.get_parent().move_child(lake, difficulty_button.get_index() + 1)
 		lake.pressed.connect(_play_lake)
 	_refresh_difficulty()
+	var vibration := play.duplicate(0) as Button
+	vibration.name = "VibrationButton"
+	vibration.text = "Vibración: " + ("SÍ" if BeeGameSettings.vibration_enabled else "NO")
+	vibration.pressed.connect(func():
+		BeeGameSettings.vibration_enabled = not BeeGameSettings.vibration_enabled
+		vibration.text = "Vibración: " + ("SÍ" if BeeGameSettings.vibration_enabled else "NO"))
+	play.get_parent().add_child(vibration)
 	for spec in [["MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume], ["EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume]]:
 		var row := HBoxContainer.new()
 		var caption := Label.new()

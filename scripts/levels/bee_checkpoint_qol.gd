@@ -4,7 +4,6 @@ extends Node
 const HANDOFF := &"bee_level_01_checkpoint_handoff"
 ## UFO BOSS 01: the fight has its own checkpoint (taken when the boss starts) and a debug jump (F9) straight to it.
 const BOSS_ARENA_X := 340.5
-const DEBUG_KEY := KEY_F9
 const BEACON_COLOR := Color(0.96, 0.7, 0.22)
 @export var checkpoint_x := 190.0
 ## Breakable rocks and (LOTE 12) the garden mushrooms: both are BreakableRock and both keep their broken state across a respawn.
@@ -163,14 +162,14 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("bee_full_restart"):
 		restart_level(true)
 		return
-	if Input.is_action_just_pressed("bee_pause"):
+	if Input.is_action_just_pressed("bee_pause") or (get_tree().paused and Input.is_action_just_pressed("ui_cancel")):
 		get_tree().paused = not get_tree().paused
 		pause_label.visible = get_tree().paused
 		BeeMusic.set_paused(get_tree().paused) # LOTE 14: the music ducks while paused.
 		pause_panel.visible = get_tree().paused
 		if pause_panel.visible:
 			music_slider.grab_focus()
-	var f9_down := Input.is_physical_key_pressed(DEBUG_KEY)
+	var f9_down := Input.is_action_pressed("bee_debug_boss")
 	if f9_down and not _f9_was_down and not get_tree().paused:
 		_f9_was_down = true
 		debug_jump_to_boss()

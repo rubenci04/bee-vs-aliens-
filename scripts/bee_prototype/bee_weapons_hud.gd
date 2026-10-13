@@ -66,13 +66,14 @@ func _process(_delta: float) -> void:
 
 func refresh() -> void:
 	var weapon := "SPREAD %.1f s" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
-	var action := "C — DETONAR" if is_instance_valid(bee.active_bomb) else "C — BOMBA"
+	var button := "X" if BeeGameSettings.last_input_joypad else "C"
+	var action := button + (" — DETONAR" if is_instance_valid(bee.active_bomb) else " — BOMBA")
 	$State.text = "%s · BOMB x%d · %s" % [weapon, bee.bomb_charges, action]
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):
 		return
 	taught[kind] = true
-	$Hint.text = "SPREAD SHOT · X — FIRE" if kind == &"spread" else "ALIEN BOMB · C — USE"
+	$Hint.text = ("SPREAD · A / RT — DISPARAR" if BeeGameSettings.last_input_joypad else "SPREAD · X / CLIC — DISPARAR") if kind == &"spread" else ("BOMBA · X — USAR" if BeeGameSettings.last_input_joypad else "BOMBA · C — USAR")
 	$Hint.show()
 	$HintTimer.start()
