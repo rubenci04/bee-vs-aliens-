@@ -23,7 +23,7 @@ InputDevices="*res://scripts/game/bee_input_devices.gd"
 
 bee_debug_boss={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":4194330,"device":-1)]
+"events": [Object(InputEventKey,"physical_keycode":4194340,"device":-1)]
 }
 
 move_left={

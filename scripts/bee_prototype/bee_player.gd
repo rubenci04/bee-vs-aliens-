@@ -126,6 +126,8 @@ var fire_trigger_count := 0 ## Taps + bursts started.
 var _stick_aim := Vector2.RIGHT
 var _roll_dash_left := 0.0
 var _roll_dash_velocity := Vector3.ZERO
+var _turn_left := 0.0
+var _turn_tween: Tween
 
 
 func _ready() -> void:
@@ -143,6 +145,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_turn_left = maxf(0.0, _turn_left - delta)
 	spread_ammo = maxf(0.0, spread_ammo - delta)
 	_update_melee(delta)
 	_update_roll(delta)
@@ -170,9 +173,7 @@ func _physics_process(delta: float) -> void:
 		_roll_dash_left = maxf(0.0, _roll_dash_left - delta)
 		velocity = _roll_dash_velocity
 	if absf(input.x) > 0.05 and not is_free_aiming() and _lunge_left <= 0.0:
-		facing_x = signf(input.x)
-		visual_root.rotation.y = -facing_x * PI * 0.5
-		_place_melee_hitbox()
+		_face_towards(input.x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE)
 	move_and_slide()
 	position.x = clampf(position.x, flight_min.x, flight_max.x)
 	position.y = clampf(position.y, flight_min.y, flight_max.y)
@@ -180,6 +181,8 @@ func _physics_process(delta: float) -> void:
 	_update_free_aim(delta)
 	_update_joypad_aim(delta)
 	refresh_auto_aim()
+	if not is_free_aiming() and is_instance_valid(current_auto_target):
+		_face_towards(_target_point(current_auto_target).x - global_position.x)
 	if Input.is_action_just_pressed("throw_orange"):
 		fire()
 	_update_sustained_fire(delta)
@@ -338,8 +341,7 @@ func start_melee() -> bool:
 		var dist := to_target.length()
 		chrome_dir = to_target.normalized() if dist > 0.01 else chrome_dir
 		if absf(to_target.x) > 0.15:
-			facing_x = signf(to_target.x) # Front or back: Bee turns to the target.
-			visual_root.rotation.y = -facing_x * PI * 0.5
+			_face_towards(to_target.x)
 		var travel := maxf(0.0, dist - melee_lunge_stop)
 		_lunge_velocity = chrome_dir * (travel / maxf(melee_lunge_time, 0.01))
 		_lunge_left = melee_lunge_time if travel > 0.0 else 0.0
@@ -612,10 +614,21 @@ func _update_free_aim(delta: float) -> void:
 	if _aim_from_screen:
 		_refresh_screen_aim()
 	var dx := aim_point.x - global_position.x
-	if absf(dx) > 0.3:
-		facing_x = signf(dx) # Bee looks where it aims.
-		visual_root.rotation.y = -facing_x * PI * 0.5
-		_place_melee_hitbox()
+	_face_towards(dx)
+
+func _face_towards(dx: float) -> void:
+	if absf(dx) <= BeeGameSettings.BEE_TURN_HYSTERESIS_METERS or _turn_left > 0.0 or signf(dx) == facing_x:
+		return
+	facing_x = signf(dx)
+	_turn_left = BeeGameSettings.BEE_TURN_MIN_INTERVAL_SEC
+	_place_melee_hitbox()
+	if _turn_tween != null:
+		_turn_tween.kill()
+	_turn_tween = create_tween().set_parallel(true)
+	_turn_tween.tween_property(visual_root, "rotation:y", -facing_x * PI * 0.5, BeeGameSettings.BEE_TURN_DURATION_SEC).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if not is_rolling:
+		_turn_tween.tween_property(visual_root, "rotation:z", facing_x * BeeGameSettings.BEE_TURN_ROLL, BeeGameSettings.BEE_TURN_DURATION_SEC * 0.5)
+		_turn_tween.chain().tween_property(visual_root, "rotation:z", 0.0, BeeGameSettings.BEE_TURN_DURATION_SEC * 0.5)
 
 
 # --- LOTE 11: roll (Shift) and honey mode ---------------------------------------------------------------------------
