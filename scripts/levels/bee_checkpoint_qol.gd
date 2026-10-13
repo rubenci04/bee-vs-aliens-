@@ -2,6 +2,7 @@ class_name BeeCheckpointQoL
 extends Node
 
 const HANDOFF := &"bee_level_01_checkpoint_handoff"
+const CHECKPOINT_FLOWER := preload("res://scenes/decoration/recovered_garden_rose.tscn")
 ## UFO BOSS 01: the fight has its own checkpoint (taken when the boss starts) and a debug jump (F9) straight to it.
 const BOSS_ARENA_X := 340.5
 const BEACON_COLOR := Color(0.96, 0.7, 0.22)
@@ -55,8 +56,18 @@ func setup(value: BeeShmupStage) -> void:
 	beacon_2.name = "CheckpointBeacon2"
 	stage.add_child(beacon_2)
 	beacon_2.position = Vector3(second_checkpoint_x, 0, -1.3)
+	var stem := beacon_2.get_node("BeaconStem") as MeshInstance3D
+	beacon_2.remove_child(stem)
+	stem.queue_free()
+	var flower := CHECKPOINT_FLOWER.instantiate() as Node3D
+	flower.name = "CheckpointFlower"
+	flower.position = Vector3(0.0, 0.0, BeeGameSettings.CHECKPOINT_2_FLOWER_Z + 1.3)
+	flower.scale = Vector3.ONE * BeeGameSettings.CHECKPOINT_2_FLOWER_SCALE
+	beacon_2.add_child(flower)
+	(beacon_2.get_node("CheckpointRing") as MeshInstance3D).position.y = BeeGameSettings.CHECKPOINT_2_RING_HEIGHT
 	for title: Label3D in beacon_2.find_children("*", "Label3D", true, false):
 		title.text = "CHECKPOINT 2"
+		title.position.y = BeeGameSettings.CHECKPOINT_2_LABEL_HEIGHT
 	controls_hint.show()
 	if get_tree().has_meta(HANDOFF):
 		snapshot = get_tree().get_meta(HANDOFF).duplicate(true)
@@ -134,6 +145,7 @@ func create_beacon() -> void:
 	box.size = Vector3(0.18, 1.7, 0.18)
 	box.material = material
 	post.mesh = box
+	post.name = "BeaconStem"
 	post.position.y = 0.85
 	beacon.add_child(post)
 	var ring := MeshInstance3D.new()
@@ -144,11 +156,13 @@ func create_beacon() -> void:
 	torus.ring_segments = 6
 	torus.material = material
 	ring.mesh = torus
+	ring.name = "CheckpointRing"
 	ring.position.y = 1.8
 	ring.rotation.x = PI * 0.5
 	beacon.add_child(ring)
 	var title := Label3D.new()
 	title.text = "CHECKPOINT"
+	title.name = "CheckpointLabel"
 	title.position.y = 2.5
 	title.font_size = 40
 	title.pixel_size = 0.009
