@@ -30,6 +30,7 @@ signal summon_requested(family: StringName, count: int)
 enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, TRANSITION, FREED, DONE }
 
 const MODEL := preload("res://assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.glb")
+const EXPOSED_OUTLINE := preload("res://assets/style/toon_outline.gdshader")
 const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
@@ -236,6 +237,7 @@ var _follow_up := false
 var follow_ups := 0
 var spits := 0
 var _spit_clock := 0.0
+var _saved_surface_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -246,6 +248,7 @@ func _ready() -> void:
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_free_tarantula)
 	_build_visual()
+	hit_flash.set_flash_color(BeeGameSettings.TARANTULA_HIT_FLASH_COLOR)
 	_build_areas()
 	_build_health_bar()
 	set_physics_process(false)
@@ -1014,6 +1017,7 @@ func _expose_implant() -> void:
 	implant_hurtbox.damage_multiplier = EXPOSE_MULTIPLIER
 	_dorsal_shell.visible = false # The shell opens: the core is bare.
 	_implant_core.scale = Vector3.ONE * 1.35
+	_set_exposed_outline(true)
 
 
 func _update_expose(delta: float) -> void:
@@ -1030,6 +1034,40 @@ func _close_implant() -> void:
 	implant_hurtbox.damage_multiplier = 1.0
 	_dorsal_shell.visible = true
 	_implant_core.scale = Vector3.ONE
+	_set_exposed_outline(false)
+
+
+func _set_exposed_outline(enabled: bool) -> void:
+	if enabled:
+		_saved_surface_materials.clear()
+		for mesh: MeshInstance3D in visual_root.find_children("*", "MeshInstance3D", true, false):
+			if mesh.mesh == null:
+				continue
+			var original_materials: Array[Material] = []
+			for surface in mesh.mesh.get_surface_count():
+				var original := mesh.get_surface_override_material(surface)
+				if original == null:
+					original = mesh.mesh.surface_get_material(surface)
+				original_materials.append(original)
+				var styled := original as ShaderMaterial
+				if styled == null or styled.next_pass == null:
+					continue
+				var local_body := styled.duplicate(true) as ShaderMaterial
+				var gold_outline := (styled.next_pass as ShaderMaterial).duplicate(true) as ShaderMaterial
+				gold_outline.shader = EXPOSED_OUTLINE
+				gold_outline.set_shader_parameter("width", BeeGameSettings.TARANTULA_EXPOSED_OUTLINE_WIDTH)
+				gold_outline.set_shader_parameter("outline_color", BeeGameSettings.TARANTULA_EXPOSED_OUTLINE_COLOR)
+				local_body.next_pass = gold_outline
+				mesh.set_surface_override_material(surface, local_body)
+			_saved_surface_materials[mesh] = original_materials
+	else:
+		for mesh: MeshInstance3D in _saved_surface_materials:
+			if not is_instance_valid(mesh):
+				continue
+			var materials: Array = _saved_surface_materials[mesh]
+			for surface in mini(materials.size(), mesh.mesh.get_surface_count() if mesh.mesh != null else 0):
+				mesh.set_surface_override_material(surface, materials[surface])
+		_saved_surface_materials.clear()
 
 
 func _armour_legs() -> void:
@@ -1215,6 +1253,7 @@ func _build_visual() -> void:
 	model = MODEL.instantiate() as Node3D
 	model.scale = Vector3.ONE * MODEL_SCALE
 	visual_root.add_child(model)
+	BeeToonStyle.apply(visual_root, true, BeeToonStyle.OUTLINE_ACTOR)
 	for mesh: Node3D in model.find_children("implant_*", "MeshInstance3D", true, false):
 		for plate in HIDDEN_PLATES:
 			if str(mesh.name).begins_with(plate):

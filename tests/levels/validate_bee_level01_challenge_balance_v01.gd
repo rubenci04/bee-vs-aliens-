@@ -324,7 +324,9 @@ func test_spread() -> void:
 	stage._update_camera_and_bounds()
 	bee.global_position = pickup.global_position
 	await frames(5)
-	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "Spread pickup/HUD wrong: ammo=%d hud=%s" % [bee.spread_ammo, stage.get_node("CanvasLayer/WeaponsHUD/State").text])
+	var hud := stage.get_node("CanvasLayer/WeaponsHUD")
+	var spread_status := str(hud.call("spread_status_text"))
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in spread_status, "Spread pickup/HUD wrong: ammo=%d hud=%s" % [bee.spread_ammo, spread_status])
 	var central := bee.fire()
 	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and central != null, "A burst must consume exactly one charge")
 	var burst := 0
@@ -343,7 +345,7 @@ func test_spread() -> void:
 	bee.set_physics_process(true)
 	await frames(3)
 	bee.set_physics_process(false)
-	check(bee.spread_ammo == 0 and "BASE" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "Ammo exhaustion failed")
+	check(bee.spread_ammo == 0 and str(hud.call("spread_status_text")) == "BASE", "Ammo exhaustion failed")
 	check(bee.fire().damage == 10, "No automatic return to Base")
 	print("CHALLENGE_SPREAD ammo=32 pellets=3x8 refill_cap=OK")
 
@@ -366,7 +368,7 @@ func test_checkpoint_and_restart() -> void:
 	await reloaded(old_stage)
 	bind(current_scene)
 	check(stage != old_stage and bee.spread_ammo > 16.8 and bee.spread_ammo <= 17.0 and bee.spread_max_shots == 32, "Checkpoint respawn did not restore 17 Spread charges")
-	check("SPREAD " in stage.get_node("CanvasLayer/WeaponsHUD/State").text and " s" in stage.get_node("CanvasLayer/WeaponsHUD/State").text, "HUD not restored after the checkpoint")
+	check("SPREAD " in str(stage.get_node("CanvasLayer/WeaponsHUD").call("spread_status_text")), "HUD not restored after the checkpoint")
 	var snapshot_stage := stage
 	stage.checkpoint.restart_level(true)
 	await reloaded(snapshot_stage)

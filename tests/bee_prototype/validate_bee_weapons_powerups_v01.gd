@@ -96,7 +96,7 @@ func run() -> void:
 		if event is InputEventKey and event.physical_keycode == KEY_C:
 			mapped_c = true
 	check(mapped_c and bee.bomb_charges == 1 and bee.spread_ammo == 0, "Initial kit/input wrong")
-	check("BASE" in hud.get_node("State").text and "BOMB x1" in hud.get_node("State").text, "Initial HUD wrong")
+	check(hud.spread_status_text() == "BASE" and hud.displayed_bomb_icons() == 1, "Initial graphical HUD wrong")
 	await capture("07_hud_base")
 	var base := bee.fire()
 	check(base != null and base.damage == 10 and base.hitbox.damage == 10 and shots().size() == 1, "Base shot altered")
@@ -109,7 +109,7 @@ func run() -> void:
 	await frames(3)
 	await capture("01_spread_pickup")
 	await touch_pickup("Powerups/SpreadFirst")
-	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in hud.get_node("State").text, "Spread pickup/HUD wrong")
+	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in hud.spread_status_text(), "Spread pickup/HUD wrong")
 	check(hud.get_node("Hint").visible and "DISPARAR" in hud.get_node("Hint").text, "Spread hint missing")
 	await capture("02_bee_spread")
 	await capture("08_hud_spread_bomb")
@@ -143,7 +143,7 @@ func run() -> void:
 	bee.set_physics_process(true)
 	await frames(3)
 	bee.set_physics_process(false)
-	check(bee.spread_ammo == 0 and "BASE" in hud.get_node("State").text, "Ammo exhaustion failed")
+	check(bee.spread_ammo == 0 and hud.spread_status_text() == "BASE", "Ammo exhaustion failed")
 	check(bee.fire().damage == 10 and shots().size() == 1, "No automatic return to Base")
 	await clear_shots()
 
@@ -152,7 +152,7 @@ func run() -> void:
 	await frames(3)
 	await capture("04_bomb_pickup")
 	await touch_pickup("Powerups/BombFirst")
-	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
+	check(bee.bomb_charges == 4 and hud.displayed_bomb_icons() == 4, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
 	check("C — USAR" in hud.get_node("Hint").text, "Bomb hint missing")
 	check(bee.collect_bomb() and bee.bomb_charges == 5 and not bee.collect_bomb(), "Charge cap failed (LOTE 9: cap 5)")
 	var capped := PICKUP.instantiate() as BeePowerupPickup
@@ -169,8 +169,8 @@ func run() -> void:
 	Input.action_press("bee_bomb")
 	await frames(2)
 	Input.action_release("bee_bomb")
-	check(bee.bomb_charges == 4 and "BOMB x4" in hud.get_node("State").text, "C/HUD did not consume exactly one (LOTE 9: 5 -> 4)")
-	check("C — DETONAR" in hud.get_node("State").text, "Flight HUD must offer remote detonation")
+	check(bee.bomb_charges == 4 and hud.displayed_bomb_icons() == 4, "C/HUD did not consume exactly one (LOTE 9: 5 -> 4)")
+	check("BOMBA C" in hud.control_text(), "Flight HUD must show the detonation button")
 	await frames(1)
 	Input.action_press("bee_bomb")
 	await frames(2)

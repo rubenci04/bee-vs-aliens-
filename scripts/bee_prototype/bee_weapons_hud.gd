@@ -37,6 +37,23 @@ func _process(_delta: float) -> void:
 		$Hint.show()
 		$HintTimer.start()
 
+func refresh() -> void:
+	queue_redraw()
+
+func spread_status_text() -> String:
+	return "SPREAD %.0f s" % ceilf(bee.spread_ammo) if bee.spread_ammo > 0.0 else "BASE"
+
+func displayed_bomb_icons() -> int:
+	return clampi(bee.bomb_charges, 0, BeeGameSettings.HUD_BOMB_ICON_COUNT)
+
+func pirueta_ready_ratio() -> float:
+	return bee.roll_ready_ratio()
+
+func control_text() -> String:
+	if BeeGameSettings.last_input_joypad:
+		return "FUEGO A / RT   BOMBA X   PIRUETA B / LB   AGUIJÓN Y / RB"
+	return "FUEGO X / CLIC   BOMBA C   PIRUETA SHIFT   AGUIJÓN Z"
+
 func _sync_text_debug() -> void:
 	var stage := bee.get_parent() as Node
 	if stage == null:
@@ -133,10 +150,11 @@ func _draw() -> void:
 	_draw_bombs(panel + Vector2(38, BeeGameSettings.HUD_ROW_ABILITY_Y - 13.0))
 	_draw_roll(panel + Vector2(200, BeeGameSettings.HUD_ROW_ABILITY_Y - 2.0))
 	_draw_stinger(panel + Vector2(356, BeeGameSettings.HUD_ROW_ABILITY_Y - 4.0))
-	var spread_text := "SPREAD %.0f s" % ceilf(bee.spread_ammo) if bee.spread_ammo > 0.0 else "BASE"
+	var spread_text := spread_status_text()
 	draw_string(font, panel + Vector2(442, BeeGameSettings.HUD_ROW_ABILITY_Y + 1.0), spread_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR if bee.spread_ammo > 0.0 else BeeGameSettings.HUD_LABEL_COLOR)
 
 	_draw_combo(viewport_size, juice, font)
+	draw_string(font, panel + Vector2(16, BeeGameSettings.HUD_CONTROL_ROW_Y), control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 func _draw_panel(rect: Rect2) -> void:
 	draw_rect(Rect2(rect.position + Vector2(3, 4), rect.size), Color(0.0, 0.0, 0.0, 0.35), true, -1.0, true)
@@ -157,13 +175,13 @@ func _draw_bombs(origin: Vector2) -> void:
 	draw_string(font, origin + Vector2(-18, -5), "BOMBAS", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 	for i in BeeGameSettings.HUD_BOMB_ICON_COUNT:
 		var center := origin + Vector2(12 + i * 22, 15)
-		var color := BeeGameSettings.HUD_POLLEN_COLOR if i < bee.bomb_charges else BeeGameSettings.HUD_EMPTY_COLOR
+		var color := BeeGameSettings.HUD_POLLEN_COLOR if i < displayed_bomb_icons() else BeeGameSettings.HUD_EMPTY_COLOR
 		draw_circle(center, 7.0, color)
 		draw_arc(center, 7.0, 0, TAU, 16, BeeGameSettings.HUD_LABEL_COLOR, 1.2, true)
 		draw_line(center + Vector2(0, -6), center + Vector2(4, -11), BeeGameSettings.HUD_LABEL_COLOR, 2.0, true)
 
 func _draw_roll(center: Vector2) -> void:
-	var ratio := bee.roll_ready_ratio()
+	var ratio := pirueta_ready_ratio()
 	draw_arc(center, 15.0, 0.0, TAU, 32, BeeGameSettings.HUD_EMPTY_COLOR, 3.0, true)
 	if ratio < 1.0:
 		draw_arc(center, 15.0, -PI * 0.5, -PI * 0.5 + TAU * ratio, 32, BeeGameSettings.HUD_READY_COLOR, 3.0, true)

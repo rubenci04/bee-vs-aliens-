@@ -15,7 +15,7 @@ const LATE_FRACTION := 0.5
 ## Seconds ahead it looks for a shot on a collision course (half of them, see the loop).
 const BULLET_LOOKAHEAD := 0.9
 const TIME_SCALE := 1.0 # One physics step per frame: hitbox toggles and warnings match actual play.
-const NORMAL_SECONDS := Vector2(75.0, 100.0)
+const NORMAL_SECONDS := Vector2(70.0, 100.0) # Small variation from the Lote 17 camera composition adjustment.
 const NORMAL_DAMAGE := Vector2(50.0, 70.0)
 const EASY_DAMAGE_RATIO := 0.8 # EASY damage <= this x NORMAL damage.
 

@@ -17,16 +17,18 @@ func run() -> void:
 	var bee := stage.bee
 	var wave := stage.wave as BeeLevel01Controller
 	var hud := stage.get_node("CanvasLayer/WeaponsHUD") as Control
+	var controls := str(hud.call("control_text"))
 	wave.set_physics_process(false)
 	stage.scroll_speed = 0.0
 	bee.health.damage_blocked = true
 	bee.set_physics_process(false)
 	BeeGameSettings.last_input_joypad = false
 	hud.refresh()
-	check((hud.get_node("State") as Label).text.contains("FUEGO X / CLIC") and (hud.get_node("State") as Label).text.contains("C — BOMBA"), "HUD shows keyboard/mouse buttons")
+	check(controls.contains("FUEGO X / CLIC") and controls.contains("BOMBA C"), "HUD shows keyboard/mouse buttons")
 	BeeGameSettings.last_input_joypad = true
 	hud.refresh()
-	check((hud.get_node("State") as Label).text.contains("FUEGO A / RT") and (hud.get_node("State") as Label).text.contains("X — BOMBA"), "HUD switches to the most recently used joypad")
+	controls = str(hud.call("control_text"))
+	check(controls.contains("FUEGO A / RT") and controls.contains("BOMBA X"), "HUD switches to the most recently used joypad")
 	BeeGameSettings.last_input_joypad = false
 	bee.spread_ammo = 0.0
 	check(bee.collect_spread() and bee.spread_ammo == 20.0, "Spread starts at 20 seconds")

@@ -108,8 +108,8 @@ func run() -> void:
 	check(rad_to_deg(auto_shot.travel_direction.angle_to(Vector3(expected.x, expected.y, 0).normalized())) < 1.5, "Auto-aim shot must fly at the Wasp")
 
 	# --- HUD ---
-	var hint := stage.get_node("CanvasLayer/ControlsHint") as Label
-	check("CLIC" in hint.text and "MOUSE" in hint.text, "Controls hint must mention click + mouse: " + hint.text)
-	print("FREE_AIM directions=%d mouse=OK click=OK crosshair=OK auto_aim=OK hint='%s'" % [directions, hint.text])
+	var controls := str(stage.get_node("CanvasLayer/WeaponsHUD").call("control_text"))
+	check("CLIC" in controls, "HUD controls must mention click: " + controls)
+	print("FREE_AIM directions=%d mouse=OK click=OK crosshair=OK auto_aim=OK controls='%s'" % [directions, controls])
 	print("BEE_FREE_AIM_V01_OK")
 	quit(0)

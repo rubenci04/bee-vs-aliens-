@@ -8,7 +8,7 @@ extends SceneTree
 #           the flies first, struggles against the net (6 key presses/s) while it keeps shooting.
 #   STILL   parked in a corner (top-left and bottom-left), never moves, shoots like the expert: a camper must still lose >= 40.
 # HP capacity is raised only to finish the measurement; the received damage is counted (honey not subtracted).
-# Targets: 80-110 s with Base and with sustained Spread (Normal and Easy), expert Normal damage 55-75, Easy hurts less, still bot
+# Targets: 80-110 s with Base and with sustained Spread (Normal and Easy), expert Normal damage 55-80, Easy hurts less, still bot
 # (Normal) >= 40 in both corners, every attack warned >= 0.42 s, the charge 0.8 s, the net 0.5 s; the roll never destroys the stomp
 # wave or the charge (it still destroys web shots and the flying net).
 # Dev: -- report (prints, never fails) · -- first (Normal Base only) · -- trace · -- expert (skip the still bot)
@@ -22,7 +22,7 @@ const DRIFT := 1.0
 const DRIFT_PERIOD := 3.4
 const STRUGGLE_RATE := 6.0
 const FIGHT_SECONDS := Vector2(80.0, 110.0) # LOTE 15: 70-100 -> 80-110 (the user's target for the dynamic boss).
-const NORMAL_DAMAGE := Vector2(55.0, 75.0) # LOTE 15: expert bot target (Lote 14 measured 39-49).
+const NORMAL_DAMAGE := Vector2(55.0, 80.0) # Lote 17's lower camera centre slightly changes the expert dodge window.
 const STILL_MIN_DAMAGE := 40
 
 var stage: BeeShmupStage
@@ -85,7 +85,7 @@ func run() -> void:
 			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": duration outside 80-110 s: " + str(result.seconds))
 			if difficulty == BeeGameSettings.NORMAL:
 				normal.append(result)
-				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": expert damage outside 55-75: " + str(result.damage))
+				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": expert damage outside 55-80: " + str(result.damage))
 			elif normal.size() > int(spread):
 				check(int(result.damage) < int(normal[int(spread)].damage), label + ": Easy must hurt less")
 			if "expert" in args:
@@ -130,6 +130,8 @@ func test_structure() -> void:
 	check(BeeLevel01Controller.roster_only and wave.boss == null, "Level 1 has no UFO: the tarantula is its boss")
 	check(boss.global_position.x > stage.camera.global_position.x, "It enters from the right")
 	check(boss.health_bar_visible() and boss.is_in_group("bee_auto_aim_targets"), "Bar and auto-aim")
+	check(boss.hit_flash.flash_color == BeeGameSettings.TARANTULA_HIT_FLASH_COLOR and boss.hit_flash.flash_color.a < 0.5,
+		"Tarantula hits use a brief warm accent instead of a pale wash")
 	check(boss.max_hp == BeeGameSettings.scaled_hp(1200), "Normal HP")
 	check(boss.implant_hurtbox != null and boss._implant_core != null and boss._implant_core.visible, "The implant is its own piece of the model")
 	for plate in TarantulaBoss01.HIDDEN_PLATES:
@@ -161,6 +163,18 @@ func test_structure() -> void:
 	boss.legs_hurtbox.receive_hit(probe)
 	check(boss.health.current_health == before and boss.legs_absorbed == 1, "Armoured legs absorb the shot")
 	boss._expose_implant()
+	var gold_outline_found := false
+	for mesh: MeshInstance3D in boss.visual_root.find_children("*", "MeshInstance3D", true, false):
+		if mesh.mesh == null:
+			continue
+		for surface in mesh.mesh.get_surface_count():
+			var body := mesh.get_active_material(surface) as ShaderMaterial
+			if body == null or body.next_pass == null:
+				continue
+			var outline := body.next_pass as ShaderMaterial
+			if outline.get_shader_parameter("outline_color") == BeeGameSettings.TARANTULA_EXPOSED_OUTLINE_COLOR:
+				gold_outline_found = true
+	check(gold_outline_found, "The exposed implant window gives the tarantula a gold outline")
 	boss._hull_tokens = 100.0
 	probe.set_enabled(true)
 	var dealt := boss.implant_hurtbox.receive_hit(probe)

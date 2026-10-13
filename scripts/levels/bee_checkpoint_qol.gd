@@ -32,7 +32,7 @@ var sfx_slider: HSlider
 var controls_hint: Label
 var beacon: Node3D
 var _notice_left := 0.0
-var _hint_left := 5.0
+var _hint_left := 0.0
 var debug_active := false
 var boss_checkpoint_count := 0
 var _f9_was_down := false
@@ -44,7 +44,7 @@ func setup(value: BeeShmupStage) -> void:
 	notice = label("CheckpointNotice", "", Vector2(430, 112), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
 	_build_pause_panel()
-	controls_hint = label("ControlsHint", "X / CLIC DISPARO · MOUSE APUNTA · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 212), 18)
+	controls_hint = label("ControlsHint", "", Vector2(18, 212), 18)
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
 	debug_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.2))
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) · NO ES EL JUEGO NORMAL", Vector2(330, 6), 20)
@@ -64,11 +64,11 @@ func setup(value: BeeShmupStage) -> void:
 	flower.position = Vector3(0.0, 0.0, BeeGameSettings.CHECKPOINT_2_FLOWER_Z + 1.3)
 	flower.scale = Vector3.ONE * BeeGameSettings.CHECKPOINT_2_FLOWER_SCALE
 	beacon_2.add_child(flower)
+	BeeToonStyle.apply(flower, true, BeeToonStyle.OUTLINE_PROP)
 	(beacon_2.get_node("CheckpointRing") as MeshInstance3D).position.y = BeeGameSettings.CHECKPOINT_2_RING_HEIGHT
 	for title: Label3D in beacon_2.find_children("*", "Label3D", true, false):
 		title.text = "CHECKPOINT 2"
 		title.position.y = BeeGameSettings.CHECKPOINT_2_LABEL_HEIGHT
-	controls_hint.show()
 	if get_tree().has_meta(HANDOFF):
 		snapshot = get_tree().get_meta(HANDOFF).duplicate(true)
 		get_tree().remove_meta(HANDOFF) # One-use handoff, never a save or singleton.

@@ -86,7 +86,7 @@ func run() -> void:
 	await frames(5)
 	bind_stage()
 	check(not qol.checkpoint_active and InputMap.has_action("bee_pause") and InputMap.has_action("bee_full_restart"), "Initial state/inputs")
-	check(qol.controls_hint.visible and "C BOMBA" in qol.controls_hint.text, "Controls hint missing")
+	check(str(stage.get_node("CanvasLayer/WeaponsHUD").call("control_text")).contains("BOMBA C"), "HUD controls missing")
 	bee.health.take_damage(9999)
 	check("R TO RESTART" in stage.status.text, "Before-checkpoint defeat UI")
 	await capture("03_defeat_before")

@@ -167,8 +167,8 @@ func test_roll() -> void:
 	await frames(35)
 	check(bee.roll_ready_ratio() >= 1.0 and bee.start_roll(), "The roll must be ready ~2.5 s after the previous one")
 	await frames(5)
-	var hud := stage.get_node("CanvasLayer/WeaponsHUD")
-	check(hud != null and hud.get_node_or_null("RollLabel") != null and (hud.get_node("RollLabel") as Label).text.begins_with("PIRUETA"), "HUD recharge indicator missing")
+	var hud := stage.get_node("CanvasLayer/WeaponsHUD") as Control
+	check(hud != null and is_equal_approx(float(hud.call("pirueta_ready_ratio")), bee.roll_ready_ratio()), "HUD recharge ring is not synced to pirueta cooldown")
 	var lines := stage.get_node("CanvasLayer/SpeedLines") as BeeLevel01SpeedLines
 	check(lines != null and lines.intensity > 0.0, "Speed lines must show during the roll")
 	await frames(60)
