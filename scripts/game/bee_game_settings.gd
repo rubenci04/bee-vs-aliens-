@@ -27,6 +27,13 @@ const SHOT_WARNING_SHAKE := 0.06
 const SHOT_WARNING_EDGE_MARGIN := 28.0
 const SHOT_WARNING_EDGE_SIZE := 14.0
 const HOSTILE_CYAN := Color(0.25, 0.95, 1.0, 0.9)
+const POST_ROBOT_CALM_SEC := 5.5
+const POST_ROBOT_HEAL_FRACTION := 0.5
+const POST_ROBOT_MIN_BOMBS := 3
+const POST_ROBOT_MIN_POLLEN := 10
+const POST_ROBOT_PICKUP_OFFSETS := [Vector2(3.0, 3.2), Vector2(7.0, 4.4), Vector2(11.0, 3.8)]
+const ROBOT_LASER_WARNING_SEC := 0.85
+const ROBOT_LASER_COLOR := Color(0.72, 1.0, 1.0, 0.95)
 ## Bee model can be changed live with set_bee_model_version().
 static var BEE_MODEL_VERSION := "v02"
 const BEE_VISUAL_SCALE := 1.0

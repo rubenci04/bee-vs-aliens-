@@ -36,7 +36,7 @@ const MORTAR_SPACING := 2.4
 const MORTAR_WARNING := 0.85
 const MORTAR_FALL := 0.5
 const MORTAR_DAMAGE := 6
-const LASER_WARNING := 0.6
+const LASER_WARNING := BeeGameSettings.ROBOT_LASER_WARNING_SEC
 const LASER_SWEEP := 0.7
 const LASER_HALF_ANGLE := 20.0 # degrees each side of Bee's direction.
 const LASER_LENGTH := 16.0
@@ -389,12 +389,12 @@ func _begin_laser() -> void:
 	laser_angles = Vector2(centre + half, centre - half) if down_first else Vector2(centre - half, centre + half)
 	for angle in [laser_angles.x, laser_angles.y]:
 		var tip := laser_origin + Vector3(cos(angle), sin(angle), 0.0) * LASER_LENGTH
-		_warnings.append(BeeAttackVisuals.line(get_parent(), laser_origin, tip, 0.05, Color(1.0, 0.9, 0.2, 0.5)))
+		_warnings.append(BeeAttackVisuals.line(get_parent(), laser_origin, tip, 0.05, BeeGameSettings.HOSTILE_CYAN))
 	if _beam == null:
 		_beam_pivot = Node3D.new()
 		_beam_pivot.top_level = true
 		add_child(_beam_pivot)
-		_beam = BeeAttackVisuals.line(_beam_pivot, Vector3.ZERO, Vector3(LASER_LENGTH, 0.0, 0.0), 0.2, Color(1.0, 0.92, 0.3, 0.9))
+		_beam = BeeAttackVisuals.line(_beam_pivot, Vector3.ZERO, Vector3(LASER_LENGTH, 0.0, 0.0), 0.2, BeeGameSettings.ROBOT_LASER_COLOR)
 		_beam.top_level = false
 		_beam.position = Vector3(LASER_LENGTH * 0.5, 0.0, 0.0)
 		_beam.rotation = Vector3.ZERO

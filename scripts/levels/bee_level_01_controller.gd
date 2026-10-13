@@ -26,7 +26,7 @@ const TARANTULA = preload("res://scenes/levels/tarantula_boss_01.tscn")
 ## Mini-boss robot HP (Normal; EASY scales it). Target fight: 25-40 s with Base (validate_bee_walker_miniboss_v01).
 const MINIBOSS_HP := 600
 ## Breather between the robot and the tarantula's entrance (arena locked, supplies when needed).
-const TARANTULA_BREATHER := 2.6
+const TARANTULA_BREATHER := BeeGameSettings.POST_ROBOT_CALM_SEC
 ## LOTE 13 · ETAPA 2: rule "every enemy starts attacking within ~1 s of entering the screen": rest before the first attack of a fauna unit (s).
 const FIRST_ATTACK_REST := 0.25
 ## ...and the longest allowed time from entering the screen to the first warning (tests measure it).
@@ -552,6 +552,7 @@ var escort_waves := 0
 var tarantula: TarantulaBoss01
 var tarantula_freed := false
 var _tarantula_breather_left := -1.0
+var _post_robot_target_x := 0.0
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
@@ -1194,13 +1195,35 @@ func _advance_tarantula(delta: float) -> void:
 	if _tarantula_breather_left < 0.0:
 		_tarantula_breather_left = TARANTULA_BREATHER
 		current_act = 5
-		stage.scroll_speed = 0.0 # Arena lock.
+		var screen_width := 2.0 * BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
+		_post_robot_target_x = stage.camera.global_position.x + screen_width
+		stage.scroll_speed = screen_width / TARANTULA_BREATHER
 		encounter_label = "FINAL · LA TARÁNTULA"
 		player_label = "ALGO SE MUEVE EN LAS TELARAÑAS"
-		_spawn_boss_supplies()
+		_post_robot_supplies()
 	_tarantula_breather_left -= delta
-	if _tarantula_breather_left <= 0.0:
+	if _tarantula_breather_left <= 0.0 and stage.camera.global_position.x >= _post_robot_target_x - 0.1:
+		stage.scroll_speed = 0.0
 		_start_tarantula()
+
+func _post_robot_supplies() -> void:
+	bee.health.restore_health(roundi(bee.health.max_health * BeeGameSettings.POST_ROBOT_HEAL_FRACTION))
+	bee.bomb_charges = mini(bee.max_bomb_charges, maxi(bee.bomb_charges, BeeGameSettings.POST_ROBOT_MIN_BOMBS))
+	bee.weapon_state_changed.emit()
+	var juice := stage.get_node_or_null("Juice") as BeeLevel01Juice
+	if juice != null and juice.pollen_progress() < BeeGameSettings.POST_ROBOT_MIN_POLLEN:
+		juice.add_pollen(BeeGameSettings.POST_ROBOT_MIN_POLLEN - juice.pollen_progress())
+	for i in BeeGameSettings.POST_ROBOT_PICKUP_OFFSETS.size():
+		var item: Node3D
+		if i == 2:
+			item = TOON_HEALING.instantiate()
+		else:
+			var power := POWERUP_PICKUP.instantiate() as BeePowerupPickup
+			power.kind = BeePowerupPickup.Kind.BOMB if i == 0 else BeePowerupPickup.Kind.SPREAD
+			item = power
+		stage.add_child(item)
+		var offset: Vector2 = BeeGameSettings.POST_ROBOT_PICKUP_OFFSETS[i]
+		item.global_position = Vector3(stage.camera.global_position.x + offset.x, offset.y, 0.0)
 
 func _start_tarantula() -> void:
 	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
