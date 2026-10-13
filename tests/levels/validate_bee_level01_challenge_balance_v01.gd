@@ -449,7 +449,8 @@ func test_boss() -> void:
 		boss._hull_tokens = UfoBoss01.HULL_BURST # Geometry fixture freezes physics, so recharge explicitly between isolated shots.
 		bee.global_position = Vector3(boss.global_position.x - 3.0, boss.global_position.y + float(entry[0]), 0)
 		bee.facing_x = 1.0
-		var pellet := bee._spawn_projectile(Vector3.RIGHT)
+		bee.set_aim_point(Vector3(boss.global_position.x + 2.0, boss.global_position.y + float(entry[0]), 0.0))
+		var pellet := bee.fire()
 		await frames(30)
 		var hit := boss.health.current_health < boss.health.max_health
 		check(hit == bool(entry[1]), "Lateral pellet at dy=%.2f %s" % [float(entry[0]), "must register" if bool(entry[1]) else "must pass clear"])

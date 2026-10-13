@@ -7,6 +7,8 @@ func require(ok: bool, message: String) -> void:
 		quit(1)
 		assert(ok, message)
 func run() -> void:
+	# This legacy presentation test intentionally exercises the preserved v01 model.
+	BeeGameSettings.BEE_MODEL_VERSION = "v01"
 	var bee: BeePlayer = load("res://scenes/bee_prototype/bee_player.tscn").instantiate()
 	root.add_child(bee)
 	bee.set_physics_process(false)

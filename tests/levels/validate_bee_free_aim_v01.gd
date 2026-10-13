@@ -2,7 +2,7 @@ extends SceneTree
 
 # LOTE 7 — FREE AIM. Bee fires in any direction of the X/Y plane with the mouse (or set_aim_point), left click fires,
 # and without aiming input the usual auto-aim is back. Checks:
-#   8 directions   a shot every 45 deg flies where it was aimed (and leaves the muzzle on that side)
+	#   8 directions   a shot every 45 deg flies through its aim point from the model muzzle
 #   mouse          a mouse motion puts the aim under the cursor (flight plane z = 0); a left click fires there
 #   auto-aim       without aiming input (or after AIM_HOLD_SECONDS) shots lock onto the enemy as before
 #   HUD            crosshair only while aiming; the controls hint mentions click + mouse
@@ -50,17 +50,20 @@ func run() -> void:
 	bee.health.damage_blocked = true
 	bee.global_position = Vector3(stage.camera.global_position.x - 1.0, 3.6, 0)
 	await frames(2)
+	var bee_visual := bee.get_node("VisualRoot/BeeVisual") as Node3D
 
 	# --- 8 directions ---
 	var directions := 0
 	for i in 8:
 		var angle := deg_to_rad(45.0 * i)
 		var wanted := Vector3(cos(angle), sin(angle), 0.0)
-		bee.set_aim_point(bee.global_position + wanted * 4.0)
+		var target_point := bee.global_position + wanted * 4.0
+		bee.set_aim_point(target_point)
 		var shot := bee.fire()
 		check(shot != null, "No shot at %d deg" % (45 * i))
-		check(rad_to_deg(shot.travel_direction.angle_to(wanted)) < 1.0, "Shot at %d deg flew %s" % [45 * i, shot.travel_direction])
-		check((shot.global_position - bee.global_position).dot(wanted) > 0.2, "Muzzle must be on the aimed side (%d deg)" % (45 * i))
+		var muzzle_to_target := (target_point - shot.global_position).normalized()
+		check(rad_to_deg(shot.travel_direction.angle_to(muzzle_to_target)) < 1.0, "Shot at %d deg misses its aim point from muzzle: %s" % [45 * i, shot.travel_direction])
+		check(shot.global_position.distance_to(bee_visual.call("firing_origin", bee.global_position)) < 0.001, "Shot at %d deg did not start at the model muzzle" % (45 * i))
 		directions += 1
 	check(directions >= 8, "Fewer than 8 directions")
 
@@ -101,7 +104,7 @@ func run() -> void:
 	check(bee.current_auto_target == wasp, "Auto-aim must still lock the Wasp")
 	var auto_shot := bee.fire()
 	var hurt := wasp.get_node("Hurtbox3D") as Node3D
-	var expected := (hurt.global_position - bee.global_position).normalized()
+	var expected: Vector3 = (hurt.global_position - bee_visual.call("firing_origin", bee.global_position)).normalized()
 	check(rad_to_deg(auto_shot.travel_direction.angle_to(Vector3(expected.x, expected.y, 0).normalized())) < 1.5, "Auto-aim shot must fly at the Wasp")
 
 	# --- HUD ---

@@ -223,8 +223,8 @@ func fire() -> BeeEnergyProjectile:
 	var spread_shot := spread_ammo > 0
 	var projectile := _spawn_projectile(direction)
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
-	var bee_visual := $VisualRoot/BeeVisual as BeeVisual
-	bee_visual.play_muzzle_effect(projectile.global_position, direction, spread_shot)
+	var bee_visual := $VisualRoot/BeeVisual as Node3D
+	bee_visual.call("play_muzzle_effect", projectile.global_position, direction, spread_shot)
 	if spread_ammo > 0:
 		projectile.set_spread_visual()
 		var reduced_damage := maxi(1, roundi(projectile.damage * spread_damage_ratio))
@@ -246,9 +246,9 @@ func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyPr
 	if damage_override >= 0:
 		projectile.damage = damage_override
 	get_parent().add_child(projectile)
-	var visual := $VisualRoot/BeeVisual as BeeVisual
-	if visual != null and visual.muzzle != null:
-		projectile.global_position = visual.firing_origin(global_position)
+	var visual := $VisualRoot/BeeVisual as Node3D
+	if visual != null and visual.get("muzzle") != null:
+		projectile.global_position = visual.call("firing_origin", global_position)
 	elif is_free_aiming():
 		projectile.global_position = global_position + direction.normalized() * absf(muzzle_offset.x) + Vector3(0.0, muzzle_offset.y, 0.0)
 	else:
@@ -355,7 +355,7 @@ func start_melee() -> bool:
 	_melee_tween = create_tween()
 	_melee_tween.tween_property(visual_root, "scale", Vector3.ONE, 0.14)
 	_show_stinger(chrome_dir)
-	($VisualRoot/BeeVisual as BeeVisual).start_drill_attack()
+	($VisualRoot/BeeVisual as Node3D).call("start_drill_attack")
 	melee_started.emit()
 	return true
 
@@ -390,7 +390,7 @@ func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 		stinger.scale = Vector3(1.5, 1.5, 1.5)
 		_stinger_flash = create_tween()
 		_stinger_flash.tween_property(stinger, "scale", Vector3.ONE, 0.18)
-	($VisualRoot/BeeVisual as BeeVisual).sting_impact_effect()
+	($VisualRoot/BeeVisual as Node3D).call("sting_impact_effect")
 
 
 func _place_melee_hitbox() -> void:
@@ -576,13 +576,18 @@ func is_free_aiming() -> bool:
 
 ## Direction of the next shot: free aim if active, else the auto-aim target, else straight ahead.
 func aim_direction() -> Vector3:
+	var target_point := global_position + Vector3(facing_x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE, 0.0, 0.0)
 	if is_free_aiming():
-		var delta := Vector3(aim_point.x - global_position.x, aim_point.y - global_position.y, 0.0)
-		if delta.length() > 0.05:
-			return delta.normalized()
-	if current_auto_target != null:
-		return (_target_point(current_auto_target) - global_position).normalized()
-	return Vector3(facing_x, 0.0, 0.0)
+		if Vector2(aim_point.x - global_position.x, aim_point.y - global_position.y).length() > 0.05:
+			target_point = Vector3(aim_point.x, aim_point.y, global_position.z)
+	elif current_auto_target != null:
+		target_point = _target_point(current_auto_target)
+	var firing_point := global_position
+	var visual := $VisualRoot/BeeVisual as Node3D
+	if visual != null and visual.get("muzzle") != null:
+		firing_point = visual.call("firing_origin", global_position)
+	var delta := target_point - firing_point
+	return delta.normalized() if delta.length() > 0.05 else Vector3(facing_x, 0.0, 0.0)
 
 
 func _update_free_aim(delta: float) -> void:
@@ -736,7 +741,7 @@ func _fire_burst_shot() -> void:
 	var direction := aim_direction()
 	var projectile := _spawn_projectile(direction, _scaled_damage(hold_damage_ratio, base_shot_damage))
 	BeeAudio.play(get_parent(), &"base")
-	($VisualRoot/BeeVisual as BeeVisual).play_muzzle_effect(projectile.global_position, direction)
+	($VisualRoot/BeeVisual as Node3D).call("play_muzzle_effect", projectile.global_position, direction)
 	if honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, false)
 	shots_fired += 1
@@ -755,7 +760,7 @@ func _fire_spread_burst() -> void:
 		if first == null:
 			first = pellet
 	BeeAudio.play(get_parent(), &"spread")
-	($VisualRoot/BeeVisual as BeeVisual).play_muzzle_effect(first.global_position, direction, true)
+	($VisualRoot/BeeVisual as Node3D).call("play_muzzle_effect", first.global_position, direction, true)
 	spread_ammo -= 1
 	weapon_state_changed.emit()
 	if honey_left > 0.0:

@@ -45,7 +45,7 @@ func _ready() -> void:
 	match kind:
 		&"bee_muzzle", &"bee_muzzle_spread":
 			duration = 0.07
-			var flash := _sphere(Color(1.0, 0.9, 0.52), Vector3(0.16, 0.06, 0.06) if kind == &"bee_muzzle" else Vector3(0.19, 0.105, 0.07))
+			var flash := _sphere(BeeGameSettings.BEE_MUZZLE_FLASH_GOLD, BeeGameSettings.BEE_MUZZLE_FLASH_SIZE if kind == &"bee_muzzle" else BeeGameSettings.BEE_MUZZLE_SPREAD_FLASH_SIZE)
 			flash.rotation.z = atan2(direction.y, direction.x)
 			_fade(flash, duration)
 		&"muzzle", &"muzzle_spread":
@@ -91,13 +91,13 @@ func _ready() -> void:
 			color = Color(0.95, 0.9, 0.55)
 			reach = 0.3
 		&"bee_melee":
-			duration = 0.18
-			color = Color(1.0, 0.72, 0.2)
-			reach = 0.3
+			duration = BeeGameSettings.BEE_MELEE_VFX_DURATION
+			color = BeeGameSettings.BEE_MELEE_VFX_COLOR
+			reach = BeeGameSettings.BEE_MELEE_VFX_REACH
 			var arc := MeshInstance3D.new()
 			var mesh := TorusMesh.new()
-			mesh.inner_radius = 0.23
-			mesh.outer_radius = 0.3
+			mesh.inner_radius = BeeGameSettings.BEE_MELEE_VFX_REACH * 0.77
+			mesh.outer_radius = BeeGameSettings.BEE_MELEE_VFX_REACH
 			mesh.rings = 12
 			mesh.ring_segments = 4
 			mesh.material = _material(color)
@@ -107,14 +107,14 @@ func _ready() -> void:
 			add_child(arc)
 			_fade(arc, duration)
 		&"bee_impact":
-			color = Color(1.0, 0.7, 0.18)
-			amount = 8
-			reach = 0.36
+			color = BeeGameSettings.BEE_IMPACT_VFX_COLOR
+			amount = BeeGameSettings.BEE_IMPACT_VFX_AMOUNT
+			reach = BeeGameSettings.BEE_IMPACT_VFX_REACH
 		&"bee_spark":
-			duration = 0.36
-			color = Color(1.0, 0.72, 0.2)
-			amount = 14
-			reach = maxf(0.42, extent)
+			duration = BeeGameSettings.BEE_SPARK_VFX_DURATION
+			color = BeeGameSettings.BEE_SPARK_VFX_COLOR
+			amount = BeeGameSettings.BEE_SPARK_VFX_AMOUNT
+			reach = maxf(BeeGameSettings.BEE_SPARK_VFX_MIN_REACH, extent)
 		&"crate":
 			duration = 0.45
 			color = Color(0.62, 0.43, 0.23)

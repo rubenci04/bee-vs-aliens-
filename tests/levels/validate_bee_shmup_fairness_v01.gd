@@ -65,7 +65,7 @@ func run() -> void:
 		first = false
 	var hurt_radius := ((lone.get_node("Hurtbox3D/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
 	check(is_equal_approx(((lone.get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius, 0.28), "Bee body collision changed")
-	check(hurt_radius < 0.28 and hurt_radius * 2.0 < body_box.size.y and hurt_radius * 2.0 >= body_box.size.y * 0.6, "Bee lethal volume out of range: diameter %.2f vs silhouette height %.2f" % [hurt_radius * 2.0, body_box.size.y])
+	check(hurt_radius < 0.28 and hurt_radius * 2.0 < body_box.size.y and hurt_radius * 2.0 >= body_box.size.y * 0.5, "Bee lethal volume out of range: diameter %.2f vs silhouette height %.2f" % [hurt_radius * 2.0, body_box.size.y]) # v02 adds a taller head/armor silhouette while the approved hurtbox stays unchanged.
 	check(lone.health.max_health == 100, "Bee HP changed")
 	lone.queue_free()
 

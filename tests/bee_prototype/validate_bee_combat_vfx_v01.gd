@@ -21,8 +21,14 @@ func frames(count: int) -> void:
 
 func effects(kind: StringName) -> Array: # NOCHE 01: Level 01 explosions are toon bursts (not BeeCombatVFX) carrying the same `kind`.
 	var result: Array = []
+	var bee_kind: StringName = {
+		&"muzzle": &"bee_muzzle",
+		&"muzzle_spread": &"bee_muzzle_spread",
+		&"impact": &"bee_impact",
+		&"melee": &"bee_melee",
+	}.get(kind, kind)
 	for node in get_nodes_in_group("bee_combat_vfx"):
-		if node.get("kind") == kind and not node.is_queued_for_deletion():
+		if node.get("kind") in [kind, bee_kind] and not node.is_queued_for_deletion():
 			result.append(node)
 	return result
 
