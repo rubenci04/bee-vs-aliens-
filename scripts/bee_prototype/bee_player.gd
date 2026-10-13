@@ -43,7 +43,7 @@ const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 
 @export_category("Roll (LOTE 11)")
 @export var roll_duration := 0.35 ## Invulnerable seconds of the Shift roll.
-@export var roll_cooldown := 2.5 ## Seconds before the next roll (counted from the start of the roll).
+@export var roll_cooldown := BeeGameSettings.PIRUETA_COOLDOWN_SEC
 @export var roll_enabled := true
 
 @export_category("Honey mode (LOTE 11)")
@@ -74,7 +74,7 @@ const BEE_LENGTH := 1.3 ## Measured from the model (m).
 @export var melee_damage := 30 ## 3 x a base shot (10).
 @export var melee_range := 0.85 ## Forward swing when nothing is in reach.
 @export var melee_active_time := 0.2
-@export var melee_cooldown := 0.9
+@export var melee_cooldown := BeeGameSettings.STING_MIN_INTERVAL_SEC
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -124,6 +124,8 @@ var web_locked := false
 var web_struggles := 0
 var fire_trigger_count := 0 ## Taps + bursts started.
 var _stick_aim := Vector2.RIGHT
+var _roll_dash_left := 0.0
+var _roll_dash_velocity := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -164,6 +166,9 @@ func _physics_process(delta: float) -> void:
 	if _lunge_left > 0.0: # LOTE 14: the sting lunge overrides the flight input.
 		_lunge_left = maxf(0.0, _lunge_left - delta)
 		velocity = _lunge_velocity
+	if _roll_dash_left > 0.0:
+		_roll_dash_left = maxf(0.0, _roll_dash_left - delta)
+		velocity = _roll_dash_velocity
 	if absf(input.x) > 0.05 and not is_free_aiming() and _lunge_left <= 0.0:
 		facing_x = signf(input.x)
 		visual_root.rotation.y = -facing_x * PI * 0.5
@@ -624,6 +629,9 @@ func start_roll() -> bool:
 	roll_count += 1
 	_roll_left = roll_duration
 	_roll_cooldown_left = roll_cooldown
+	var movement := Input.get_vector("move_left", "move_right", "move_back", "move_forward", BeeGameSettings.JOYPAD_DEADZONE)
+	_roll_dash_left = BeeGameSettings.PIRUETA_DASH_SEC if movement.length_squared() > 0.0 else 0.0
+	_roll_dash_velocity = Vector3(movement.x, movement.y, 0.0).normalized() * BeeGameSettings.PIRUETA_DASH_DISTANCE / BeeGameSettings.PIRUETA_DASH_SEC
 	health.invulnerable = true
 	if _roll_tween != null:
 		_roll_tween.kill()

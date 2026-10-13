@@ -54,15 +54,20 @@ func _process(_delta: float) -> void:
 	if roll_label == null or bee == null:
 		return
 	var ratio := bee.roll_ready_ratio()
-	var filled := int(floor(ratio * ROLL_BLOCKS + 0.001))
 	var is_ready := ratio >= 1.0
-	roll_label.text = "PIRUETA · SHIFT %s" % ("LISTA" if is_ready else "[" + "#".repeat(filled) + "-".repeat(ROLL_BLOCKS - filled) + "]")
+	roll_label.text = "PIRUETA · " + ("B / LB" if BeeGameSettings.last_input_joypad else "SHIFT")
 	roll_label.add_theme_color_override("font_color", ROLL_READY_COLOR if is_ready else ROLL_CHARGING_COLOR)
-	var sting_ratio := bee.melee_ready_ratio()
-	var sting_ready := sting_ratio >= 1.0
-	var sting_filled := int(floor(sting_ratio * ROLL_BLOCKS + 0.001))
-	sting_label.text = "AGUIJÓN LISTO · Z" if sting_ready else "AGUIJÓN · Z [" + "#".repeat(sting_filled) + "-".repeat(ROLL_BLOCKS - sting_filled) + "]"
-	sting_label.add_theme_color_override("font_color", STING_READY_COLOR if sting_ready else ROLL_CHARGING_COLOR)
+	sting_label.hide()
+	queue_redraw()
+	if not taught.has(&"roll") and get_tree().get_nodes_in_group("alien_projectiles").size() >= BeeGameSettings.PIRUETA_HINT_SHOT_COUNT:
+		taught[&"roll"] = true
+		$Hint.text = "PIRUETA · %s: esquiva y rompe disparos" % ("B / LB" if BeeGameSettings.last_input_joypad else "SHIFT")
+		$Hint.show()
+		$HintTimer.start()
+
+func _draw() -> void:
+	if is_instance_valid(bee) and bee.roll_ready_ratio() < 1.0:
+		draw_arc(BeeGameSettings.PIRUETA_RING_POSITION, BeeGameSettings.PIRUETA_RING_RADIUS, -PI * 0.5, -PI * 0.5 + TAU * bee.roll_ready_ratio(), 24, ROLL_READY_COLOR, 2.0, true)
 
 func refresh() -> void:
 	var weapon := "SPREAD %.1f s" % bee.spread_ammo if bee.spread_ammo > 0 else "BASE"
