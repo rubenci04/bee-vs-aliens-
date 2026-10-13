@@ -1371,6 +1371,8 @@ func arena_min_seconds() -> float:
 
 ## HP of a family in the CURRENT flow (the roster scales some families up, see ROSTER_HP_SCALE; EASY scaling is applied by the caller).
 static func level_hp(family: String, roster_extra := true) -> int:
+	if roster_only and BeeGameSettings.SMALL_ENEMY_HP.has(family):
+		return int(BeeGameSettings.SMALL_ENEMY_HP[family])
 	var base := int(LEVEL_HP[family])
 	if roster_only and ROSTER_HP_SCALE.has(family):
 		base = roundi(float(base) * float(ROSTER_HP_SCALE[family]))
