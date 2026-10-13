@@ -32,12 +32,18 @@ var buzz_player: AudioStreamPlayer
 var _roll_burst_left := 0.0
 var _drill_left := 0.0
 var _drill_trail: CPUParticles3D
+var _blink_visible := true
+var _last_blink_state := false
+var _roll_flash_tween: Tween
+var _plate_overlays: Dictionary = {}
 
 
 func _ready() -> void:
 	add_to_group("bee_visual_instances")
 	_setup_buzz()
 	apply_model_version(BeeGameSettings.BEE_MODEL_VERSION)
+	if actor != null:
+		actor.roll_started.connect(play_roll_effects)
 
 
 func apply_model_version(version := "") -> bool:
@@ -146,6 +152,7 @@ func _process(delta: float) -> void:
 			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
 	_update_thrusters(delta)
 	_update_drill(delta)
+	_update_invulnerability_blink()
 
 
 func _make_thruster(nozzle: Node3D, side: String) -> CPUParticles3D:
@@ -236,6 +243,58 @@ func _update_drill(delta: float) -> void:
 	if player != null:
 		player.speed_scale = 1.0
 		player.play(&"wingbeat")
+
+
+func play_roll_effects() -> void:
+	_roll_burst_left = BeeGameSettings.BEE_THRUSTER_BURST_SECONDS
+	if model_version == "v02":
+		_flash_armor()
+
+
+func _update_invulnerability_blink() -> void:
+	if not actor.is_rolling:
+		if _last_blink_state:
+			model.visible = true
+		_last_blink_state = false
+		_blink_visible = true
+		return
+	_last_blink_state = true
+	var step := int(floor(Time.get_ticks_msec() * BeeGameSettings.BEE_INVULNERABILITY_BLINK_HZ / 1000.0))
+	var visible_now := step % 2 == 0
+	if visible_now != _blink_visible:
+		_blink_visible = visible_now
+		model.visible = visible_now
+
+
+func _flash_armor() -> void:
+	var plates := model.find_child("plates", true, false)
+	if plates == null:
+		return
+	if _roll_flash_tween != null:
+		_roll_flash_tween.kill()
+	_restore_armor_overlays()
+	var overlay := StandardMaterial3D.new()
+	overlay.metallic = 0.88
+	overlay.roughness = 0.16
+	overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	overlay.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	overlay.albedo_color = BeeGameSettings.BEE_ROLL_FLASH_GOLD
+	overlay.emission_enabled = true
+	overlay.emission = BeeGameSettings.BEE_ROLL_FLASH_EMISSION
+	overlay.emission_energy_multiplier = 0.35
+	for mesh: MeshInstance3D in plates.find_children("*", "MeshInstance3D", true, false):
+		_plate_overlays[mesh] = mesh.material_overlay
+		mesh.material_overlay = overlay
+	_roll_flash_tween = create_tween()
+	_roll_flash_tween.tween_interval(BeeGameSettings.BEE_ROLL_ARMOR_FLASH_SECONDS)
+	_roll_flash_tween.tween_callback(_restore_armor_overlays)
+
+
+func _restore_armor_overlays() -> void:
+	for mesh in _plate_overlays:
+		if is_instance_valid(mesh):
+			(mesh as MeshInstance3D).material_overlay = _plate_overlays[mesh]
+	_plate_overlays.clear()
 
 
 func sting_impact_effect() -> void:
