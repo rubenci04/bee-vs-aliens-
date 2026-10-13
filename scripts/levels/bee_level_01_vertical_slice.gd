@@ -24,7 +24,9 @@ const PREBOSS_SUPPLY := {"bomb": Vector2(337.0, 3.8), "healing": Vector2(338.8, 
 ## checkpoint 1 (X=190): [kind, x, y] - honey jars heal, the bomb capsule gives +3 bombs.
 const ROSTER_GATE_SUPPLY := {"bomb": Vector2(285.5, 3.8), "healing": Vector2(287.3, 2.6)}
 ## LOTE 13 · ETAPA 1: loose pollen clusters along the route ([x, y]; each is CLUSTER_VALUE pollen; skipped once the level resumes past them).
-const POLLEN_CLUSTERS := [[34.0, 3.4], [84.0, 4.4], [124.0, 3.0], [168.0, 4.2], [214.0, 3.4], [236.0, 4.6], [262.0, 3.0], [279.0, 4.2]]
+## LOTE 14 · ETAPA 2.2: 12 clusters of 10 pollen (half a bar of 20), all from the second half of the level (X>=148) where the damage starts; the loose scene pollen is halved too (every LOOSE_POLLEN_KEEP_EVERY-th pickup stays).
+const POLLEN_CLUSTERS := [[148.0, 4.0], [162.0, 3.4], [176.0, 4.4], [190.0, 3.0], [204.0, 4.0], [218.0, 3.4], [232.0, 4.4], [246.0, 3.0], [258.0, 4.0], [268.0, 3.4], [276.0, 4.4], [281.0, 3.0]]
+const LOOSE_POLLEN_KEEP_EVERY := 2
 const VALLEY_SUPPLY := [["healing", 192.5, 2.8], ["bomb", 196.0, 3.8], ["healing", 200.0, 2.6]]
 
 func _ready() -> void:
@@ -140,6 +142,7 @@ func _exit_tree() -> void:
 
 ## Same names, positions and settings (the checkpoint snapshot finds them by name); only the scene changes.
 func _swap_toon_pickups() -> void:
+	_thin_loose_pollen()
 	for pair in [["Pollen", true], ["Powerups", false]]:
 		var parent := get_node(str(pair[0]))
 		for old in parent.get_children():
@@ -245,3 +248,16 @@ func _place_pollen_clusters() -> void:
 		index += 1
 		group.add_child(item)
 		item.global_position = Vector3(float(entry[0]), float(entry[1]), 0.0)
+
+
+## LOTE 14 · ETAPA 2.2: pollen is scarce - only every LOOSE_POLLEN_KEEP_EVERY-th scene pollen pickup stays (roster Level 1 only).
+func _thin_loose_pollen() -> void:
+	if not BeeLevel01Controller.roster_only:
+		return
+	var parent := get_node("Pollen")
+	var index := 0
+	for old in parent.get_children():
+		if index % LOOSE_POLLEN_KEEP_EVERY != 0:
+			parent.remove_child(old)
+			old.free()
+		index += 1

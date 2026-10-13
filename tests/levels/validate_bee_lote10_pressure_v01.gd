@@ -94,7 +94,7 @@ func run() -> void:
 		for i in 12:
 			wave._clock += 1.0
 			wave._spawn_pending()
-		var allowed: int = BeeLevel01Controller.MAX_ROUTE_THREATS if cap == BeeLevel01Controller.MAX_ON_SCREEN else cap # LOTE 11: the route threat cap (6) is below the on-screen total (7, popcorn included).
+		var allowed: int = mini(BeeLevel01Controller.threat_cap(stage.distance), cap) if cap == BeeLevel01Controller.MAX_ON_SCREEN else cap # LOTE 14: the roster route cap is 7 from X=96; LOTE 11: the route threat cap (6) is below the on-screen total (7, popcorn included).
 		check(wave.alive_count() == allowed and wave._pending.size() == 10 - allowed, "Pending queue must enforce the route / arena cap")
 		for enemy in wave.active_units:
 			enemy.queue_free()

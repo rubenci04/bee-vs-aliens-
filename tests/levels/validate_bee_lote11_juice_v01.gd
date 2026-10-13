@@ -201,7 +201,8 @@ func test_combo_and_score() -> void:
 	await frames(int(BeeLevel01Juice.COMBO_RESET_SECONDS * 60.0) + 12)
 	check(juice.combo == 0 and not juice.combo_label.visible and juice.best_combo == 3, "Combo must reset after 3 s without impacts")
 	var score_before := juice.score
-	wave.unit_downed.emit(popcorn, true) # a liberation: 150 points + 2 pollen + burst
+	juice.liberations_seen = BeeLevel01Juice.LIBERATION_POLLEN_EVERY - 1 # LOTE 14: a freed animal drops pollen one time in 3; this is the third
+	wave.unit_downed.emit(popcorn, true) # a liberation: 150 points + pollen + burst
 	check(juice.score == score_before + BeeLevel01Juice.POINTS_LIBERATION and juice.pollen_total == BeeLevel01Juice.POLLEN_PER_LIBERATION, "Liberation points / pollen")
 	check(stage.find_child("PollenBurst", true, false) != null, "Liberation must burst pollen")
 	check(juice.summary_text().begins_with("PUNTAJE %d" % juice.score), "Score summary for the SECTOR DESPEJADO card")

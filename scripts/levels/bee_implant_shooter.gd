@@ -8,8 +8,8 @@ const SHOT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
 const WARNING_SECONDS := 0.6
 const FIRST_DELAY := 0.25
 const COOLDOWN_SECONDS := 3.0
-const SHOT_SPEED := 3.8 # LOTE 13: slower shots (dodgeable and longer on screen) for the dense roster
-const SHOT_DAMAGE := 7
+const SHOT_SPEED := 3.3 # LOTE 13: slower shots (dodgeable and longer on screen) for the dense roster
+const SHOT_DAMAGE := 3 # LOTE 14: common bullets do 3-5 (was 7)
 const MIN_RANGE := 3.2
 ## Per-family volley cooldown (s) when it differs from COOLDOWN_SECONDS.
 ## LOTE 14: the ladybird fires ONE slow seed with a long pause (it was a fan of 3: too much).
@@ -29,6 +29,7 @@ var clock := FIRST_DELAY
 var warning: Node3D
 var locked_aim := Vector3.LEFT
 var locked_point := Vector3.ZERO
+var cooldown_scale := 1.0 ## LOTE 14: the roster rests longer between volleys (BeeLevel01Controller.ROSTER_FIRE_SLOWDOWN).
 var volleys := 0
 var warnings_started := 0 ## Warnings shown so far (tests: a unit warns within ~1 s of entering).
 
@@ -69,7 +70,7 @@ func _physics_process(delta: float) -> void:
 				else:
 					BeeEnemyPatterns.spawn_shot(unit.get_parent(), SHOT, origin, direction, SHOT_DAMAGE, float(SPEED_BY_FAMILY.get(family, SHOT_SPEED)), unit)
 		volleys += 1
-	clock = float(COOLDOWN_BY_FAMILY.get(family, COOLDOWN_SECONDS))
+	clock = float(COOLDOWN_BY_FAMILY.get(family, COOLDOWN_SECONDS)) * cooldown_scale
 
 func _cancel() -> void:
 	var owner_unit := get_parent()

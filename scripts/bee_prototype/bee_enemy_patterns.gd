@@ -38,6 +38,8 @@ static func fan_directions(aim: Vector3, count: int, step_degrees: float) -> Arr
 static func spawn_shot(parent: Node, scene: PackedScene, origin: Vector3, direction: Vector3, damage: int, speed: float, attacker: Node) -> AlienEnemyProjectile:
 	var projectile := scene.instantiate() as AlienEnemyProjectile
 	projectile.damage = damage
+	if speed > 0.0 and attacker != null:
+		speed *= float(attacker.get_meta("shot_speed_scale", 1.0)) # LOTE 14: the Level 1 roster flies its shots slower (BeeLevel01Controller.ROSTER_SHOT_SPEED_SCALE).
 	if speed > 0.0:
 		projectile.speed = speed
 	parent.add_child(projectile)
@@ -51,6 +53,8 @@ static func spawn_shot(parent: Node, scene: PackedScene, origin: Vector3, direct
 static func spawn_styled(parent: Node, scene: PackedScene, origin: Vector3, direction: Vector3, damage: int, speed: float, attacker: Node, style: StringName) -> AlienEnemyProjectile:
 	var projectile := scene.instantiate() as AlienEnemyProjectile
 	projectile.damage = damage
+	if speed > 0.0 and attacker != null:
+		speed *= float(attacker.get_meta("shot_speed_scale", 1.0)) # LOTE 14: the Level 1 roster flies its shots slower (BeeLevel01Controller.ROSTER_SHOT_SPEED_SCALE).
 	if speed > 0.0:
 		projectile.speed = speed
 	projectile.set_meta("shot_style", style)

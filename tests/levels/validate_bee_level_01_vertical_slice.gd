@@ -267,7 +267,7 @@ func run() -> void:
 	bee = stage.bee
 	check(wave != null and is_equal_approx(stage.sector_length, 360.0), "Level contract invalid")
 	check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL), "Authored speed changed (LOTE 7: 1.5 m/s)")
-	check(stage.get_node("Pollen").get_child_count() == 17, "Pollen count changed")
+	check(stage.get_node("Pollen").get_child_count() == 9, "Pollen count changed (LOTE 14: every other loose pickup stays)")
 	check(stage.get_node("Powerups").get_child_count() == 5 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong") # REBUILD 02: + the pre-boss S+ capsule.
 	check(stage.get_node("Destructibles").get_child_count() == 8, "Eight crates missing")
 	check(stage.get_node("Scenery").get_child_count() == 350, "Expected 350 scenery placements")
@@ -281,7 +281,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 90, "Event count wrong (LOTE 13: the dense roster table has 90+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
+	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 80, "Event count wrong (LOTE 14: the gradual roster table has 80+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
 	var total := 0
 	var max_gap := 0.0
 	var valley_gap := 0.0
@@ -296,7 +296,7 @@ func run() -> void:
 				valley_gap = gap # The breathing valley of checkpoint 1: the only long stretch.
 			else:
 				max_gap = maxf(max_gap, gap)
-	check(total >= 220 and total <= 330 and max_gap <= 18 and valley_gap == 0.0, "Unit count/pacing wrong (LOTE 13: 220-330 units incl. the robot escort wave, gaps <= 18 m, NO breathing valley; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
+	check(total >= 190 and total <= 330 and max_gap <= 18 and valley_gap == 0.0, "Unit count/pacing wrong (LOTE 14: 190-330 units incl. the robot escort wave, gaps <= 18 m, NO breathing valley; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -346,7 +346,7 @@ func run() -> void:
 			var family := str(unit.name).get_slice("_", 0)
 			var health := unit.get_node("HealthComponent") as HealthComponent
 			check((unit.call("is_active") or CinematicDepthEntry.is_in_depth(unit) or bool(unit.get_meta("anthill_entry", false))) and unit.visible, "Spawn not active/visible: %s state=%s vis=%s lib=%s" % [unit.name, unit.get("state"), unit.visible, unit.get("liberated")]) # REBUILD 02: depth entries activate on arrival.
-			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else BeeLevel01Controller.level_hp(family))), "HP changed for " + family)
+			check(health.max_health == (BeeLevel01Controller.MINIBOSS_HP if unit.has_meta("level_miniboss") else (BeeLevel01Controller.SHOWCASE_HP if unit.has_meta("level_hold") else BeeLevel01Controller.level_hp(family, not bool(unit.get_meta("level_hard", false))))), "HP changed for " + family)
 			if not seen.has(id):
 				seen[id] = wave._clock
 			var event_id := int(str(unit.name).get_slice("_", 1))
@@ -390,7 +390,7 @@ func run() -> void:
 			break
 	Engine.time_scale = 1.0
 	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
-	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ROUTE_THREATS and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
+	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.ROSTER_ROUTE_THREATS and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0
 	var roster_families := {}
@@ -411,7 +411,7 @@ func run() -> void:
 		for zone_wave: Dictionary in event.get("arena", []):
 			planned += (zone_wave["units"] as Array).size()
 	var escorts := 3 if wave.escort_waves >= 2 else 0 # The robot calls its 2nd escort wave at 60 % HP (the harness kills it at once).
-	check(planned >= 217 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
+	check(planned >= 190 and spawned == planned + escorts, "Not all %d units spawned (%d) (LOTE 12: route and combat-zone units included)" % [planned + escorts, spawned])
 	for event_id in BeeLevel01Controller.EVENTS.size():
 		var times: Array[float] = []
 		for entry in wave.spawn_history:
@@ -445,7 +445,7 @@ func run() -> void:
 	var restarted := current_scene as BeeShmupStage
 	check(restarted != null and restarted != stage and restarted.distance < 1.0, "R failed to reload")
 	check(not restarted.bee.is_defeated and restarted.bee.health.current_health == 100, "R did not restore Bee")
-	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 17, "Restart encounters/pollen wrong")
+	check((restarted.wave as BeeLevel01Controller).event_index == 0 and restarted.get_node("Pollen").get_child_count() == 9, "Restart encounters/pollen wrong")
 	check(not (restarted.get_node("Destructibles/GardenCrate") as DestructibleObstacle3D).is_destroyed, "Restart crate missing")
 	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "Restart weapons/powerups wrong")
 	print("BEE_LEVEL_01_DENSITY_02_OK events=56 units=137 max_active=", max_active, " escaped=", escaped, " scenery=350 gap=2.4 restart=OK")

@@ -32,7 +32,7 @@ const FIRST_ATTACK_REST := 0.25
 ## ...and the longest allowed time from entering the screen to the first warning (tests measure it).
 const FIRST_ATTACK_MAX_DELAY := 1.0
 ## Damage scale of the flies the tarantula summons (their ram is 11 on the route scale of 1).
-const TARANTULA_MINION_DAMAGE_SCALE := 0.3
+const TARANTULA_MINION_DAMAGE_SCALE := 1.0 # LOTE 14: common bullets now do 3 (were 7), so the summons keep more of their damage (was 0.3)
 ## After the tarantula walks away the sector ends this far ahead (the garden geometry runs to X=360; no 30 s empty run-out).
 const TARANTULA_RUN_OUT := 10.0
 ## LOTE 6 — Codex GLB fauna (scripts/levels/asset_fauna.gd): family name -> scene.
@@ -81,7 +81,7 @@ const MAX_ON_SCREEN_ARENA := 10 # LOTE 11: 8 -> 10 in combat zones.
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 16
 ## Denser route volleys trade burst damage for more dodge decisions; UFO damage is unchanged.
-const ROUTE_DAMAGE_SCALE := 0.15 # LOTE 13: the dense table (3+ enemies on screen 80 % of the time) multiplies the hits: chip damage (1-2 HP; target 50-75 HP lost before the robot).
+const ROUTE_DAMAGE_SCALE := 1.0 # LOTE 14: the LOTE 13 chip-damage hack (0.15) is gone; common bullets are calibrated to 3-5 instead (shot_damage / SHOT_DAMAGE).
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
 const MIN_FORMATION_GAP := 0.2
 ## REBUILD 03: Wasp implant sting / overload are introduced progressively (see `_spawn`).
@@ -119,11 +119,28 @@ const ARENA_MAX_SECONDS := 36.0
 ## LOTE 9: with 2 waves a zone could end in ~14 s: it now lasts at least this long (the scroll keeps creeping).
 const ARENA_MIN_SECONDS := 28.0
 ## LOTE 13 · ETAPA 2: the roster zones are denser: 6 waves, a new one every 4 s once the field is clear (6 s at most), 28-36 s per zone.
-const ROSTER_ARENA_CADENCE := 4.0
-const ROSTER_ARENA_WAVE_MAX := 6.0
+const ROSTER_ARENA_CADENCE := 3.0
+const ROSTER_ARENA_WAVE_MAX := 5.0
+## LOTE 14: the first wave of a roster zone follows its host event after this long (the host units are spaced by their own delays).
+const ROSTER_FIRST_WAVE_DELAY := 1.8
 const ROSTER_ARENA_MAX_SECONDS := 36.0
 const ROSTER_ARENA_MIN_SECONDS := 28.0
 const BREATHER_SECONDS := 1.0 # LOTE 10: short transition; route patrols maintain pressure.
+
+## LOTE 14 · ETAPA 2: GRADUAL INTRODUCTION. An event (or a combat zone) with a "debut" key introduces a new species: it waits for a clear field
+## (at most DEBUT_CLEAR_MAX s: the remaining units are then sent away) and, for DEBUT_SOLO_SECONDS, nothing else is launched. The first
+## spawn of every species shows its name for SPECIES_NAME_SECONDS in small letters.
+const DEBUT_SOLO_SECONDS := 8.0
+const DEBUT_CLEAR_MAX := 0.8
+const SPECIES_NAME_SECONDS := 1.5
+## LOTE 14 · ETAPA 2.3: with real damage (scale 1.0) the dense table is lethal, so the roster attacks less often: this multiplies the rests between attacks
+## (idle / recovery / restalk of every unit and the implant cooldown). Warnings, projectile speed and damage are untouched.
+const ROSTER_FIRE_SLOWDOWN := 2.32
+const ROSTER_REST_KEYS := ["idle_time", "recovery_time", "arcade_recovery", "restalk_time"]
+## Slower enemy shots on the roster (dodgeable, longer on screen). Applies to every shot a roster unit fires through BeeEnemyPatterns.
+const ROSTER_SHOT_SPEED_SCALE := 0.8
+const SPECIES_NAMES := {"FlyCommon": "MOSCA", "Ant": "HORMIGA", "Ladybird": "MARIQUITA", "Wasp": "AVISPA", "FlyGreen": "MOSCA VERDE", "FlyCloud": "NUBE DE MOSCAS",
+		"WormA": "GUSANO ROSA", "Snail": "CARACOL", "StagBeetle": "ESCARABAJO", "WormB": "GUSANO DE COMPOST", "Spider": "ARAÑA COLGANTE", "MushroomCannon": "HONGO CAÑÓN"}
 ## BOSS V2: never more than this many minions alive; they fly out of the saucer in MINION_LAUNCH_SECONDS.
 const MAX_BOSS_MINIONS := 2
 const MINION_LAUNCH_SECONDS := 0.7
@@ -153,10 +170,13 @@ const LEVEL_HP = {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speede
 const SHOWCASE_HP := 130
 ## LOTE 13 · ETAPA 2: the dense roster keeps its enemies on screen longer (more of them visible at once): HP multiplier per family, roster only.
 const ROSTER_HP_SCALE := {"FlyCommon": 1.4, "FlyGreen": 1.3, "Wasp": 1.3, "Ladybird": 1.15, "Ant": 1.2, "WormA": 1.15, "WormB": 1.2, "Spider": 1.1}
+## LOTE 14 · ETAPA 2: the gradual table spawns fewer units, so each one stays a bit longer (3+ enemies visible from minute 2): extra HP multiplier of the roster species.
+const ROSTER_HP_EXTRA := 1.2
+const ROSTER_HP_EXTRA_FAMILIES := ["FlyCommon", "FlyGreen", "Wasp", "Ladybird", "Ant", "WormA", "WormB", "Snail", "StagBeetle", "Spider"]
 ## LOTE 13 · ETAPA 2: tuning that only applies while Level 1 plays its roster (merged over LEVEL_TUNING). Spider: it drops in and warns within ~1 s.
 const ROSTER_TUNING := {
-	"Spider": {"hang_seconds": 0.15, "enter_seconds": 0.6},
-	"Wasp": {"sting_speed": 4.4}, # Slower needles: dodgeable and longer on screen.
+	"Spider": {"hang_seconds": 0.15, "enter_seconds": 0.6, "strike_damage": 5, "contact_damage": 2, "reposition_seconds": 1.2}, # LOTE 14: real damage: the thread strike hits for 8, touching the body for 4.
+	"Wasp": {"sting_speed": 4.4, "sting_damage": 3, "overload_damage": 5, "attack_damage": 4}, # Slower needles (dodgeable, longer on screen) that do 3; the kamikaze overload 5 and the dive 4 (LOTE 14).
 }
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
 		"Turret": &"MEDIUM", "OrganicAlien": &"MEDIUM", "Walker": &"HEAVY", "Dragonfly": &"SPECIAL", "Spider": &"MEDIUM",
@@ -348,143 +368,116 @@ const EVENTS_LEGACY = [
 ## lob (comes out of an anthill); snail = slime bubble lob; worm A = erupts from a marked spot; worm B = low crawling lunge; stag beetle =
 ## charge + stone lob; hanging spider = vertical thread lane + web fan; cannon mushroom = spore fan.
 const EVENTS_ROSTER = [
-	# LOTE 13 · ETAPA 2 — DENSE table (generated by dev/lote13/_gen_events.gd, seed 1313): a beat every 2.1 m with 1-3 insects mixing flyers
-	# and ground units, no breathing valley (the checkpoint-1 stretch is the worm entrance), three combat zones of 6 waves.
-	{"at": 1.0, "act": 1, "label": "CÉSPED · MOSCA Y AVISPA Y HORMIGA", "units": ["FlyCommon", "Wasp", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 4.6, 0.0], "anthill": true},
-	{"at": 3.1, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [3.4]},
+	# LOTE 14 · ETAPA 2 — GRADUAL table (generated by dev/lote14/_gen_events.gd, seed 1414): flies only at first, then one new species at a time, each
+	# debuting alone ("debut" key); <= 2 species mixed until minute 2, <= 3 until minute 4, <= 4 afterwards.
+	{"at": 1.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [3.0]},
 	{"at": 4.0, "act": 1, "label": "DESPERTAR · LATA GIGANTE", "units": [], "moment": "opening_can"},
-	{"at": 7.3, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.6]},
-	{"at": 9.4, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 11.5, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 13.6, "act": 1, "label": "CÉSPED · AVISPA", "units": ["Wasp"], "y": [3.0]},
-	{"at": 15.7, "act": 1, "label": "CÉSPED · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 0.8], "y": [4.0, 0.0], "anthill": true},
-	{"at": 17.8, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [3.4, 0.0], "anthill": true},
-	{"at": 19.9, "act": 1, "label": "CÉSPED · HORMIGA Y AVISPA", "units": ["Ant", "Wasp"], "delays": [0.0, 0.7], "y": [0.0, 4.4], "anthill": true},
-	{"at": 22.0, "act": 1, "label": "CÉSPED · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
-	{"at": 24.1, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [2.8]},
-	{"at": 26.2, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [3.4]},
-	{"at": 28.3, "act": 1, "label": "CÉSPED · MOSCA Y AVISPA Y HORMIGA", "units": ["FlyCommon", "Wasp", "Ant"], "delays": [0.0, 0.6, 1.3], "y": [4.6, 3.4, 0.0], "anthill": true},
-	{"at": 30.4, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.6]},
-	{"at": 32.5, "act": 1, "label": "CÉSPED · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [3.0, 0.0], "anthill": true},
-	{"at": 34.6, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.9], "y": [4.4, 0.0], "anthill": true},
-	{"at": 36.7, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
-	{"at": 38.8, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [3.4, 0.0], "anthill": true},
-	{"at": 40.9, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [4.6]},
-	{"at": 43.0, "act": 1, "label": "CÉSPED · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 0.7], "y": [3.0, 0.0], "anthill": true},
-	{"at": 45.1, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.0]},
-	{"at": 47.2, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
-	{"at": 49.3, "act": 1, "label": "CÉSPED · AVISPA", "units": ["Wasp"], "y": [5.0]},
-	{"at": 51.4, "act": 1, "label": "CÉSPED · HORMIGA Y AVISPA", "units": ["Ant", "Wasp"], "delays": [0.0, 0.7], "y": [0.0, 4.4], "anthill": true},
-	{"at": 53.5, "act": 1, "label": "CÉSPED · AVISPA", "units": ["Wasp"], "y": [2.8]},
-	{"at": 55.6, "act": 1, "label": "CÉSPED · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [3.4, 0.0], "anthill": true},
-	{"at": 57.7, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [3.4, 0.0], "anthill": true},
-	{"at": 59.8, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.0]},
-	{"at": 62.0, "act": 2, "label": "MACIZO · MOSCA", "units": ["FlyCommon"], "y": [3.0]},
-	{"at": 64.1, "act": 2, "label": "MACIZO · MOSCA", "units": ["FlyCommon"], "y": [2.8]},
-	{"at": 66.2, "act": 2, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 68.3, "act": 2, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen"], "delays": [0.0, 0.6], "y": [0.0, 5.2], "anthill": true},
-	{"at": 70.4, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ant", "Ladybird"], "delays": [0.0, 0.7, 1.6], "y": [0.0, 0.0, 4.4], "anthill": true},
-	{"at": 72.5, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.4]},
-	{"at": 74.6, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.0]},
-	{"at": 76.7, "act": 2, "label": "MACIZO · NUBE Y GUSANO", "units": ["FlyCloud", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
-	{"at": 78.8, "act": 2, "label": "MACIZO · MARIQUITA", "units": ["Ladybird"], "y": [4.6]},
-	{"at": 80.9, "act": 2, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 83.0, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [5.0, 0.0], "anthill": true},
-	{"at": 85.1, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [4.4, 0.0], "anthill": true},
-	{"at": 87.2, "act": 2, "label": "MACIZO · NUBE Y GUSANO", "units": ["FlyCloud", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
-	{"at": 89.3, "act": 2, "label": "MACIZO · NUBE", "units": ["FlyCloud"], "y": [2.8]},
-	{"at": 91.4, "act": 2, "label": "MACIZO · MOSCA", "units": ["FlyCommon"], "y": [3.4]},
-	{"at": 93.5, "act": 2, "label": "MACIZO · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.8], "y": [3.0, 0.0], "anthill": true},
-	{"at": 95.6, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [2.8]},
-	{"at": 97.7, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.4]},
-	{"at": 99.8, "act": 2, "label": "MACIZO · MOSCA VERDE Y GUSANO", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
-	{"at": 101.9, "act": 2, "label": "MACIZO · GUSANO Y NUBE", "units": ["WormB", "FlyCloud"], "delays": [0.0, 0.8], "y": [0.0, 4.4]},
-	{"at": 104.0, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [5.0, 0.0], "anthill": true},
-	{"at": 106.1, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.7], "y": [4.6, 0.0], "anthill": true},
-	{"at": 112.0, "act": 2, "label": "ZONA · INICIO", "units": ["FlyCommon", "Wasp", "Ant"], "delays": [0.0, 0.7, 1.3], "y": [2.8, 5.2, 0.0], "anthill": true,
-			"arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
-			{"units": ["FlyCommon", "Wasp", "FlyCommon"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 4.4, 4.4]},
-			{"units": ["FlyCloud", "FlyGreen", "Ladybird"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 3.0, 4.6]},
-			{"units": ["Ant", "Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 5.2, 4.0, 3.0], "anthill": true},
-			{"units": ["FlyGreen", "FlyGreen", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [5.0, 4.4, 4.0, 0.0], "anthill": true},
-			{"units": ["Wasp", "Ladybird", "FlyCommon", "Ant"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [3.0, 5.2, 4.0, 0.0], "anthill": true},
-			{"units": ["FlyCommon", "FlyGreen", "Wasp", "WormB"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [4.6, 2.8, 5.0, 0.0]},
-		]},
-	{"at": 125.1, "act": 3, "label": "MACIZO · MOSCA VERDE Y GUSANO", "units": ["FlyGreen", "WormA"], "delays": [0.0, 0.8], "y": [4.4, 0.0]},
-	{"at": 127.2, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
+	{"at": 6.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon"], "y": [4.6]},
+	{"at": 11.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 0.9], "y": [5.0, 4.4]},
+	{"at": 16.5, "act": 1, "label": "CÉSPED · MOSCA", "units": ["FlyCommon", "FlyCommon"], "delays": [0.0, 0.6], "y": [4.4, 4.6]},
+	{"at": 26.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true, "debut": "Ant"},
+	{"at": 29.3, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
+	{"at": 32.7, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant", "Ant"], "delays": [0.0, 0.8], "y": [0.0, 0.0], "anthill": true},
+	{"at": 41.0, "act": 1, "label": "CÉSPED · HORMIGA", "units": ["Ant"], "anthill": true},
+	{"at": 44.6, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "FlyCommon", "Ant"], "delays": [0.0, 0.6, 1.6], "y": [4.6, 4.6, 0.0], "anthill": true},
+	{"at": 48.2, "act": 1, "label": "CÉSPED · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
+	{"at": 52.0, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8], "debut": "Ladybird"},
+	{"at": 55.3, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8]},
+	{"at": 58.7, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8]},
+	{"at": 65.0, "act": 2, "label": "MACIZO · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant"], "delays": [0.0, 0.6], "y": [4.6, 0.0], "anthill": true},
+	{"at": 68.6, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird"], "delays": [0.0, 0.6], "y": [0.0, 4.6], "anthill": true},
+	{"at": 72.2, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ant", "Ladybird"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 0.0, 3.0], "anthill": true},
+	{"at": 76.0, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [4.0], "debut": "Wasp"},
+	{"at": 79.3, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.0]},
+	{"at": 82.7, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp", "Wasp"], "delays": [0.0, 0.8], "y": [2.8, 4.0]},
+	{"at": 89.0, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [2.8, 0.0], "anthill": true},
+	{"at": 92.6, "act": 2, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [4.4, 0.0], "anthill": true},
+	{"at": 96.2, "act": 2, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [3.4]},
+	{"at": 100.0, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0], "debut": "FlyGreen"},
+	{"at": 103.3, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
+	{"at": 106.7, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen", "FlyGreen"], "delays": [0.0, 0.8], "y": [4.4, 4.4]},
+	{"at": 113.0, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [3.0, 0.0], "anthill": true},
+	{"at": 115.8, "act": 2, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
+	{"at": 118.6, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [5.0, 0.0], "anthill": true},
+	{"at": 121.4, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant", "Ant"], "delays": [0.0, 0.8, 1.5], "y": [5.2, 0.0, 0.0], "anthill": true},
+	{"at": 124.2, "act": 3, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [5.0]},
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
-	{"at": 131.4, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 133.5, "act": 3, "label": "MACIZO · GUSANO Y NUBE", "units": ["WormB", "FlyCloud"], "delays": [0.0, 0.9], "y": [0.0, 3.4]},
-	{"at": 135.6, "act": 3, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.9], "y": [4.6, 0.0], "anthill": true},
-	{"at": 137.7, "act": 3, "label": "MACIZO · MARIQUITA Y HORMIGA", "units": ["Ladybird", "Ant", "Ant"], "delays": [0.0, 0.9, 1.5], "y": [3.0, 0.0, 0.0], "anthill": true},
-	{"at": 139.8, "act": 3, "label": "MACIZO · NUBE", "units": ["FlyCloud"], "y": [5.0]},
-	{"at": 141.9, "act": 3, "label": "MACIZO · NUBE", "units": ["FlyCloud"], "y": [2.8]},
-	{"at": 144.0, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 146.1, "act": 3, "label": "MACIZO · GUSANO", "units": ["WormB"]},
-	{"at": 148.2, "act": 3, "label": "MACIZO · MOSCA Y HORMIGA", "units": ["FlyCommon", "Ant", "Ant"], "delays": [0.0, 0.8, 1.5], "y": [3.0, 0.0, 0.0], "anthill": true},
-	{"at": 150.3, "act": 3, "label": "MACIZO · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.7], "y": [4.0, 0.0], "anthill": true},
-	{"at": 152.4, "act": 3, "label": "MACIZO · AVISPA Y GUSANO", "units": ["Wasp", "WormA"], "delays": [0.0, 0.6], "y": [4.0, 0.0]},
-	{"at": 154.5, "act": 3, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen"], "delays": [0.0, 0.7], "y": [0.0, 4.6], "anthill": true},
-	{"at": 156.6, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 158.7, "act": 3, "label": "MACIZO · AVISPA Y MOSCA VERDE Y GUSANO", "units": ["Wasp", "FlyGreen", "WormA"], "delays": [0.0, 0.8, 1.4], "y": [3.0, 4.0, 0.0]},
-	{"at": 160.8, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 162.9, "act": 3, "label": "MACIZO · NUBE Y GUSANO", "units": ["FlyCloud", "WormB"], "delays": [0.0, 0.7], "y": [4.6, 0.0]},
-	{"at": 165.0, "act": 3, "label": "MACIZO · AVISPA Y GUSANO", "units": ["Wasp", "WormA"], "delays": [0.0, 0.8], "y": [5.2, 0.0]},
-	{"at": 167.1, "act": 3, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [2.8]},
-	{"at": 169.2, "act": 3, "label": "MACIZO · MOSCA Y GUSANO", "units": ["FlyCommon", "WormB"], "delays": [0.0, 0.9], "y": [2.8, 0.0]},
-	{"at": 171.3, "act": 3, "label": "MACIZO · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
-	{"at": 173.4, "act": 3, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 175.5, "act": 3, "label": "MACIZO · MARIQUITA Y GUSANO Y HORMIGA", "units": ["Ladybird", "WormB", "Ant"], "delays": [0.0, 0.9, 1.3], "y": [3.4, 0.0, 0.0], "anthill": true},
-	{"at": 177.6, "act": 3, "label": "MACIZO · GUSANO Y AVISPA", "units": ["WormA", "Wasp"], "delays": [0.0, 0.8], "y": [0.0, 4.6]},
-	{"at": 180.0, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA VERDE Y GUSANO", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.9], "y": [5.0, 0.0]},
-	{"at": 182.8, "act": 4, "label": "ENTRADA DE GUSANOS · GUSANO Y MOSCA", "units": ["WormA", "FlyCommon"], "delays": [0.0, 0.8], "y": [0.0, 4.6]},
-	{"at": 185.6, "act": 4, "label": "ENTRADA DE GUSANOS · GUSANO Y MARIQUITA", "units": ["WormB", "Ladybird"], "delays": [0.0, 0.8], "y": [0.0, 3.4]},
-	{"at": 188.4, "act": 4, "label": "ENTRADA DE GUSANOS · GUSANO", "units": ["WormB"]},
-	{"at": 191.2, "act": 4, "label": "ENTRADA DE GUSANOS · GUSANO", "units": ["WormA"]},
-	{"at": 194.0, "act": 4, "label": "ENTRADA DE GUSANOS · MARIQUITA Y GUSANO", "units": ["Ladybird", "WormB"], "delays": [0.0, 0.7], "y": [5.0, 0.0]},
-	{"at": 196.8, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA", "units": ["FlyCommon"], "y": [4.4]},
-	{"at": 199.6, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA", "units": ["FlyCommon"], "y": [2.8]},
-	{"at": 202.4, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA VERDE", "units": ["FlyGreen"], "y": [3.0]},
-	{"at": 205.2, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA VERDE Y GUSANO", "units": ["FlyGreen", "WormA"], "delays": [0.0, 0.7], "y": [4.0, 0.0]},
-	{"at": 208.0, "act": 4, "label": "ENTRADA DE GUSANOS · GUSANO", "units": ["WormB"]},
-	{"at": 210.8, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA Y GUSANO", "units": ["FlyCommon", "WormA", "WormB"], "delays": [0.0, 0.7, 1.6], "y": [2.8, 0.0, 0.0]},
-	{"at": 213.6, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA", "units": ["FlyCommon"], "y": [5.0]},
-	{"at": 216.4, "act": 4, "label": "ENTRADA DE GUSANOS · MOSCA Y GUSANO", "units": ["FlyCommon", "WormB"], "delays": [0.0, 0.6], "y": [5.0, 0.0]},
-	{"at": 220.0, "act": 4, "label": "ZONA · INICIO", "units": ["WormA", "FlyCommon", "Snail"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 2.8, 0.0],
-			"arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
-			{"units": ["WormA", "WormB", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 4.0]},
-			{"units": ["StagBeetle", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.0, 4.4]},
-			{"units": ["WormB", "WormA", "FlyCloud", "Wasp"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 0.0, 3.0, 4.6]},
-			{"units": ["WormA", "WormA", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 0.0, 4.4, 3.0]},
-			{"units": ["StagBeetle", "WormB", "FlyCloud", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 0.0, 5.2, 5.0]},
-			{"units": ["WormA", "Snail", "Wasp", "FlyGreen"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 0.0, 4.4, 4.6]},
+	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.3], "y": [4.0, 4.4, 3.0],
+			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
+			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 4.4, 2.8]},
+			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 3.4, 3.0]},
+			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 0.0], "anthill": true},
+			{"units": ["Ant", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 2.8], "anthill": true},
+			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 0.0, 0.0], "anthill": true},
+			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.6, 0.0, 3.4], "anthill": true},
+			{"units": ["FlyCloud", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 3.4, 0.0], "anthill": true},
 		]},
-	{"at": 232.0, "act": 4, "label": "HUERTA · ESCARABAJO, CARACOL Y MOSCA VERDE", "units": ["StagBeetle", "Snail", "FlyGreen"], "delays": [0.0, 0.8, 1.6], "y": [0.0, 0.0, 4.4]},
-	{"at": 238.1, "act": 4, "label": "HUERTA · GUSANO", "units": ["WormA"]},
-	{"at": 240.2, "act": 4, "label": "HUERTA · AVISPA", "units": ["Wasp"], "y": [4.6]},
-	{"at": 242.3, "act": 4, "label": "HUERTA · CARACOL", "units": ["Snail"]},
-	{"at": 244.4, "act": 4, "label": "HUERTA · MOSCA Y GUSANO", "units": ["FlyCommon", "WormA"], "delays": [0.0, 0.8], "y": [3.4, 0.0]},
-	{"at": 246.5, "act": 4, "label": "HUERTA · GUSANO", "units": ["WormB"]},
-	{"at": 248.6, "act": 4, "label": "HUERTA · ESCARABAJO", "units": ["StagBeetle"]},
-	{"at": 250.7, "act": 4, "label": "HUERTA · CARACOL", "units": ["Snail"]},
-	{"at": 255.0, "act": 4, "label": "ZONA · INICIO", "units": ["Spider", "FlyGreen", "Ant"], "delays": [0.0, 0.7, 1.6], "y": [3.0, 5.0, 0.0], "anthill": true, "x": [1.2, 0.0, 0.0],
-			"arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
-			{"units": ["Ant", "StagBeetle", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.0], "anthill": true},
-			{"units": ["Wasp", "FlyCommon", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 3.0, 0.0], "anthill": true},
-			{"units": ["MushroomCannon", "Ladybird", "Ant", "FlyCommon"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 3.0, 0.0, 3.4], "anthill": true},
-			{"units": ["Spider", "FlyCommon", "FlyCommon", "StagBeetle"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [4.0, 5.2, 3.0, 0.0], "x": [0.6, 0.0, 0.0, 0.0]},
-			{"units": ["StagBeetle", "Wasp", "Ant", "FlyGreen"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 4.4, 0.0, 5.2], "anthill": true},
-			{"units": ["MushroomCannon", "FlyCommon", "Wasp", "Ant"], "delays": [0.0, 0.7, 1.4, 2.1], "y": [0.0, 4.6, 3.0, 0.0], "anthill": true},
+	{"at": 149.0, "act": 3, "label": "MACIZO · NUBE", "units": ["FlyCloud"], "y": [4.6]},
+	{"at": 151.0, "act": 3, "label": "MACIZO · HORMIGA Y AVISPA", "units": ["Ant", "Wasp"], "delays": [0.0, 0.6], "y": [0.0, 4.4], "anthill": true},
+	{"at": 153.0, "act": 3, "label": "MACIZO · HORMIGA Y NUBE", "units": ["Ant", "FlyCloud"], "delays": [0.0, 0.7], "y": [0.0, 3.4], "anthill": true},
+	{"at": 156.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA", "WormA"], "delays": [0.0, 0.8, 1.3, 2.3], "y": [0.0, 0.0, 0.0, 0.0], "debut": "WormA"},
+	{"at": 159.3, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 0.0, 0.0]},
+	{"at": 162.7, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.3], "y": [0.0, 0.0, 0.0]},
+	{"at": 169.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA", "units": ["WormA", "FlyCommon", "FlyCommon"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 5.2, 3.4]},
+	{"at": 171.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA Y MARIQUITA", "units": ["WormA", "FlyCommon", "Ladybird"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 2.8, 3.0]},
+	{"at": 173.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
+	{"at": 175.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
+	{"at": 177.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MARIQUITA Y MOSCA", "units": ["WormA", "Ladybird", "FlyCommon"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 4.4, 4.4]},
+	{"at": 179.0, "act": 3, "label": "MACIZO · MOSCA Y GUSANO ROSA Y MARIQUITA", "units": ["FlyCommon", "WormA", "Ladybird"], "delays": [0.0, 0.6, 1.4], "y": [4.0, 0.0, 3.4]},
+	{"at": 181.0, "act": 4, "label": "MACIZO · MOSCA Y GUSANO ROSA", "units": ["FlyCommon", "WormA", "FlyCommon"], "delays": [0.0, 0.8, 1.6], "y": [4.0, 0.0, 3.0]},
+	{"at": 183.0, "act": 4, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
+	{"at": 185.0, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail", "Snail"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 0.0, 0.0], "debut": "Snail"},
+	{"at": 188.3, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
+	{"at": 191.7, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
+	{"at": 198.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.7], "y": [4.6, 0.0]},
+	{"at": 200.0, "act": 4, "label": "HUERTA · GUSANO ROSA", "units": ["WormA"]},
+	{"at": 202.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.9], "y": [3.4, 0.0]},
+	{"at": 204.0, "act": 4, "label": "HUERTA · GUSANO ROSA Y MOSCA VERDE", "units": ["WormA", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.0, 3.4]},
+	{"at": 206.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail"], "delays": [0.0, 0.7], "y": [4.4, 0.0]},
+	{"at": 208.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "Snail", "Snail"], "delays": [0.0, 0.7, 1.5], "y": [2.8, 0.0, 0.0]},
+	{"at": 210.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.6]},
+	{"at": 214.0, "act": 4, "label": "ZONA · INICIO · ESCARABAJO", "units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0],
+			"debut": "StagBeetle", "arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
+			{"units": ["StagBeetle", "StagBeetle", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 0.0]},
+			{"units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
+			{"units": ["StagBeetle", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.0]},
+			{"units": ["Wasp", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 4.6, 0.0]},
+			{"units": ["WormA", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.0, 0.0]},
+			{"units": ["Wasp", "WormA", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 0.0]},
+			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 3.0]},
 		]},
-	{"at": 271.0, "act": 4, "label": "SOMBRA · ARAÑA", "units": ["Spider"], "y": [3.0], "x": [1.2]},
-	{"at": 273.1, "act": 4, "label": "SOMBRA · HONGO CAÑÓN", "units": ["MushroomCannon"]},
-	{"at": 275.2, "act": 4, "label": "SOMBRA · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen"], "delays": [0.0, 0.8], "y": [0.0, 2.8], "anthill": true},
-	{"at": 277.3, "act": 4, "label": "SOMBRA · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 279.4, "act": 4, "label": "SOMBRA · HORMIGA", "units": ["Ant"], "anthill": true},
+	{"at": 227.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.6], "y": [4.6, 0.0]},
+	{"at": 229.0, "act": 4, "label": "HUERTA · AVISPA Y ESCARABAJO", "units": ["Wasp", "StagBeetle"], "delays": [0.0, 0.9], "y": [2.8, 0.0]},
+	{"at": 231.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.8], "y": [4.0, 0.0]},
+	{"at": 233.0, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.6], "y": [2.8, 0.0]},
+	{"at": 235.0, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB", "WormB"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 0.0, 0.0], "debut": "WormB"},
+	{"at": 238.3, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.8], "y": [0.0, 0.0]},
+	{"at": 241.7, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.6], "y": [0.0, 0.0]},
+	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y ESCARABAJO", "units": ["FlyCommon", "StagBeetle"], "delays": [0.0, 0.8], "y": [3.4, 0.0]},
+	{"at": 250.0, "act": 4, "label": "HUERTA · MOSCA Y ESCARABAJO", "units": ["FlyCommon", "StagBeetle"], "delays": [0.0, 0.7], "y": [5.0, 0.0]},
+	{"at": 252.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [2.8]},
+	{"at": 254.0, "act": 4, "label": "HUERTA · ESCARABAJO Y MOSCA", "units": ["StagBeetle", "StagBeetle", "FlyCommon"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 0.0, 2.8]},
+	{"at": 256.0, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [5.0]},
+	{"at": 258.0, "act": 4, "label": "HUERTA · MOSCA Y MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyCommon", "FlyGreen", "WormB"], "delays": [0.0, 0.6, 1.6], "y": [5.0, 5.2, 0.0]},
+	{"at": 260.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "WormB"], "delays": [0.0, 0.7, 1.6], "y": [3.4, 0.0, 0.0]},
+	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider"], "y": [4.0], "x": [1.2],
+			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
+			{"units": ["Spider"], "delays": [0.0], "y": [2.8], "x": [0.6]},
+			{"units": ["Spider"], "delays": [0.0], "y": [5.2], "x": [0.6]},
+			{"units": ["Wasp", "StagBeetle", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 0.0], "anthill": true},
+			{"units": ["Wasp", "StagBeetle", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0]},
+			{"units": ["Wasp", "Wasp", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 4.4, 4.6]},
+			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 3.0]},
+			{"units": ["Wasp", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 3.0]},
+		]},
+	{"at": 276.0, "act": 4, "label": "SOMBRA · AVISPA Y ESCARABAJO", "units": ["Wasp", "StagBeetle"], "delays": [0.0, 0.6], "y": [3.4, 0.0]},
+	{"at": 278.0, "act": 4, "label": "SOMBRA · ESCARABAJO Y AVISPA", "units": ["StagBeetle", "Wasp"], "delays": [0.0, 0.9], "y": [0.0, 5.0]},
+	{"at": 280.0, "act": 4, "label": "SOMBRA · HORMIGA Y AVISPA", "units": ["Ant", "Wasp", "Wasp"], "delays": [0.0, 0.8, 1.5], "y": [0.0, 4.0, 2.8], "anthill": true},
 	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
-	{"at": 285.7, "act": 4, "label": "SOMBRA · HORMIGA", "units": ["Ant"], "anthill": true},
-	{"at": 287.8, "act": 4, "label": "SOMBRA · AVISPA Y HONGO CAÑÓN", "units": ["Wasp", "Wasp", "MushroomCannon"], "delays": [0.0, 0.7, 1.5], "y": [5.0, 4.0, 0.0]},
-	{"at": 289.9, "act": 4, "label": "SOMBRA · HORMIGA Y MOSCA VERDE Y HONGO CAÑÓN", "units": ["Ant", "FlyGreen", "MushroomCannon"], "delays": [0.0, 0.9, 1.6], "y": [0.0, 3.0, 0.0], "anthill": true},
+	{"at": 284.5, "act": 4, "label": "SOMBRA · ESCARABAJO", "units": ["StagBeetle"]},
+	{"at": 286.5, "act": 4, "label": "SOMBRA · HORMIGA Y AVISPA", "units": ["Ant", "Ant", "Wasp"], "delays": [0.0, 0.9, 1.5], "y": [0.0, 0.0, 5.2], "anthill": true},
+	{"at": 288.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant", "Wasp"], "delays": [0.0, 0.7, 1.3], "y": [4.4, 0.0, 4.0], "anthill": true},
+	{"at": 290.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
 	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · MINIJEFE CON ESCOLTA", "units": ["Walker", "Wasp", "FlyCommon", "FlyCommon"], "hard": true, "miniboss": true,
 			"delays": [0.0, 1.2, 2.4, 3.4], "y": [0.0, 4.6, 5.4, 3.0],
 			"escort_wave": {"units": ["Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.9, 1.8], "y": [5.0, 3.4, 4.4]}},
@@ -543,6 +536,13 @@ var _breather_until := 0.0
 var arenas_completed := 0
 var arena_log: Array[Dictionary] = [] # {event, seconds, waves} per finished zone (tests / report).
 var _label_token := 0
+var debut_log: Array[Dictionary] = [] ## LOTE 14: {family, time, distance, forced} per species debut (tests / report).
+var species_seen: Dictionary = {} ## family -> game time of its first spawn.
+var species_label: Label
+var _solo_family := ""
+var _solo_until := -1.0
+var _debut_wait := 0.0
+var _species_token := 0
 var animals_total := 0 # NOCHE 01: controlled animals that appeared (incl. the turtle, see register_extra_animal).
 var liberated_count := 0
 ## LOTE 12 · ETAPA 3
@@ -600,6 +600,10 @@ func _physics_process(delta: float) -> void:
 	var event: Dictionary = events_table()[event_index]
 	if stage.distance < float(event["at"]) or not _pending.is_empty():
 		return
+	if _event_blocked_by_solo(event["units"]):
+		return # LOTE 14: a new species is debuting alone.
+	if (event.has("debut") or bool(event.get("clear", false))) and not _debut_ready(delta):
+		return # LOTE 14: a debut (or a pool change, key "clear") waits for a clear field.
 	if bool(event.get("human", false)) and not giant_human_enabled:
 		# NOCHE 01 · ETAPA 2: the Giant Human is switched off (GIANT_HUMAN_ENABLED); its event is skipped, nothing waits.
 		event_index += 1
@@ -613,6 +617,10 @@ func _physics_process(delta: float) -> void:
 	player_label = encounter_label if show_debug_labels or bool(event.get("human", false)) else ""
 	var launched_index := event_index
 	event_index += 1
+	if event.has("debut"):
+		_begin_debut(str(event["debut"]))
+	else:
+		_debut_wait = 0.0
 	current_act = int(event.get("act", current_act))
 	if event.has("moment"):
 		director_moment.emit(StringName(event["moment"]))
@@ -675,7 +683,7 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 # --- LOTE 7: combat zones ------------------------------------------------------------------------------------------
 
 func _begin_arena(event: Dictionary, launched_index: int) -> void:
-	_arena = {"waves": event["arena"], "next": 0, "event": launched_index, "wave_clock": 0.0, "clear_for": 0.0, "started": _clock,
+	_arena = {"waves": event["arena"], "next": 0, "event": launched_index, "wave_clock": maxf(arena_cadence() - ROSTER_FIRST_WAVE_DELAY, 0.0) if roster_only else 0.0, "clear_for": 0.0, "started": _clock,
 			"label": str(event.get("arena_label", "ZONA DE COMBATE"))}
 	stage.scroll_speed = ARENA_SCROLL
 	_show_label(str(_arena["label"]), 2.2)
@@ -691,7 +699,11 @@ func _update_arena(delta: float) -> void:
 	var next := int(_arena["next"])
 	var timed_out := _clock - float(_arena["started"]) >= arena_max_seconds()
 	if next < waves.size() and not timed_out:
-		if (float(_arena["clear_for"]) >= ARENA_WAVE_GAP and float(_arena["wave_clock"]) >= arena_cadence()) or float(_arena["wave_clock"]) >= arena_wave_max():
+		# LOTE 14: the roster zones launch a wave every arena_cadence() seconds even if the previous one is still alive (it keeps 3+ enemies on screen).
+		var wave_due := float(_arena["wave_clock"]) >= arena_cadence() if roster_only else (float(_arena["clear_for"]) >= ARENA_WAVE_GAP and float(_arena["wave_clock"]) >= arena_cadence()) or float(_arena["wave_clock"]) >= arena_wave_max()
+		if wave_due:
+			if _event_blocked_by_solo(waves[next]["units"]):
+				return # LOTE 14: the species debuting in this zone is still alone.
 			_queue_units(waves[next], int(_arena["event"]), 100 + next * 10)
 			_arena["next"] = next + 1
 			_arena["wave_clock"] = 0.0
@@ -710,6 +722,66 @@ func _update_arena(delta: float) -> void:
 		_breather_until = _clock + BREATHER_SECONDS
 		_show_label("ZONA DESPEJADA", 1.6)
 
+## LOTE 14: true while a species debuts alone and `units` holds another family.
+func _event_blocked_by_solo(units: Array) -> bool:
+	if _clock >= _solo_until:
+		return false
+	for family in units:
+		if str(family) != _solo_family:
+			return true
+	return false
+
+## LOTE 14: a debut needs a clear field; after DEBUT_CLEAR_MAX s the leftovers are sent away (they leave at once).
+func _debut_ready(delta: float) -> bool:
+	if active_units.is_empty():
+		return true
+	_debut_wait += delta
+	if _debut_wait < DEBUT_CLEAR_MAX:
+		return false
+	for unit in active_units:
+		if not bool(unit.get_meta("level_hard", false)):
+			unit.set_meta("level_born", -1000.0) # Past its camera time: `_retire_soft_units` sends it away.
+	return active_units.all(func(u): return bool(u.get_meta("level_retreat", false)) or bool(u.get_meta("level_hard", false)))
+
+func _begin_debut(family: String) -> void:
+	debut_log.append({"family": family, "time": _clock, "distance": stage.distance, "forced": _debut_wait >= DEBUT_CLEAR_MAX})
+	_solo_family = family
+	_solo_until = _clock + DEBUT_SOLO_SECONDS
+	_debut_wait = 0.0
+
+## Small name of a species the first time it appears (SPECIES_NAME_SECONDS).
+func _announce_species(family: String) -> void:
+	if not roster_only or species_seen.has(family):
+		return
+	species_seen[family] = _clock
+	if not SPECIES_NAMES.has(family) or stage == null:
+		return
+	if species_label == null:
+		species_label = Label.new()
+		species_label.name = "SpeciesName"
+		species_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		species_label.offset_left = -200.0
+		species_label.offset_right = 200.0
+		species_label.offset_top = 64.0
+		species_label.offset_bottom = 90.0
+		species_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		species_label.add_theme_font_size_override("font_size", 15)
+		species_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+		species_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+		species_label.add_theme_constant_override("shadow_offset_x", 1)
+		species_label.add_theme_constant_override("shadow_offset_y", 1)
+		species_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		species_label.visible = false
+		stage.get_node("CanvasLayer").add_child(species_label)
+	species_label.text = str(SPECIES_NAMES[family])
+	species_label.visible = true
+	_species_token += 1
+	get_tree().create_timer(SPECIES_NAME_SECONDS, false).timeout.connect(_hide_species_label.bind(_species_token))
+
+func _hide_species_label(token: int) -> void:
+	if token == _species_token and species_label != null and is_instance_valid(species_label):
+		species_label.visible = false
+
 func _show_label(text: String, seconds: float) -> void:
 	player_label = text
 	_label_token += 1
@@ -724,7 +796,11 @@ func camera_time(family: String) -> float:
 	return float(CAMERA_TIME.get(family, soft_pressure_seconds))
 
 ## Threats alive at once at this point of the route (popcorn excluded).
+## LOTE 14: the gradual roster table keeps up to ROSTER_ROUTE_THREATS enemies alive on the route from X=96 (and the old caps before it).
+const ROSTER_ROUTE_THREATS := 7
 static func threat_cap(distance: float) -> int:
+	if roster_only and distance >= THREE_AT_ONCE_FROM:
+		return ROSTER_ROUTE_THREATS
 	if distance >= FOUR_AT_ONCE_FROM:
 		return MAX_ROUTE_THREATS
 	return 5 if distance >= THREE_AT_ONCE_FROM else 4
@@ -804,6 +880,8 @@ func _spawn(request: Dictionary) -> void:
 	if not bool(request.get("minion", false)):
 		_scale_bee_damage(unit, ROUTE_DAMAGE_SCALE)
 	unit.set_meta("level_hard", bool(request["hard"]))
+	if roster_only:
+		unit.set_meta("shot_speed_scale", ROSTER_SHOT_SPEED_SCALE)
 	unit.set_meta("level_born", _clock)
 	unit.set_meta("level_retreat", false)
 	unit.connect("defeated", _on_unit_defeated)
@@ -823,12 +901,13 @@ func _spawn(request: Dictionary) -> void:
 	else:
 		active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1
+	_announce_species(family)
 	BeeHostileGlow.ensure.call_deferred(unit) # LOTE 9: every enemy shows a cyan glow (EyeDrone had none).
 	if family in ANIMAL_FAMILIES:
 		animals_total += 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance, "boss_minion": bool(request.get("minion", false))})
 	var health := unit.get_node("HealthComponent") as HealthComponent
-	health.max_health = BeeGameSettings.scaled_hp(level_hp(family)) # NOCHE 01: EASY lowers enemy HP.
+	health.max_health = BeeGameSettings.scaled_hp(level_hp(family, not bool(request["hard"]))) # NOCHE 01: EASY lowers enemy HP.
 	health.current_health = health.max_health
 	BeeJuice.attach_hit_flash(unit) # LOTE 11: 0.06 s white flash on every hit.
 	health.health_changed.connect(func(_current, _maximum, change): if change < 0: enemy_hit.emit())
@@ -841,9 +920,16 @@ func _spawn(request: Dictionary) -> void:
 		var roster_tuning: Dictionary = ROSTER_TUNING.get(family, {})
 		for key in roster_tuning:
 			unit.set(key, roster_tuning[key])
+		if roster_tuning.has("attack_damage") and unit.get("attack_hitbox") is DamageHitbox3D:
+			(unit.get("attack_hitbox") as DamageHitbox3D).damage = int(roster_tuning["attack_damage"]) # The hitbox read its damage in _ready.
+		for key in (ROSTER_REST_KEYS if not bool(request["hard"]) else []): # The robot gate (and its escorts) keeps its own rhythm (mini-boss test).
+			var rest: Variant = unit.get(key)
+			if rest is float and not roster_tuning.has(key + "_fixed"):
+				unit.set(key, float(rest) * ROSTER_FIRE_SLOWDOWN)
 	if family in ["Mosquito", "Ladybird", "WaveDragonfly", "Ant", "StagBeetle", "Dragonfly", "Spider", "Speeder"]:
 		var gun := BeeImplantShooter.new()
 		gun.family = family
+		gun.cooldown_scale = ROSTER_FIRE_SLOWDOWN if roster_only else 1.0
 		gun.target = bee
 		unit.add_child(gun)
 	if unit is AssetFauna:
@@ -1279,8 +1365,10 @@ func arena_min_seconds() -> float:
 	return ROSTER_ARENA_MIN_SECONDS if roster_only else ARENA_MIN_SECONDS
 
 ## HP of a family in the CURRENT flow (the roster scales some families up, see ROSTER_HP_SCALE; EASY scaling is applied by the caller).
-static func level_hp(family: String) -> int:
+static func level_hp(family: String, roster_extra := true) -> int:
 	var base := int(LEVEL_HP[family])
 	if roster_only and ROSTER_HP_SCALE.has(family):
-		return roundi(float(base) * float(ROSTER_HP_SCALE[family]))
+		base = roundi(float(base) * float(ROSTER_HP_SCALE[family]))
+	if roster_only and roster_extra and family in ROSTER_HP_EXTRA_FAMILIES:
+		base = roundi(float(base) * ROSTER_HP_EXTRA)
 	return base

@@ -18,12 +18,18 @@ const POINTS_BOSS := 1000
 ## [max base HP, points]: the first row whose HP limit covers the enemy.
 const POINTS_BY_HP := [[10, 10], [50, 40], [100, 80], [100000, 150]]
 const POLLEN_INSTANT_HEAL := 0 ## Direct healing of a pollen pickup in Level 1: none (the bar heals).
-const POLLEN_PER_HEAL := 10 ## Pollen needed to fill the bar (one heal).
-const POLLEN_HEAL_FRACTION := 0.15 ## Fraction of max HP restored per full bar.
+## LOTE 14 · ETAPA 2.2: POLLEN IS SCARCE. 20 pollen fill the bar and heal 10 % (was 10 -> 15 %); liberations drop pollen 1 time in 3; at most
+## POLLEN_CAP_PER_MINUTE pollen can be gained in any rolling minute; the loose pollen of the level was halved (see BeeLevel01VerticalSlice).
+const POLLEN_PER_HEAL := 20 ## Pollen needed to fill the bar (one heal).
+const POLLEN_HEAL_FRACTION := 0.10 ## Fraction of max HP restored per full bar.
+const LIBERATION_POLLEN_EVERY := 3 ## A freed animal drops its pollen one time in this many.
+const POLLEN_CAP_PER_MINUTE := 70 ## Pollen that can be gained per rolling minute (extra pollen is lost).
+const POLLEN_CAP_WINDOW := 60.0
+const POLLEN_BANK_MAX := 1 ## A full bar reached at full health waits (at most this many heals) and fires on the next damage.
 const FRENZY_COMBO := 8 ## Combo that starts FRENESI (double shot).
 const HEAL_FLASH_COLOR := Color(1.0, 0.86, 0.3, 0.24)
 const HEAL_FLASH_SECONDS := 0.4
-const POLLEN_PER_LIBERATION := 1
+const POLLEN_PER_LIBERATION := 3 ## LOTE 14: pollen of the liberation that drops it (one in LIBERATION_POLLEN_EVERY; was 1 per liberation)
 const DAMAGE_SHAKE_AMPLITUDE := 0.045
 const DAMAGE_SHAKE_SECONDS := 0.2
 const MAGNET_RADIUS := 2.4
@@ -51,6 +57,11 @@ var frenzy_activations := 0
 var pollen_heals := 0
 var pollen_healed := 0 # HP restored by the pollen bar.
 var pollen_heal_enabled := true # Tests that kill many units switch the heal off to keep their HP fixtures exact.
+var pollen_lost_to_cap := 0 ## Pollen picked up beyond POLLEN_CAP_PER_MINUTE.
+var banked_heals := 0
+var liberations_seen := 0
+var _pollen_window: Array[Vector2] = [] ## (time, amount) gained in the last POLLEN_CAP_WINDOW seconds.
+var _pollen_clock := 0.0
 var magnet_pulls := 0
 var big_stops := 0
 var combo_label: Label
@@ -116,6 +127,7 @@ func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> La
 
 
 func _physics_process(delta: float) -> void:
+	_pollen_clock += delta
 	if combo > 0:
 		combo_left -= delta
 		if combo_left <= 0.0:
@@ -169,8 +181,10 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 	if liberated:
 		if is_instance_valid(unit) and unit.is_inside_tree():
 			BeeJuice.pollen_burst(stage, unit.global_position + Vector3(0.0, 0.3, 0.0))
-		pollen_from_liberations += POLLEN_PER_LIBERATION
-		add_pollen(POLLEN_PER_LIBERATION)
+		liberations_seen += 1
+		if liberations_seen % LIBERATION_POLLEN_EVERY == 0:
+			pollen_from_liberations += POLLEN_PER_LIBERATION
+			add_pollen(POLLEN_PER_LIBERATION)
 
 
 func _on_enemy_hit() -> void:
@@ -204,12 +218,26 @@ func summary_text() -> String:
 # --- pollen bar / frenzy -----------------------------------------------------------------------------------------
 
 func add_pollen(amount: int) -> void:
+	amount = _apply_pollen_cap(amount)
 	for i in amount:
 		pollen_total += 1
 		if pollen_total % POLLEN_PER_HEAL == 0:
 			_heal_from_pollen()
 	_refresh_pollen()
 
+
+## LOTE 14: rolling-minute cap. Returns how much of `amount` still fits.
+func _apply_pollen_cap(amount: int) -> int:
+	while not _pollen_window.is_empty() and _pollen_clock - _pollen_window[0].x > POLLEN_CAP_WINDOW:
+		_pollen_window.pop_front()
+	var used := 0
+	for entry in _pollen_window:
+		used += int(entry.y)
+	var allowed := clampi(POLLEN_CAP_PER_MINUTE - used, 0, amount)
+	pollen_lost_to_cap += amount - allowed
+	if allowed > 0:
+		_pollen_window.append(Vector2(_pollen_clock, allowed))
+	return allowed
 
 func pollen_progress() -> int:
 	return pollen_total % POLLEN_PER_HEAL
@@ -222,6 +250,15 @@ func _heal_from_pollen() -> void:
 		return
 	if not pollen_heal_enabled:
 		return
+	if bee.health.current_health >= bee.health.max_health - 1 and banked_heals < POLLEN_BANK_MAX:
+		banked_heals += 1 # LOTE 14: a full bar at full health is kept for the next hit instead of being wasted.
+		_refresh_pollen()
+		return
+	_apply_heal()
+
+
+## The healing itself (flash, chime, floating text). Also used when a banked heal is released by the next hit.
+func _apply_heal() -> void:
 	var amount := maxi(1, ceili(float(bee.health.max_health) * POLLEN_HEAL_FRACTION))
 	pollen_healed += bee.health.restore_health(amount)
 	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
@@ -265,7 +302,7 @@ func _refresh_pollen() -> void:
 	var filled := pollen_progress()
 	var cells := filled * 10 / POLLEN_PER_HEAL
 	pollen_label.visible = true
-	pollen_label.text = "POLEN [%s%s] %d/%d · +%d%% VIDA" % ["#".repeat(cells), "-".repeat(10 - cells), filled, POLLEN_PER_HEAL, roundi(POLLEN_HEAL_FRACTION * 100.0)]
+	pollen_label.text = "POLEN [%s%s] %d/%d · +%d%% VIDA" % ["#".repeat(cells), "-".repeat(10 - cells), filled, POLLEN_PER_HEAL, roundi(POLLEN_HEAL_FRACTION * 100.0)] + (" · CURA LISTA" if banked_heals > 0 else "")
 
 
 func _refresh_frenzy() -> void:
@@ -289,6 +326,10 @@ func _on_pollen_collected(pickup: BeePollenPickup, _restored: int) -> void:
 func _on_bee_health_changed(_current: int, _maximum: int, change: int) -> void:
 	if change < 0:
 		BeeCameraShake.kick(bee, DAMAGE_SHAKE_AMPLITUDE, DAMAGE_SHAKE_SECONDS)
+		if banked_heals > 0 and not bee.is_defeated and pollen_heal_enabled:
+			banked_heals -= 1 # LOTE 14: the banked heal fires on the first damage after it was earned.
+			_apply_heal.call_deferred()
+			_refresh_pollen()
 
 
 func _on_node_added(node: Node) -> void:

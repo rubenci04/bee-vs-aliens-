@@ -53,7 +53,7 @@ const KINDS := {
 	&"mosquito": {"scene": "res://scenes/art_labs/assets/controlled_mosquito.tscn", "mode": &"dash", "ground": false, "scale": 1.0,
 			"telegraph": 0.5, "damage": 8, "cycles": 4, "speed": 7.0, "dash_speed": 14.0, "dash_range": 7.0, "label": "Mosquito"},
 	&"ladybird": {"scene": "res://scenes/art_labs/assets_v03/controlled_flying_ladybird.tscn", "mode": &"sweep", "ground": false, "scale": 1.15,
-			"telegraph": 0.8, "damage": 10, "cycles": 3, "speed": 2.2, "pass_time": 1.5, "label": "Ladybird"},
+			"telegraph": 0.8, "damage": 7, "cycles": 3, "speed": 2.2, "pass_time": 1.5, "label": "Ladybird"},
 	&"dragonfly": {"scene": "res://scenes/art_labs/assets_v10/controlled_dragonfly.tscn", "mode": &"wave", "ground": false, "scale": 0.8,
 			"telegraph": 0.65, "damage": 9, "cycles": 3, "speed": 6.0, "wave_speed": 10.0, "wave_amp": 1.1, "label": "WaveDragonfly"},
 	&"moth": {"scene": "res://scenes/art_labs/assets_v10/controlled_bomb_moth.tscn", "mode": &"bomber", "ground": false, "scale": 0.85,
@@ -64,7 +64,7 @@ const KINDS := {
 			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle",
 			"gait": [0.9, 0.22, 0.16, 0.05, 0.04]}, # LOTE 13: walks (tripod gait synced to the ground speed), charges with a 0.8 s warning, lobs stones
 	&"snail": {"scene": "res://scenes/art_labs/assets_v02/controlled_woodland_snail.tscn", "mode": &"spitter", "ground": true, "scale": 1.0,
-			"telegraph": 0.6, "damage": 7, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail",
+			"telegraph": 0.6, "damage": 7, "shot_damage": 3, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail",
 			"lob": true, "style": &"bubble", "lob_flight": 1.5, "lob_gravity": 6.0}, # LOTE 13: slime bubble in an arc
 	&"mushroom": {"scene": "res://scenes/art_labs/assets_v10/controlled_mushroom_cannon.tscn", "mode": &"cannon", "ground": true, "scale": 1.0,
 			"telegraph": 0.7, "damage": 9, "cycles": 99, "speed": 0.0, "shot_speed": 6.0, "label": "MushroomCannon", "style": &"spore"},
@@ -86,18 +86,18 @@ const KINDS := {
 	# (the whole cloud is the target, one hurtbox over all of it). Worm A: burrows, the ground mark warns 1 s, then it erupts.
 	# Worm B: low crawling lunge along the soil.
 	&"fly_common": {"scene": "res://scenes/art_labs/fly_trio_v01/common.tscn", "mode": &"dash", "ground": false, "scale": 0.55,
-			"telegraph": 0.5, "damage": 7, "cycles": 99, "speed": 6.0, "dash_speed": 12.0, "dash_range": 6.0, "label": "FlyCommon",
+			"telegraph": 0.5, "damage": 7, "shot_damage": 3, "cycles": 99, "speed": 6.0, "dash_speed": 12.0, "dash_range": 6.0, "label": "FlyCommon",
 			"spit": {"shots": 2, "gap": 0.2, "style": &"pellet", "speed": 4.4, "every": 2}}, # LOTE 13: rams and SPITS (every second attack)
 	&"fly_green": {"scene": "res://scenes/art_labs/fly_trio_v01/green.tscn", "mode": &"zigzag", "ground": false, "scale": 0.55,
-			"telegraph": 0.5, "damage": 7, "cycles": 99, "speed": 5.0, "shot_speed": 3.8, "zig_amp": 1.5, "zig_rate": 3.4, "label": "FlyGreen",
+			"telegraph": 0.5, "damage": 7, "shot_damage": 3, "cycles": 99, "speed": 5.0, "shot_speed": 3.8, "zig_amp": 1.5, "zig_rate": 3.4, "label": "FlyGreen",
 			"burst": 3, "burst_gap": 0.17, "style": &"acid"}, # LOTE 13: acid burst
 	&"fly_cloud": {"scene": "res://scenes/art_labs/fly_trio_v01/swarm.tscn", "mode": &"sweep", "ground": false, "scale": 0.8,
-			"telegraph": 0.6, "damage": 8, "cycles": 99, "speed": 3.4, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud", "chase": true}, # LOTE 13: chases Bee as a block
+			"telegraph": 0.6, "damage": 5, "cycles": 99, "speed": 3.4, "pass_time": 1.5, "whole_body": true, "label": "FlyCloud", "chase": true}, # LOTE 13: chases Bee as a block
 	&"worm_rose": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_rose.tscn", "mode": &"burrow", "ground": true, "scale": 0.85,
-			"telegraph": 1.0, "damage": 12, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA",
+			"telegraph": 1.0, "damage": 5, "cycles": 99, "speed": 0.0, "exposed": 2.6, "label": "WormA",
 			"worm_a": true, "undulate": [0.07, 7.0, 0.55]}, # LOTE 13: own cycle (WormBehavior)
 	&"worm_compost": {"scene": "res://scenes/art_labs/garden_floor_v01/worm_compost.tscn", "mode": &"lunge", "ground": true, "scale": 0.9,
-			"telegraph": 0.6, "damage": 7, "cycles": 99, "speed": 1.8, "lunge_range": 3.6, "label": "WormB",
+			"telegraph": 0.6, "damage": 7, "shot_damage": 3, "cycles": 99, "speed": 1.8, "lunge_range": 3.6, "label": "WormB",
 			"undulate": [0.06, 8.0, 0.6], "spit": {"fan": 3, "step": 16.0, "style": &"mud", "speed": 4.2, "every": 2}}, # LOTE 13: spits a mud fan and rams low
 }
 
@@ -123,6 +123,7 @@ var attacks_started := 0
 var bombs_dropped := 0
 var shots_fired := 0
 var damage := 8
+var shot_damage := 0 ## LOTE 14 · ETAPA 2.3: common bullets do 3-5 (config "shot_damage"); contact / eruption hits keep `damage`.
 var max_cycles := 3
 var ground_y := -0.2
 
@@ -156,6 +157,7 @@ var _aim_local := Vector3.ZERO # LOTE 9: rig-space point the auto-aim locks (see
 func _ready() -> void:
 	config = KINDS[kind]
 	damage = int(config["damage"])
+	shot_damage = int(config.get("shot_damage", 0))
 	max_cycles = int(config["cycles"])
 	add_to_group("bee_auto_aim_targets")
 	add_to_group("asset_fauna")
@@ -764,6 +766,10 @@ func _muzzle() -> Vector3:
 	return rig.to_global(local)
 
 
+## Damage of a bullet of this unit (3-5 on the roster, see KINDS "shot_damage").
+func _shot_damage() -> int:
+	return shot_damage if shot_damage > 0 else damage
+
 func _fire() -> void:
 	if not BeeShmupFairness.can_fire(self):
 		return
@@ -771,7 +777,7 @@ func _fire() -> void:
 	var style: StringName = StringName(config.get("style", &""))
 	var aim := _aim_target() - _muzzle()
 	if bool(config.get("lob", false)): # LOTE 13: the snail lobs a slime bubble in an arc to where Bee is.
-		BeeEnemyPatterns.spawn_lob(get_parent(), PROJECTILE, _muzzle(), _aim_target(), damage, float(config.get("lob_flight", 1.3)), float(config.get("lob_gravity", 7.0)), self, style)
+		BeeEnemyPatterns.spawn_lob(get_parent(), PROJECTILE, _muzzle(), _aim_target(), _shot_damage(), float(config.get("lob_flight", 1.3)), float(config.get("lob_gravity", 7.0)), self, style)
 		shots_fired += 1
 		BeeCombatVFX.spawn(get_parent(), _muzzle(), &"tech_hit", Vector3.UP, 0.5)
 		return
@@ -788,9 +794,9 @@ func _fire() -> void:
 	for direction in BeeEnemyPatterns.fan_directions(aim, count, step):
 		var shot: AlienEnemyProjectile
 		if style != &"":
-			shot = BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), direction, damage, float(config["shot_speed"]), self, style)
+			shot = BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), direction, _shot_damage(), float(config["shot_speed"]), self, style)
 		else:
-			shot = BeeEnemyPatterns.spawn_shot(get_parent(), PROJECTILE, _muzzle(), direction, damage, float(config["shot_speed"]), self)
+			shot = BeeEnemyPatterns.spawn_shot(get_parent(), PROJECTILE, _muzzle(), direction, _shot_damage(), float(config["shot_speed"]), self)
 		shots_fired += 1
 		if mode == &"seeder":
 			shot.scale = Vector3.ONE * 1.5
@@ -1082,7 +1088,7 @@ func _fire_aimed_style(style: StringName, speed: float) -> void:
 		return
 	var aim := _aim_target() - _muzzle()
 	aim.z = 0.0
-	var shot := BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), aim.normalized(), damage, speed, self, style)
+	var shot := BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, _muzzle(), aim.normalized(), _shot_damage(), speed, self, style)
 	shots_fired += 1
 	BeeCombatVFX.spawn(get_parent(), shot.global_position, &"tech_hit", Vector3.UP, 0.35)
 
@@ -1163,7 +1169,7 @@ func _fire_fan_style() -> void:
 	var origin := _muzzle()
 	var aim := _aim_target() - origin
 	for direction in BeeEnemyPatterns.fan_directions(aim, int(spit.get("fan", 3)), float(spit.get("step", 16.0))):
-		BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, origin, direction, damage, float(spit.get("speed", 4.2)), self, StringName(spit.get("style", &"mud")))
+		BeeEnemyPatterns.spawn_styled(get_parent(), PROJECTILE, origin, direction, _shot_damage(), float(spit.get("speed", 4.2)), self, StringName(spit.get("style", &"mud")))
 		shots_fired += 1
 	BeeCombatVFX.spawn(get_parent(), origin, &"rock_break", Vector3.UP, 0.5)
 

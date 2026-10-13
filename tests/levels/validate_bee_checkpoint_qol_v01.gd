@@ -67,6 +67,7 @@ func progress_to(destination: float) -> void:
 	stage.wave.set_physics_process(true)
 	for i in 14000:
 		bee.global_position = Vector3(stage.distance - 3.0, 7.0, 0)
+		bee.health.damage_blocked = true # LOTE 14: the checkpoint protection ends mid-run and the popcorn now hits for real (ROUTE_DAMAGE_SCALE 1.0): keep the fixture protected.
 		for unit in stage.wave.active_units.duplicate():
 			unit.get_node("HealthComponent").take_damage(9999)
 		if stage.wave.boss != null and stage.wave.boss.is_active(): # UFO BOSS 01 locks the arena at the end.

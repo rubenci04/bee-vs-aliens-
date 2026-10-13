@@ -4,7 +4,7 @@ extends BeePollenPickup
 ## by itself: the level's pollen bar (BeeLevel01Juice) heals POLLEN_HEAL_FRACTION of max HP every POLLEN_PER_HEAL pollen.
 ## It is collected at any HP (the bar just fills).
 
-const CLUSTER_VALUE := 5 ## Pollen in one cluster (half a bar).
+const CLUSTER_VALUE := 10 ## Pollen in one cluster (half a bar of 20; LOTE 14: was 5 of 10).
 
 
 func _init() -> void:

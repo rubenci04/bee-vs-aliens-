@@ -2,8 +2,8 @@ class_name BeeObstacleDrops
 extends RefCounted
 const POLLEN := preload("res://scenes/items/toon/pollen.tscn")
 const HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: the honey jar became a pollen cluster.
-const DROP_EVERY := 3
-const HEAL_EVERY := 9
+const DROP_EVERY := 6 # LOTE 14: pollen is scarce (was 3)
+const HEAL_EVERY := 18
 
 static func spawn(parent: Node, at: Vector3, seed_value: int) -> void:
 	# Authored deterministic rewards; checkpoint restoration never calls this.

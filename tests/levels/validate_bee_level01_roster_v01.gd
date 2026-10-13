@@ -75,12 +75,14 @@ func test_table() -> void:
 		check(not bool(event.get("human", false)), "No giant human in the roster level")
 		if event.has("arena"):
 			arenas += 1
-			check((event["arena"] as Array).size() == 6, "Each zone plays 6 waves (LOTE 13)")
+			check((event["arena"] as Array).size() == 7, "Each zone plays 7 waves (LOTE 14: 2 solo debut waves + 5 mixed)")
 		if i > 0:
 			check(float(event["at"]) >= float(events[i - 1]["at"]), "Events must ascend")
 		if bool(event.get("hard", false)):
 			last_hard = str(event["units"][0]) + "/" + ",".join(event["units"])
 	for family in ALLOWED:
+		if family == "MushroomCannon":
+			continue # LOTE 14: the cannon mushroom is not one of the ten introduced species; it stays out of the gradual table (code and scene kept).
 		check(seen.has(family), "Roster family missing from the timeline: " + family)
 	check(arenas == 3, "Three combat zones")
 	check("Walker" in (events[events.size() - 1]["units"] as Array) and bool(events[events.size() - 1].get("hard", false)), "The walking robot closes the level")

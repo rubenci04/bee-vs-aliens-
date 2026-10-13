@@ -16,7 +16,7 @@ const LATE_FRACTION := 0.5
 const BULLET_LOOKAHEAD := 0.9
 const DRIFT := 1.0
 const DRIFT_PERIOD := 3.4
-const FIGHT_SECONDS := Vector2(75.0, 100.0)
+const FIGHT_SECONDS := Vector2(70.0, 100.0) # LOTE 14: 75 -> 70 (the nerfed summons / spiders of the roster make the bot kill it ~7 s sooner; the boss itself is untouched)
 const NORMAL_DAMAGE := Vector2(50.0, 70.0)
 
 var stage: BeeShmupStage
@@ -73,7 +73,7 @@ func run() -> void:
 			var label := ("NORMAL" if difficulty == BeeGameSettings.NORMAL else "EASY") + (" SPREAD" if spread else " BASE")
 			var result := await fight(label)
 			print("MEASURE ", label, " ", result)
-			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": duration outside 75-100 s: " + str(result.seconds))
+			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": duration outside 70-100 s: " + str(result.seconds))
 			if difficulty == BeeGameSettings.NORMAL:
 				normal.append(result)
 				check(int(result.damage) >= NORMAL_DAMAGE.x and int(result.damage) <= NORMAL_DAMAGE.y, label + ": damage outside 50-70: " + str(result.damage))
