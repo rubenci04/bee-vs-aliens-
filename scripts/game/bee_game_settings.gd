@@ -38,3 +38,8 @@ static func shake_label() -> String:
 
 static func label() -> String:
 	return "FÁCIL" if difficulty == EASY else "NORMAL"
+
+
+## LOTE 14 · ETAPA 4: pause-menu sliders (0..1). 1.0 = the default level of each bus (music -8 dB, effects -3 dB); see MusicManager.
+static var music_volume := 1.0
+static var sfx_volume := 1.0

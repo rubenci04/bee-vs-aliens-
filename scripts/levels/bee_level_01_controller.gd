@@ -1232,6 +1232,7 @@ func _on_tarantula_phase(state: int) -> void:
 
 func _on_tarantula_freed(freed: TarantulaBoss01) -> void:
 	liberated_count += 1
+	BeeMusic.victory() # LOTE 14: the victory theme plays once, then fades.
 	unit_downed.emit(freed, true)
 	player_label = ""
 

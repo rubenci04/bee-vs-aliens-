@@ -47,6 +47,7 @@ func _ready() -> void:
 		anthills.name = "Anthills"
 		add_child(anthills)
 	checkpoint.setup(self)
+	BeeMusic.play_level_from_start() # LOTE 14: the Level 1 theme loops from the start (a restart plays it again; it crossfades from the title).
 	_place_preboss_supply()
 	_place_valley_supply()
 	_place_pollen_clusters()
@@ -104,6 +105,7 @@ func _update_camera_and_bounds() -> void:
 
 func _on_bee_defeated() -> void:
 	super._on_bee_defeated()
+	BeeMusic.fade_out() # LOTE 14: the music fades out when Bee is defeated.
 	checkpoint.defeat_hint()
 
 func _physics_process(delta: float) -> void:

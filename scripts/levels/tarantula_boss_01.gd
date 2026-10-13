@@ -307,6 +307,7 @@ func _enter_fight() -> void:
 	contact.set_enabled(true)
 	_bar_layer.visible = true
 	_play(&"idle")
+	BeeMusic.boss() # LOTE 14: the boss theme crossfades in (1.5 s) when the health bar appears.
 	_change_state(State.PHASE_1)
 
 

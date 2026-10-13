@@ -79,3 +79,38 @@ Rama `lote-14` (desde `lote-13`).
 ### Tests de la etapa
 - Nuevo `validate_bee_lote14_screen_v01` (hormigueros, cámara, sólidos, briznas, carteles, HUD, líneas).
 - Ajustados: `validate_bee_level_01_framing_v01` y `validate_bee_threat_camera_boss_v03` (preset F), `validate_bee_visual_target_01` (la niebla sigue empezando detrás del plano de juego), `validate_bee_level01_roster_v01` (5-6 hormigueros, el primero en X=28).
+
+## Etapa 4 — Música
+
+### 4.1 Auditoría y asignación (`docs/AUDIO_MAP.md`, `docs/AUDIO_MUSIC_AUDIT.md`)
+Hay **4 temas** `.mp3` en `audio/` (más 47 `.wav` de efectos/ambiente y documentos de licencias). Por nombre quedaron todos claros (nada "a confirmar"; solo falta el origen y la licencia, columna vacía para Rubén):
+
+| Archivo | Duración | Tema |
+|---|---:|---|
+| `Menú Principal y Pantalla de Títulos.mp3` | 2:40,7 | título |
+| `Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3` | 3:01,6 | nivel (jardín) |
+| `Introducción al Jefe Final 1era opcion.mp3` | 1:05,9 | jefe (suena al aparecer la barra de la tarántula) |
+| `Jefe Derrotado y Pantalla de Victoria.mp3` | 1:03,5 | victoria (al liberar a la tarántula) |
+
+### 4.2 `MusicManager` (autoload `MusicManager` en `project.godot`; `scripts/audio/music_manager.gd`)
+- Dos reproductores en el bus `Music` (**−8 dB** por defecto; efectos en `SFX` −3 dB) con fades y crossfade; el resto del juego lo llama por `BeeMusic` (estático, no hace nada si el autoload no está; así no se rompe ninguna escena de test ni herramienta).
+- **Título** en loop (arranca con la escena). **Nivel** en loop desde que empieza (crossfade desde el título) y sigue durante el robot mini-jefe. **Jefe:** crossfade de **1,5 s** de potencia constante (los dos cruzan a −3 dB) cuando aparece la barra de la tarántula. **Victoria:** una vez, sin loop, y sus últimos 3 s se desvanecen. **Pausa:** la música baja 12 dB y vuelve al reanudar. **Muerte:** fade-out de 1,6 s al caer Bee. **Reinicio:** el nivel arranca su tema desde el principio (si se reinicia en el checkpoint del jefe, suena el del nivel y el del jefe vuelve a entrar con su barra). **Explosiones grandes** (la bomba): −4 dB un instante.
+- **Deslizadores MÚSICA y EFECTOS** en el menú de pausa (Esc; mouse o flechas; 100 % = el volumen por defecto de cada bus).
+- **Loop activado en la importación** (`loop=true` en los `.mp3.import` de título, nivel y jefe; victoria sin loop) y por código como respaldo.
+- Constantes configurables al inicio: `MUSIC_DEFAULT_DB`, `CROSSFADE_SECONDS` (en `BeeMusic`), `DEATH_FADE_SECONDS`, `PAUSE_DUCK_DB`, `EXPLOSION_DUCK_DB`, `VICTORY_TAIL_FADE`.
+- Cambios de enganche: `bee_title_screen.gd`, `bee_level_01_vertical_slice.gd` (arranque y derrota), `tarantula_boss_01.gd` (barra), `bee_level_01_controller.gd` (liberación), `bee_checkpoint_qol.gd` (pausa y deslizadores), `bee_audio.gd` (duck de la bomba), `bee_game_settings.gd` (volúmenes de la sesión).
+
+### 4.3 Documentos
+`docs/AUDIO_MUSIC_AUDIT.md`: tabla de todos los archivos de `audio/` (formato, duración, tamaño, dónde suena) con la columna **Origen y licencia** vacía, las reglas del manager y lo que falta (Nivel 2, derrota, tema propio del robot, fases de la tarántula, créditos). Con 4 de 4 temas pedidos no quedó ninguno sin implementar.
+
+### Tests de la etapa
+- Nuevo `validate_bee_lote14_music_v01`: archivos y loops, bus −8 dB, título, crossfade título→nivel, pausa (baja y vuelve) con deslizadores, duck de la bomba, jefe (crossfade de 1,5 s, equipotencia), victoria sin loop con fade final, fade de muerte y reinicio.
+- La suite completa corre con el autoload activo (todos los niveles cargados en los tests inician el tema del nivel).
+
+## Resumen, cómo probar y pendientes
+
+- **Suite:** Etapa 0: 96/96 sobre el último commit de `lote-13`. Etapa 1: 94/97 a la primera (3 expectativas viejas, corregidas y repetidas en verde). Etapa 2: 98/98. Etapa 3: 99/99. **Etapa 4: 100/100** (`dev/l14n_suite_result.log`, local: `dev/*.log` está ignorado).
+- **Cómo probar:** proyecto `D:\proyectos\bee_alien_3d`, **F5** (título con música) → Jugar Nivel 01. Mantener clic izquierdo / X (ráfagas), **Z** (aguijón 360° con embestida, "AGUIJÓN LISTO" en el HUD), **Esc** (pausa con deslizadores MÚSICA y EFECTOS). Observar: moscas solas los primeros 20 s y un nombre chico (1,5 s) por cada especie nueva; polen escaso (barra de 20); la vida baja de verdad hacia los 3-5 min; hormigueros espaciados; el tema del jefe entra al aparecer la barra de la tarántula y el de victoria al liberarla.
+- **Conflictos de la consigna resueltos a favor de las metas medibles (ver 2.1, 2.2 y 2.3):** debut cada ~26 s y no ~40 s (10 especies en 5,5-7 min); tope de polen 70/min en vez de 25/min y ≈ 119 % de curación posible (con 25/min saldrían 75 %); daño del recorrido ≥ 100 y no > 200 (con 100 PV, `daño ≤ 70 + curación`). Cada uno es una constante.
+- **Fragilidad:** el bot de ritmo es caótico (con otras semillas el recorrido sale 1 de cada ~9 veces dentro de las bandas); si un cambio futuro lo mueve, recalibrar con `dev/lote14/search2.sh` / `seeds.sh` (perilla `ROSTER_FIRE_SLOWDOWN`).
+- **Provisorio / pendiente:** aguijón cromado = cono simple hasta que haya un aguijón modelado; falta el origen y la licencia de las 4 pistas (Rubén); hongo cañón fuera de la tabla del Nivel 1; el preset de cámara F también afecta al Nivel 2; debuts "forzados" (los sobrantes se retiran) casi siempre: si se prefiere esperar a que el jugador despeje, subir `DEBUT_CLEAR_MAX`.

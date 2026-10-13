@@ -26,6 +26,9 @@ var activation_count := 0
 var stage: BeeShmupStage
 var notice: Label
 var pause_label: Label
+var pause_panel: PanelContainer ## LOTE 14 · ETAPA 4: music and effects sliders, shown while paused.
+var music_slider: HSlider
+var sfx_slider: HSlider
 var controls_hint: Label
 var beacon: Node3D
 var _notice_left := 0.0
@@ -40,6 +43,7 @@ func setup(value: BeeShmupStage) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	notice = label("CheckpointNotice", "", Vector2(430, 112), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
+	_build_pause_panel()
 	controls_hint = label("ControlsHint", "X / CLIC DISPARO · MOUSE APUNTA · Z AGUIJÓN · C BOMBA · ESC PAUSA", Vector2(18, 212), 18)
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
 	debug_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.2))
@@ -59,6 +63,55 @@ func setup(value: BeeShmupStage) -> void:
 		snapshot = get_tree().get_meta(HANDOFF).duplicate(true)
 		get_tree().remove_meta(HANDOFF) # One-use handoff, never a save or singleton.
 		restore_snapshot()
+
+## LOTE 14 · ETAPA 4: the pause menu has a music slider and an effects slider (0..100 %, 100 % = the default level of each bus).
+func _build_pause_panel() -> void:
+	pause_panel = PanelContainer.new()
+	pause_panel.name = "PausePanel"
+	pause_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	pause_panel.position = Vector2(400, 330)
+	pause_panel.custom_minimum_size = Vector2(480, 0)
+	pause_panel.visible = false
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	pause_panel.add_child(box)
+	music_slider = _slider_row(box, "MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume)
+	sfx_slider = _slider_row(box, "EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume)
+	var hint := Label.new()
+	hint.text = "FLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
+	hint.add_theme_font_size_override("font_size", 14)
+	box.add_child(hint)
+	stage.get_node("CanvasLayer").add_child(pause_panel)
+
+
+func _slider_row(box: VBoxContainer, title: String, value: float, on_change: Callable) -> HSlider:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var name_label := Label.new()
+	name_label.text = title
+	name_label.custom_minimum_size = Vector2(110, 0)
+	name_label.add_theme_font_size_override("font_size", 20)
+	row.add_child(name_label)
+	var slider := HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step = 0.05
+	slider.value = value
+	slider.custom_minimum_size = Vector2(250, 24)
+	slider.focus_mode = Control.FOCUS_ALL
+	slider.process_mode = Node.PROCESS_MODE_ALWAYS
+	row.add_child(slider)
+	var percent := Label.new()
+	percent.text = "%d %%" % roundi(value * 100.0)
+	percent.custom_minimum_size = Vector2(60, 0)
+	percent.add_theme_font_size_override("font_size", 20)
+	row.add_child(percent)
+	slider.value_changed.connect(func(v: float):
+		percent.text = "%d %%" % roundi(v * 100.0)
+		on_change.call(v))
+	box.add_child(row)
+	return slider
+
 
 func label(node_name: String, text: String, point: Vector2, size: int) -> Label:
 	var node := Label.new()
@@ -113,6 +166,10 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("bee_pause"):
 		get_tree().paused = not get_tree().paused
 		pause_label.visible = get_tree().paused
+		BeeMusic.set_paused(get_tree().paused) # LOTE 14: the music ducks while paused.
+		pause_panel.visible = get_tree().paused
+		if pause_panel.visible:
+			music_slider.grab_focus()
 	var f9_down := Input.is_physical_key_pressed(DEBUG_KEY)
 	if f9_down and not _f9_was_down and not get_tree().paused:
 		_f9_was_down = true

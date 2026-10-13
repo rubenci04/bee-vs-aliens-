@@ -34,6 +34,8 @@ const CUES := {
 	&"spider_retract": ["pickups/pollen", -23.0, 1, true],
 }
 const MAX_VOICES := 16
+## LOTE 14 · ETAPA 4: cues that duck the music a little (big explosions).
+const MUSIC_DUCK_CUES := [&"bomb"]
 const REAL_CUES := [&"base", &"spread", &"tech_hit", &"organic_hit", &"melee", &"bomb", &"bee_damage", &"bee_defeat", &"tech_death", &"crate", &"spread_pickup", &"bomb_pickup", &"pollen", &"human_step", &"human_step_b", &"human_step_c", &"ufo_charge",
 		&"organic_death", &"wasp_overload", &"walker_charge", &"organic_charge", &"spider_telegraph", &"spider_drop", &"spider_retract"]
 ## NOCHE 01: cues that reuse another real (approved) recording instead of a file of their own.
@@ -64,6 +66,8 @@ static func stream_for(cue: StringName) -> AudioStream:
 	return _streams[path]
 
 static func play(parent: Node, cue: StringName, point := Vector3.ZERO, pitch := 1.0) -> Node:
+	if cue in MUSIC_DUCK_CUES:
+		BeeMusic.duck_for_explosion()
 	var stream := stream_for(cue)
 	if stream == null:
 		return null

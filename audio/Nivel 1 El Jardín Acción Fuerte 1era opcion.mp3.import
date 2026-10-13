@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c7ptt3hpmj7mt"
+path="res://.godot/imported/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3-765eb0d870fed91466fab77b968fa65f.mp3str"
+
+[deps]
+
+source_file="res://audio/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3"
+dest_files=["res://.godot/imported/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3-765eb0d870fed91466fab77b968fa65f.mp3str"]
+
+[params]
+
+loop=true
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

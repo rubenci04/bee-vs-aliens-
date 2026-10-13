@@ -17,6 +17,11 @@ var difficulty_button: Button
 var shake_button: Button
 
 
+func _ready() -> void:
+	super._ready()
+	BeeMusic.play(&"title") # LOTE 14: the title theme loops here (MusicManager).
+
+
 static func debug_menu_enabled() -> bool:
 	return OS.has_feature("editor") or "--debug-art" in OS.get_cmdline_user_args()
 
