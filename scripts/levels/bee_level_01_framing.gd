@@ -11,7 +11,7 @@ const PRESETS := {
 	&"D": {"distance": 8.5, "height": 2.0, "pitch": 5.0, "fov": 40.0},
 	&"E": {"distance": 10.0, "height": 2.45, "pitch": 5.0, "fov": 40.0},
 	## LOTE 14 · ETAPA 3.2: small screens - preset E pulled back CAMERA_BACK_SCALE (+12 %: distance and height, same pitch and FOV, so the ground line keeps its place).
-	&"F": {"distance": 11.2, "height": 2.74, "pitch": 5.0, "fov": 40.0},
+	&"F": {"distance": 11.2, "height": BeeGameSettings.CAMERA_PRESET_F_HEIGHT, "pitch": 5.0, "fov": 40.0},
 }
 const CAMERA_BACK_SCALE := 1.12 ## Preset F = preset E x this (documentation; the table above holds the numbers).
 const DEFAULT_PRESET := &"F"

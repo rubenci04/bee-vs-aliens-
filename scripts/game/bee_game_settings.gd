@@ -110,6 +110,10 @@ const HUD_HEALTH_CELLS := 10
 const HUD_POLLEN_CELLS := 10
 const HUD_BOMB_ICON_COUNT := 5
 const HUD_DEBUG_ACTION := &"bee_hud_debug"
+## Lote 17: lower the camera centre without reducing its existing vertical coverage so feet stay visible.
+const CAMERA_PRESET_F_HEIGHT := 2.1
+const GROUND_ACTOR_LOWEST_Y := -0.2
+const GROUND_ACTOR_FRAME_MARGIN := 0.7
 static var vibration_enabled := true
 static var last_input_joypad := false
 static var last_joypad_device := -1

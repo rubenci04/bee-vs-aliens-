@@ -44,7 +44,8 @@ func run() -> void:
 	var width_gain := half_min / d_half
 	var height_gain := (top - bottom) / d_height
 	check(width_gain >= 1.29 and width_gain <= 1.40 and height_gain >= 1.29 and height_gain <= 1.40, "Camera F gain outside 29-40 %% over D (w %.2f h %.2f)" % [width_gain, height_gain])
-	check(bottom < 0.0, "The ground line must stay in frame")
+	check(bottom <= BeeGameSettings.GROUND_ACTOR_LOWEST_Y - BeeGameSettings.GROUND_ACTOR_FRAME_MARGIN,
+		"Camera must leave %.2f m below the lowest ground actor (bottom %.3f)" % [BeeGameSettings.GROUND_ACTOR_FRAME_MARGIN, bottom])
 	# Horizontal flight uses 95 % of the visible width with equal left/right margins at both supported aspect ratios.
 	var m := BeeLevel01Framing.FLIGHT_MARGIN
 	for ratio in [16.0 / 9.0, 16.0 / 10.0]:
