@@ -1,0 +1,72 @@
+{
+  "glb": "assets/models/shared/bee/bee_mid_poly.glb",
+  "sha256": "2ef72672d95d8b1bef063982321c504db676c2e3e8f49842eae9a0c37fdc7264",
+  "bounds_min": [
+    -0.5499999970197678,
+    -0.2524898495408501,
+    -0.4098308193704756
+  ],
+  "bounds_max": [
+    0.5499999970197678,
+    0.3017968684434891,
+    0.566391342796893
+  ],
+  "size_godot_xyz_m": [
+    1.0999999940395355,
+    0.5542867179843392,
+    0.9762221621673686
+  ],
+  "visual_scale_1_2_xyz_m": [
+    1.3199999928474426,
+    0.665144061581207,
+    1.1714665946008422
+  ],
+  "triangles": 4540,
+  "parts": [
+    "Abdomen",
+    "AntennaBase_L",
+    "AntennaBase_R",
+    "AntennaTip_L",
+    "AntennaTip_R",
+    "BrokenCable",
+    "Brow_L",
+    "Brow_R",
+    "Conduit_L",
+    "Conduit_R",
+    "Eye_L",
+    "Eye_R",
+    "Head",
+    "ImplantHousing",
+    "Leg_L_0_Lower",
+    "Leg_L_0_Upper",
+    "Leg_L_1_Lower",
+    "Leg_L_1_Upper",
+    "Leg_L_2_Lower",
+    "Leg_L_2_Upper",
+    "Leg_R_0_Lower",
+    "Leg_R_0_Upper",
+    "Leg_R_1_Lower",
+    "Leg_R_1_Upper",
+    "Leg_R_2_Lower",
+    "Leg_R_2_Upper",
+    "LiftedBrokenPlate",
+    "Mandible_L",
+    "Mandible_R",
+    "Sensor_L",
+    "Sensor_R",
+    "Stinger",
+    "Thorax",
+    "Wing_L",
+    "Wing_R",
+    "BeeModel"
+  ],
+  "animations": [],
+  "materials": [
+    "Gold",
+    "Dark",
+    "Cyan",
+    "AlienMetal",
+    "Eye",
+    "Wing"
+  ]
+}
