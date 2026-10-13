@@ -128,11 +128,8 @@ func _build_screen() -> void:
 	difficulty_button = _button("", _toggle_difficulty)
 	difficulty_button.name = "DifficultyButton"
 	menu.add_child(difficulty_button)
-	shake_button = _button("", _toggle_shake)
-	shake_button.name = "ShakeButton"
-	menu.add_child(shake_button)
 	_refresh_settings_labels()
-	var options := _button("Opciones ▾", _toggle_options)
+	var options := _button("Opciones ▸", _toggle_options)
 	options.name = "OptionsButton"
 	menu.add_child(options)
 	options_panel = VBoxContainer.new()
@@ -142,6 +139,10 @@ func _build_screen() -> void:
 	menu.add_child(options_panel)
 	_add_volume_slider(options_panel, "Música", BeeGameSettings.music_volume, BeeMusic.set_music_volume)
 	_add_volume_slider(options_panel, "Efectos", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume)
+	shake_button = _button("", _toggle_shake)
+	shake_button.name = "ShakeButton"
+	options_panel.add_child(shake_button)
+	_refresh_settings_labels()
 	var controls := _button("Controles", _show_controls)
 	options_panel.add_child(controls)
 	var intro_button := _button("Ver introducción", _show_intro)
@@ -251,8 +252,28 @@ func _show_controls() -> void:
 	help.text = "CONTROLES\nMover: WASD / flechas / palanca izquierda\nApuntar: mouse / palanca derecha\nDisparar: X / clic / A\nAguijón: Z · Bomba: C / X · Pirueta: Shift / B\nPausa: Esc / Start"
 	help.add_theme_font_size_override("font_size", BeeGameSettings.TITLE_OPTION_FONT_SIZE)
 	box.add_child(help)
-	box.add_child(_button("Cerrar", func(): controls_panel.queue_free(); controls_panel = null))
+	var close_button := _button("Cerrar", _close_controls)
+	box.add_child(close_button)
 	add_child(controls_panel)
+	close_button.grab_focus.call_deferred()
+
+
+func _close_controls() -> void:
+	if controls_panel != null:
+		controls_panel.queue_free()
+		controls_panel = null
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if controls_panel != null:
+		_close_controls()
+	elif options_panel != null and options_panel.visible:
+		options_panel.visible = false
+		(find_child("OptionsButton", true, false) as Button).text = "Opciones ▸"
+		(find_child("OptionsButton", true, false) as Button).grab_focus()
+	get_viewport().set_input_as_handled()
 
 
 func _panel_style(color: Color) -> StyleBoxFlat:

@@ -159,9 +159,9 @@ func test_title() -> void:
 	var texts := []
 	for b: Button in title.find_children("*", "Button", true, false):
 		texts.append(b.text)
-	check("Jugar Nivel 01" in texts and "Salir" in texts and texts.any(func(t): return str(t).begins_with("Dificultad")), "Title menu: " + str(texts))
-	var art_shown := "Colección de arte" in texts
-	check(art_shown == title.call("debug_menu_enabled"), "Art collection only in debug mode")
+	check("Jugar" in texts and "Salir" in texts and texts.any(func(t): return str(t).begins_with("Dificultad")), "Title menu: " + str(texts))
+	var lake_shown := texts.any(func(t): return str(t).contains("Laguna"))
+	check(lake_shown == title.call("debug_menu_enabled"), "Lake prototype only in debug mode")
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	title.call("_toggle_difficulty")
 	check(BeeGameSettings.difficulty == BeeGameSettings.EASY and (title.get("difficulty_button") as Button).text.ends_with("FÁCIL"), "Difficulty toggle")

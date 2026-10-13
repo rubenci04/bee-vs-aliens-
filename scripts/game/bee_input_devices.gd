@@ -2,9 +2,11 @@ extends Node
 ## InputMap applies to ALL devices. Autoload also runs in title/pause screens.
 var notice: Label
 var notice_left := 0.0
+var startup_time_msec := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	startup_time_msec = Time.get_ticks_msec()
 	configure_actions()
 	Input.joy_connection_changed.connect(_connection_changed)
 	var layer := CanvasLayer.new()
@@ -15,7 +17,8 @@ func _ready() -> void:
 	notice.add_theme_font_size_override("font_size", 20)
 	layer.add_child(notice)
 	for device in Input.get_connected_joypads():
-		_connection_changed(device, true)
+		# A controller already connected at launch is expected; do not place a toast over the title artwork.
+		BeeGameSettings.last_joypad_device = device
 
 func configure_actions() -> void:
 	for action in InputMap.get_actions():
@@ -52,6 +55,8 @@ func _input(event: InputEvent) -> void:
 func _connection_changed(device: int, connected: bool) -> void:
 	if connected:
 		BeeGameSettings.last_joypad_device = device
+		if Time.get_ticks_msec() - startup_time_msec < BeeGameSettings.JOYPAD_STARTUP_NOTICE_SUPPRESS_MSEC:
+			return
 		notice.text = "Mando detectado: " + Input.get_joy_name(device)
 		notice_left = BeeGameSettings.JOYPAD_NOTICE_SEC
 		notice.show()

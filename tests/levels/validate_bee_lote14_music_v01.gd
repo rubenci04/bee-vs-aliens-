@@ -78,6 +78,13 @@ func run() -> void:
 	check(manager.current_track == &"title" and manager.is_playing(), "The title theme plays on the title screen")
 	await wait(2.5)
 	check(volume(&"title") > -4.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
+	var title_volume := volume(&"title")
+	BeeMusic.set_intro_duck(true)
+	await wait(0.05)
+	check(volume(&"title") < title_volume - 1.8, "The title theme ducks slightly during the intro")
+	BeeMusic.set_intro_duck(false)
+	await wait(0.05)
+	check(volume(&"title") > title_volume - 0.5, "The title theme returns to its normal level after the intro")
 	title.queue_free()
 	await process_frame
 
