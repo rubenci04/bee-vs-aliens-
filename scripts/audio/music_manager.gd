@@ -75,7 +75,8 @@ func _process(delta: float) -> void:
 			var left := player.stream.get_length() - player.get_playback_position()
 			if left < VICTORY_TAIL_FADE:
 				gain = minf(gain, clampf(left / VICTORY_TAIL_FADE, 0.0, 1.0))
-		player.volume_db = maxf(linear_to_db(maxf(gain, 0.0001)) + float(BeeGameSettings.MUSIC_TRACK_GAIN_DB.get(_tracks[i], 0.0)) + _duck_db + _explosion_db, SILENT_DB)
+		var intro_duck := BeeGameSettings.INTRO_MUSIC_DUCK_DB if BeeGameSettings.intro_duck_enabled else 0.0
+		player.volume_db = maxf(linear_to_db(maxf(gain, 0.0001)) + float(BeeGameSettings.MUSIC_TRACK_GAIN_DB.get(_tracks[i], 0.0)) + _duck_db + _explosion_db + intro_duck, SILENT_DB)
 
 
 ## Starts (or switches to) a theme. From silence it fades in over `fade_in` seconds; with another theme playing it crossfades over `crossfade`.

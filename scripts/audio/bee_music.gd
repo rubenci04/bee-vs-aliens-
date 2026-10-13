@@ -42,6 +42,10 @@ static func fade_out(seconds: float = BeeMusic.DEATH_FADE_SECONDS) -> void:
 		node.call("fade_out", seconds)
 
 
+static func set_intro_duck(enabled: bool) -> void:
+	BeeGameSettings.intro_duck_enabled = enabled
+
+
 static func set_paused(value: bool) -> void:
 	var node := manager()
 	if node != null:
