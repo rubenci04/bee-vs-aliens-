@@ -8,6 +8,21 @@ const NORMAL := &"normal"
 const EASY := &"easy"
 const EASY_DAMAGE_TAKEN := 0.6
 const EASY_ENEMY_HP := 0.75
+## Bee model can be changed live with set_bee_model_version().
+static var BEE_MODEL_VERSION := "v02"
+const BEE_VISUAL_SCALE := 1.0
+const BEE_V01_VISUAL_SCALE := 1.2
+const BEE_THRUSTERS_ENABLED := true
+const BEE_THRUSTER_IDLE_INTENSITY := 0.12
+const BEE_THRUSTER_MAX_INTENSITY := 0.90
+const BEE_THRUSTER_BURST_SECONDS := 0.18
+const BEE_THRUSTER_MAX_TILT_RADIANS := 0.14
+const BEE_THRUSTER_PARTICLES := 18
+const BEE_DRILL_ACTIVE_SECONDS := 0.24
+const BEE_DRILL_TRAIL_PARTICLES := 18
+const BEE_ROLL_ARMOR_FLASH_SECONDS := 0.16
+const BEE_INVULNERABILITY_BLINK_HZ := 14.0
+const BEE_GOLD := Color(1.0, 0.68, 0.18)
 const TITLE_SCENE := "res://scenes/game/bee_title_screen.tscn"
 const LEVEL_01 := "res://scenes/levels/bee_level_01_vertical_slice.tscn"
 ## Seconds on the "SECTOR DESPEJADO" screen before going back to the title (only when the level was started from it).
@@ -43,3 +58,15 @@ static func label() -> String:
 ## LOTE 14 · ETAPA 4: pause-menu sliders (0..1). 1.0 = the default level of each bus (music -8 dB, effects -3 dB); see MusicManager.
 static var music_volume := 1.0
 static var sfx_volume := 1.0
+
+
+static func set_bee_model_version(version: String) -> bool:
+	if version not in ["v01", "v02"]:
+		return false
+	BEE_MODEL_VERSION = version
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null:
+		for visual in tree.get_nodes_in_group("bee_visual_instances"):
+			if is_instance_valid(visual) and visual.has_method("apply_model_version"):
+				visual.call("apply_model_version", version)
+	return true
