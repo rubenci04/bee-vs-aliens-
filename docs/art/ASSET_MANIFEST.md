@@ -6,6 +6,8 @@ Regenerado el 2026-10-12 (Lote 12, etapa 1) tras la mudanza por nivel. Todo el a
 
 | Nivel | Categoría | Nombre | .blend | .glb | ¿Juego? (dónde) | Tris | Estado |
 |---|---|---|---|---|---|---|---|
+| shared | hero | `shared_hero_bee_v02` | `art_source/blender/shared/bee_hero/shared_hero_bee_v02.blend` | `assets/models/shared/bee_hero/shared_hero_bee_v02.glb` | no — `scenes/art_labs/bee_hero_v02.tscn` | 17612 | laboratorio — listo sin integrar; inventario en `docs/INFORME_BEE_HERO_MODELO.md` |
+| shared | hero | `shared_hero_bee_v02_lite` | `art_source/blender/shared/bee_hero/shared_hero_bee_v02_lite.blend` | `assets/models/shared/bee_hero/shared_hero_bee_v02_lite.glb` | no — `scenes/art_labs/bee_hero_v02.tscn` | 5604 | laboratorio — listo sin integrar; clips/anclas equivalentes a v02 |
 | N1 | bosses | `lvl01_boss_giant_spider_v01_liberado` | `art_source/blender/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.blend` | `assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01_liberado.glb` | no | 8584 | laboratorio |
 | N1 | bosses | `lvl01_boss_giant_spider_v01` | `art_source/blender/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.blend` | `assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.glb` | no | 11652 | laboratorio |
 | N1 | enemies | `controlled_ant_lite` | `art_source/blender/levels/level_01_garden/enemies/controlled_ant_lite.blend` | `assets/models/levels/level_01_garden/enemies/controlled_ant_lite.glb` | no | 4980 | laboratorio |

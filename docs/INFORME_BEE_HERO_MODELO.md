@@ -1,6 +1,6 @@
 # Bee héroe v02 — informe de modelo e integración
 
-Fecha: 2026-10-13. Rama de tarea: `lote-15b-bee-modelo`, creada desde `lote-14` después del resguardo **0b65701**. Este informe documenta el inventario y las etapas de modelado/revisión. Etapa 2 terminada; etapa 3 en curso.
+Fecha: 2026-10-13. Rama de tarea: `lote-15b-bee-modelo`, creada desde `lote-14` después del resguardo **0b65701**. Inventario, modelos completos/lite y cuatro vueltas de revisión terminados. Entrega de arte lista, sin sustituir el Bee jugable.
 
 ## Etapa 0 — preparación
 
@@ -87,7 +87,7 @@ Preservar nombres equivalentes, raíz/origen/orientación y aplicar escala/rotac
 
 El pedido enumera siete usos de material pero fija máximo seis. Solución prevista: **amarillo**, **oscuro compartido** (franjas/patas/antenas/cara), **acero gris**, **acero oscuro**, **alas translúcidas neutras**, **oro emisivo exclusivo de la boca del cañón**. Ningún cian ni azul brillante. Materiales planos, textura opcional ≤1024 px; sin pelaje geométrico costoso.
 
-Presupuestos: completo 16.000–18.000 tris con tope 20.000; `_lite` ≤6.000, ambos contados luego de aplicar modificadores y triangular. Revisiones previstas: dos vueltas de lateral/frente/espalda/arriba/3/4 con iluminación del juego, comparativa con la hoja y silueta negra a 96 px. La primera vuelta ya está renderizada; la segunda corregirá los desvíos descritos abajo.
+Presupuestos: completo 16.000–18.000 tris con tope 20.000; `_lite` ≤6.000, ambos contados luego de aplicar modificadores y triangular. Se completaron cuatro vueltas de lateral/frente/espalda/arriba/3/4 con iluminación del juego, comparativas con la hoja y siluetas negras a 96 px.
 
 ## Integridad y validación de etapa 1
 
@@ -105,10 +105,50 @@ Primera versión: completo **17.576 triángulos**, lite **4.838**, seis material
 
 Validación dirigida `tests/art/validate_bee_hero_v02.gd`: **PASS**, nombres/piezas, seis materiales, dirección de muzzle/toberas, presupuestos y escala visible, clips/movimiento, fuente v01 intacta, ausencia de colisiones. No se instancia el nuevo modelo desde BeePlayer.
 
-## Etapa 3 — revisión visual en curso
+## Etapa 3 — revisión visual y entrega final
 
-Primera vuelta: `docs/art/renders/bee_hero/round_01/`, completo y lite: lateral, frente, espalda, arriba, 3/4 y silueta. Usa la dirección de luz (-40,-25,0), color (1,0.9,0.72), energía 1,25 y ambiente cálido/0,7 de la escena del jardín, sobre fondo neutral.
+Renders reales de Godot Compatibility, no imágenes generadas: `docs/art/renders/bee_hero/round_01/` a `round_04/`, ambos modelos, lateral/frente/espalda/arriba/3/4. Dirección de luz (-40,-25,0), color (1,0.9,0.72), energía 1,25 y ambiente cálido/0,7 de la escena del jardín, sobre fondo neutral. Se aplica el shader toon y el contorno existentes en el laboratorio; el GLB conserva materiales portables. Alas cálidas translúcidas sin sheen emisivo en el preview. Solo la boca del cañón usa emisión dorada; sin cian, azul brillante, casco ni fuego modelado.
 
-Observaciones de la primera vuelta: membranas demasiado de canto en lateral; ojos demasiado salientes respecto a las ventanas de la hoja; núcleo oscuro del taladro mayor que varias bandas, que oculta su acero; boca de blaster demasiado pequeña a distancia. Se corregirán en la segunda vuelta manteniendo presupuesto/origen/escala/nombres.
+| Vuelta | Observación visual | Corrección y resultado |
+|---|---|---|
+| 1 | Alas de canto en lateral, ojos salientes, núcleo oscuro ocultando bandas metálicas, boca del blaster pequeña | Registrado antes de corregir; renders y comparativa conservados |
+| 2 | Perfil y cara más cercanos a la hoja | Giro de membranas aplicado, ojos ajustados a la superficie de la cabeza, cejas curvas, núcleo del taladro reducido, cinco bandas más cortas, punta metálica y boca del blaster mayor. 17.612 / 4.846 tris |
+| 3 | Propulsor poco separado del tórax en silueta negra | Se elevó el conjunto del propulsor con sus aletas y anclas, sin alterar conteo ni caja general. Se ve el escalón del pod bajo las alas |
+| 4 | La comparativa de la versión lite mostraba franjas dentadas por reducción a través de los materiales | Se conservó la malla del abdomen sin reducción; franjas continuas y limpias. Lite final: 5.604 tris. Cinco vistas completas revisadas en ambos modelos |
 
-La suite completa, comparativas, evaluación final de silueta a 96 px, commit de etapa 3 y push quedan pendientes. No se cambió ningún script de gameplay ni la escena de Bee v01.
+### Medidas y presupuestos finales
+
+Conteo de índices triangulados exportados, con todos los modificadores aplicados. La geometría de cada fuente está triangulada, cerrada y sin caras degeneradas. No se estima desde el archivo ni desde caras sin triangular. Seis materiales y ninguna textura en ambas versiones.
+
+| Modelo | Triángulos reales | Largo × alto × ancho GLB (m) | Visual con escala heredada 1,2 (m) |
+|---|---:|---|---|
+| `shared_hero_bee_v02` | **17.612** | 1,166667 × 0,969787 × 0,640114 | **1,400000 × 1,163745 × 0,768136** |
+| `shared_hero_bee_v02_lite` | **5.604** | 1,166766 × 0,971858 × 0,639685 | **1,400119 × 1,166230 × 0,767623** |
+
+Medidas de pose de reposo, incluyendo alas, patas, antenas, taladro y cañón. La caja cambia durante el aleteo. Raíz/origen/orientación heredados; escala 1 y rotación 0 de las mallas aplicadas, comprobadas además en Godot. La diferencia de 0,000119 m de largo visible lite es residual de la simplificación.
+
+### Silueta a 96 píxeles y fidelidad
+
+Renders negros, con alas opacas solo para esta prueba: completo **116 × 96 px**, 4.176 píxeles negros; lite **115 × 96 px**, 4.109. Cada silueta tiene un único componente conectado. Inspección visual: se reconoce la abeja, el taladro trasero y el cañón elevado; el propulsor genera un escalón compacto bajo las alas. Los dos propulsores se superponen en vista lateral pura, como corresponde a su ubicación simétrica: no se distinguen por separado en esa vista. La conectividad mide continuidad, no sustituye esta revisión visual.
+
+Desvíos deliberados de la hoja: venación de las alas simplificada; menos remaches pequeños y sin pelaje geométrico; ojos algo más redondeados, boca y pies simplificados; propulsores ligeramente más altos para la lectura lateral. Lite conserva la misma jerarquía, franjas y silueta, con facetas más visibles en tubos y membranas. No es una copia de cada detalle de la ilustración; la cara, cuatro alas, seis patas, placas separadas, dos pods y taladro de cinco bandas mantienen su identidad.
+
+Anclas nuevas incluidas: `stinger_tip`, `nozzle_L/R`, `muzzle`, `helmet_socket`. `stinger_drill` tiene eje propio; `thruster_L/R`, `antenna_R_blaster` y `plates` son conjuntos separados. Nombres equivalentes de v01 conservados. Clips `wingbeat` y `drill_spin`, ambos loops de **0,5 s**, con aleteo de 16 Hz; el segundo añade giro del taladro. No había clips v01 que replicar.
+
+### Archivos y cómo mirar la entrega
+
+- Fuentes editables: `art_source/blender/shared/bee_hero/shared_hero_bee_v02.blend` y `shared_hero_bee_v02_lite.blend`.
+- Exportaciones: `assets/models/shared/bee_hero/shared_hero_bee_v02.glb` y `shared_hero_bee_v02_lite.glb`; mediciones reproducibles en `bee_hero_v02_manifest.json`.
+- Comparativa final: `docs/art/renders/bee_hero/round_04/full_comparison.png` y `lite_comparison.png`; hojas `full_five_views.png` / `lite_five_views.png`, PNG individuales y siluetas a 96 px. Las vueltas anteriores se conservan como evidencia.
+- Abrir `scenes/art_labs/bee_hero_v02.tscn` en Godot y ejecutar **F6**: completo y lite juntos; **1** aleteo, **2** giro del taladro con aleteo, **Espacio** pausa. Revisar cara decidida, franjas limpias, cinco bandas del taladro, cañón derecho y dos toberas.
+- Builder independiente `tools/art/create_bee_hero_v02.py`; herramientas de captura/compaginación en `dev/bee_hero_modelo/`. Solo regeneran v02; no invocan builders históricos.
+
+### Validación y límite de integración
+
+Prueba dirigida final `tests/art/validate_bee_hero_v02.gd`: **PASS**, 17.612 / 5.604 tris; materiales/paleta/emisión, alas translúcidas, escala/rotación aplicada, raíz identidad, nombres/anclas/direcciones, clips y movimiento, laboratorio, ausencia de colisiones y hash GLB v01. Las tres fuentes/GLB históricos conservan sus hashes de etapa 1. `git diff 0b65701 -- scripts scenes/bee_prototype project.godot` vacío: no se cambió código del juego.
+
+Suite completa ejecutada **una sola vez al final**: **101/101 PASS, 0 fallos**, 371,5 s. Godot 4.7.2 headless, FPS fijo 60 excepto las validaciones históricas `validate_toon_items_v01` y `validate_wasp_visual`, que usan reloj real; timeout de 180 s por script. Ningún `SCRIPT ERROR` ni timeout. El renderer dummy y algunas pruebas emiten avisos de materiales/recursos al salir, registrados en los logs; no fallaron las aserciones ni los códigos de salida. Logs locales `dev/bee_hero_v02_full_suite.log` y `dev/bee_hero_v02_full_suite_result.log`; comando reproducible `python dev/bee_hero_modelo/run_full_suite.py`.
+
+El juego sigue usando v01. La integración futura debe conectar `muzzle`, elegir un único driver de alas y resolver el aguijón procedural para no duplicarlo con el taladro. No se ajustaron colisiones ni mecánicas en esta entrega de arte.
+
+Commits por etapa: resguardo **0b65701**, inventario **2a7a6d8**, modelado inicial **2f6d9d5**; revisión y entrega final en un cuarto commit, seguido de push de `lote-15b-bee-modelo`.

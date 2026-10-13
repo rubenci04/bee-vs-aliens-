@@ -2,18 +2,18 @@
   "assets": [
     {
       "id": "shared_hero_bee_v02",
-      "triangles": 17576,
+      "triangles": 17612,
       "materials": 6,
       "raw_length_height_width_m": [
         1.166667,
-        0.988459,
-        0.720637
+        0.969787,
+        0.640114
       ],
       "visual_scale": 1.2,
       "visual_length_height_width_m": [
         1.4,
-        1.186151,
-        0.864764
+        1.163745,
+        0.768136
       ],
       "forward_godot": "-Z",
       "up_godot": "+Y",
@@ -28,18 +28,18 @@
     },
     {
       "id": "shared_hero_bee_v02_lite",
-      "triangles": 4838,
+      "triangles": 5604,
       "materials": 6,
       "raw_length_height_width_m": [
-        1.166984,
-        0.990029,
-        0.719238
+        1.166766,
+        0.971858,
+        0.639685
       ],
       "visual_scale": 1.2,
       "visual_length_height_width_m": [
-        1.40038,
-        1.188034,
-        0.863086
+        1.400119,
+        1.16623,
+        0.767623
       ],
       "forward_godot": "-Z",
       "up_godot": "+Y",

@@ -63,6 +63,8 @@ Estados según el disco al 2026-10-12, tras la mudanza del Lote 12 (ver `AUDITOR
 
 ## shared
 
+**Bee héroe (2026-10-13):** ✅ v01 intacto y en juego (`bee/bee_mid_poly.glb`). ⚠️ v02 y v02_lite listos, con fuentes Blender, GLB, piezas/anclas, clips y laboratorio `scenes/art_labs/bee_hero_v02.tscn`: **17.612 / 5.604 tris**, largo visual ~1,4 m, seis materiales cálidos sin cian. Integración jugable pendiente por alcance de esta tarea. Inventario, compatibilidad y cuatro revisiones en [`INFORME_BEE_HERO_MODELO.md`](../INFORME_BEE_HERO_MODELO.md).
+
 ✅ `bee/` (Bee y avispa mid poly), `pickups/` (polen, Spread, bomba, miel), `projectiles/` (disparo de Bee, orbe alien). `alien_tech/`: ✅ caza interceptor, semillero (en juego hoy), sonda; ⚠️ bombardero blindado, relé de señal, kit de implantes (referencia).
 
 ## `_unassigned`

@@ -14,6 +14,8 @@ func run() -> void:
 		model.preview_motion=false
 		root.add_child(model)
 		await process_frame
+		var imported := model.get_node("Model") as Node3D
+		check(imported.transform.is_equal_approx(Transform3D.IDENTITY),"Native model root must preserve origin, rotation and scale")
 		var triangles := 0
 		var bounds := AABB()
 		var first := true
@@ -23,6 +25,7 @@ func run() -> void:
 			bounds=box if first else bounds.merge(box)
 			first=false
 			check(mesh.scale.is_equal_approx(Vector3.ONE),"Unapplied mesh scale: "+mesh.name)
+			check(mesh.rotation.is_zero_approx(),"Unapplied mesh rotation: "+mesh.name)
 			for surface in mesh.mesh.get_surface_count():
 				triangles+=mesh.mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX].size()/3
 				var source := mesh.mesh.surface_get_material(surface) as BaseMaterial3D
@@ -30,6 +33,8 @@ func run() -> void:
 				var color := source.albedo_color
 				check(not (color.b>.45 and color.b>color.r*1.25),"Bright blue/cyan in hero")
 				check(not source.emission_enabled or mesh.name=="blaster_muzzle_gold","Emission outside muzzle: "+mesh.name)
+				if source.resource_name=="Wing":
+					check(source.transparency!=BaseMaterial3D.TRANSPARENCY_DISABLED and color.a<.6,"Wings must be translucent")
 				var styled := mesh.get_surface_override_material(surface) as ShaderMaterial
 				check(styled!=null,"Missing game toon")
 		check(source_materials.size()==6,"Must use exactly six materials")
