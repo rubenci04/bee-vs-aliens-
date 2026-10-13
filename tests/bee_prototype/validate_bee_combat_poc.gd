@@ -41,7 +41,7 @@ func run_checks() -> void:
 	var wasp_b := poc.get_node("Enemies/WaspB") as WaspEnemy
 	var probe_b := poc.get_node("Enemies/ProbeB") as AlienProbeRanged
 	check(bee.health.current_health == 100 and not bee.is_defeated, "BeePlayer did not start at 100 HP")
-	check(bee.melee_damage == 15 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, 0.52), "Bee melee values changed")
+	check(bee.melee_damage == 30 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, 0.9), "Bee melee values changed (LOTE 14: 30 damage, 0.9 s)")
 	check(not wasp_a.is_active() and not probe_a.is_active() and not wasp_b.is_active() and not probe_b.is_active(), "Enemies began active")
 	check(poc.get_node("Pollen").get_child_count() == 2, "Combat POC must have two pollen pickups")
 
@@ -83,7 +83,7 @@ func run_checks() -> void:
 	await frames(2)
 	check(bee.health.current_health == 100 and poc.pollen_count == 2, "Pollen exceeded max HP or counter failed")
 
-	# Z enables a short facing-based hitbox and kills the Wasp in two valid hits.
+	# Z (LOTE 14: 30 damage, 360 degrees) kills the 30 HP Wasp in one hit; with nothing in reach it swings forward/back by facing.
 	wasp_a.set_physics_process(false)
 	wasp_a.position = bee.position + Vector3(0.75, 0, 0)
 	bee.facing_x = 1.0
@@ -91,20 +91,14 @@ func run_checks() -> void:
 	check(bee.start_melee(), "Z melee was rejected")
 	check(bee.melee_hitbox.enabled and bee.melee_hitbox.position.x > 0.0, "Melee did not respect right facing")
 	for frame in 12:
-		if wasp_a.health.current_health == 15:
-			break
-		await physics_frame
-	check(wasp_a.health.current_health == 15, "Melee did not damage Wasp")
-	await frames(35)
-	wasp_a.position = bee.position + Vector3(-0.75, 0, 0)
-	bee.facing_x = -1.0
-	bee._place_melee_hitbox()
-	check(bee.start_melee() and bee.melee_hitbox.position.x < 0.0, "Melee did not respect left facing")
-	for frame in 12:
 		if wasp_a.is_defeated():
 			break
 		await physics_frame
 	check(wasp_a.is_defeated() and poc.stage == poc.Stage.PAUSE_B, "Wasp death did not advance progression")
+	await frames(60)
+	bee.facing_x = -1.0
+	bee._place_melee_hitbox()
+	check(bee.start_melee() and bee.melee_hitbox.position.x < 0.0, "Melee did not respect left facing")
 
 	# Encounter B proves auto-aim and ranged attack behavior.
 	bee.position = Vector3(-0.4, 3.5, 0)

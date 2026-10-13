@@ -40,7 +40,7 @@ func run() -> void:
 	gun._physics_process(0.55)
 	check(gun.volleys == 0, "No shot before minimum telegraph")
 	gun._physics_process(0.06)
-	check(gun.volleys == 1 and get_nodes_in_group("alien_projectiles").size() == 3, "First ladybird volley must be a fan of three")
+	check(gun.volleys == 1 and get_nodes_in_group("alien_projectiles").size() == 1, "LOTE 14: the ladybird fires ONE slow shot (it was a fan of three)")
 	for shot in get_nodes_in_group("alien_projectiles"):
 		shot.queue_free()
 	await frames(2)

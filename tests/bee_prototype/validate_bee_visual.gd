@@ -14,7 +14,7 @@ func run() -> void:
 	var wing := visual.find_child("Wing_L", true, false) as Node3D
 	require(wing != null and visual.find_child("Wing_R",true,false) != null,"Independent wings missing")
 	require(is_equal_approx(bee.get_node("CollisionShape3D").shape.radius,0.28),"Collider changed")
-	require(bee.health.current_health == 100 and bee.melee_damage == 15,"Gameplay values changed")
+	require(bee.health.current_health == 100 and bee.melee_damage == 30,"Gameplay values changed")
 	var before := wing.rotation
 	var position_before := bee.position
 	for i in 3: await process_frame

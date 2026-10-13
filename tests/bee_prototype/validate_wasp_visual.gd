@@ -72,15 +72,14 @@ func run() -> void:
 	check(not meshes.is_empty(), "Imported visual has no meshes")
 	check(meshes[0].material_overlay != null, "Flash did not reach imported material")
 
-	# Real melee overlap, preserving original 15 damage.
+	# Real melee overlap (LOTE 14: 30 damage kills the 20 HP wasp).
 	wasp.position = bee.position + Vector3(0.75,0,0)
 	count = flash.activation_count
 	check(bee.start_melee(), "Z refused")
 	for i in 12:
-		if wasp.health.current_health == 5: break
+		if wasp.health.current_health <= 0: break
 		await frames(1)
-	check(wasp.health.current_health == 5 and flash.activation_count > count, "Z/HitFlash failed")
-	wasp.health.take_damage(5)
+	check(wasp.health.current_health <= 0 and flash.activation_count > count, "Z/HitFlash failed")
 	var stopped := wing.rotation
 	await frames(4)
 	check(wasp.is_defeated() and not visual.is_visible_in_tree(), "Death visual failed")

@@ -144,7 +144,7 @@ func run() -> void:
 	await frames(3)
 	check(bee.start_melee(), "Melee refused")
 	await frames(3)
-	check(effects(&"melee").size() == 1 and wasp.health.current_health == 15, "Melee visual/damage incorrect")
+	check(effects(&"melee").size() == 1 and wasp.health.current_health <= 0, "Melee visual/damage incorrect")
 	await capture("05_melee_hit")
 	wasp.queue_free()
 	await clear_shots()

@@ -72,10 +72,8 @@ func test_destructibles() -> void:
 	await capture("density02_crate_before.png")
 	check(bee.start_melee(), "Bee melee rejected against crate")
 	await frames(5)
-	check(crate.health.current_health == 9 and crate.get_node("HitFlash3D").activation_count > 0, "Crate ignored Bee melee/HitFlash")
-	await frames(36)
-	check(bee.start_melee(), "Second Bee melee rejected")
-	await frames(5)
+	# LOTE 14: the Sting does 30 damage (was 15): the 24 HP crate breaks with the first strike.
+	check(crate.get_node("HitFlash3D").activation_count > 0, "Crate ignored Bee melee/HitFlash")
 	check(crate.is_destroyed and crate.health.current_health == 0 and crate.collider.disabled and crate.body.collision_layer == 0, "Crate did not release route")
 	await capture("density02_crate_broken.png")
 	bee.global_position = Vector3(16.3, 1.2, 0)

@@ -51,11 +51,30 @@ const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 @export var honey_shot_offset := 0.14 ## Half distance between the two parallel shots (m).
 @export var honey_twin_damage_ratio := 0.5 ## The second shot does this share of the first one (honey = 1.5x damage, not 2x).
 
-@export_category("Melee")
-@export var melee_damage := 15
-@export var melee_range := 0.85
-@export var melee_active_time := 0.12
-@export var melee_cooldown := 0.52
+@export_category("Sustained fire (LOTE 14)")
+## Holding fire (left click or X) past HOLD_START_DELAY shoots in bursts: BURST_SIZE shots in a row, or a SPREAD_BURST_SIZE fan with Spread.
+## A quick tap still shoots one normal shot at once. Damage per shot is scaled so the sustained DPS matches the tap reference (3 taps/s).
+@export var base_shot_damage := 10 ## Damage of a base shot (the projectile scene default) the burst ratios start from.
+@export var hold_fire_enabled := true
+@export var hold_start_delay := 0.12 ## Seconds held before the first burst.
+@export var burst_rate := 2.5 ## Bursts per second (a short pause between bursts).
+@export var burst_size := 3 ## Shots per burst without a power-up.
+@export var burst_shot_gap := 0.06 ## Seconds between the shots of one burst.
+@export var spread_burst_size := 5 ## Pellets per burst with Spread (a fan, 1 Spread charge per burst).
+@export var spread_burst_step_degrees := 11.0 ## Angle between neighbouring pellets of the fan.
+@export var hold_damage_ratio := 0.4 ## Burst shot damage / base shot: 2.5 bursts/s x 3 x 0.4 = 3 taps/s x 1.0 (DPS parity).
+@export var hold_spread_damage_ratio := 0.5 ## Burst pellet damage / spread pellet (fan pellets rarely all hit one target).
+
+@export_category("Sting melee (LOTE 14)")
+## 360-degree stinger: hits the NEAREST enemy within MELEE_REACH_FACTOR x BEE_LENGTH (front or back) with a short lunge.
+const BEE_LENGTH := 1.3 ## Measured from the model (m).
+@export var melee_reach_factor := 1.6
+@export var melee_lunge_time := 0.2 ## Seconds of the lunge towards the target (also the time the hit box is live).
+@export var melee_lunge_stop := 0.6 ## Distance (m) from the target at which the lunge stops.
+@export var melee_damage := 30 ## 3 x a base shot (10).
+@export var melee_range := 0.85 ## Forward swing when nothing is in reach.
+@export var melee_active_time := 0.2
+@export var melee_cooldown := 0.9
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -81,6 +100,19 @@ var _roll_cooldown_left := 0.0
 var _roll_tween: Tween
 var _melee_cooldown_left := 0.0
 var _melee_tween: Tween
+var melee_target: Node3D ## LOTE 14: the enemy the current sting is going for (null = forward swing).
+var melee_lunge_count := 0
+var _lunge_left := 0.0
+var _lunge_velocity := Vector3.ZERO
+var stinger: Node3D ## Provisional chrome stinger (simple cone) shown during the lunge.
+var _stinger_flash: Tween
+var _stinger_trail: CPUParticles3D
+var _hold_time := 0.0
+var _burst_cooldown := 0.0
+var _burst_left := 0
+var _burst_gap_left := 0.0
+var burst_count := 0 ## Bursts started by holding fire.
+var burst_shots := 0 ## Shots fired inside bursts.
 var aim_point := Vector3.ZERO # World point under the crosshair (z = 0), valid while is_free_aiming().
 var _aim_left := 0.0
 var _aim_screen := Vector2.ZERO
@@ -96,6 +128,7 @@ func _ready() -> void:
 	melee_hitbox.set_enabled(false)
 	melee_hitbox.hit_confirmed.connect(_on_melee_impact)
 	_place_melee_hitbox()
+	_build_stinger()
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
 
@@ -113,7 +146,10 @@ func _physics_process(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, desired.x, rate * delta)
 	velocity.y = move_toward(velocity.y, desired.y, rate * delta)
 	velocity.z = 0.0
-	if absf(input.x) > 0.05 and not is_free_aiming():
+	if _lunge_left > 0.0: # LOTE 14: the sting lunge overrides the flight input.
+		_lunge_left = maxf(0.0, _lunge_left - delta)
+		velocity = _lunge_velocity
+	if absf(input.x) > 0.05 and not is_free_aiming() and _lunge_left <= 0.0:
 		facing_x = signf(input.x)
 		visual_root.rotation.y = -facing_x * PI * 0.5
 		_place_melee_hitbox()
@@ -125,6 +161,7 @@ func _physics_process(delta: float) -> void:
 	refresh_auto_aim()
 	if Input.is_action_just_pressed("throw_orange"):
 		fire()
+	_update_sustained_fire(delta)
 	if Input.is_action_just_pressed("debug_attack"):
 		start_melee()
 	if Input.is_action_just_pressed("bee_roll"):
@@ -250,10 +287,46 @@ func use_bomb() -> BeeAlienBomb:
 	return bomb
 
 
+## LOTE 14: the Sting (Z) is a 360-degree strike. The NEAREST enemy within `melee_reach()` (in front OR behind) is hit after a short
+## lunge (`melee_lunge_time`); with nothing in reach it is the old forward swing. `melee_damage` = 3 base shots, `melee_cooldown` 0.9 s.
+func melee_reach() -> float:
+	return BEE_LENGTH * melee_reach_factor
+
+
+func nearest_melee_target() -> Node3D:
+	var best: Node3D
+	var best_d := melee_reach()
+	for candidate_node in get_tree().get_nodes_in_group("bee_auto_aim_targets"):
+		var candidate := candidate_node as Node3D
+		if not _is_valid_target(candidate):
+			continue
+		var d := (_target_point(candidate) - global_position).length()
+		if d <= best_d:
+			best_d = d
+			best = candidate
+	return best
+
+
 func start_melee() -> bool:
 	if is_defeated or _melee_cooldown_left > 0.0:
 		return false
-	_place_melee_hitbox()
+	melee_target = nearest_melee_target()
+	var chrome_dir := Vector3(facing_x, 0.0, 0.0)
+	if melee_target != null:
+		var to_target := _target_point(melee_target) - global_position
+		to_target.z = 0.0
+		var dist := to_target.length()
+		chrome_dir = to_target.normalized() if dist > 0.01 else chrome_dir
+		if absf(to_target.x) > 0.15:
+			facing_x = signf(to_target.x) # Front or back: Bee turns to the target.
+			visual_root.rotation.y = -facing_x * PI * 0.5
+		var travel := maxf(0.0, dist - melee_lunge_stop)
+		_lunge_velocity = chrome_dir * (travel / maxf(melee_lunge_time, 0.01))
+		_lunge_left = melee_lunge_time if travel > 0.0 else 0.0
+		melee_lunge_count += 1
+		melee_hitbox.global_position = _target_point(melee_target)
+	else:
+		_place_melee_hitbox()
 	melee_hitbox.damage = melee_damage
 	melee_hitbox.set_enabled(true)
 	_melee_active_left = melee_active_time
@@ -264,6 +337,7 @@ func start_melee() -> bool:
 	visual_root.scale = Vector3(1.22, 0.82, 0.82)
 	_melee_tween = create_tween()
 	_melee_tween.tween_property(visual_root, "scale", Vector3.ONE, 0.14)
+	_show_stinger(chrome_dir)
 	melee_started.emit()
 	return true
 
@@ -272,19 +346,104 @@ func _update_melee(delta: float) -> void:
 	_melee_cooldown_left = maxf(0.0, _melee_cooldown_left - delta)
 	if _melee_active_left <= 0.0:
 		return
+	if melee_target != null and is_instance_valid(melee_target):
+		melee_hitbox.global_position = _target_point(melee_target) # The strike follows the target through the lunge.
 	_melee_active_left = maxf(0.0, _melee_active_left - delta)
 	if _melee_active_left == 0.0:
 		melee_hitbox.set_enabled(false)
+		melee_target = null
+		_lunge_left = 0.0
+		_place_melee_hitbox()
+		_hide_stinger()
+
+
+## 0..1 recharge progress of the sting (1 = ready); the HUD reads it ("AGUIJÓN LISTO").
+func melee_ready_ratio() -> float:
+	return 1.0 - clampf(_melee_cooldown_left / maxf(melee_cooldown, 0.001), 0.0, 1.0)
 
 
 func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
 	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"melee", Vector3(facing_x, 0, 0))
+	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"impact", Vector3(facing_x, 0, 0), 1.6) # Chrome flash on the strike.
+	if stinger != null:
+		if _stinger_flash != null:
+			_stinger_flash.kill()
+		stinger.scale = Vector3(1.5, 1.5, 1.5)
+		_stinger_flash = create_tween()
+		_stinger_flash.tween_property(stinger, "scale", Vector3.ONE, 0.18)
 
 
 func _place_melee_hitbox() -> void:
-	if is_instance_valid(melee_hitbox):
+	if is_instance_valid(melee_hitbox) and melee_target == null:
 		melee_hitbox.position = Vector3(facing_x * melee_range, 0.0, 0.0)
+
+
+## PROVISIONAL (the Bee model has no separate stinger): a simple chrome cone + a silver trail, shown while the sting is live.
+const STINGER_LENGTH := 0.8
+const STINGER_COLOR := Color(0.86, 0.9, 0.96)
+
+
+func _build_stinger() -> void:
+	stinger = Node3D.new()
+	stinger.name = "ChromeStinger"
+	stinger.visible = false
+	add_child(stinger)
+	var cone := MeshInstance3D.new()
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.0
+	mesh.bottom_radius = 0.11
+	mesh.height = STINGER_LENGTH
+	mesh.radial_segments = 8
+	cone.mesh = mesh
+	cone.rotation.z = -PI * 0.5 # The cone's tip (+Y) points along +X.
+	cone.position = Vector3(STINGER_LENGTH * 0.5 + 0.35, 0.0, 0.0)
+	var material := StandardMaterial3D.new()
+	material.albedo_color = STINGER_COLOR
+	material.metallic = 1.0
+	material.roughness = 0.12
+	material.emission_enabled = true
+	material.emission = Color(0.75, 0.88, 1.0)
+	material.emission_energy_multiplier = 0.8
+	cone.material_override = material
+	cone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	stinger.add_child(cone)
+	_stinger_trail = CPUParticles3D.new()
+	_stinger_trail.amount = 14
+	_stinger_trail.lifetime = 0.25
+	_stinger_trail.local_coords = false
+	_stinger_trail.gravity = Vector3.ZERO
+	_stinger_trail.emitting = false
+	var dot := SphereMesh.new()
+	dot.radius = 0.05
+	dot.height = 0.1
+	dot.radial_segments = 6
+	dot.rings = 3
+	var dot_material := StandardMaterial3D.new()
+	dot_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dot_material.albedo_color = Color(0.85, 0.93, 1.0, 0.8)
+	dot_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dot.material = dot_material
+	_stinger_trail.mesh = dot
+	_stinger_trail.position = Vector3(STINGER_LENGTH + 0.2, 0.0, 0.0)
+	stinger.add_child(_stinger_trail)
+
+
+func _show_stinger(direction: Vector3) -> void:
+	if stinger == null:
+		return
+	stinger.rotation.z = atan2(direction.y, direction.x)
+	stinger.scale = Vector3.ONE
+	stinger.visible = true
+	_stinger_trail.restart()
+	_stinger_trail.emitting = true
+
+
+func _hide_stinger() -> void:
+	if stinger == null:
+		return
+	stinger.visible = false
+	_stinger_trail.emitting = false
 
 
 func _is_valid_target(candidate: Node3D) -> bool:
@@ -339,6 +498,8 @@ func _on_died() -> void:
 	current_auto_target = null
 	target_indicator.hide()
 	melee_hitbox.set_enabled(false)
+	melee_target = null
+	_hide_stinger()
 	_melee_active_left = 0.0
 	if _melee_tween != null:
 		_melee_tween.kill()
@@ -489,3 +650,84 @@ func _spawn_honey_twin(main: BeeEnergyProjectile, direction: Vector3, spread_loo
 	twin.global_position -= side
 	if spread_look:
 		twin.set_spread_visual()
+
+
+# --- LOTE 14: sustained fire ----------------------------------------------------------------------------------------------
+
+func is_fire_held() -> bool:
+	return Input.is_action_pressed("throw_orange") or (mouse_aim_enabled and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
+
+
+## Holding fire (past `hold_start_delay`) shoots bursts at `burst_rate`; releasing stops it at once. Taps keep their single shot.
+func _update_sustained_fire(delta: float) -> void:
+	_burst_cooldown = maxf(0.0, _burst_cooldown - delta)
+	var held := hold_fire_enabled and is_fire_held()
+	if not held:
+		_hold_time = 0.0
+		_burst_left = 0
+		return
+	if mouse_aim_enabled and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_aim_at_screen(get_viewport().get_mouse_position()) # Keeps the free aim alive while the button is held.
+	_hold_time += delta
+	if _burst_left > 0:
+		_burst_gap_left -= delta
+		if _burst_gap_left <= 0.0:
+			_burst_left -= 1
+			_burst_gap_left = burst_shot_gap
+			_fire_burst_shot()
+	elif _hold_time >= hold_start_delay and _burst_cooldown <= 0.0:
+		start_burst()
+
+
+## One burst: `burst_size` quick shots (Base) or a `spread_burst_size` fan (Spread, 1 charge).
+func start_burst() -> bool:
+	if is_defeated or projectile_scene == null:
+		return false
+	_burst_cooldown = 1.0 / maxf(burst_rate, 0.1)
+	burst_count += 1
+	if spread_ammo > 0:
+		_fire_spread_burst()
+	else:
+		_burst_left = burst_size - 1
+		_burst_gap_left = burst_shot_gap
+		_fire_burst_shot()
+	return true
+
+
+func _scaled_damage(ratio: float, base: int) -> int:
+	return maxi(1, roundi(float(base) * ratio))
+
+
+func _fire_burst_shot() -> void:
+	if is_defeated:
+		return
+	refresh_auto_aim()
+	var direction := aim_direction()
+	var projectile := _spawn_projectile(direction, _scaled_damage(hold_damage_ratio, base_shot_damage))
+	BeeAudio.play(get_parent(), &"base")
+	BeeCombatVFX.spawn(get_parent(), projectile.global_position, &"muzzle", direction)
+	if honey_left > 0.0:
+		_spawn_honey_twin(projectile, direction, false)
+	shots_fired += 1
+	burst_shots += 1
+
+
+func _fire_spread_burst() -> void:
+	refresh_auto_aim()
+	var direction := aim_direction()
+	var pellet_damage := _scaled_damage(hold_spread_damage_ratio, _scaled_damage(spread_damage_ratio, base_shot_damage))
+	var first: BeeEnergyProjectile
+	for i in spread_burst_size:
+		var angle := (float(i) - float(spread_burst_size - 1) * 0.5) * spread_burst_step_degrees
+		var pellet := _spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), pellet_damage)
+		pellet.set_spread_visual()
+		if first == null:
+			first = pellet
+	BeeAudio.play(get_parent(), &"spread")
+	BeeCombatVFX.spawn(get_parent(), first.global_position, &"muzzle_spread", direction)
+	spread_ammo -= 1
+	weapon_state_changed.emit()
+	if honey_left > 0.0:
+		_spawn_honey_twin(first, direction, true)
+	shots_fired += 1
+	burst_shots += spread_burst_size

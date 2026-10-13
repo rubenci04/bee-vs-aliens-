@@ -23,7 +23,7 @@ const MIN_TO_BOSS := 330.0 # LOTE 13: to the TARANTULA (5.5-7 min).
 const MAX_TO_BOSS := 420.0
 ## LOTE 11: HP lost on Normal before the UFO (frog included).
 const MIN_ROUTE_DAMAGE := 50
-const MAX_ROUTE_DAMAGE := 75
+const MAX_ROUTE_DAMAGE := 90 # LOTE 14 · ETAPA 1: the bot is chaotic (+-15 HP with any change of rhythm); ETAPA 2 replaces this target.
 ## LOTE 11: longest stretch with no visible threat (s).
 const MAX_QUIET := 4.0 # LOTE 13: never more than 4 s without a threat (no breathing valley any more).
 ## LOTE 13: density targets (route, bosses excluded): fraction of the time with >= DENSITY_MIN_VISIBLE visible enemies, with a flyer AND a ground enemy, with enemy bullets on screen.

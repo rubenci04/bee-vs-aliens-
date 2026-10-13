@@ -12,8 +12,10 @@ const SHOT_SPEED := 3.8 # LOTE 13: slower shots (dodgeable and longer on screen)
 const SHOT_DAMAGE := 7
 const MIN_RANGE := 3.2
 ## Per-family volley cooldown (s) when it differs from COOLDOWN_SECONDS.
-const COOLDOWN_BY_FAMILY := {"Ladybird": 3.8}
-const FAN_FAMILIES := ["Ladybird", "StagBeetle", "Dragonfly", "WaveDragonfly", "Spider"]
+## LOTE 14: the ladybird fires ONE slow seed with a long pause (it was a fan of 3: too much).
+const COOLDOWN_BY_FAMILY := {"Ladybird": 5.5}
+const SPEED_BY_FAMILY := {"Ladybird": 2.6}
+const FAN_FAMILIES := ["StagBeetle", "Dragonfly", "WaveDragonfly", "Spider"]
 ## Families that fan on EVERY volley (the rest alternate fan / single).
 const ALWAYS_FAN := ["Spider"]
 ## Families that LOB their shot (arc): flight time (s) to the spot Bee had when the warning ended, and gravity (m/s²).
@@ -63,9 +65,9 @@ func _physics_process(delta: float) -> void:
 			var count := 3 if family in FAN_FAMILIES and (family in ALWAYS_FAN or volleys % 2 == 0) else 1
 			for direction in BeeEnemyPatterns.fan_directions(locked_aim, count, BeeEnemyPatterns.fan_step_degrees(locked_aim.length())):
 				if style != &"":
-					BeeEnemyPatterns.spawn_styled(unit.get_parent(), SHOT, origin, direction, SHOT_DAMAGE, SHOT_SPEED, unit, style)
+					BeeEnemyPatterns.spawn_styled(unit.get_parent(), SHOT, origin, direction, SHOT_DAMAGE, float(SPEED_BY_FAMILY.get(family, SHOT_SPEED)), unit, style)
 				else:
-					BeeEnemyPatterns.spawn_shot(unit.get_parent(), SHOT, origin, direction, SHOT_DAMAGE, SHOT_SPEED, unit)
+					BeeEnemyPatterns.spawn_shot(unit.get_parent(), SHOT, origin, direction, SHOT_DAMAGE, float(SPEED_BY_FAMILY.get(family, SHOT_SPEED)), unit)
 		volleys += 1
 	clock = float(COOLDOWN_BY_FAMILY.get(family, COOLDOWN_SECONDS))
 
