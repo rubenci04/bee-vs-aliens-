@@ -355,6 +355,7 @@ func start_melee() -> bool:
 	_melee_tween = create_tween()
 	_melee_tween.tween_property(visual_root, "scale", Vector3.ONE, 0.14)
 	_show_stinger(chrome_dir)
+	($VisualRoot/BeeVisual as BeeVisual).start_drill_attack()
 	melee_started.emit()
 	return true
 
@@ -389,6 +390,7 @@ func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 		stinger.scale = Vector3(1.5, 1.5, 1.5)
 		_stinger_flash = create_tween()
 		_stinger_flash.tween_property(stinger, "scale", Vector3.ONE, 0.18)
+	($VisualRoot/BeeVisual as BeeVisual).sting_impact_effect()
 
 
 func _place_melee_hitbox() -> void:
@@ -420,8 +422,8 @@ func _build_stinger() -> void:
 	material.metallic = 1.0
 	material.roughness = 0.12
 	material.emission_enabled = true
-	material.emission = Color(0.75, 0.88, 1.0)
-	material.emission_energy_multiplier = 0.8
+	material.emission = BeeGameSettings.BEE_GOLD
+	material.emission_energy_multiplier = 0.16
 	cone.material_override = material
 	cone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	stinger.add_child(cone)
@@ -438,7 +440,7 @@ func _build_stinger() -> void:
 	dot.rings = 3
 	var dot_material := StandardMaterial3D.new()
 	dot_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	dot_material.albedo_color = Color(0.85, 0.93, 1.0, 0.8)
+	dot_material.albedo_color = Color(1.0, 0.78, 0.32, 0.85)
 	dot_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dot.material = dot_material
 	_stinger_trail.mesh = dot

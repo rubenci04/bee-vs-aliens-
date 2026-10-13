@@ -30,6 +30,8 @@ var _rim_materials: Array[ShaderMaterial] = []
 var _rim_applied := -1.0
 var buzz_player: AudioStreamPlayer
 var _roll_burst_left := 0.0
+var _drill_left := 0.0
+var _drill_trail: CPUParticles3D
 
 
 func _ready() -> void:
@@ -48,6 +50,10 @@ func apply_model_version(version := "") -> bool:
 		remove_child(model)
 		model.queue_free()
 	model = null
+	if is_instance_valid(_drill_trail):
+		_drill_trail.queue_free()
+	_drill_trail = null
+	_drill_left = 0.0
 	model_version = chosen
 	wings.clear()
 	rest_angles.clear()
@@ -139,6 +145,7 @@ func _process(delta: float) -> void:
 		for i in wings.size():
 			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
 	_update_thrusters(delta)
+	_update_drill(delta)
 
 
 func _make_thruster(nozzle: Node3D, side: String) -> CPUParticles3D:
@@ -197,6 +204,84 @@ func _update_thrusters(delta: float) -> void:
 		particles.scale = Vector3.ONE * lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_SCALE, BeeGameSettings.BEE_THRUSTER_FULL_SCALE, intensity)
 		particles.initial_velocity_min = lerpf(BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED, 1.3, intensity)
 		particles.initial_velocity_max = lerpf(0.65, BeeGameSettings.BEE_THRUSTER_MAX_PARTICLE_SPEED, intensity)
+
+
+func start_drill_attack() -> void:
+	if model_version != "v02" or drill == null:
+		return
+	_drill_left = BeeGameSettings.BEE_DRILL_ACTIVE_SECONDS
+	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if player != null and player.has_animation(&"drill_spin"):
+		player.get_animation(&"drill_spin").loop_mode = Animation.LOOP_LINEAR
+		player.speed_scale = BeeGameSettings.BEE_DRILL_SPIN_RATE
+		player.play(&"drill_spin")
+	if _drill_trail == null:
+		_drill_trail = _make_drill_trail()
+	_drill_trail.global_position = drill_tip.global_position if drill_tip != null else drill.global_position
+	_drill_trail.restart()
+	_drill_trail.emitting = true
+
+
+func _update_drill(delta: float) -> void:
+	if _drill_left <= 0.0:
+		return
+	_drill_left = maxf(0.0, _drill_left - delta)
+	if _drill_trail != null and drill_tip != null:
+		_drill_trail.global_position = drill_tip.global_position
+	if _drill_left > 0.0:
+		return
+	if _drill_trail != null:
+		_drill_trail.emitting = false
+	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if player != null:
+		player.speed_scale = 1.0
+		player.play(&"wingbeat")
+
+
+func sting_impact_effect() -> void:
+	if model_version != "v02" or drill_tip == null or actor == null:
+		return
+	BeeCombatVFX.spawn(actor.get_parent(), drill_tip.global_position, &"bee_spark", Vector3(actor.facing_x, 0.0, 0.0), 1.0)
+	if _drill_trail != null:
+		_drill_trail.global_position = drill_tip.global_position
+		_drill_trail.restart()
+		_drill_trail.emitting = true
+
+
+func _make_drill_trail() -> CPUParticles3D:
+	var particles := CPUParticles3D.new()
+	particles.name = "BeeDrillMetalTrail"
+	particles.amount = BeeGameSettings.BEE_DRILL_TRAIL_PARTICLES
+	particles.lifetime = 0.20
+	particles.one_shot = false
+	particles.local_coords = false
+	particles.explosiveness = 0.78
+	particles.randomness = 0.35
+	particles.direction = Vector3(actor.facing_x, 0.0, 0.0)
+	particles.spread = 160.0
+	particles.gravity = Vector3(0.0, -0.8, 0.0)
+	particles.initial_velocity_min = 0.2
+	particles.initial_velocity_max = 1.8
+	particles.scale_amount_min = 0.025
+	particles.scale_amount_max = 0.055
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color(0.9, 0.94, 0.98, 0.92), Color(1.0, 0.68, 0.18, 0.0)])
+	particles.color_ramp = gradient
+	var shard := SphereMesh.new()
+	shard.radius = 0.035
+	shard.height = 0.07
+	shard.radial_segments = 5
+	shard.rings = 2
+	var material := StandardMaterial3D.new()
+	material.metallic = 0.78
+	material.roughness = 0.2
+	material.vertex_color_use_as_albedo = true
+	shard.material = material
+	particles.mesh = shard
+	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	get_parent().add_child(particles)
+	particles.global_position = drill_tip.global_position
+	return particles
 
 
 func _own_rim_materials() -> void:

@@ -110,6 +110,11 @@ func _ready() -> void:
 			color = Color(1.0, 0.7, 0.18)
 			amount = 8
 			reach = 0.36
+		&"bee_spark":
+			duration = 0.36
+			color = Color(1.0, 0.72, 0.2)
+			amount = 14
+			reach = maxf(0.42, extent)
 		&"crate":
 			duration = 0.45
 			color = Color(0.62, 0.43, 0.23)
