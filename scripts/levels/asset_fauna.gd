@@ -490,6 +490,7 @@ func _start_telegraph() -> void:
 	_token_held = mode in [&"charge", &"wave", &"sweep"]
 	attacks_started += 1
 	state = State.TELEGRAPH
+	BeeShotWarning.begin(self, kind, visual)
 	_variant = _pick_variant()
 	if first_telegraph_clock < 0.0:
 		first_telegraph_clock = _clock

@@ -232,6 +232,7 @@ func _try_telegraph() -> void:
 	locked = false
 	lock_y = _strike_y()
 	telegraph_count += 1
+	BeeShotWarning.begin(self, &"spider")
 	_column_material.albedo_color = Color(BeeAlienPalette.CYAN, 0.32)
 	_column.show()
 	_ring.show()

@@ -222,6 +222,7 @@ func _begin_erupt() -> void:
 
 
 func _begin_peek() -> void:
+	BeeShotWarning.begin(fauna, &"worm", fauna.visual)
 	_locked = false
 	_lock_point = fauna.target.global_position
 	_line = BeeAttackVisuals.line(fauna.get_parent(), _head(), _lock_point, LINE_WIDTH, WARN_COLOR)
