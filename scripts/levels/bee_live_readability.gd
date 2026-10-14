@@ -43,19 +43,21 @@ var _original_glow := false
 func _ready() -> void:
 	stage = get_parent() as BeeShmupStage
 	enabled = SETTINGS.development_enabled()
-	if not enabled:
+	if not SETTINGS.ENABLED:
 		set_process(false)
 		set_process_unhandled_key_input(false)
 		return
-	var layer := CanvasLayer.new()
-	layer.layer = 21
-	add_child(layer)
-	panel = Label.new()
-	panel.add_theme_font_size_override("font_size", SETTINGS.PANEL_FONT_SIZE)
-	panel.add_theme_color_override("font_outline_color", Color.BLACK)
-	panel.add_theme_constant_override("outline_size", 3)
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(panel)
+	set_process_unhandled_key_input(enabled)
+	if enabled:
+		var layer := CanvasLayer.new()
+		layer.layer = 21
+		add_child(layer)
+		panel = Label.new()
+		panel.add_theme_font_size_override("font_size", SETTINGS.PANEL_FONT_SIZE)
+		panel.add_theme_color_override("font_outline_color", Color.BLACK)
+		panel.add_theme_constant_override("outline_size", 3)
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		layer.add_child(panel)
 	_collect_background()
 	_original_glow = (stage.get_node("WorldEnvironment") as WorldEnvironment).environment.glow_enabled
 	if DisplayServer.get_name() != "headless":
@@ -96,20 +98,24 @@ func _build_bloom() -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not enabled or not event is InputEventKey or not event.pressed or event.echo:
 		return
+	if event.ctrl_pressed or event.alt_pressed or event.shift_pressed or event.meta_pressed:
+		return # Never consume editor chords.
 	var key: int = event.keycode if event.keycode != 0 else event.physical_keycode
 	match key:
-		KEY_F5: bee_index = (bee_index + 1) % SETTINGS.BEE_SCALES.size()
-		KEY_F6: outline_level = (outline_level + 1) % 3
-		KEY_F7: background_level = (background_level + 1) % 3
-		KEY_F8: neon_level = (neon_level + 1) % 3
+		SETTINGS.KEYS[0]: bee_index = (bee_index + 1) % SETTINGS.BEE_SCALES.size()
+		SETTINGS.KEYS[1]: outline_level = (outline_level + 1) % SETTINGS.OUTLINE_PIXELS.size()
+		SETTINGS.KEYS[2]: background_level = (background_level + 1) % SETTINGS.BACKGROUND_SATURATION.size()
+		SETTINGS.KEYS[3]: neon_level = (neon_level + 1) % SETTINGS.NEON_ENERGY.size()
 		_: return
 	apply_modes()
 	get_viewport().set_input_as_handled()
 
 func set_modes(bee_scale_index: int, outline: int, background: int, neon: int) -> void:
+	if not enabled:
+		return # Exported builds retain fixed presentation, no comparator interface.
 	bee_index = clampi(bee_scale_index, 0, 2)
 	outline_level = clampi(outline, 0, 2)
-	background_level = clampi(background, 0, 2)
+	background_level = clampi(background, 0, SETTINGS.BACKGROUND_SATURATION.size() - 1)
 	neon_level = clampi(neon, 0, 2)
 	if enabled:
 		apply_modes()
@@ -183,7 +189,7 @@ func _collect_actors() -> bool:
 func _consider_shot(node) -> void:
 	# A deferred node_added notification may arrive after a short-lived node is freed.
 	# Keep the argument untyped so validity can be checked before converting to Node.
-	if not enabled or not is_instance_valid(node):
+	if not SETTINGS.ENABLED or not is_instance_valid(node):
 		return
 	if not (node is BeeEnergyProjectile or node is AlienEnemyProjectile or node is AlienMortarShell or node is TarantulaWebNet or node is UfoBossMine):
 		return
@@ -273,7 +279,8 @@ func apply_modes() -> void:
 		mask_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS if neon_level > 0 else SubViewport.UPDATE_DISABLED
 		bloom_material.set_shader_parameter("radius", SETTINGS.BLOOM_RADIUS[neon_level])
 		bloom_material.set_shader_parameter("gain", SETTINGS.BLOOM_GAIN[neon_level])
-	panel.text = "DEV  F5 Bee ×%.2f  F6 contorno %d  F7 fondo %d  F8 neón %d" % [SETTINGS.BEE_SCALES[bee_index], outline_level, background_level, neon_level]
+	if panel != null:
+		panel.text = "DEV  9 Bee ×%.2f  0 contorno %d  I fondo %d  J neón %d" % [SETTINGS.BEE_SCALES[bee_index], outline_level, background_level, neon_level]
 
 func _update_background() -> void:
 	for data in background_materials:
@@ -291,7 +298,8 @@ func _process(delta: float) -> void:
 	if view_size != _viewport_size:
 		_viewport_size = view_size
 		apply_modes() # Clip-space outline width stays constant in pixels on resize.
-	panel.position = Vector2(SETTINGS.PANEL_POSITION.x, stage.get_viewport().get_visible_rect().size.y + SETTINGS.PANEL_POSITION.y)
+	if panel != null:
+		panel.position = Vector2(SETTINGS.PANEL_POSITION.x, stage.get_viewport().get_visible_rect().size.y + SETTINGS.PANEL_POSITION.y)
 	_timer -= delta
 	if _timer <= 0.0:
 		_timer = SETTINGS.REFRESH_INTERVAL

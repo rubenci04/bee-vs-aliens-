@@ -20,7 +20,7 @@ func run() -> void:
 	stage.bee.set_physics_process(false)
 	var live := stage.get_node("LiveReadability")
 	check(live.enabled, "Editor/debug binary activates dev-only controls")
-	check(live.bee_index == 1 and live.outline_level == 1 and live.background_level == 1 and live.neon_level == 1, "Recommended defaults")
+	check(live.bee_index == 2 and live.outline_level == 1 and live.background_level == 1 and live.neon_level == 1, "Final defaults")
 	var visual := stage.bee.get_node("VisualRoot/BeeVisual")
 	live.set_modes(0, 0, 0, 0)
 	var origin: Vector3 = visual.firing_origin(stage.bee.global_position)
@@ -38,7 +38,7 @@ func run() -> void:
 	for record in live.background_materials:
 		check(record["own"] != record["source"], "Far material isolated from actor/shared materials")
 		check(record["mesh"].get_ref().get_active_material(record["surface"]) == record["own"], "Far palette modifies the material actually rendered")
-		check(is_equal_approx(record["own"].get_shader_parameter("dev_saturation"), 0.35), "Background level 2 desaturates")
+		check(is_equal_approx(record["own"].get_shader_parameter("dev_saturation"), 0.65), "Background clamps to final level 1; gray level 2 removed")
 	var shot := preload("res://scenes/projectiles/toon/alien_bolt.tscn").instantiate() as AlienEnemyProjectile
 	shot.set_meta("shot_style", &"stinger")
 	shot.damage = 5
@@ -77,9 +77,9 @@ func run() -> void:
 				continue # Engine editor/FileDialog defaults are not gameplay bindings.
 			for event in InputMap.action_get_events(action):
 				if event is InputEventKey:
-					check(event.keycode != key and event.physical_keycode != key, "F5–F8 do not clash with mapped gameplay actions")
+					check(event.keycode != key and event.physical_keycode != key, "Comparator keys do not clash with mapped gameplay actions")
 	var event := InputEventKey.new()
-	event.keycode = KEY_F5
+	event.keycode = SETTINGS.KEYS[0]
 	event.pressed = true
 	live._unhandled_key_input(event)
 	check(live.bee_index == 1 and "×1.25" in live.panel.text, "Live key updates state and debug text")

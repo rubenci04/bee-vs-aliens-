@@ -178,6 +178,8 @@ func _on_node_added_lote9(node: Variant) -> void:
 		return # Freed before the deferred call (a shot that hit at once).
 	BeeShotPalette.on_node_added(node)
 	if (node is BeePowerupPickup or node is BeePollenPickup) and (node as Node).is_inside_tree():
+		if node is BeePowerupPickup:
+			preload("res://scripts/items/bee_pickup_medallion.gd").dress_old(node)
 		BeeItemBeacon.attach(node)
 
 ## LOTE 9 · ETAPA B: the pre-boss supply (PREBOSS_SUPPLY), skipped when the level resumes past it.

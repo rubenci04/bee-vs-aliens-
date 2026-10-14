@@ -50,11 +50,17 @@ static func attach(item: Node3D) -> BeeItemBeacon:
 		return null
 	var existing := item.get_node_or_null("ItemBeacon") as BeeItemBeacon
 	if existing != null:
+		if item.has_node("PickupMedallion"):
+			existing.hide()
+			existing.set_process(false)
 		return existing
 	var beacon := BeeItemBeacon.new()
 	beacon.name = "ItemBeacon"
 	beacon.kind = for_item(item)
 	item.add_child(beacon)
+	if item.has_node("PickupMedallion"):
+		beacon.hide() # The legacy capsule now has its own type ring; avoid stacked halos/columns.
+		beacon.set_process(false)
 	return beacon
 
 

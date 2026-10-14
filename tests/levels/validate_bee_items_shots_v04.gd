@@ -104,7 +104,7 @@ func test_shots() -> void:
 	var core := ((ball.get_node("Core") as MeshInstance3D).mesh.surface_get_material(0) as StandardMaterial3D).albedo_color
 	check(core.v > 0.95 and core.s < 0.15, "Bee core must be white-hot")
 	var trail_seconds := (shot as BeeEnergyProjectile).trail.lifetime
-	check(trail_seconds <= 0.15, "Bee trail must be short")
+	check(is_equal_approx(trail_seconds, BeeEnergyProjectile.SHOOTING.SHOT_TRAIL_SECONDS), "Bee trail uses the configured Tanda 4c duration")
 	# A regular enemy shot (Probe) and a UFO shot.
 	var probe := spawn("Probe", 3.2, -2.0)
 	var enemy_shot: Node3D
@@ -155,17 +155,21 @@ func test_crosshair() -> void:
 	await goto(120.0)
 	var crosshair := stage.get_node("CanvasLayer/Crosshair") as BeeLevel01Crosshair
 	var target := spawn("Ladybird", 3.6, -2.0)
+	target.global_position = Vector3(stage.camera.global_position.x + 1.0, 3.6, 0)
+	target.show()
 	target.set_physics_process(false)
 	await frames(4)
 	bee.set_aim_point(target.call("auto_aim_point"))
+	bee.aim_direction() # Headless has no _draw(): explicitly refresh the Tanda 4a selector.
 	await process_frame
 	await process_frame
 	check(crosshair.hovered == target, "The crosshair must lock on the hostile under it")
 	bee.set_aim_point(target.global_position + Vector3(0.0, 3.0, 0.0))
+	bee.aim_direction()
 	await process_frame
 	await process_frame
 	check(crosshair.hovered == null, "Off target the crosshair is the normal warm ring")
-	lines.append("CROSSHAIR turns cyan over a hostile (HOVER_RADIUS %.1f m)" % BeeLevel01Crosshair.HOVER_RADIUS)
+	lines.append("CROSSHAIR uses actual assisted target; HOVER_RADIUS helper %.1f m" % BeeLevel01Crosshair.HOVER_RADIUS)
 	await clear()
 
 # --- items ---------------------------------------------------------------------------------------------------------
