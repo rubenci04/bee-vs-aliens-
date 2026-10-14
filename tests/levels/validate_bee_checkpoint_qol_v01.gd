@@ -114,7 +114,7 @@ func run() -> void:
 	stage.set_physics_process(false)
 	stage.wave.set_physics_process(false)
 	await frames(3)
-	check(qol.checkpoint_active and qol.activation_count == 1 and qol.notice.text == "CHECKPOINT" and qol.notice.visible, "Checkpoint trigger/message")
+	check(qol.checkpoint_active and qol.activation_count == 1 and qol.notice.text == "CHECKPOINT" and not qol.notice.visible and stage.has_node("HUDNotices"), "Checkpoint trigger/message routed to upper banner")
 	check(stage.wave.event_index == checkpoint_event() and stage.wave.human.crossings_exited == 1, "Checkpoint must follow real earlier encounters/human")
 	check(qol.snapshot.hp == 60 and qol.snapshot.spread == 5 and qol.snapshot.bomb == 0 and qol.snapshot.pollen == 1, "Snapshot/heal/state incorrect")
 	stage._physics_process(0.0) # Refresh HUD after the fixture stopped stage physics.

@@ -1,5 +1,7 @@
 class_name BeeCheckpointQoL
 extends Node
+const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
+const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 
 const HANDOFF := &"bee_level_01_checkpoint_handoff"
 const CHECKPOINT_FLOWER := preload("res://scenes/decoration/recovered_garden_rose.tscn")
@@ -163,6 +165,7 @@ func create_beacon() -> void:
 	var title := Label3D.new()
 	title.text = "CHECKPOINT"
 	title.name = "CheckpointLabel"
+	title.hide() # World marker remains; its title is a screen banner.
 	title.position.y = 2.5
 	title.font_size = 40
 	title.pixel_size = 0.009
@@ -200,7 +203,7 @@ func _process(delta: float) -> void:
 	elif checkpoint_active and not second_checkpoint_active and stage.distance >= second_checkpoint_x and not stage.wave.in_arena():
 		activate_second_checkpoint()
 	_notice_left = maxf(0.0, _notice_left - delta)
-	notice.visible = _notice_left > 0.0
+	notice.hide() # All notices share the upper banner lane.
 	_hint_left = maxf(0.0, _hint_left - delta)
 	controls_hint.visible = _hint_left > 0.0
 	if protection_left > 0.0:
@@ -243,8 +246,8 @@ func activate_checkpoint() -> void:
 		"elapsed": stage.elapsed_seconds, "taught": stage.get_node("CanvasLayer/WeaponsHUD").taught.duplicate(true),
 		"animals": stage.wave.animals_total, "liberated": stage.wave.liberated_count}
 	notice.text = "CHECKPOINT"
-	_notice_left = 1.4
-	notice.show()
+	_notice_left = HUD_TEXT.CHECKPOINT_SECONDS
+	HUD_NOTICES.for_host(self).show_notice(notice.text, HUD_TEXT.CHECKPOINT_SECONDS, "checkpoint")
 	BeeAudio.play(stage, &"spread_pickup", beacon.global_position + Vector3(0, 1.8, 0))
 
 
@@ -259,8 +262,8 @@ func activate_second_checkpoint() -> void:
 	bee.health.restore_health(maxi(0, minimum - bee.health.current_health))
 	snapshot = _build_snapshot(second_checkpoint_x, Vector3(second_checkpoint_x, 5.4, 0), second_checkpoint_x, second_checkpoint_x)
 	notice.text = "CHECKPOINT 2"
-	_notice_left = 1.4
-	notice.show()
+	_notice_left = HUD_TEXT.CHECKPOINT_SECONDS
+	HUD_NOTICES.for_host(self).show_notice(notice.text, HUD_TEXT.CHECKPOINT_SECONDS, "checkpoint")
 	BeeAudio.play(stage, &"spread_pickup", beacon_2.global_position + Vector3(0, 1.8, 0))
 ## Snapshot of the current run state. `limit`: pollen / powerups / crates left of it count as already gone.
 func _build_snapshot(distance: float, bee_position: Vector3, limit: float, keep_from: float) -> Dictionary:
@@ -366,7 +369,7 @@ func restore_snapshot() -> void:
 	controls_hint.hide()
 	notice.text = "RESPAWN · PROTECTED"
 	_notice_left = protection_seconds
-	notice.show()
+	HUD_NOTICES.for_host(self).show_notice("REAPARICIÓN · PROTEGIDA", protection_seconds, "respawn", true)
 
 func defeat_hint() -> void:
 	stage.status.text = "PLAYER DOWN — PRESS R TO RESPAWN" if checkpoint_active else "PLAYER DOWN — PRESS R TO RESTART"

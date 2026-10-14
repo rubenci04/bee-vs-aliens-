@@ -1,5 +1,7 @@
 class_name BeeLiberation
 extends RefCounted
+const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
+const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 ## NOCHE 01 · ETAPA 1 — the shared "the animal is FREED, not killed" language, used by every controlled animal (wasp,
 ## mosquito, ladybird, dragonflies, moth, ant, stag beetle, snail, spider, turtle):
 ##   implant   sparks + a mini cyan blast where the device was, then the device is hidden
@@ -68,6 +70,7 @@ static func warm_colours(visual: Node3D) -> void:
 
 ## A short "LIBERADO" that rises and fades (billboard, always readable, no depth test). With MAX_TEXTS signs alive, the new ones merge into "+N LIBERADOS".
 static func float_text(host: Node, at: Vector3) -> Label3D:
+	HUD_NOTICES.for_host(host).note_liberated()
 	var singles := 0
 	var group: Label3D
 	for node in host.get_tree().get_nodes_in_group("bee_liberated_text"):
@@ -78,17 +81,17 @@ static func float_text(host: Node, at: Vector3) -> Label3D:
 		else:
 			singles += 1
 	if singles >= MAX_TEXTS or group != null:
-		return _group_text(host, at, group)
+		return null # No extra world labels; every liberation is counted above.
 	var label := Label3D.new()
 	label.name = "LiberatedText"
 	label.text = TEXT
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
-	label.font_size = 44
+	label.font_size = HUD_TEXT.INDIVIDUAL_FONT
 	label.outline_size = 12
 	label.pixel_size = 0.0075
-	label.modulate = TEXT_COLOR
-	label.outline_modulate = Color(0.16, 0.09, 0.03)
+	label.modulate = Color(TEXT_COLOR, HUD_TEXT.INDIVIDUAL_ALPHA)
+	label.outline_modulate = Color(0.16, 0.09, 0.03, HUD_TEXT.INDIVIDUAL_ALPHA)
 	label.add_to_group("bee_liberated_text")
 	host.add_child(label)
 	label.global_position = at

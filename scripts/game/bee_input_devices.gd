@@ -1,4 +1,6 @@
 extends Node
+const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
+const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 ## InputMap applies to ALL devices. Autoload also runs in title/pause screens.
 var notice: Label
 var notice_left := 0.0
@@ -13,7 +15,7 @@ func _ready() -> void:
 	layer.layer = 30
 	add_child(layer)
 	notice = Label.new()
-	notice.position = BeeGameSettings.JOYPAD_NOTICE_POSITION
+	notice.hide() # Compatibility handle; visible messages use the shared banner.
 	notice.add_theme_font_size_override("font_size", 20)
 	layer.add_child(notice)
 	for device in Input.get_connected_joypads():
@@ -46,24 +48,37 @@ func configure_actions() -> void:
 	InputMap.action_add_event("throw_orange", mouse)
 
 func _input(event: InputEvent) -> void:
+	var was_joypad := BeeGameSettings.last_input_joypad
+	var old_device := BeeGameSettings.last_joypad_device
 	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > BeeGameSettings.JOYPAD_DEADZONE):
 		BeeGameSettings.last_input_joypad = true
 		BeeGameSettings.last_joypad_device = event.device
 	elif event is InputEventKey or event is InputEventMouseButton or (event is InputEventMouseMotion and event.relative.length_squared() > 0.0):
 		BeeGameSettings.last_input_joypad = false
 
+	if BeeGameSettings.last_input_joypad != was_joypad or (BeeGameSettings.last_input_joypad and old_device != BeeGameSettings.last_joypad_device):
+		show_device_notice("Mando detectado: " + Input.get_joy_name(event.device) if BeeGameSettings.last_input_joypad else "Teclado y ratón")
+
+func show_device_notice(text: String) -> void:
+	notice.text = text
+	notice_left = HUD_TEXT.DEVICE_SECONDS
+	var host := get_tree().current_scene
+	if host == null:
+		host = self
+	HUD_NOTICES.for_host(host).show_notice(text, HUD_TEXT.DEVICE_SECONDS, "device", true)
+
 func _connection_changed(device: int, connected: bool) -> void:
 	if connected:
-		BeeGameSettings.last_joypad_device = device
-		if Time.get_ticks_msec() - startup_time_msec < BeeGameSettings.JOYPAD_STARTUP_NOTICE_SUPPRESS_MSEC:
-			return
-		notice.text = "Mando detectado: " + Input.get_joy_name(device)
-		notice_left = BeeGameSettings.JOYPAD_NOTICE_SEC
-		notice.show()
+		# Connecting alone is not a change of the device being used.
+		if not BeeGameSettings.last_input_joypad:
+			BeeGameSettings.last_joypad_device = device
 	elif device == BeeGameSettings.last_joypad_device:
+		var was_active := BeeGameSettings.last_input_joypad
 		BeeGameSettings.last_input_joypad = false
 		BeeGameSettings.last_joypad_device = -1
+		if was_active:
+			show_device_notice("Teclado y ratón")
 
 func _process(delta: float) -> void:
 	notice_left = maxf(0.0, notice_left - delta)
-	notice.visible = notice_left > 0.0
+	notice.hide()

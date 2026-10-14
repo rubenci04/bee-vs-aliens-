@@ -92,7 +92,12 @@ func test_sizes() -> void:
 	bee.facing_x = 1.0
 	bee.visual_root.rotation.y = -PI * 0.5
 	await frames(1)
-	var bee_len := length_x(bee.visual_root)
+	# T3g fixes visual Bee scale at 1.40; compare canonical size, not the presentation multiplier.
+	var visual_scale := 1.0
+	var presentation := stage.get_node_or_null("LiveReadability")
+	if presentation != null and preload("res://scripts/game/bee_readability_settings.gd").ENABLED:
+		visual_scale = preload("res://scripts/game/bee_readability_settings.gd").BEE_SCALES[presentation.bee_index]
+	var bee_len := length_x(bee.visual_root) / visual_scale
 	check(absf(bee_len - BeeFaunaSizes.BEE_LENGTH) / BeeFaunaSizes.BEE_LENGTH < 0.1, "Bee length %.2f m drifted from BEE_LENGTH" % bee_len)
 	var lines: Array[String] = []
 	for family in SIZE_KEYS:

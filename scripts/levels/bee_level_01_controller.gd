@@ -772,33 +772,13 @@ func _announce_species(family: String) -> void:
 	species_seen[family] = _clock
 	if not SPECIES_NAMES.has(family) or stage == null:
 		return
-	if species_label == null:
-		species_label = Label.new()
-		species_label.name = "SpeciesName"
-		species_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-		species_label.offset_left = -200.0
-		species_label.offset_right = 200.0
-		species_label.offset_top = 124.0 # H-06: own notice zone, below the boss indicator (top centre).
-		species_label.offset_bottom = 152.0
-		species_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		species_label.add_theme_font_size_override("font_size", 20)
-		species_label.add_theme_color_override("font_color", Color(0.93, 0.98, 1.0))
-		species_label.add_theme_color_override("font_outline_color", Color(0.04, 0.06, 0.08))
-		species_label.add_theme_constant_override("outline_size", 6)
-		species_label.add_theme_color_override("font_shadow_color", Color.BLACK)
-		species_label.add_theme_constant_override("shadow_offset_x", 1)
-		species_label.add_theme_constant_override("shadow_offset_y", 1)
-		species_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		species_label.visible = false
-		stage.get_node("CanvasLayer").add_child(species_label)
-	species_label.text = str(SPECIES_NAMES[family])
-	species_label.visible = true
-	_species_token += 1
-	get_tree().create_timer(SPECIES_NAME_SECONDS, false).timeout.connect(_hide_species_label.bind(_species_token))
+	var notices := preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage)
+	species_label = notices.label
+	notices.show_notice(str(SPECIES_NAMES[family]), SPECIES_NAME_SECONDS, "species")
 
 func _hide_species_label(token: int) -> void:
 	if token == _species_token and species_label != null and is_instance_valid(species_label):
-		species_label.visible = false
+		pass # Shared lane owns fading; no independent species timer.
 
 func _show_label(text: String, seconds: float) -> void:
 	player_label = text

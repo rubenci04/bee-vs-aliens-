@@ -1,4 +1,6 @@
 extends Control
+const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
+const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 
 @export var bee_path: NodePath
 @onready var bee: BeePlayer = get_node(bee_path)
@@ -34,11 +36,9 @@ func _process(delta: float) -> void:
 		death_label.text = _death_prompt()
 	queue_redraw()
 	if not taught.has(&"roll") and get_tree().get_nodes_in_group("alien_projectiles").size() >= BeeGameSettings.PIRUETA_HINT_SHOT_COUNT:
-		taught[&"roll"] = true
-		legend_left = maxf(legend_left, 5.0)
-		$Hint.text = "PIRUETA · %s: esquiva y rompe disparos" % ("B / LB" if BeeGameSettings.last_input_joypad else "SHIFT")
-		$Hint.show()
-		$HintTimer.start()
+		show_hint(&"roll")
+	if not taught.has(&"stinger") and bee.nearest_melee_target() != null:
+		show_hint(&"stinger")
 
 func refresh() -> void:
 	queue_redraw()
@@ -157,11 +157,6 @@ func _draw() -> void:
 		draw_string(font, panel + Vector2(252, BeeGameSettings.HUD_ROW_ABILITY_Y + 2.0), spread_status_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
 
 	_draw_combo(viewport_size, juice, font)
-	if legend_left > 0.0:
-		var alpha := clampf(legend_left, 0.0, 1.0)
-		var at := panel + Vector2(2, panel_bottom_gap())
-		draw_string(font, at + Vector2(1, 1), control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, Color(0, 0, 0, 0.9 * alpha))
-		draw_string(font, at, control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, Color(BeeGameSettings.HUD_LABEL_COLOR, alpha))
 
 func panel_bottom_gap() -> float:
 	return BeeGameSettings.HUD_PANEL_SIZE.y + 14.0
@@ -224,7 +219,9 @@ func show_hint(kind: StringName) -> void:
 	if taught.has(kind):
 		return
 	taught[kind] = true
-	legend_left = maxf(legend_left, 5.0)
-	$Hint.text = ("SPREAD · A / RT — DISPARAR" if BeeGameSettings.last_input_joypad else "SPREAD · X / CLIC — DISPARAR") if kind == &"spread" else ("BOMBA · X — USAR" if BeeGameSettings.last_input_joypad else "BOMBA · C — USAR")
-	$Hint.show()
-	$HintTimer.start()
+	var tips := {&"spread": "Spread: cubrí más espacio", &"bomb": "Bomba: despejá el grupo", &"roll": "Pirueta: esquivá y rompé disparos", &"stinger": "Aguijón: liberá de cerca"}
+	if not tips.has(kind):
+		return
+	$Hint.text = tips[kind] # Kept hidden; ability buttons already live in the HUD icons.
+	$Hint.hide()
+	HUD_NOTICES.for_host(self).show_notice(tips[kind], HUD_TEXT.TIP_SECONDS, "tip", true)

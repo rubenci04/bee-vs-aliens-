@@ -1406,12 +1406,22 @@ func _build_health_bar() -> void:
 	box.add_child(_phase_label)
 	_hint_label = Label.new() # Short instruction, shown for a few seconds only.
 	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint_label.add_theme_font_size_override("font_size", 16)
+	_hint_label.add_theme_font_size_override("font_size", preload("res://scripts/game/bee_hud_text_settings.gd").BOSS_HINT_FONT)
 	_hint_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.45))
 	_hint_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	_hint_label.add_theme_constant_override("outline_size", 5)
 	_hint_label.visible = false
-	box.add_child(_hint_label)
+	_bar_layer.add_child(_hint_label)
+	_hint_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_hint_label.offset_left = -500
+	_hint_label.offset_right = 500
+	_hint_label.offset_top = 120
+	_hint_label.offset_bottom = 164
+	_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var hint_back := StyleBoxFlat.new()
+	hint_back.bg_color = Color(0.02, 0.025, 0.04, 0.88)
+	hint_back.set_corner_radius_all(8)
+	_hint_label.add_theme_stylebox_override("normal", hint_back)
 	_update_phase_label()
 
 

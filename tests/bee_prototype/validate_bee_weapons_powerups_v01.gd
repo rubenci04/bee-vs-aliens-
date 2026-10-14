@@ -110,7 +110,7 @@ func run() -> void:
 	await capture("01_spread_pickup")
 	await touch_pickup("Powerups/SpreadFirst")
 	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in hud.spread_status_text(), "Spread pickup/HUD wrong")
-	check(hud.get_node("Hint").visible and "DISPARAR" in hud.get_node("Hint").text, "Spread hint missing")
+	check(not hud.get_node("Hint").visible and "cubrí más espacio" in hud.get_node("Hint").text, "Spread hint missing")
 	await capture("02_bee_spread")
 	await capture("08_hud_spread_bomb")
 	var aim_target := enemy(BeeLevel01Controller.WASP, Vector3(27, 5, 0))
@@ -159,7 +159,7 @@ func run() -> void:
 	await capture("04_bomb_pickup")
 	await touch_pickup("Powerups/BombFirst")
 	check(bee.bomb_charges == 4 and hud.displayed_bomb_icons() == 4, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
-	check("C — USAR" in hud.get_node("Hint").text, "Bomb hint missing")
+	check("despejá el grupo" in hud.get_node("Hint").text, "Bomb hint missing")
 	check(bee.collect_bomb() and bee.bomb_charges == 5 and not bee.collect_bomb(), "Charge cap failed (LOTE 9: cap 5)")
 	var capped := PICKUP.instantiate() as BeePowerupPickup
 	capped.kind = BeePowerupPickup.Kind.BOMB
