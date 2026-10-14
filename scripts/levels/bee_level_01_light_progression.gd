@@ -6,18 +6,18 @@ extends Node
 ## blend centred on x=140 and x=250, so there are no jumps.
 
 const MORNING := {
-	"sun_color": Color(1.0, 0.9, 0.72), "sun_energy": 1.25, "sun_rotation": Vector3(-40, -25, 0),
-	"ambient_color": Color(1.0, 0.91, 0.76), "ambient_energy": 0.7,
-	"fog_color": Color(0.86, 0.87, 0.78),
-	"sky_top": Color(0.24, 0.55, 0.82), "sky_horizon": Color(0.86, 0.88, 0.8),
+	"sun_color": Color(1.0, 0.9, 0.72), "sun_energy": 1.0, "sun_rotation": Vector3(-40, -25, 0),
+	"ambient_color": Color(1.0, 0.91, 0.76), "ambient_energy": 0.48,
+	"fog_color": Color(0.58, 0.67, 0.68),
+	"sky_top": Color(0.24, 0.55, 0.82), "sky_horizon": Color(0.65, 0.76, 0.81),
 	"ground_horizon": Color(0.63, 0.72, 0.53), "ground_bottom": Color(0.24, 0.31, 0.22),
 	"glow_intensity": 0.6, "ground_tint": 0.0, "bee_rim": 0.0, "outline_tint": Color(0.3, 0.14, 0.04),
 }
 const MIDDAY := {
-	"sun_color": Color(1.0, 0.82, 0.5), "sun_energy": 1.4, "sun_rotation": Vector3(-58, -18, 0),
-	"ambient_color": Color(1.0, 0.88, 0.62), "ambient_energy": 0.75,
-	"fog_color": Color(0.9, 0.84, 0.66),
-	"sky_top": Color(0.3, 0.55, 0.8), "sky_horizon": Color(0.95, 0.88, 0.68),
+	"sun_color": Color(1.0, 0.82, 0.5), "sun_energy": 1.05, "sun_rotation": Vector3(-58, -18, 0),
+	"ambient_color": Color(1.0, 0.88, 0.62), "ambient_energy": 0.50,
+	"fog_color": Color(0.63, 0.66, 0.63),
+	"sky_top": Color(0.3, 0.55, 0.8), "sky_horizon": Color(0.75, 0.77, 0.70),
 	"ground_horizon": Color(0.72, 0.7, 0.45), "ground_bottom": Color(0.3, 0.3, 0.2),
 	"glow_intensity": 0.6, "ground_tint": 0.0, "bee_rim": 0.0, "outline_tint": Color(0.34, 0.16, 0.03),
 }
@@ -30,6 +30,13 @@ const SUNSET := {
 	"ground_horizon": Color(0.7, 0.45, 0.4), "ground_bottom": Color(0.25, 0.2, 0.28),
 	"glow_intensity": 0.95, "ground_tint": 1.0, "bee_rim": 1.0, "outline_tint": Color(0.26, 0.1, 0.42),
 }
+const DAY_FOG_DENSITY := 0.55
+const DUSK_FOG_DENSITY := 0.88
+const DAY_FOG_SKY_AFFECT := 0.12
+const DUSK_FOG_SKY_AFFECT := 0.35
+const DAY_CONTRAST := 1.12
+const DUSK_CONTRAST := 1.0
+
 const MORNING_TO_MIDDAY := Vector2(100.0, 180.0)
 const MIDDAY_TO_SUNSET := Vector2(210.0, 290.0)
 
@@ -75,6 +82,11 @@ func _apply(x: float) -> void:
 	_environment.ambient_light_color = s["ambient_color"]
 	_environment.ambient_light_energy = s["ambient_energy"]
 	_environment.fog_light_color = s["fog_color"]
+	var dusk := smoothstep(MIDDAY_TO_SUNSET.x, MIDDAY_TO_SUNSET.y, x)
+	_environment.fog_density = lerpf(DAY_FOG_DENSITY, DUSK_FOG_DENSITY, dusk)
+	_environment.fog_sky_affect = lerpf(DAY_FOG_SKY_AFFECT, DUSK_FOG_SKY_AFFECT, dusk)
+	_environment.adjustment_enabled = true
+	_environment.adjustment_contrast = lerpf(DAY_CONTRAST, DUSK_CONTRAST, dusk)
 	_environment.glow_intensity = s["glow_intensity"]
 	BeeToonStyle.bee_rim_boost = s["bee_rim"]
 	BeeToonStyle.set_outline_tint(s["outline_tint"])

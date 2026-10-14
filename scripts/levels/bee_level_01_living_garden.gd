@@ -28,6 +28,19 @@ var leaves: CPUParticles3D
 var gnat_clouds: Array[CPUParticles3D] = []
 var butterflies: Array[Node3D] = []
 var _t := 0.0
+var combat_intensity := 0.0
+var _leaf_calm_tint: Gradient
+var _leaf_combat_tint: Gradient
+const LEAF_CALM_AMOUNT := 6
+const LEAF_COMBAT_AMOUNT := 2
+const POLLEN_CALM_AMOUNT := 42
+const POLLEN_COMBAT_AMOUNT := 8
+const LEAF_CALM_ALPHA := 0.65
+const MOTE_CALM_ALPHA := 0.38
+const MOTE_COMBAT_ALPHA := 0.10
+const GNAT_COMBAT_AMOUNT := 3.0
+const BUTTERFLY_HIDE_PRESSURE := 0.70
+const COMBAT_LEAF_TINTS := [Color(0.36, 0.39, 0.35), Color(0.44, 0.42, 0.38), Color(0.31, 0.30, 0.29)]
 
 
 func _ready() -> void:
@@ -56,6 +69,14 @@ func _ready() -> void:
 	var tint := Gradient.new()
 	tint.colors = PackedColorArray([Color(0.4, 0.48, 0.22), Color(0.64, 0.45, 0.17), Color(0.42, 0.26, 0.12)]) # Muted green, ochre, brown.
 	leaves.color_initial_ramp = tint
+	_leaf_calm_tint = tint
+	_leaf_combat_tint = Gradient.new()
+	_leaf_combat_tint.colors = PackedColorArray(COMBAT_LEAF_TINTS)
+	var leaf_material := leaves.mesh.surface_get_material(0) as StandardMaterial3D
+	leaf_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var pollen_material := (pollen.mesh as PrimitiveMesh).material as StandardMaterial3D
+	pollen_material.emission_enabled = false
+	pollen_material.albedo_color = Color(0.58, 0.59, 0.54, 0.38)
 	for point in GNATS:
 		var cloud := _particles("GnatCloud", 14, 0.9, Vector3.ONE * 0.5, _speck(Color(0.12, 0.1, 0.08), 0.045, false))
 		cloud.local_coords = true
@@ -79,17 +100,20 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_t += delta
 	var cam_x := stage.camera.global_position.x
-	pollen.global_position = Vector3(cam_x + 1.5, 3.6, -0.8)
-	leaves.global_position = Vector3(cam_x + 4.5, 7.6, -0.6)
+	combat_intensity = move_toward(combat_intensity, BeeGameSettings.presentation_combat_intensity(stage), delta * BeeGameSettings.AMBIENT_COMBAT_RESPONSE)
+	apply_combat_budget(combat_intensity)
+	pollen.global_position = Vector3(cam_x + 1.5, 3.6, lerpf(-6.0, -11.0, combat_intensity))
+	leaves.global_position = Vector3(cam_x + 4.5, 7.6, lerpf(BeeGameSettings.AMBIENT_CALM_DEPTH, BeeGameSettings.AMBIENT_COMBAT_DEPTH, combat_intensity))
 	for cloud in gnat_clouds:
 		var near := absf(cloud.global_position.x - cam_x) < ACTIVE_RANGE
+		cloud.amount = maxi(2, roundi(lerpf(14.0, GNAT_COMBAT_AMOUNT, combat_intensity)))
 		if cloud.emitting != near:
 			cloud.emitting = near
 	for i in butterflies.size():
 		var fly := butterflies[i]
 		var home: Vector3 = fly.get_meta("home")
 		var near := absf(home.x - cam_x) < ACTIVE_RANGE + 6.0
-		fly.visible = near
+		fly.visible = near and combat_intensity < BUTTERFLY_HIDE_PRESSURE
 		if not near:
 			continue
 		var t := _t + float(i) * 2.1
@@ -104,6 +128,17 @@ func _process(delta: float) -> void:
 		var lift := lerpf(BUTTERFLY_LIFT_MIN, BUTTERFLY_LIFT_MAX, beat)
 		(fly.get_child(0) as Node3D).rotation.x = lift
 		(fly.get_child(1) as Node3D).rotation.x = -lift
+
+
+func apply_combat_budget(intensity: float) -> void:
+	var count := roundi(lerpf(LEAF_CALM_AMOUNT, LEAF_COMBAT_AMOUNT, intensity))
+	if leaves.amount != count:
+		leaves.amount = count
+		leaves.restart() # Discard old near-plane leaves as pressure rises.
+	leaves.color_initial_ramp = _leaf_combat_tint if intensity > 0.25 else _leaf_calm_tint
+	(leaves.mesh.surface_get_material(0) as StandardMaterial3D).albedo_color.a = lerpf(LEAF_CALM_ALPHA, BeeGameSettings.AMBIENT_COMBAT_ALPHA, intensity)
+	pollen.amount = roundi(lerpf(POLLEN_CALM_AMOUNT, POLLEN_COMBAT_AMOUNT, intensity))
+	(pollen.mesh as PrimitiveMesh).material.albedo_color.a = lerpf(MOTE_CALM_ALPHA, MOTE_COMBAT_ALPHA, intensity)
 
 
 func _particles(label: String, amount: int, lifetime: float, extents: Vector3, mesh: Mesh) -> CPUParticles3D:

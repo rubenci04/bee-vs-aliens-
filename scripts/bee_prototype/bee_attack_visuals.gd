@@ -1,7 +1,7 @@
 class_name BeeAttackVisuals
 extends RefCounted
 ## COMBAT VARIETY 01: tiny shared telegraph / hazard visuals built in code (no assets): warning lines, rings and discs.
-## Everything is unshaded and transparent so it reads over any lighting; nothing here deals damage.
+## Visuals are unshaded, fog-free and outlined; warning opacity differs from active danger. Nothing here deals damage.
 
 static var _materials: Dictionary = {}
 
@@ -11,6 +11,7 @@ static func material(color: Color) -> StandardMaterial3D:
 	if not _materials.has(key):
 		var m := StandardMaterial3D.new()
 		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.disable_fog = true
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		m.cull_mode = BaseMaterial3D.CULL_DISABLED
 		m.albedo_color = color
@@ -23,12 +24,35 @@ static func material(color: Color) -> StandardMaterial3D:
 static func line(parent: Node, from: Vector3, to: Vector3, width: float, color: Color) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	var box := BoxMesh.new()
+	var warning := color.r > 0.8 and color.g > 0.25 and color.b < 0.4
+	width = maxf(width, BeeGameSettings.DANGER_LINE_MIN_WIDTH) # Presentation width only; hazard shapes stay unchanged.
+	if warning:
+		color.a = maxf(color.a, BeeGameSettings.WARNING_MIN_ALPHA)
 	box.size = Vector3(1.0, width, 0.04)
 	box.material = material(color)
 	node.mesh = box
 	node.top_level = true
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(node)
+	var edge := MeshInstance3D.new()
+	edge.name = "ReadabilityEdge"
+	var outline := BoxMesh.new()
+	outline.size = Vector3(1.0, width + BeeGameSettings.WARNING_EDGE_WIDTH * 2.0, 0.02)
+	outline.material = material(BeeGameSettings.WARNING_EDGE if warning else BeeGameSettings.DANGER_BORDER)
+	edge.mesh = outline
+	edge.position.z = -0.035
+	edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(edge)
+	if not warning and color.a >= 0.7 and color.s > 0.35:
+		var core := MeshInstance3D.new()
+		core.name = "DangerCore"
+		var center := BoxMesh.new()
+		center.size = Vector3(1.0, maxf(width * 0.3, 0.025), 0.02)
+		center.material = material(BeeGameSettings.DANGER_CORE)
+		core.mesh = center
+		core.position.z = 0.04
+		core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(core)
 	place_line(node, from, to)
 	return node
 
@@ -67,7 +91,7 @@ static func ring(parent: Node, center: Vector3, radius: float, thickness: float,
 	torus.outer_radius = 1.0
 	torus.rings = 32
 	torus.ring_segments = 6
-	torus.material = material(color)
+	torus.material = material(Color(color, maxf(color.a, 0.90)))
 	node.mesh = torus
 	node.top_level = true
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -75,6 +99,16 @@ static func ring(parent: Node, center: Vector3, radius: float, thickness: float,
 	node.global_position = center
 	node.rotation.x = PI * 0.5
 	node.scale = Vector3(radius, 1.0, radius)
+	var edge := MeshInstance3D.new()
+	edge.name = "ReadabilityEdge"
+	var outline := TorusMesh.new()
+	outline.inner_radius = 1.0 - thickness - 0.045
+	outline.outer_radius = 1.045
+	outline.material = material(BeeGameSettings.WARNING_EDGE if color.r > 0.8 and color.g > 0.25 and color.b < 0.4 else BeeGameSettings.DANGER_BORDER)
+	edge.mesh = outline
+	edge.position.y = 0.035 # Behind the camera-facing coloured ring after its X rotation.
+	edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(edge)
 	return node
 
 
@@ -86,13 +120,33 @@ static func ground_disc(parent: Node, center: Vector3, radius: float, color: Col
 	disc.bottom_radius = 1.0
 	disc.height = 0.02
 	disc.radial_segments = 20
-	disc.material = material(color)
+	disc.material = material(Color(color, maxf(color.a, BeeGameSettings.WARNING_MIN_ALPHA)))
 	node.mesh = disc
 	node.top_level = true
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(node)
 	node.global_position = center
 	node.scale = Vector3(radius, 1.0, radius * 0.6)
+	var border := MeshInstance3D.new()
+	border.name = "WarningBorder"
+	var rim := TorusMesh.new()
+	rim.inner_radius = 0.95
+	rim.outer_radius = 1.05
+	rim.material = material(BeeGameSettings.WARNING_EDGE)
+	border.mesh = rim
+	border.position.y = 0.025
+	border.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(border)
+	var dark_edge := MeshInstance3D.new()
+	dark_edge.name = "DarkOuterBorder"
+	var outer := TorusMesh.new()
+	outer.inner_radius = 1.04
+	outer.outer_radius = 1.12
+	outer.material = material(BeeGameSettings.DANGER_BORDER)
+	dark_edge.mesh = outer
+	dark_edge.position.y = 0.02
+	dark_edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(dark_edge)
 	return node
 
 
@@ -105,6 +159,8 @@ static func sphere(parent: Node, center: Vector3, radius: float, color: Color, e
 	mesh.radial_segments = 12
 	mesh.rings = 6
 	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.disable_fog = true
 	m.albedo_color = color
 	if emissive:
 		m.emission_enabled = true
@@ -115,7 +171,44 @@ static func sphere(parent: Node, center: Vector3, radius: float, color: Color, e
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(node)
 	node.global_position = center
+	var edge := MeshInstance3D.new()
+	edge.name = "DangerBorder"
+	edge.mesh = mesh
+	edge.scale = Vector3.ONE * BeeGameSettings.DANGER_BORDER_SCALE
+	var dark := material(BeeGameSettings.DANGER_BORDER).duplicate() as StandardMaterial3D
+	dark.cull_mode = BaseMaterial3D.CULL_FRONT
+	edge.material_override = dark
+	edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(edge)
+	var core := MeshInstance3D.new()
+	core.name = "DangerCore"
+	var white := SphereMesh.new()
+	white.radius = radius * 0.40
+	white.height = white.radius * 2.0
+	white.material = material(BeeGameSettings.DANGER_CORE)
+	core.mesh = white
+	core.position.z = radius
+	core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(core)
 	return node
+
+
+## A warned lane becomes damaging; update its border together with its colour.
+static func activate_danger_line(node: MeshInstance3D, color: Color) -> void:
+	(node.mesh as BoxMesh).material = material(color)
+	var edge := node.get_node_or_null("ReadabilityEdge") as MeshInstance3D
+	if edge != null:
+		(edge.mesh as BoxMesh).material = material(BeeGameSettings.DANGER_BORDER)
+	if not node.has_node("DangerCore"):
+		var core := MeshInstance3D.new()
+		core.name = "DangerCore"
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(1.0, maxf((node.mesh as BoxMesh).size.y * 0.3, 0.025), 0.02)
+		mesh.material = material(BeeGameSettings.DANGER_CORE)
+		core.mesh = mesh
+		core.position.z = 0.04
+		core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(core)
 
 
 ## An alien-team damage area (sphere or box) owned by `attacker`. Hits each hurtbox once per enable.

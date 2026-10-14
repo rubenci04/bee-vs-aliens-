@@ -29,13 +29,54 @@ const SHOT_WARNING_SHAKE := 0.06
 const SHOT_WARNING_EDGE_MARGIN := 28.0
 const SHOT_WARNING_EDGE_SIZE := 14.0
 const HOSTILE_CYAN := Color(0.25, 0.95, 1.0, 0.9)
+## Tanda 3: presentation only; collision, damage and movement keep their tuned values.
+const DANGER_CYAN := Color(0.02, 0.86, 1.0)
+const DANGER_MAGENTA := Color(1.0, 0.04, 0.65)
+const DANGER_CORE := Color(0.94, 1.0, 1.0)
+const DANGER_BORDER := Color(0.012, 0.018, 0.038)
+const DANGER_MIN_RADIUS := 0.18
+const DANGER_BORDER_SCALE := 1.22
+const DANGER_LINE_MIN_WIDTH := 0.07
+const DANGER_CORE_FRONT_Z := 0.34
+const WARNING_EDGE := Color(0.96, 1.0, 1.0, 0.94)
+const WARNING_MIN_ALPHA := 0.72
+const WARNING_EDGE_WIDTH := 0.045
+const AMBIENT_COMBAT_RESPONSE := 6.0
+const AMBIENT_COMBAT_RATIO := 0.18
+const AMBIENT_COMBAT_ALPHA := 0.18
+const AMBIENT_COMBAT_FADE_SCALE := 0.35
+const COMBAT_PRESENTATION_RANGE := 13.0
+const COMBAT_ACTOR_PRESSURE := 0.70
+const COMBAT_SHOT_PRESSURE := 0.15
+const AMBIENT_CALM_DEPTH := -4.0
+const AMBIENT_COMBAT_DEPTH := -9.0
+const FOREGROUND_COMBAT_ALPHA_SCALE := 0.22
+const BEE_READABILITY_RIM_MIN := 0.75
+const BEE_READABILITY_OUTLINE := 0.0038
+
+static func presentation_combat_intensity(stage: Node3D) -> float:
+	if stage == null or not stage.is_inside_tree():
+		return 0.0
+	var pressure := 0.0
+	var camera: Camera3D = stage.get("camera")
+	if camera == null:
+		return 0.0
+	for node in stage.get_tree().get_nodes_in_group("bee_auto_aim_targets"):
+		if node is Node3D and absf(node.global_position.x - camera.global_position.x) < COMBAT_PRESENTATION_RANGE:
+			if node.has_method("health_bar_visible") and node.call("health_bar_visible"):
+				return 1.0
+			pressure += COMBAT_ACTOR_PRESSURE
+	for node in stage.get_tree().get_nodes_in_group("alien_projectiles"):
+		if node is Node3D and absf(node.global_position.x - camera.global_position.x) < COMBAT_PRESENTATION_RANGE:
+			pressure += COMBAT_SHOT_PRESSURE
+	return clampf(pressure, 0.0, 1.0)
 const POST_ROBOT_CALM_SEC := 5.5
 const POST_ROBOT_HEAL_FRACTION := 0.5
 const POST_ROBOT_MIN_BOMBS := 3
 const POST_ROBOT_MIN_POLLEN := 10
 const POST_ROBOT_PICKUP_OFFSETS := [Vector2(3.0, 3.2), Vector2(7.0, 4.4), Vector2(11.0, 3.8)]
 const ROBOT_LASER_WARNING_SEC := 0.85
-const ROBOT_LASER_COLOR := Color(0.72, 1.0, 1.0, 0.95)
+const ROBOT_LASER_COLOR := DANGER_CYAN
 const MUSIC_DEFAULT_VOLUME := 0.25
 const SFX_DEFAULT_VOLUME := 1.0
 const MUSIC_FADE_IN_SEC := 2.5

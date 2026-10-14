@@ -6,7 +6,7 @@ extends Node3D
 
 const SHELL_RADIUS := 0.22
 const PUDDLE_HEIGHT := 1.2
-const COLOR := Color(0.2, 0.95, 1.0)
+const COLOR := BeeGameSettings.DANGER_CYAN
 
 var flight_time := 0.9
 var apex := 2.6

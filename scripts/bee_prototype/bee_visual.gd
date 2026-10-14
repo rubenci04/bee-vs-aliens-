@@ -356,6 +356,7 @@ func _own_rim_materials() -> void:
 
 func _update_rim() -> void:
 	var boost := BeeToonStyle.bee_rim_boost
+	var rim_boost := maxf(boost, BeeGameSettings.BEE_READABILITY_RIM_MIN)
 	if absf(boost - _rim_applied) < 0.01:
 		return
 	_rim_applied = boost
@@ -370,8 +371,8 @@ func _update_rim() -> void:
 		if albedo.a > 0.0:
 			material.set_shader_parameter("emission", albedo.lightened(0.1))
 			material.set_shader_parameter("emission_energy", BODY_LIFT * boost)
-		material.set_shader_parameter("rim_strength", lerpf(0.3, 1.25, boost))
-		material.set_shader_parameter("rim_power", lerpf(3.0, 1.7, boost))
+		material.set_shader_parameter("rim_strength", lerpf(0.3, 1.25, rim_boost))
+		material.set_shader_parameter("rim_power", lerpf(3.0, 1.7, rim_boost))
 		material.set_shader_parameter("rim_color", Color(1.0, 0.93, 0.8).lerp(Color(1.0, 0.98, 0.9), boost))
 
 

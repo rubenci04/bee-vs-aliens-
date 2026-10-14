@@ -39,7 +39,9 @@ const SKY_FADE_TO := 310.0 # ...and where it is fully visible.
 const SUN_DEPTH := 38.0 # Inside the far fog cut-off, so the toon disk remains crisp.
 const SUN_SCREEN_X := 0.82
 const SUN_ASSET_HEIGHT := 1.44
-const SUN_SCREEN_HEIGHT := 0.19
+const SUN_SCREEN_HEIGHT := 0.12
+const SUN_BRIGHTNESS := 0.78
+const SUN_HALO_ALPHA := 0.32
 const SUN_MORNING_SCREEN_Y := 0.31
 const SUN_MIDDAY_SCREEN_Y := 0.13
 const SUN_MIDDAY_FROM := 80.0
@@ -321,9 +323,9 @@ func _process(delta: float) -> void:
 	sun.visible = sun_alpha > 0.01
 	for material in _sun_materials:
 		var base: Color = material.get_meta("sun_base_albedo")
-		var sun_brightness := lerpf(0.05, 1.0, sun_alpha)
+		var sun_brightness := lerpf(0.05, SUN_BRIGHTNESS, sun_alpha)
 		material.set_shader_parameter("albedo", Color(base.r * sun_brightness, base.g * sun_brightness, base.b * sun_brightness, base.a))
-	_sun_halo_material.albedo_color.a = sun_alpha
+	_sun_halo_material.albedo_color.a = sun_alpha * SUN_HALO_ALPHA
 	var sun_y := sun_screen_y_at(distance)
 	_pin(sun, camera, Vector2(SUN_SCREEN_X, sun_y), SUN_SCREEN_HEIGHT, SUN_ASSET_HEIGHT, 0.0, SUN_DEPTH)
 	var dusk := clampf(inverse_lerp(FIREFLY_FADE_FROM, 290.0, distance), 0.0, 1.0)

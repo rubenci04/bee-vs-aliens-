@@ -24,6 +24,7 @@ const LAYERS := [
 const SHADER := preload("res://assets/style/foreground_blade.gdshader")
 
 var layers: Array[MultiMeshInstance3D] = []
+var combat_intensity := 0.0
 
 
 func _ready() -> void:
@@ -62,3 +63,11 @@ func _ready() -> void:
 		instance.extra_cull_margin = 8.0
 		add_child(instance)
 		layers.append(instance)
+
+
+func _process(delta: float) -> void:
+	var stage := get_parent() as Node3D
+	combat_intensity = move_toward(combat_intensity, BeeGameSettings.presentation_combat_intensity(stage), delta * BeeGameSettings.AMBIENT_COMBAT_RESPONSE)
+	for i in layers.size():
+		var material := (layers[i].multimesh.mesh as QuadMesh).material as ShaderMaterial
+		material.set_shader_parameter("fade", minf(float(LAYERS[i]["alpha"]), ALPHA) * lerpf(1.0, BeeGameSettings.FOREGROUND_COMBAT_ALPHA_SCALE, combat_intensity))

@@ -25,6 +25,7 @@ var haze: GPUParticles3D
 var _pylons: Array[Node3D] = []
 var _haze_material: StandardMaterial3D
 var _haze_timer := 0.0
+var combat_intensity := 0.0
 var _soft_disc: GradientTexture2D
 
 
@@ -133,7 +134,7 @@ func _build_sparks() -> void:
 		material.scale_curve = _shrink_curve()
 		material.color_ramp = _fade_ramp()
 		var particles := _system("Sparks_" + str(pylon.name), SPARK_AMOUNT, 1.1, material,
-				_quad(0.07, Color(0.35, 1.0, 1.0, 1.0), true), AABB(Vector3(-1.5, -0.5, -1.5), Vector3(3, 3.5, 3)))
+				_quad(0.07, Color(0.46, 0.55, 0.52, 0.25), false), AABB(Vector3(-1.5, -0.5, -1.5), Vector3(3, 3.5, 3)))
 		particles.emitting = false
 		particles.global_position = pylon.global_position + Vector3(0, 1.3 * pylon.scale.x, 0.1)
 		spark_systems.append(particles)
@@ -165,7 +166,7 @@ func _build_dew() -> void:
 	material.scale_max = 1.2
 	material.scale_curve = _twinkle_curve() # A glint: grows and fades out in place, no motion at all.
 	material.color_ramp = _fade_ramp()
-	dew = _system("DewGlints", DEW_AMOUNT, 2.4, material, _quad(0.11, Color(1.0, 1.0, 0.92, 1.0), true), AABB(Vector3(-12, -3, -5), Vector3(24, 6, 10)))
+	dew = _system("DewGlints", DEW_AMOUNT, 2.4, material, _quad(0.11, Color(0.65, 0.68, 0.63, 0.30), false), AABB(Vector3(-12, -3, -5), Vector3(24, 6, 10)))
 
 
 func _build_haze() -> void:
@@ -190,15 +191,24 @@ func _process(delta: float) -> void:
 	if stage == null or stage.camera == null:
 		return
 	var camera_x := stage.camera.global_position.x
+	combat_intensity = move_toward(combat_intensity, BeeGameSettings.presentation_combat_intensity(stage), delta * BeeGameSettings.AMBIENT_COMBAT_RESPONSE)
+	var ratio := lerpf(1.0, BeeGameSettings.AMBIENT_COMBAT_RATIO, combat_intensity)
+	for particles: GPUParticles3D in [dust, dew, haze]:
+		particles.amount_ratio = ratio
+		var base := particles.draw_pass_1.material as StandardMaterial3D
+		if not base.has_meta("calm_alpha"):
+			base.set_meta("calm_alpha", base.albedo_color.a)
+		base.albedo_color.a = float(base.get_meta("calm_alpha")) * lerpf(1.0, BeeGameSettings.AMBIENT_COMBAT_FADE_SCALE, combat_intensity)
 	dew.global_position = Vector3(camera_x, 1.7, -6.0)
 	haze.global_position = Vector3(camera_x + 1.0, 2.6, -12.0)
 	var bee := stage.bee
 	if is_instance_valid(bee) and not bee.is_defeated:
 		var low := bee.global_position.y < DUST_MAX_BEE_Y
-		dust.global_position = Vector3(bee.global_position.x, -0.1, bee.global_position.z + 0.3)
+		dust.global_position = Vector3(bee.global_position.x, -0.1, bee.global_position.z - 3.0)
 		if dust.emitting != low:
 			dust.emitting = low
 	for i in spark_systems.size():
+		spark_systems[i].amount_ratio = ratio
 		var near := absf(_pylons[i].global_position.x - camera_x) < SPARK_RANGE
 		if spark_systems[i].emitting != near:
 			spark_systems[i].emitting = near
@@ -215,4 +225,4 @@ func _tint_haze() -> void:
 		return
 	var fog := world_env.environment.fog_light_color
 	var sunset := clampf(inverse_lerp(210.0, 290.0, stage.distance), 0.0, 1.0)
-	_haze_material.albedo_color = Color(fog.r, fog.g, fog.b, lerpf(HAZE_ALPHA_DAY, HAZE_ALPHA_SUNSET, sunset))
+	_haze_material.albedo_color = Color(fog.r, fog.g, fog.b, lerpf(HAZE_ALPHA_DAY, HAZE_ALPHA_SUNSET, sunset) * lerpf(1.0, BeeGameSettings.AMBIENT_COMBAT_FADE_SCALE, combat_intensity))

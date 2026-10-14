@@ -22,7 +22,7 @@ const PALE_TINT := Color(1.0, 0.86, 0.66)
 ##   BEFORE: 0.0025 for everything (~1.3 px at 1080p).
 ##   AFTER:  Bee 0.0030 (+20 %), actors (enemies, dragonfly, UFO) 0.0029 (+16 %), props 0.0023 (-8 %).
 ##   The Giant Human keeps no outline (its scale would turn it into a sticker).
-const OUTLINE_BEE := 0.0030
+const OUTLINE_BEE := BeeGameSettings.BEE_READABILITY_OUTLINE
 const OUTLINE_ACTOR := 0.0029
 const OUTLINE_PROP := 0.0023
 
