@@ -81,6 +81,9 @@ func _ready() -> void:
 	var watering := BeeLevel01WateringEvent.new() # LOTE 11 C5: water columns near the giant watering can.
 	watering.name = "WateringEvent"
 	add_child(watering)
+	var live_readability := preload("res://scripts/levels/bee_live_readability.gd").new()
+	live_readability.name = "LiveReadability"
+	add_child(live_readability)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 

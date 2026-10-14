@@ -113,6 +113,9 @@ func firing_origin(fallback: Vector3) -> Vector3:
 	if muzzle == null:
 		return fallback
 	var point := muzzle.global_position
+	# Development visual scaling must not move the gameplay muzzle or aim origin.
+	if is_instance_valid(model) and model.has_meta("dev_readability_scale"):
+		point = model.global_position + (point - model.global_position) / float(model.get_meta("dev_readability_scale"))
 	point.z = actor.global_position.z if actor != null else fallback.z
 	return point
 

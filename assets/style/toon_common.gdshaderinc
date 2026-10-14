@@ -7,6 +7,9 @@ uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable;
 uniform bool use_texture = false;
 uniform bool use_vertex_color = false;
+// Identity defaults: only development far-scenery material copies opt in.
+uniform float dev_saturation = 1.0;
+uniform float dev_contrast = 1.0;
 // LOTE 11 (white pieces): textured props (Kenney food cup, pale KayKit stone) bypassed the albedo cap and blew out under the sun.
 // albedo_cap is a luminance ceiling (linear) on the FINAL albedo; 10.0 = disabled. Pale texels above it are pulled to pale_tint.
 uniform float albedo_cap = 10.0;
@@ -48,6 +51,10 @@ void fragment() {
 	base *= mix(1.0 - fabric_variation, 1.0 + fabric_variation * 0.5, smoothstep(fabric_low, fabric_high, fabric_y));
 #endif
 	ALBEDO = base;
+	if (dev_saturation != 1.0 || dev_contrast != 1.0) {
+		float dev_luma = dot(base, vec3(0.2126, 0.7152, 0.0722));
+		ALBEDO = max((mix(vec3(dev_luma), base, dev_saturation) - vec3(0.35)) * dev_contrast + vec3(0.35), vec3(0.0));
+	}
 	ROUGHNESS = 1.0;
 	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
 	EMISSION = emission.rgb * emission_energy + rim_color.rgb * base * rim * rim_strength;

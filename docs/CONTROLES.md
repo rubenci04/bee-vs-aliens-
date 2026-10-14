@@ -13,10 +13,16 @@
 | Aceptar / volver de pausa | Enter / Esc | A / B |
 | Reiniciar tras derrota | R; Shift+R reinicio total | Y |
 | Cono de ayuda / objetivo elegido (debug) | F4, apagado al iniciar | — |
+| Tamaño visual de Bee (desarrollo) | F5: ×1 / ×1,25 / ×1,4 | — |
+| Contorno de Bee y enemigos (desarrollo) | F6: apagado / fino / grueso | — |
+| Atenuar fondo lejano (desarrollo) | F7: 0 / 1 / 2 | — |
+| Neón de disparos (desarrollo) | F8: 0 / 1 / 2; nivel 2 agranda solo el dibujo 30 % | — |
 
 Zona muerta de ambos sticks: 0,2. El autoapuntado elige el enemigo hostil más cercano dentro del cono frontal y del rango; sin blanco apunta hacia adelante. Mouse conserva puntería libre al moverse. Los dispositivos se escuchan sin restringir su índice y admiten reconexión: aparece «Mando detectado: nombre» por 3 s. Vibración breve al recibir daño; interruptor `BeeGameSettings.vibration_enabled` (botón en título).
 
 El HUD actualiza los nombres de disparo, bomba y pirueta al último teclado/mouse o mando usado.
+
+F5–F8 funcionan con el foco dentro del juego ejecutado desde Godot; en el editor F5/F6 conservan sus atajos de ejecutar proyecto/escena. Los comparadores arrancan en ×1,25 / fino / fondo 1 / neón 1 y muestran sus valores abajo. No están disponibles en exportaciones release; una exportación debug requiere `-- --debug-readability`. Constantes en `scripts/game/bee_readability_settings.gd`.
 
 Mantener fuego ahora dispara continuamente: Base cada 0,1333 s y el abanico Spread cada 0,4 s; soltar corta sin completar ráfagas. La retícula permanece visible, tenue sin apuntado manual, y marca la dirección real corregida. La ayuda suave actúa dentro de 12° y prioriza implantes vulnerables; no selecciona enemigos fuera de pantalla ni invulnerables. Ajustes de esta tanda en `scripts/game/bee_shooting_settings.gd`.
 
