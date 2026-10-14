@@ -229,7 +229,7 @@ func test_beetle() -> void:
 	lines.append("LOTE13 beetle steps=%d walked=%.1fm leg_swing=%.2fm sway=%.3frad pincers=%.2frad charge_warning=%.2fs" % [beetle.gait_steps, walked, leg_range, sway_max, pincers_max, charge_warning])
 
 
-## Worm B: undulating body, mud fan from the soil (3 shots at once along the locked line) and the low ram, alternating.
+## T4d Worm B: undulating body and alternating upward mud patterns, with no low ram.
 func test_worm_b() -> void:
 	await load_level()
 	wave._spawn({"family": "WormB", "slot": 0, "event": 0, "due": 0.0, "hard": false})
@@ -244,17 +244,17 @@ func test_worm_b() -> void:
 		bee.global_position = Vector3(stage.camera.global_position.x - 2.5, 3.4, 0.0)
 		var mud := get_nodes_in_group("alien_projectiles").filter(func(s): return s.get_meta("shot_style", &"") == &"mud").size()
 		fan_max = maxi(fan_max, mud)
-		if worm.state == AssetFauna.State.TELEGRAPH and worm._variant == &"spit":
+		if worm.is_telegraphing():
 			spit_telegraphs += 1
 		if worm.attack_hitbox.enabled:
 			rams += 1
 		var y := worm.segments[5].position.y
 		wave_min = minf(wave_min, y)
 		wave_max = maxf(wave_max, y)
-		if fan_max >= 3 and rams > 0 and worm.attacks_started >= 3:
+		if fan_max >= 3 and worm._ground_worm.patterns_fired.size() >= 2:
 			break
 	check(worm.segments.size() >= 8 and wave_max - wave_min > 0.03, "Worm B undulates (%d segments, wave %.3f m)" % [worm.segments.size(), wave_max - wave_min])
 	check(fan_max >= 3, "Worm B spits a fan of 3 mud shots (saw %d at once)" % fan_max)
-	check(spit_telegraphs > 0 and rams > 0, "Worm B alternates the spit and the low ram")
+	check(spit_telegraphs > 0 and rams == 0 and worm._ground_worm.patterns_fired.size() >= 2, "T4d Worm B alternates upward shot patterns without a ram")
 	check(worm.telegraphs.all(func(t): return t >= 0.4 - 0.05), "Worm B warnings >= 0.4 s")
 	lines.append("LOTE13 wormB fan=%d spit_warning_frames=%d ram_frames=%d wave=%.2fm" % [fan_max, spit_telegraphs, rams, wave_max - wave_min])

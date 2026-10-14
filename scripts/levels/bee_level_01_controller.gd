@@ -944,6 +944,11 @@ func _spawn(request: Dictionary) -> void:
 		(unit as AssetFauna).max_cycles = 99 # LOTE 7: stays until its CAMERA_TIME (was 3-5 attacks and away).
 		(unit as AssetFauna).first_idle_time = FIRST_ATTACK_REST # LOTE 13: first warning soon after arriving
 	var slot := int(request["slot"])
+	if roster_only and family in ["WormA", "WormB"]:
+		var ground_worm := preload("res://scripts/levels/bee_ground_worm.gd").new()
+		unit.add_child(ground_worm)
+		(unit as AssetFauna)._ground_worm = ground_worm
+		ground_worm.setup(unit, family == "WormA", ROSTER_FIRE_SLOWDOWN)
 	if family == "Wasp":
 		# Different presence per Wasp and different hover lines, so two Wasps never attack in lockstep.
 		unit.set("stalk_time", 2.2 + 0.7 * float(slot % 3))

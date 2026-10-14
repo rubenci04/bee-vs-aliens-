@@ -374,6 +374,10 @@ func _physics_process(delta: float) -> void:
 		state = State.EXIT
 	var camera := get_viewport().get_camera_3d()
 	var camera_x := camera.global_position.x if camera != null else global_position.x
+	if _ground_worm != null and state != State.EXIT:
+		_ground_worm.step_frame(delta)
+		_face(delta,camera_x)
+		return
 	match state:
 		State.ENTER:
 			_enter(delta, camera_x)
@@ -743,6 +747,7 @@ func _begin(next: int, seconds: float) -> void:
 
 
 func _cancel_attack() -> void:
+	if _ground_worm != null: _ground_worm.cancel()
 	COMMON_CUE.cancel(visual)
 	if kind == &"Ant": visual.rotation.z = 0.0
 	attack_hitbox.set_enabled(false)
@@ -1083,6 +1088,7 @@ func _start_idle() -> float:
 
 ## True while a warning is showing (tests: time from entering the screen to the first warning).
 func is_telegraphing() -> bool:
+	if _ground_worm != null: return _ground_worm.is_warning()
 	return state == State.TELEGRAPH or (_worm != null and _worm.is_warning())
 
 
@@ -1176,6 +1182,7 @@ func _aim_target() -> Vector3:
 # --- LOTE 13 · ETAPA 3: worms -------------------------------------------------------------------------------------------------------
 
 var _worm: WormBehavior
+var _ground_worm: Node
 var segments: Array[Node3D] = [] # The 16 body segments (worms): they undulate with a travelling sine wave.
 var _segment_bases: Array[Vector3] = []
 

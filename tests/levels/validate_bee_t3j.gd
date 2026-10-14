@@ -28,16 +28,11 @@ func run() -> void:
 		var damage := enemy.attack_hitbox.damage
 		var scale := enemy.visual.scale
 		var hurt_transform := enemy.hurtbox.global_transform
-		if family == "WormA":
-			enemy._worm._begin_mark()
-			check(enemy._warn.size() == 1, "Worm eruption has one ring, no disc/dome")
-			check(is_equal_approx(enemy._warn[0].scale.x, radius), "Ring matches the unchanged impact radius")
-			enemy._worm._end_warning()
-			enemy._worm._begin_peek()
-			check(enemy._worm._line.layers == 0, "No worm aiming line")
-			enemy._worm._end_warning()
-			enemy._worm._fire_laser()
-			check(enemy._worm._beam.layers != 0 and enemy._worm._beam_box.damage == WormBehavior.LASER_DAMAGE, "Active damaging worm laser remains")
+		if family in ["WormA", "WormB"]:
+			check(enemy._ground_worm != null and enemy._warn.is_empty(), "T4d worms have no trajectory or ground warnings")
+			if enemy._worm != null:
+				check(enemy._worm.lasers == 0 and not enemy._worm._beam_box.enabled, "T4d replaced the active worm laser")
+
 		else:
 			enemy._start_telegraph()
 			check(is_equal_approx(enemy._left, maxf(float(enemy.config.telegraph), AssetFauna.MIN_TELEGRAPH)), "Attack warning clock unchanged: " + family)
