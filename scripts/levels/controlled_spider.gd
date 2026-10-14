@@ -1,5 +1,6 @@
 class_name ControlledSpider
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## GARDEN IDENTITY 04 — alien-controlled garden spider: a VERTICAL LANE THREAT (hostile controlled fauna V0).
 ## It hangs from a silk thread and rides its web line along the screen; an alien implant on its back drives it.
 ##   ENTER (from above the top edge, inside the screen) -> HANG -> TELEGRAPH (implant charges cyan; a column and a
@@ -232,10 +233,12 @@ func _try_telegraph() -> void:
 	locked = false
 	lock_y = _strike_y()
 	telegraph_count += 1
-	BeeShotWarning.begin(self, &"spider", visual_root)
+	BeeShotWarning.volley(self, &"spider", visual_root, telegraph_seconds)
 	_column_material.albedo_color = Color(BeeAlienPalette.CYAN, 0.32)
 	_column.show()
+	COMMON_CUE.suppress(_column)
 	_ring.show()
+	COMMON_CUE.suppress(_ring)
 	if implant != null:
 		implant.set_mode(&"sting")
 	BeeAudio.play(get_parent(), &"spider_telegraph", global_position)

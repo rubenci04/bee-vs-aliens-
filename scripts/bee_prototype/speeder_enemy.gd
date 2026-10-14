@@ -1,5 +1,6 @@
 class_name SpeederEnemy
 extends CharacterBody3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 signal defeated(enemy: SpeederEnemy)
 
@@ -120,7 +121,9 @@ func _begin_telegraph() -> void:
 		_home = Vector3(0.0, global_position.y, 0.0)
 	velocity = Vector3.ZERO
 	telegraph.show()
-	visual_root.scale = Vector3(1.1,0.9,1.1)
+	COMMON_CUE.suppress(telegraph)
+	BeeShotWarning.volley(self, &"machine", visual_root, _state_left)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(1.1,0.9,1.1)
 	_show_lane()
 
 func _begin_dash() -> void:
@@ -163,7 +166,10 @@ func _show_lane() -> void:
 	if ram_mode:
 		_ram_dir = _aim_at_bee()
 		_lane = BeeAttackVisuals.line(self, global_position, global_position + _ram_dir * RAM_DISTANCE, 0.07, Color(1.0, 0.45, 0.15, 0.5))
+		COMMON_CUE.suppress(_lane)
 		return
+	if is_instance_valid(_lane):
+		COMMON_CUE.suppress(_lane)
 	if not lane_telegraph:
 		return
 	if _lane_material == null:
@@ -177,6 +183,7 @@ func _show_lane() -> void:
 	bar.material = _lane_material
 	_lane.mesh = bar
 	BeeAttackVisuals.WARNING_STYLE.dress(_lane, Color(1, 0.45, 0.15), 3.0, telegraph_time)
+	COMMON_CUE.suppress(_lane)
 	_lane.top_level = true
 	_lane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_lane)
@@ -204,7 +211,7 @@ func _aim_at_bee() -> Vector3:
 ## Warning: the body flashes and the line keeps pointing at Bee until the lock, then freezes.
 func _update_ram_telegraph() -> void:
 	var flash_on := int(_state_left * RAM_FLASH_HZ * 2.0) % 2 == 0
-	visual_root.visible = flash_on or _state_left > RAM_TELEGRAPH - 0.1
+	visual_root.visible = true if COMMON_CUE.enabled else (flash_on or _state_left > RAM_TELEGRAPH - 0.1)
 	telegraph.visible = true
 	if _state_left > RAM_LOCK:
 		_ram_dir = _aim_at_bee()

@@ -1,5 +1,6 @@
 class_name BeeShotWarning
 extends RefCounted
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 static var last_sound: Dictionary = {}
 
@@ -10,7 +11,8 @@ static func volley(enemy: Node3D, species: StringName, pose: Node3D, first_shot_
 	var token := int(enemy.get_meta("shot_warning_token", 0)) + 1
 	enemy.set_meta("shot_warning_token", token)
 	for i in count:
-		var delay := maxf(0.0, first_shot_in + i * gap - BeeGameSettings.SHOT_WARNING_SECONDS)
+		var cue_seconds := COMMON_CUE.SECONDS if COMMON_CUE.enabled else BeeGameSettings.SHOT_WARNING_SECONDS
+		var delay := maxf(0.0, first_shot_in + i * gap - cue_seconds)
 		enemy.get_tree().create_timer(delay, false).timeout.connect(func():
 			var unit := enemy_ref.get_ref() as Node3D
 			var body := pose_ref.get_ref() as Node3D if pose_ref != null else null
@@ -18,7 +20,9 @@ static func volley(enemy: Node3D, species: StringName, pose: Node3D, first_shot_
 				begin(unit, species, body))
 
 static func begin(enemy: Node3D, species: StringName, pose: Node3D = null) -> void:
-	if BeeGameSettings.SHOT_WARNING_VISUAL_ENABLED and is_instance_valid(pose):
+	if COMMON_CUE.enabled:
+		COMMON_CUE.begin(enemy, species, pose)
+	if not COMMON_CUE.enabled and BeeGameSettings.SHOT_WARNING_VISUAL_ENABLED and is_instance_valid(pose):
 		var base := pose.scale
 		var angle := pose.rotation.z
 		var shift := pose.position

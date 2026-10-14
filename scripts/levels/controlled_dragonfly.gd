@@ -1,5 +1,6 @@
 class_name ControlledDragonfly
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## LEVEL 01 TRANSFORMATION PASS 01 — CONTROLLED FAUNA: a dragonfly driven by an alien implant.
 ## The animal is never the target: only the CONTROL DEVICE on its thorax has health. Shots on the body are absorbed
 ## with a neutral puff (no damage, no "animal HP"). Breaking the implant LIBERATES the dragonfly: the attack is
@@ -162,7 +163,7 @@ func _physics_process(delta: float) -> void:
 			if state == State.TELEGRAPH:
 				_lock_pass()
 		State.TELEGRAPH:
-			var flare := 1.0 + 0.35 * sin(minf(1.0 - _state_left / telegraph_time, 1.0) * PI)
+			var flare := 1.0 + (COMMON_CUE.MAX_SCALE - 1.0 if COMMON_CUE.enabled else 0.35) * sin(minf(1.0 - _state_left / telegraph_time, 1.0) * PI)
 			for wing in _wings:
 				wing.scale = Vector3(1.0, 1.0, flare)
 			_set_core(1.0 + 1.8 * (1.0 - _state_left / telegraph_time))
@@ -208,6 +209,7 @@ func _tick_to(next: int, next_seconds: float, delta: float) -> void:
 
 ## The pass is locked when the telegraph starts: a broad, readable sweep through where Bee was, no homing.
 func _lock_pass() -> void:
+	BeeShotWarning.volley(self, &"machine", visual_root.get_node("Body"), telegraph_time)
 	_pass_from = global_position
 	var through := target.global_position
 	var direction := (through - _pass_from)

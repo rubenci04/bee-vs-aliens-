@@ -1,5 +1,6 @@
 class_name WormBehavior
 extends Node
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## LOTE 13 · ETAPA 3 — the Level 1 WORM A (rose worm) cycle, a child of its AssetFauna (kind worm_rose, config "worm_a"):
 ##   BURIED  nothing to see; REST_SECONDS later it picks a spot just ahead of Bee
 ##   MARK    a ground mark warns MARK_SECONDS (disc + ring at the spot)
@@ -195,9 +196,10 @@ func _begin_mark() -> void:
 	fauna.attacks_started += 1
 	if fauna.first_telegraph_clock < 0.0:
 		fauna.first_telegraph_clock = fauna._clock
-	fauna._warn.append(BeeAttackVisuals.ground_disc(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
-	fauna._warn.append(BeeAttackVisuals.ring(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.2, 0.0), 1.1, 0.06, WARN_COLOR))
-	if BeeAttackVisuals.WARNING_STYLE.enabled:
+	if not COMMON_CUE.enabled:
+		fauna._warn.append(BeeAttackVisuals.ground_disc(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
+	fauna._warn.append(COMMON_CUE.ring(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.05, 0), fauna.attack_hitbox.get_node("CollisionShape3D").shape.radius, BEAM_COLOR))
+	if BeeAttackVisuals.WARNING_STYLE.enabled and not COMMON_CUE.enabled:
 		fauna._warn.append(BeeAttackVisuals.warning_dome(fauna.get_parent(), Vector3(spot, fauna.ground_y, 0), 1.5))
 	_set_step(Step.MARK, MARK_SECONDS)
 
@@ -229,6 +231,7 @@ func _begin_peek() -> void:
 	_lock_point = fauna.target.global_position
 	_line = BeeAttackVisuals.line(fauna.get_parent(), _head(), _lock_point, LINE_WIDTH, WARN_COLOR)
 	BeeAttackVisuals.WARNING_STYLE.dress(_line, WARN_COLOR, 1.0, LASER_WARN)
+	COMMON_CUE.suppress(_line)
 	_set_step(Step.PEEK, LASER_WARN)
 
 
@@ -274,8 +277,10 @@ func _begin_crouch() -> void:
 	if camera != null:
 		landing_x = clampf(landing_x, camera.global_position.x - 5.0, camera.global_position.x + 5.0)
 	_land = Vector3(landing_x, fauna.ground_y, 0.0)
-	fauna._warn.append(BeeAttackVisuals.ground_disc(fauna.get_parent(), Vector3(_land.x, fauna.ground_y + 0.05, 0.0), 1.2, WARN_COLOR))
-	fauna._warn.append(BeeAttackVisuals.ring(fauna.get_parent(), Vector3(_land.x, fauna.ground_y + 0.2, 0.0), 1.0, 0.06, LOCK_COLOR))
+	if not COMMON_CUE.enabled:
+		fauna._warn.append(BeeAttackVisuals.ground_disc(fauna.get_parent(), Vector3(_land.x, fauna.ground_y + 0.05, 0.0), 1.2, WARN_COLOR))
+	fauna._warn.append(COMMON_CUE.ring(fauna.get_parent(), Vector3(_land.x, fauna.ground_y + 0.05, 0), fauna.attack_hitbox.get_node("CollisionShape3D").shape.radius, BEAM_COLOR))
+	BeeShotWarning.volley(fauna, &"worm", fauna.visual, LEAP_WARN)
 	_set_step(Step.CROUCH, LEAP_WARN)
 
 

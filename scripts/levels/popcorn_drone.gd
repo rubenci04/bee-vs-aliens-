@@ -1,5 +1,6 @@
 class_name PopcornDrone
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## ARCADE CONTENT & SPECTACLE REBUILD 02 — popcorn: small alien "gnat" drones that cross the screen in formation.
 ## One Base shot destroys one. No AI: each unit follows a fixed path relative to the camera, so a group reads as a
 ## formation and is fair to dodge. Only `shooter` units fire, once, a slow aimed shot after a short eye flash.
@@ -302,7 +303,8 @@ func _kamikaze_step(delta: float, _camera: Camera3D) -> bool:
 			warned_seconds += delta
 			var pulse := 1.0 + 0.35 * sin(_t * 40.0)
 			_eye.scale = Vector3.ONE * 2.2
-			visual_root.scale = Vector3.ONE * pulse
+			if not COMMON_CUE.enabled:
+				visual_root.scale = Vector3.ONE * pulse
 			_face(_kz_vel)
 			if _kz_left <= 0.0:
 				_kz_state = 2
@@ -342,3 +344,5 @@ func _show_kamikaze_line() -> void:
 	_kz_line.global_position = global_position + Vector3(direction.x, direction.y, 0.0) * KAMIKAZE_LINE_LENGTH * 0.5
 	_kz_line.global_rotation = Vector3(0.0, 0.0, atan2(direction.y, direction.x))
 	_kz_line.show()
+	COMMON_CUE.suppress(_kz_line)
+	BeeShotWarning.volley(self, &"machine", visual_root, KAMIKAZE_WARNING)

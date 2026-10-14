@@ -1,5 +1,6 @@
 class_name BeeImplantShooter
 extends Node
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## Level-only removable implant weapon. Body attacks retain their original timing.
 ## LOTE 13 · ETAPA 2: every family has its own pattern and shot look (BeeShotStyles): the ant LOBS an orange pebble in an arc, the
 ## stag beetle lobs stones, the spider throws a white web fan, the ladybird fans red seeds. The first volley starts FIRST_DELAY s
@@ -52,6 +53,7 @@ func _physics_process(delta: float) -> void:
 		locked_aim = target.global_position - unit.global_position
 		locked_point = target.global_position
 		warning = BeeAttackVisuals.ring(unit, _origin(unit), 0.45, 0.07, Color(0.2, 0.9, 1.0, 0.9))
+		COMMON_CUE.suppress(warning)
 		warnings_started += 1
 		var pose := unit.get_node_or_null("VisualRoot") as Node3D
 		if unit is AssetFauna:

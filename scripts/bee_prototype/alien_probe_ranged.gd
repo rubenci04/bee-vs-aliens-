@@ -1,5 +1,6 @@
 class_name AlienProbeRanged
 extends CharacterBody3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 signal defeated(enemy: AlienProbeRanged)
 signal projectile_fired(projectile: AlienEnemyProjectile)
@@ -158,7 +159,9 @@ func _begin_windup() -> void:
 	_state_left = windup_time + (initial_delay if _cycle == 0 else 0.0)
 	velocity = Vector3.ZERO
 	telegraph.show()
-	visual_root.scale = Vector3(1.12, 0.88, 1.12)
+	COMMON_CUE.suppress(telegraph)
+	BeeShotWarning.volley(self, &"machine", visual_root, _state_left)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(1.12, 0.88, 1.12)
 
 
 func _shoot() -> void:

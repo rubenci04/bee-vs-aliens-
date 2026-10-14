@@ -1,5 +1,6 @@
 class_name TarantulaDropSpider
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## LOTE 12 · ETAPA 3 — the small hanging spiders the tarantula sends from above (phase 1 and later). The thread is drawn first
 ## (TELEGRAPH s, the column is the warning), then the spider drops on it, hangs HOLD s (touching it hurts) and climbs back.
 ## One or two shots break its tiny implant: it is freed and climbs away at once (not counted in LIBERADOS: it is part of the boss).
@@ -29,6 +30,7 @@ var _model: Node3D
 var _hitbox: DamageHitbox3D
 var _hurtbox: DamageHurtbox3D
 var _health: HealthComponent
+var _drop_started := false # Visibility of the warning pose must not gate damage activation.
 
 
 func setup(owner_boss: Node, x: float, hang_y: float, top_y: float) -> void:
@@ -44,7 +46,16 @@ func setup(owner_boss: Node, x: float, hang_y: float, top_y: float) -> void:
 	add_child(_model)
 	for silk: Node3D in _model.find_children("NaturalSilk", "Node3D", true, false):
 		silk.hide()
-	_model.hide()
+	if COMMON_CUE.enabled:
+		_model.show()
+		COMMON_CUE.suppress(_thread)
+		var unit_ref: WeakRef = weakref(self)
+		get_tree().create_timer(TELEGRAPH - COMMON_CUE.SECONDS, false).timeout.connect(func():
+			var unit = unit_ref.get_ref()
+			if is_instance_valid(unit) and not unit.freed:
+				COMMON_CUE.begin(unit, &"spider", unit._model))
+	else:
+		_model.hide()
 	var shape := SphereShape3D.new()
 	shape.radius = RADIUS
 	_hitbox = BeeAttackVisuals.hazard_area(self, boss, DAMAGE, shape)
@@ -81,7 +92,7 @@ func _physics_process(delta: float) -> void:
 	if freed:
 		y = global_position.y + 9.0 * delta
 	elif t < DROP_SECONDS:
-		if not _model.visible:
+		if not _drop_started:
 			_start_drop()
 		y = lerpf(top, low_y, t / DROP_SECONDS)
 	elif t < DROP_SECONDS + HOLD:
@@ -100,6 +111,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _start_drop() -> void:
+	_drop_started = true
+	COMMON_CUE.restore(_thread)
 	_model.show()
 	BeeAudio.play(get_parent(), &"spider_drop", global_position, 1.2)
 	_thread.mesh.material = BeeAttackVisuals.material(THREAD_COLOR)

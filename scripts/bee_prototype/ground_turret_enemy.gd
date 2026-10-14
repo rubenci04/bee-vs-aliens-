@@ -1,5 +1,6 @@
 class_name GroundTurretEnemy
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 signal defeated(enemy: GroundTurretEnemy)
 signal projectile_fired(projectile: AlienEnemyProjectile)
@@ -90,6 +91,8 @@ func _physics_process(delta: float) -> void:
 				current_state = State.WINDUP
 				_state_left = windup_time
 				telegraph.show()
+				COMMON_CUE.suppress(telegraph)
+				BeeShotWarning.volley(self, &"machine", visual_root, windup_time)
 				if mortar_mode:
 					_mark_mortar()
 		State.WINDUP:
@@ -157,8 +160,11 @@ func _mark_mortar() -> void:
 	_mortar_target = Vector3(global_position.x + dx, -0.2, 0.0)
 	_clear_marker()
 	_mortar_marker = BeeAttackVisuals.ring(get_parent(), _mortar_target + Vector3(0, 0.08, 0), PUDDLE_RADIUS, 0.18, Color(0.2, 0.95, 1.0, 0.8), true)
+	if COMMON_CUE.enabled:
+		_mortar_marker.queue_free()
+		_mortar_marker = COMMON_CUE.ring(get_parent(), _mortar_target + Vector3(0,.08,0), PUDDLE_RADIUS, Color(0.2,.95,1))
 	_mortar_marker.rotation.x = 0.0 # Flat on the ground.
-	_mortar_marker.scale = Vector3(PUDDLE_RADIUS, 1.0, PUDDLE_RADIUS * 0.6)
+	_mortar_marker.scale = Vector3(PUDDLE_RADIUS,1,PUDDLE_RADIUS) if COMMON_CUE.enabled else Vector3(PUDDLE_RADIUS, 1.0, PUDDLE_RADIUS * 0.6)
 
 
 func _fire_mortar(origin: Vector3) -> void:

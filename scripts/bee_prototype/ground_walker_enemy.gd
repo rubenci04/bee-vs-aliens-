@@ -1,5 +1,6 @@
 class_name GroundWalkerEnemy
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 signal defeated(enemy: GroundWalkerEnemy)
 signal projectile_fired(projectile: AlienEnemyProjectile)
@@ -162,6 +163,8 @@ func _physics_process(delta: float) -> void:
 				if _sweeping:
 					BeeAudio.play(get_parent(), &"walker_charge", global_position) # GARDEN IDENTITY 04: servo whine of the violet sweep.
 				aim_charge.show()
+				COMMON_CUE.suppress(aim_charge)
+				BeeShotWarning.volley(self, &"machine", visual_root, _state_left)
 		State.WINDUP:
 			_state_left -= delta
 			var charge_progress := 1.0 - _state_left / (sweep_windup if _sweeping else (LOW_BURST_WINDUP if low_burst else windup_time))

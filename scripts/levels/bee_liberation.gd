@@ -1,5 +1,6 @@
 class_name BeeLiberation
 extends RefCounted
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
 const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 ## NOCHE 01 · ETAPA 1 — the shared "the animal is FREED, not killed" language, used by every controlled animal (wasp,
@@ -37,6 +38,7 @@ static func free_animal(host: Node, visual: Node3D, implant: Node3D, at: Vector3
 	if implant != null and is_instance_valid(implant):
 		implant.hide()
 	if visual != null and is_instance_valid(visual):
+		COMMON_CUE.cancel(visual)
 		warm_colours(visual)
 	BeeCombatVFX.spawn(host, at + Vector3(0, 0.3, 0), &"pollen", Vector3.UP, 1.0)
 	BeeAudio.play(host, &"liberate", at, CHIME_PITCH)

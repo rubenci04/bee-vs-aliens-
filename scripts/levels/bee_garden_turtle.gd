@@ -1,5 +1,6 @@
 class_name BeeGardenTurtle
 extends BeeAftermathTurtle
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## LOTE 12 · ETAPA 2 — the garden turtle as a Level 1 ENEMY (slow ground TANK with a lot of life); LOTE 13 · ETAPA 3 — NEW BEHAVIOUR,
 ## ready for the new model (the current hexagonal-shell model is parked: the turtle is NOT in the Level 1 table until Rubén delivers one):
 ##   WALK     slow stroll towards Bee (WALK_SPEED), contact damage while Bee skims the ground
@@ -190,6 +191,8 @@ func _begin_spit_warn() -> void:
 	_warn_nodes.append(BeeAttackVisuals.ring(get_parent(), Vector3(_lock_point.x, 0.05, 0.0), 1.1, 0.08, WARN_COLOR))
 	(_warn_nodes.back() as Node3D).rotation.x = 0.0
 	(_warn_nodes.back() as Node3D).scale = Vector3(1.1, 1.0, 0.35)
+	COMMON_CUE.suppress(_warn_nodes.back())
+	BeeShotWarning.volley(self, &"turtle", body, SPIT_WARN)
 	_set_step(Step.SPIT_WARN, SPIT_WARN)
 	if _head != null:
 		_head.rotation.z = 0.7 # The head tilts up.
@@ -236,6 +239,8 @@ func _begin_roll_warn() -> void:
 	_warn_nodes.append(BeeAttackVisuals.line(get_parent(), Vector3(global_position.x, 0.4, 0.0), Vector3(edge, 0.4, 0.0), 0.5, Color(1.0, 0.55, 0.15, 0.3)))
 	BeeAttackVisuals.WARNING_STYLE.dress(_warn_nodes.back(), Color(1,0.55,0.15), 0.0, ROLL_WARN)
 	_contact.set_enabled(false)
+	COMMON_CUE.suppress(_warn_nodes.back())
+	BeeShotWarning.volley(self, &"turtle", body, ROLL_WARN)
 	_set_step(Step.ROLL_WARN, ROLL_WARN)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.7)
 

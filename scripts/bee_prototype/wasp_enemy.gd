@@ -1,5 +1,6 @@
 class_name WaspEnemy
 extends CharacterBody3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 
 signal defeated(enemy: WaspEnemy)
 ## NOCHE 01: a Level 01 (implanted) Wasp is FREED, not killed: emitted when the implant breaks (it then flies off).
@@ -249,7 +250,9 @@ func _begin_windup() -> void:
 			_dash_dir = Vector3.LEFT
 		_dash_length = clampf(Vector2(to_bee.x, to_bee.y).length() + 2.5, 5.0, 8.5)
 	telegraph.show()
-	visual_root.scale = Vector3(0.82, 1.18, 0.82)
+	COMMON_CUE.suppress(telegraph)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(0.82, 1.18, 0.82)
+	BeeShotWarning.volley(self, &"wasp", visual_root, _state_left)
 
 
 func _begin_attack() -> void:
@@ -423,7 +426,7 @@ func _begin_overload() -> void:
 	telegraph.hide()
 	current_state = State.OVERLOAD
 	_state_left = overload_telegraph
-	visual_root.scale = Vector3(1.12, 1.12, 1.12)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(1.12, 1.12, 1.12)
 	if implant != null:
 		implant.set_mode(&"overload")
 	BeeAudio.play(get_parent(), &"wasp_overload", global_position) # GARDEN IDENTITY 04: an insect tremble from the implant (was ufo_charge x1.7).
@@ -451,6 +454,8 @@ func _lock_overload_line() -> void:
 	add_child(_overload_line)
 	_overload_line.global_position = global_position + _kamikaze_dir * (bar.size.x * 0.5)
 	_overload_line.rotation.z = atan2(_kamikaze_dir.y, _kamikaze_dir.x)
+	COMMON_CUE.suppress(_overload_line)
+	BeeShotWarning.volley(self, &"wasp", visual_root, overload_telegraph)
 
 
 func _begin_kamikaze() -> void:

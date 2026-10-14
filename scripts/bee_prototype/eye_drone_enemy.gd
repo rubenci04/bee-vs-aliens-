@@ -125,7 +125,9 @@ func _begin_attack(distance: float) -> void:
 	velocity = Vector3.ZERO
 	telegraph.material_override = _fan_telegraph_material() if _fan_now else null
 	telegraph.show()
-	visual_root.scale = Vector3(1.10, 0.90, 1.10)
+	COMMON_CUE.suppress(telegraph)
+	BeeShotWarning.volley(self, &"machine", visual_root, _state_left)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(1.10, 0.90, 1.10)
 
 static func _fan_telegraph_material() -> StandardMaterial3D:
 	if _fan_material == null:
@@ -205,9 +207,12 @@ func _begin_laser_charge() -> void:
 	_laser_warnings.append(BeeAttackVisuals.line(get_parent(), origin, origin + Vector3(cos(_laser_to), sin(_laser_to), 0) * LASER_LENGTH, 0.025, Color(LASER_WARNING, 0.3)))
 	for line in _laser_warnings:
 		BeeAttackVisuals.WARNING_STYLE.dress(line, LASER_WARNING, 1.0, LASER_CHARGE)
+		COMMON_CUE.suppress(line)
 	telegraph.material_override = null
 	telegraph.show()
-	visual_root.scale = Vector3(1.12, 0.88, 1.12)
+	COMMON_CUE.suppress(telegraph)
+	BeeShotWarning.volley(self, &"machine", visual_root, _state_left)
+	visual_root.scale = Vector3.ONE if COMMON_CUE.enabled else Vector3(1.12, 0.88, 1.12)
 
 
 func _start_laser_sweep() -> void:

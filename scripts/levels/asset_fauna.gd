@@ -1,5 +1,6 @@
 class_name AssetFauna
 extends Node3D
+const COMMON_CUE := preload("res://scripts/vfx/bee_common_attack_cue.gd")
 ## LOTE 6 — enemies built from the Codex GLB assets (scenes/art_labs/assets*/...). One data-driven class, one `mode` per species.
 ## Controlled fauna (mosquito, ladybird, dragonfly, moth, ant, stag beetle, snail, mushroom cannon) follows the Level 01 fauna rule:
 ## the animal is never the target, only the cyan IMPLANT on its back has health (a body shield absorbs shots on the shell).
@@ -546,11 +547,13 @@ func _start_telegraph() -> void:
 			_lock_from = Vector3(lock_x + LEAP_SPAN, LEAP_DEPTH, 0.0)
 			_lock_to = Vector3(lock_x - LEAP_SPAN, LEAP_DEPTH, 0.0)
 			_leap_apex = clampf(bee.y + 0.4, 2.2, float(config["leap_height"]))
-			var ripple := BeeAttackVisuals.ring(get_parent(), Vector3(lock_x, WATER_SURFACE_Y + 0.05, 0.0), 1.0, 0.08, WARN_COLOR)
+			var ripple := COMMON_CUE.ring(get_parent(), Vector3(lock_x, WATER_SURFACE_Y + 0.05, 0.0), attack_hitbox.get_node("CollisionShape3D").shape.radius, WARN_COLOR)
 			ripple.rotation.x = 0.0
-			ripple.scale = Vector3(1.4, 1.0, 0.6)
+			if not COMMON_CUE.enabled:
+				ripple.scale = Vector3(1.4, 1.0, 0.6)
 			_warn.append(ripple)
 			_warn.append(BeeAttackVisuals.line(get_parent(), Vector3(lock_x, WATER_SURFACE_Y, 0.0), Vector3(lock_x, _leap_apex, 0.0), 0.06, Color(1.0, 0.55, 0.15, 0.35)))
+			COMMON_CUE.suppress(_warn.back())
 		&"bomber":
 			_add_ring(global_position + Vector3(0, -0.8, 0), float(config["radius"]))
 		&"burrow":
@@ -559,8 +562,9 @@ func _start_telegraph() -> void:
 			global_position = Vector3(spot, ground_y, 0.0)
 			_lock_from = global_position
 			_lock_to = global_position
-			_warn.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(spot, ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
-			_add_ring(Vector3(spot, ground_y + 0.2, 0.0), 1.1)
+			if not COMMON_CUE.enabled:
+				_warn.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(spot, ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
+			_add_ring(Vector3(spot, ground_y + 0.05, 0.0), attack_hitbox.get_node("CollisionShape3D").shape.radius)
 		_:
 			_lock_to = bee # Shooters: the aim line below and the glow are the warning.
 	# LOTE 13: aimed attacks show a thin line to Bee that follows her and LOCKS (turns orange) AIM_LOCK_BEFORE s before the first shot:
@@ -571,6 +575,7 @@ func _start_telegraph() -> void:
 		_aim_lock_point = bee
 		_aim_line = BeeAttackVisuals.line(get_parent(), _muzzle(), bee, AIM_LINE_WIDTH, WARN_COLOR)
 		_warn.append(_aim_line)
+		COMMON_CUE.suppress(_aim_line)
 
 
 func _telegraph(delta: float) -> void:
@@ -579,7 +584,8 @@ func _telegraph(delta: float) -> void:
 		_steer(global_position if _variant == &"spit" else _lock_from, MOSQUITO_SPEED, delta) # Brakes softly onto the start of its warning line.
 	var progress := 1.0 - clampf(_left / maxf(float(config["telegraph"]), MIN_TELEGRAPH), 0.0, 1.0)
 	var flare := 1.0 + 0.12 * sin(progress * PI * 3.0) + 0.1 * progress
-	visual.scale = Vector3.ONE * model_scale * flare # Whole animal swells: readable on any silhouette.
+	if not COMMON_CUE.enabled:
+		visual.scale = Vector3.ONE * model_scale * flare # Whole animal swells: readable on any silhouette.
 	if _aim_line != null and is_instance_valid(_aim_line):
 		if not _aim_locked:
 			_aim_lock_point = target.global_position # Follows Bee...
@@ -590,10 +596,13 @@ func _telegraph(delta: float) -> void:
 		if _aim_locked:
 			BeeAttackVisuals.hide_when_dodged(_aim_line, _muzzle(), _aim_lock_point, target.global_position, AIM_DODGE_CLEARANCE)
 	if config["mode"] == &"lunge" or config["mode"] == &"charge":
-		rig.rotation.z = (0.25 if config["mode"] == &"lunge" else -0.12) * progress * -_facing # Rears up / lowers its head.
+		rig.rotation.z = (0.25 if config["mode"] == &"lunge" else -0.12) * progress * -_facing # Retain the original rig/hurtbox transform.
+		if kind == &"Ant" and COMMON_CUE.enabled:
+			visual.rotation.z = COMMON_CUE.ANT_CROUCH_TILT * progress * -_facing # Crouch only the model, never its sibling hurtboxes.
 	if _left <= 0.0:
 		telegraphs.append(BeeAttackTokens.now() - _tele_started)
 		visual.scale = Vector3.ONE * model_scale
+		if kind == &"Ant": visual.rotation.z = 0.0
 		rig.rotation.z = 0.0
 		_clear_warn()
 		_start_attack()
@@ -734,6 +743,8 @@ func _begin(next: int, seconds: float) -> void:
 
 
 func _cancel_attack() -> void:
+	COMMON_CUE.cancel(visual)
+	if kind == &"Ant": visual.rotation.z = 0.0
 	attack_hitbox.set_enabled(false)
 	if _worm != null:
 		_worm.cancel()
@@ -853,11 +864,14 @@ func _add_line(from: Vector3, to: Vector3, width: float, color: Color = WARN_COL
 	var line := BeeAttackVisuals.line(get_parent(), from, to, width, color)
 	BeeAttackVisuals.WARNING_STYLE.dress(line, color, 0.0 if width >= 0.12 else 3.0, _left)
 	_warn.append(line)
+	COMMON_CUE.suppress(line)
 
 
 func _add_ring(at: Vector3, radius: float) -> void:
-	var ring := BeeAttackVisuals.ring(get_parent(), at, radius, 0.06, WARN_COLOR)
+	var ring := COMMON_CUE.ring(get_parent(), at, radius, WARN_COLOR)
 	_warn.append(ring)
+	if config["mode"] == &"bomber":
+		COMMON_CUE.suppress(ring)
 
 
 func _clear_warn() -> void:

@@ -92,3 +92,43 @@ La galería usa el fondo del Nivel 01 y sus perfiles reales de luz (`LightProgre
 - Archivos agregados: catálogo, herramienta y escena bajo `tools/`; prueba bajo `tests/levels/`; este inventario y los dos PNG bajo `docs/`. `dev/` y archivos ajenos no se incluyen en el commit.
 
 Pendiente: elegir A/B por fila mirando ambas luces, y validar los peligros que ocupan una zona entera antes de una futura implementación. **El juego sigue exactamente con sus avisos anteriores.**
+
+
+## Actualización T3j — clasificación y decisión aplicada
+
+La tabla histórica de arriba conserva las medidas/tiempos de T3f. La presentación vigente es T3j para enemigos comunes y T3h para jefes/ambiente. No confundir avisos con ataques activos.
+
+| Filas históricas | Emisor / aviso | Clase | Decisión T3j |
+|---|---|---|---|
+| 1 | Hormiga: franja y línea fina naranja de embestida a ras del suelo | Común | Sin marca; agacha el cuerpo y pulso magenta |
+| 2 | Gusano B: franja de embestida | Común | Sin marca; pulso amarillo |
+| 3 | Escarabajo: corredor de carga | Común | Sin marca; pulso azul |
+| 4 | Mosca: carrera | Común | Sin marca; pulso cian |
+| 5 | Nube de moscas: barrido | Común | Sin marca; pulso cian del grupo |
+| 6 | Mariquita: barrido | Común | Sin marca; pulso carmesí |
+| 7 | Miras FlyGreen, Snail, MushroomCannon, AlienFighter, SeedCarrier, Nymph y variantes FlyCommon/WormB | Comunes | Sin líneas ni sus marcas hijas; pulso según disparo |
+| 8 | Gusano A: línea celeste vertical/diagonal de mira | Común | Mira invisible; láser activo intacto |
+| 9 | Araña colgante: columna y aro suspendido de caída | Común | Sin marca; pulso blanco del cuerpo; seda natural intacta |
+| 10–14 | Robot: cañón, morteros, salto, pisotón y sector láser | Minijefe | Se mantienen exactamente como T3h |
+| 15–20 | Tarántula: diagonales/techo, carga/banda, pisotón, red, péndulo | Jefe | Se mantienen exactamente como T3h |
+| 21 | Arañitas de caída invocadas por Tarántula | Comunes auxiliares | Sin columna previa; modelo visible durante el aviso y pulso blanco; seda activa reaparece al caer |
+| 22–23 | Tarántula: hilos barridos y cortina | Jefe | Se mantienen |
+| 24 | Regadera: guía/franja | Ambiente, no enemigo común | Se mantiene; fuera del alcance |
+| 25 | Avispa: sobrecarga | Común | Sin línea; anticipación violeta del cuerpo |
+| 26 | Mosquito: carrera | Común legado | Sin línea; anticipación del cuerpo |
+| 27 | Libélula ondulada: corredor | Común legado | Sin banda; anticipación del cuerpo |
+| 28 | Tortuga: rodar | Común reservada | Sin línea de suelo; conserva retracción y añade pulso del cuerpo |
+| 29–30 | Speeder: carrera y carril clásico | Común legado | Sin líneas; pulso del modelo |
+| 31 | EyeDrone: sector de láser | Común legado | Sin bordes previos; rayo activo intacto |
+| 32–34 | UFO: columna, bandas y embestida | Jefe reservado N7 | Se mantienen |
+| 35 | Perca: salto | Común de Laguna | Sin columna; conserva solo aro local de superficie |
+| 36 | Patinador: embestida | Común de Laguna | Sin franja; anticipación del cuerpo |
+| 37 | Sapo de Laguna: lengua | Jefe | Se mantiene |
+| 38 | Sapo de paso: lengua | Encuentro especial derivado de BeeLakeToadBoss | Se mantiene; no es fauna común del roster |
+
+Adicionales fuera de las filas de líneas: gusano A de erupción pierde disco y domo de vidrio con elipse naranja; queda un único aro cian sin relleno, alfa 0,35, radio leído de su esfera de daño sin modificarla. El salto del mismo gusano conserva solo ese aro en destino. El aro de carga de BeeImplantShooter desaparece para todos los comunes. El aro suspendido de la bomba de polilla desaparece. Las poses y brillos existentes de fauna sin líneas (por ejemplo ControlledDragonfly) se conservan.
+
+Aguijón de Bee, cono F4, proyectiles, láser activo de WormA/EyeDrone, domos de ondas que ya dañan y redes/seda activas no son avisos previos: **intactos**.
+
+
+La revisión de “cualquier otro común” además encontró `PopcornDrone._show_kamikaze_line()` (Swarm): línea cian de 14 m, `KAMIKAZE_WARNING=0,5 s`, no estaba en las 38 filas. También se oculta y pasa a pulso del dron, sin cambiar su carrera. La torreta común `GroundTurretEnemy` conserva solo el aro de destino del mortero, con radio `PUDDLE_RADIUS` y alfa 0,35; su bola de carga externa se sustituye por el pulso del cuerpo. El caminante **común legado** `GroundWalkerEnemy` recibe pulso en vez de la bola de carga; no es `WalkerMiniboss`, cuyos avisos permanecen intactos. La libélula `ControlledDragonfly` ya no tenía líneas: conserva las alas/implante anticipados, con escala de alas limitada a 1,12 y pulso del cuerpo, dejando sus hurtboxes fuera del nodo escalado. Otras señales locales que ya pertenecen al propio enemigo (por ejemplo el núcleo del organismo) se conservan.
