@@ -6,7 +6,7 @@ extends Node3D
 
 const SHELL_RADIUS := 0.22
 const PUDDLE_HEIGHT := 1.2
-const COLOR := BeeGameSettings.DANGER_CYAN
+const COLOR := Color(0.2, 0.95, 1.0)
 
 var flight_time := 0.9
 var apex := 2.6
@@ -72,7 +72,7 @@ func _land() -> void:
 	if _marker != null and is_instance_valid(_marker):
 		_marker.queue_free()
 	BeeCombatVFX.spawn(get_parent(), _to + Vector3(0, 0.2, 0), &"tech_death", Vector3.UP, 0.7)
-	var pool := BeeAttackVisuals.ground_disc(self, _to + Vector3(0, 0.04, 0), puddle_radius, Color(COLOR, 0.55))
+	var pool := BeeAttackVisuals.ground_disc(self, _to + Vector3(0, 0.04, 0), puddle_radius, Color(COLOR, 0.55), false)
 	pool.name = "EnergyPuddle"
 	var box := BoxShape3D.new()
 	box.size = Vector3(puddle_radius * 1.8, PUDDLE_HEIGHT, 1.0)

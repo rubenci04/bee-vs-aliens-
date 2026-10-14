@@ -17,7 +17,7 @@ const GROUND_Y := -0.12
 const LANES := [-0.62, -0.18, 0.28, 0.66]
 const WAVES := [[0, 2], [1, 3], [0, 3]]
 const WARNING_COLOR := Color(0.02, 0.86, 1.0, 0.88)
-const COLUMN_COLOR := Color(0.02, 0.86, 1.0, 0.72)
+const COLUMN_COLOR := Color(0.62, 0.86, 1.0, 0.62)
 const COLUMN_EDGE_WIDTH := 0.055
 
 signal column_warned(x: float)
@@ -85,7 +85,7 @@ func _spawn_column(x: float) -> void:
 	var mark := BeeAttackVisuals.ground_disc(self, Vector3(x, GROUND_Y, 0.0), COLUMN_WIDTH * 1.1, WARNING_COLOR)
 	mark.name = "WaterMark"
 	# Upright ground stripe is readable from the side camera throughout the existing one-second warning.
-	var stripe := BeeAttackVisuals.line(mark, Vector3.ZERO, Vector3.RIGHT, 0.14, WARNING_COLOR)
+	var stripe := BeeAttackVisuals.line(mark, Vector3.ZERO, Vector3.RIGHT, 0.14, WARNING_COLOR, true)
 	stripe.top_level = false
 	stripe.position = Vector3(0, 0.2, 0.08)
 	stripe.scale = Vector3(1.6, 1.0, 1.0)
@@ -119,12 +119,6 @@ func _spawn_column(x: float) -> void:
 	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(beam)
 	beam.global_position = Vector3(x, COLUMN_TOP_Y * 0.5 + GROUND_Y, 0.0)
-	for side in [-1.0, 1.0]:
-		var edge := BeeAttackVisuals.line(beam, Vector3.ZERO, Vector3.UP * COLUMN_TOP_Y, COLUMN_EDGE_WIDTH, BeeGameSettings.DANGER_CORE)
-		edge.top_level = false
-		edge.position = Vector3(side * COLUMN_WIDTH * 0.48, 0.0, 0.5)
-		edge.rotation.z = PI * 0.5
-		edge.scale = Vector3(COLUMN_TOP_Y, 1.0, 1.0)
 	beam.hide()
 	columns.append({"x": x, "t": 0.0, "state": &"warning", "mark": mark, "guide": guide, "hitbox": hitbox, "beam": beam})
 	columns_spawned += 1

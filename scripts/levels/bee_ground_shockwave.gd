@@ -4,7 +4,7 @@ extends Node3D
 ## roll never destroys it (the roll only makes Bee invulnerable for its 0.35 s); the only clean answer is to fly above it.
 ## The owner draws the warning line first (see `warning_band`) and spawns the wave when the warning is over.
 
-const COLOR := BeeGameSettings.DANGER_CYAN
+const COLOR := Color(0.3, 0.95, 1.0, 0.55)
 const WARNING_COLOR := Color(1.0, 0.62, 0.2, 0.28)
 const GROUND_Y := 0.0
 
@@ -58,16 +58,6 @@ func _build() -> void:
 	_visual.scale = Vector3(width * 1.1, height, 0.9)
 	_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_visual)
-	var edge := MeshInstance3D.new()
-	edge.mesh = mesh
-	edge.scale = Vector3.ONE * BeeGameSettings.DANGER_BORDER_SCALE
-	var dark := BeeAttackVisuals.material(BeeGameSettings.DANGER_BORDER).duplicate() as StandardMaterial3D
-	dark.cull_mode = BaseMaterial3D.CULL_FRONT
-	edge.material_override = dark
-	_visual.add_child(edge)
-	var crest := BeeAttackVisuals.ring(_visual, global_position, 0.5, 0.08, BeeGameSettings.DANGER_CORE)
-	crest.top_level = false
-	crest.position = Vector3(0.0, 0.15, 0.45)
 
 
 func _physics_process(delta: float) -> void:

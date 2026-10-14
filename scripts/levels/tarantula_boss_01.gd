@@ -913,7 +913,7 @@ func _release_threads() -> void:
 	hazards.append({"kind": &"threads", "telegraph": 0.75})
 	for thread in thread_nodes:
 		thread["active"] = true
-		BeeAttackVisuals.activate_danger_line(thread["line"], BeeGameSettings.DANGER_MAGENTA)
+		BeeAttackVisuals.restore_active_line(thread["line"], Color(0.95, 0.95, 0.9, 0.9), 0.06)
 		(thread["box"] as DamageHitbox3D).set_enabled(true)
 
 

@@ -1,32 +1,38 @@
 class_name BeeShotStyles
 extends RefCounted
-## Tanda 3: pale core, saturated cyan/magenta body and a near-black silhouette.
-## Family identity comes from shape; colours and visual sizes do not alter the tuned collision radii.
-## See docs/INFORME_TANDA_3.md for the enemy -> shape/colour/size table.
+## LOTE 13 · ETAPA 2 — every Level 1 family fires a shot you can tell apart at a glance. The CORE is always cyan (hostile); the rim
+## colour, the shape and the trail belong to the family. They all contrast with Bee's golden shot (warm halo, white-hot core, short
+## warm trail): cold or dark rims, odd shapes, and the cyan dot in the middle.
+##   stinger  Wasp            long violet needle, violet streak
+##   acid     Green fly       lime teardrop, dripping lime trail
+##   web      Spider          fuzzy white knot of crossed threads, white thread trail (never a ring: the crosshair is a ring)
+##   pebble   Ant             faceted burnt-orange pebble, tumbling, lobbed in an arc
+##   bubble   Snail           big translucent slime bubble that wobbles, lobbed slowly
+##   spore    Cannon mushroom magenta spiky spore, magenta puffs
+##   pellet   Common fly      small black pellet, grey dust
+##   seed     Ladybird        red oval seed with a black spot
+##   stone    Stag beetle     grey-brown faceted stone, lobbed in an arc
+##   mud      Worm B          dark mud glob, brown trail
+## Presentation only: the hitbox, damage and speed of the shot are untouched except for `hit_radius` (so a big bubble reads as big).
 
-const CORE_COLOR := BeeGameSettings.DANGER_CORE
+const CORE_COLOR := Color(0.25, 0.97, 1.0)
 const PLASMA_NAME := "StyledShot"
 ## The styled body is drawn a little larger than the plain orb so the shape reads at screen scale (the hitbox is `hit_radius`).
 const VISUAL_SCALE := 1.3
-const DART_RADIUS := 0.16
-const NEEDLE_RADIUS := 0.14
-const FLY_GLOB_RADIUS := 0.20
-const GROUND_GLOB_RADIUS := 0.26
-const SNAIL_ORB_RADIUS := 0.32
 
 ## rim: body colour · trail: trail colour · shape: body builder · hit_radius: hitbox sphere radius (m) · spin: rad/s tumble.
 const STYLES := {
-	&"stinger": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"needle", "hit_radius": 0.12, "spin": 0.0},
-	&"acid": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"drop", "hit_radius": 0.13, "spin": 0.0},
-	&"web": {"rim": BeeGameSettings.DANGER_CYAN, "trail": BeeGameSettings.DANGER_CYAN, "shape": &"web", "hit_radius": 0.16, "spin": 4.0},
-	&"pebble": {"rim": BeeGameSettings.DANGER_CYAN, "trail": BeeGameSettings.DANGER_CYAN, "shape": &"dart", "hit_radius": 0.14, "spin": 7.0},
-	&"bubble": {"rim": BeeGameSettings.DANGER_CYAN, "trail": BeeGameSettings.DANGER_CYAN, "shape": &"bubble", "hit_radius": 0.24, "spin": 0.0},
-	&"spore": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"spiky", "hit_radius": 0.15, "spin": 3.0},
-	&"pellet": {"rim": BeeGameSettings.DANGER_CYAN, "trail": BeeGameSettings.DANGER_CYAN, "shape": &"ball", "hit_radius": 0.1, "spin": 0.0},
-	&"seed": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"oval", "hit_radius": 0.12, "spin": 0.0},
-	&"stone": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"rock", "hit_radius": 0.18, "spin": 5.0},
-	&"mud": {"rim": BeeGameSettings.DANGER_CYAN, "trail": BeeGameSettings.DANGER_CYAN, "shape": &"glob", "hit_radius": 0.15, "spin": 0.0},
-	&"bile": {"rim": BeeGameSettings.DANGER_MAGENTA, "trail": BeeGameSettings.DANGER_MAGENTA, "shape": &"glob", "hit_radius": 0.16, "spin": 0.0}, # The turtle's spit.
+	&"stinger": {"rim": Color(0.6, 0.2, 0.95), "trail": Color(0.72, 0.35, 1.0), "shape": &"needle", "hit_radius": 0.12, "spin": 0.0},
+	&"acid": {"rim": Color(0.55, 0.95, 0.1), "trail": Color(0.6, 1.0, 0.2), "shape": &"drop", "hit_radius": 0.13, "spin": 0.0},
+	&"web": {"rim": Color(0.97, 0.97, 0.92), "trail": Color(1.0, 1.0, 0.96), "shape": &"web", "hit_radius": 0.16, "spin": 4.0},
+	&"pebble": {"rim": Color(0.88, 0.36, 0.08), "trail": Color(0.6, 0.35, 0.15), "shape": &"rock", "hit_radius": 0.14, "spin": 7.0},
+	&"bubble": {"rim": Color(0.75, 1.0, 0.85), "trail": Color(0.8, 1.0, 0.9), "shape": &"bubble", "hit_radius": 0.24, "spin": 0.0},
+	&"spore": {"rim": Color(0.92, 0.18, 0.78), "trail": Color(0.95, 0.35, 0.85), "shape": &"spiky", "hit_radius": 0.15, "spin": 3.0},
+	&"pellet": {"rim": Color(0.1, 0.08, 0.07), "trail": Color(0.5, 0.5, 0.5), "shape": &"ball", "hit_radius": 0.1, "spin": 0.0},
+	&"seed": {"rim": Color(0.85, 0.08, 0.1), "trail": Color(0.9, 0.3, 0.25), "shape": &"oval", "hit_radius": 0.12, "spin": 0.0},
+	&"stone": {"rim": Color(0.5, 0.44, 0.36), "trail": Color(0.55, 0.5, 0.42), "shape": &"rock", "hit_radius": 0.18, "spin": 5.0},
+	&"mud": {"rim": Color(0.3, 0.19, 0.1), "trail": Color(0.45, 0.3, 0.16), "shape": &"glob", "hit_radius": 0.15, "spin": 0.0},
+	&"bile": {"rim": Color(0.3, 0.55, 0.18), "trail": Color(0.45, 0.7, 0.25), "shape": &"glob", "hit_radius": 0.16, "spin": 0.0}, # The turtle's spit.
 }
 
 static var _materials := {}
@@ -42,7 +48,6 @@ static func _material(key: String, color: Color, transparent := false, priority 
 		return _materials[cache_key]
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.disable_fog = true
 	material.albedo_color = color
 	material.render_priority = priority
 	if transparent:
@@ -89,16 +94,16 @@ static func build(style: StringName) -> Node3D:
 	body.name = "Body"
 	root.add_child(body)
 	match spec["shape"]:
-		&"needle", &"dart":
+		&"needle":
 			var needle := CapsuleMesh.new()
-			needle.radius = DART_RADIUS if spec["shape"] == &"dart" else NEEDLE_RADIUS
+			needle.radius = 0.07
 			needle.height = 0.62
 			_mesh(body, needle, rim, "Needle").rotation.z = PI * 0.5
 			var tip := _mesh(body, _cone(0.08, 0.2), rim.lightened(0.35), "Tip")
 			tip.rotation.z = -PI * 0.5
 			tip.position.x = 0.38
 		&"drop":
-			_mesh(body, _sphere(FLY_GLOB_RADIUS), rim, "Drop")
+			_mesh(body, _sphere(0.14), rim, "Drop")
 			var tail := _mesh(body, _cone(0.1, 0.34), rim, "Tail")
 			tail.rotation.z = PI * 0.5 # Points backwards (-X): the drop's tail.
 			tail.position.x = -0.22
@@ -111,47 +116,32 @@ static func build(style: StringName) -> Node3D:
 				thread.size = Vector3(0.62, 0.035, 0.035)
 				_mesh(body, thread, rim, "Thread%d" % i).rotation.z = PI * float(i) / 3.0
 		&"rock":
-			var chunk := _mesh(body, _sphere(BeeGameSettings.DANGER_MIN_RADIUS, 5, 3), rim, "Rock") # Few facets: a rock.
+			var chunk := _mesh(body, _sphere(0.17 if style == &"stone" else 0.15, 5, 3), rim, "Rock") # Few facets: a rock.
 			chunk.scale = Vector3(1.1, 0.85, 0.95)
 			_mesh(body, _sphere(0.11, 5, 3), rim.darkened(0.35), "Chip").position = Vector3(0.1, 0.07, 0.08)
 		&"bubble":
-			_mesh(body, _sphere(SNAIL_ORB_RADIUS), rim, "Bubble", false, 2)
+			_mesh(body, _sphere(0.3), Color(rim, 0.34), "Bubble", true, 2)
 			_mesh(body, _sphere(0.07, 8, 4), Color(1, 1, 1, 0.8), "Highlight", true, 3).position = Vector3(-0.1, 0.12, 0.25)
 		&"spiky":
-			_mesh(body, _sphere(BeeGameSettings.DANGER_MIN_RADIUS), rim, "Spore")
+			_mesh(body, _sphere(0.13), rim, "Spore")
 			for i in 6:
 				var angle := TAU * float(i) / 6.0
 				var spike := _mesh(body, _cone(0.04, 0.16), rim.lightened(0.25), "Spike%d" % i)
 				spike.position = Vector3(cos(angle) * 0.16, sin(angle) * 0.16, 0.0)
 				spike.rotation.z = angle - PI * 0.5
 		&"ball":
-			_mesh(body, _sphere(BeeGameSettings.DANGER_MIN_RADIUS), rim, "Pellet")
+			_mesh(body, _sphere(0.1), rim, "Pellet")
 			_mesh(body, _sphere(0.14), Color(0.6, 0.6, 0.6, 0.35), "Dust", true, 1)
 		&"oval":
-			_mesh(body, _sphere(BeeGameSettings.DANGER_MIN_RADIUS), rim, "Seed").scale = Vector3(1.5, 1.0, 1.0)
+			_mesh(body, _sphere(0.12), rim, "Seed").scale = Vector3(1.5, 1.0, 1.0)
 			_mesh(body, _sphere(0.045, 6, 3), Color(0.05, 0.03, 0.03), "Spot", false, 1).position = Vector3(0.0, 0.1, 0.1)
 		&"glob":
-			_mesh(body, _sphere(GROUND_GLOB_RADIUS, 8, 4), rim, "Glob").scale = Vector3(1.2, 0.9, 1.0)
+			_mesh(body, _sphere(0.16, 8, 4), rim, "Glob").scale = Vector3(1.2, 0.9, 1.0)
 			_mesh(body, _sphere(0.09, 6, 3), rim.lightened(0.15), "Lump").position = Vector3(-0.12, 0.08, 0.06)
 	# The hostile cyan core, in front of everything (a small dot on a spiky or flat body, bigger inside a bubble).
-	# Dark back-facing shell around each opaque silhouette: no glow can obscure the core.
-	for part: MeshInstance3D in body.get_children():
-		var source := (part.mesh as PrimitiveMesh).material as StandardMaterial3D
-		if source == null or source.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED:
-			continue
-		var edge := MeshInstance3D.new()
-		edge.name = "DangerBorder"
-		edge.mesh = part.mesh
-		edge.transform = part.transform
-		edge.scale *= BeeGameSettings.DANGER_BORDER_SCALE
-		var dark := _material("danger_border", BeeGameSettings.DANGER_BORDER).duplicate() as StandardMaterial3D
-		dark.cull_mode = BaseMaterial3D.CULL_FRONT
-		edge.material_override = dark
-		edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		body.add_child(edge)
-	var core_radius := 0.12 if spec["shape"] == &"bubble" else 0.09
+	var core_radius := 0.11 if spec["shape"] == &"bubble" else 0.075
 	var core := _mesh(root, _sphere(core_radius, 10, 5), CORE_COLOR, "Core", false, 5)
-	core.position = Vector3(0.0, 0.0, 0.35)
+	core.position = Vector3(0.0, 0.0, 0.03)
 	var halo := _mesh(root, _sphere(core_radius * 1.9, 10, 5), Color(CORE_COLOR, 0.22), "CoreHalo", true, 4)
 	halo.position = core.position
 	root.scale = Vector3.ONE * VISUAL_SCALE
@@ -173,7 +163,7 @@ static func trail(style: StringName) -> CPUParticles3D:
 	particles.scale_amount_min = 0.7
 	particles.scale_amount_max = 1.0
 	var radius := 0.07
-	if spec["shape"] in [&"needle", &"dart"]:
+	if spec["shape"] == &"needle":
 		radius = 0.05
 	elif spec["shape"] == &"bubble":
 		radius = 0.12

@@ -14,7 +14,7 @@ const TRAP_SECONDS := 2.0
 const TEARS_NEEDED := 4 ## Normal; Easy needs one less.
 const STRUGGLES_NEEDED := 8 ## Normal; Easy needs two less.
 const GRACE_SECONDS := 1.5
-const SILK := BeeGameSettings.DANGER_MAGENTA
+const SILK := Color(0.96, 0.96, 0.9, 0.9)
 
 var boss: Node
 var bee: BeePlayer

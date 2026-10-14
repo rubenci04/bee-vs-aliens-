@@ -156,7 +156,7 @@ func _mark_mortar() -> void:
 	var dx := clampf(target.global_position.x - global_position.x, -MORTAR_MAX_REACH, MORTAR_MAX_REACH)
 	_mortar_target = Vector3(global_position.x + dx, -0.2, 0.0)
 	_clear_marker()
-	_mortar_marker = BeeAttackVisuals.ring(get_parent(), _mortar_target + Vector3(0, 0.08, 0), PUDDLE_RADIUS, 0.18, Color(0.2, 0.95, 1.0, 0.8))
+	_mortar_marker = BeeAttackVisuals.ring(get_parent(), _mortar_target + Vector3(0, 0.08, 0), PUDDLE_RADIUS, 0.18, Color(0.2, 0.95, 1.0, 0.8), true)
 	_mortar_marker.rotation.x = 0.0 # Flat on the ground.
 	_mortar_marker.scale = Vector3(PUDDLE_RADIUS, 1.0, PUDDLE_RADIUS * 0.6)
 

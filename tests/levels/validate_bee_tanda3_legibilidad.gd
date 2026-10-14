@@ -21,8 +21,8 @@ func run() -> void:
 	var plain := BeeShotPalette.plasma(true)
 	var plain_core := plain.get_node("Core") as MeshInstance3D
 	var plain_body := plain.get_node("Halo") as MeshInstance3D
-	check(plain_core.position.z >= plain_body.position.z + (plain_body.mesh as SphereMesh).radius, "Opaque generic shot body cannot hide its white core")
-	check(((plain.get_node("Outer") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(BeeGameSettings.DANGER_BORDER), "Generic shots retain a dark outer border")
+	check(plain_core.position == Vector3.ZERO and plain_body.position == Vector3.ZERO, "Generic shot layers keep their restored positions")
+	check(((plain.get_node("Outer") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(Color(BeeShotPalette.ENEMY_SHOT_RIM, BeeShotPalette.OUTER_ALPHA)), "Generic shot keeps its restored violet translucent rim")
 	plain.free()
 	# Rendering changes must keep the existing tuned shot radii, damage and movement.
 	var radii := {&"stinger": 0.12, &"acid": 0.13, &"web": 0.16, &"pebble": 0.14, &"bubble": 0.24, &"spore": 0.15, &"pellet": 0.10, &"seed": 0.12, &"stone": 0.18, &"mud": 0.15, &"bile": 0.16}
@@ -32,11 +32,13 @@ func run() -> void:
 		shot.damage = 5
 		shot.speed = 13.0
 		shot.gravity = 1.0
+		shot.set_physics_process(false)
 		root.add_child(shot)
-		check(shot.has_node(BeeShotStyles.PLASMA_NAME), "%s styled before the first rendered frame" % style)
+		await process_frame
+		check(shot.has_node(BeeShotStyles.PLASMA_NAME), "%s receives its restored family style" % style)
 		var body := shot.get_node(BeeShotStyles.PLASMA_NAME) as Node3D
-		check(not body.find_children("DangerBorder", "MeshInstance3D", true, false).is_empty(), "%s has dark silhouette borders" % style)
-		check(((body.get_node("Core") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(BeeGameSettings.DANGER_CORE), "%s has a clear white core" % style)
+		check(body.find_children("DangerBorder", "MeshInstance3D", true, false).is_empty(), "%s has no T3 dark shell" % style)
+		check(((body.get_node("Core") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(BeeShotStyles.CORE_COLOR), "%s keeps its original small cyan core" % style)
 		check(is_equal_approx((shot.get_node("Hitbox3D/CollisionShape3D").shape as SphereShape3D).radius, radii[style]), "%s keeps its tuned collision radius" % style)
 		check(shot.damage == 5 and shot.speed == 13.0 and shot.gravity == 1.0, "%s keeps damage, speed and gravity" % style)
 		shot.free()

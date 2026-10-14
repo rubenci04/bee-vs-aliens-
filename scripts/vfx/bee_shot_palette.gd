@@ -8,12 +8,12 @@ extends RefCounted
 
 const BEE_SHOT_COLOR := Color(1.0, 0.72, 0.16) # Warm gold halo.
 const BEE_SHOT_CORE := Color(1.0, 0.99, 0.9) # White-hot core.
-const ENEMY_SHOT_COLOR := BeeGameSettings.DANGER_CYAN
-const ENEMY_SHOT_CORE := BeeGameSettings.DANGER_CORE
-const ENEMY_SHOT_RIM := BeeGameSettings.DANGER_BORDER # Violet outer rim.
+const ENEMY_SHOT_COLOR := Color(0.18, 0.92, 1.0) # Cyan halo: the hostile colour.
+const ENEMY_SHOT_CORE := Color(0.86, 1.0, 1.0)
+const ENEMY_SHOT_RIM := Color(0.66, 0.28, 1.0) # Violet outer rim.
 ## Radii in metres: [core, halo, outer glow].
 const BEE_RADII := Vector3(0.075, 0.15, 0.22)
-const ENEMY_RADII := Vector3(0.10, 0.21, 0.26)
+const ENEMY_RADII := Vector3(0.08, 0.17, 0.26)
 const HALO_ALPHA := 0.6
 const OUTER_ALPHA := 0.24
 ## Short trails: particles alive this long (s).
@@ -34,7 +34,8 @@ static func _sphere(key: String, radius: float, color: Color, priority: int, tra
 	mesh.rings = 6
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.disable_fog = true
+	# Restore only hostile shots; retain T3 fog handling for Bee's own plasma.
+	material.disable_fog = key.begins_with("bee_")
 	material.albedo_color = color
 	material.render_priority = priority
 	if transparent:
@@ -56,8 +57,8 @@ static func plasma(enemy: bool, size := 1.0) -> Node3D:
 	var tag := "enemy" if enemy else "bee"
 	var layers := [
 		["Core", _sphere(tag + "_core", radii.x, core_color, 3, false)],
-		["Halo", _sphere(tag + "_halo", radii.y, Color(halo_color, 1.0 if enemy else HALO_ALPHA), 2, not enemy)],
-		["Outer", _sphere(tag + "_outer", radii.z, Color(outer_color, 1.0 if enemy else OUTER_ALPHA), 1, not enemy)],
+		["Halo", _sphere(tag + "_halo", radii.y, Color(halo_color, HALO_ALPHA), 2, true)],
+		["Outer", _sphere(tag + "_outer", radii.z, Color(outer_color, OUTER_ALPHA), 1, true)],
 	]
 	for layer in layers:
 		var mesh := MeshInstance3D.new()
@@ -65,9 +66,6 @@ static func plasma(enemy: bool, size := 1.0) -> Node3D:
 		mesh.mesh = layer[1]
 		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(mesh)
-		if enemy:
-			# Side camera is at +Z: draw the white core in front of the opaque colour/body.
-			mesh.position.z = BeeGameSettings.DANGER_CORE_FRONT_Z if layer[0] == "Core" else (0.12 if layer[0] == "Halo" else 0.0)
 	root.scale = Vector3.ONE * size
 	return root
 

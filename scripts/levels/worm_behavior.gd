@@ -38,7 +38,7 @@ const BURY_SECONDS := 0.4
 const SPOT_AHEAD := 2.6
 const WARN_COLOR := Color(1.0, 0.55, 0.15, 0.8)
 const LOCK_COLOR := Color(1.0, 0.45, 0.12, 0.85)
-const BEAM_COLOR := BeeGameSettings.DANGER_CYAN
+const BEAM_COLOR := Color(0.35, 1.0, 1.0, 0.95)
 
 var fauna: AssetFauna
 var step := Step.BURIED
