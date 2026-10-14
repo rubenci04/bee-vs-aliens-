@@ -61,3 +61,28 @@ Godot 4.7.2 Compatibility, render real en Intel Arc B580: ambas capturas exporta
 La prueba nueva verifica los once radios originales, ausencia de bordes/núcleos añadidos en los ataques restaurados, sombreado original del mortero, retorno del hilo activo a 0,06, conservación de avisos y carga de las 27 muestras en ambos perfiles. La prueba de legibilidad existente conserva checks de hojas/pasto, día y aviso/regadera sin daño previo al segundo; su sección de disparos se actualizó al aspecto restaurado.
 
 Cambios: fábricas `scripts/vfx/bee_shot_{styles,palette}.gd`, `toon_alien_projectile.gd`, `bee_attack_visuals.gd`; apariencia de mortero, onda, gusano, tarántula/red y agua; solo `ROBOT_LASER_COLOR` en ajustes generales; marca explícita de aviso en `ground_turret_enemy.gd` para conservar su aro de suelo cian de Tanda 3; tests relacionados, escena de galería y estas imágenes/documentación. Se repitieron las dos pruebas dirigidas al helper/aviso después de esa separación final. Ningún asset previo borrado ni reemplazado. `dev/` y los archivos locales ajenos quedan fuera del commit.
+
+## Tanda 3c — doce propuestas, sin aplicar al juego
+
+Se agregó **solo** `tools/galeria_propuestas.tscn` y su script de inspección. Las fábricas del juego, los seis disparos actuales, el resto de los ataques y la galería restaurada permanecen intactos. Las propuestas no tienen colisiones/hitboxes; no cambian daños ni velocidades. A utiliza copias de las mallas actuales, con geometría y escala originales; B utiliza mallas nuevas de pocas caras construidas exclusivamente en la herramienta. Todos los materiales modificados son copias propias, sin alterar la caché compartida del juego.
+
+| Enemigo | Opción | Propuesta solo de galería |
+|---|---|---|
+| Hormiga `Ant` | A | Piedra original de ~0,43 m, magenta intenso `#EF16CF`, emisión, estela magenta y halo claro tenue. |
+| Hormiga `Ant` | B | Dardo corto facetado de ~0,60 m, mismo magenta, emisión, estela y halo tenue. |
+| Mariquita `Ladybird` | A | Semilla original de ~0,47 m, carmesí `#D70C43`, emisión, estela carmesí y halo blanco cálido `#FFF0D5` translúcido. |
+| Mariquita `Ladybird` | B | Semilla angular de ~0,56 m, con marca carmesí más oscura, misma emisión/estela y halo blanco cálido. |
+| Escarabajo `StagBeetle` | A | Piedra original de ~0,49 m, azul eléctrico `#135FFF`, núcleo celeste `#69CEFF`, emisión, estela azul y halo tenue. |
+| Escarabajo `StagBeetle` | B | Cristal hexagonal de ~0,56 m, mismo azul, núcleo celeste pequeño, emisión y estela azul. |
+| Gusano B `WormB` | A | Glóbulo con bulto original de ~0,50 m, amarillo ácido `#DFEF16`, núcleo claro `#F7FFD0`, emisión, estela amarilla y halo tenue. |
+| Gusano B `WormB` | B | Gota con punta facetada de ~0,62 m, mismo amarillo, núcleo claro pequeño, emisión y estela amarilla. |
+| Mosca común `FlyCommon` | A | Bolita original Ø0,26 m, cian brillante `#00EAFF`, emisión, estela cian y halo claro tenue; se conserva el tamaño para comparar. |
+| Mosca común `FlyCommon` | B | Perdigón facetado Ø0,38 m, mismo cian, emisión, estela y halo tenue; el aumento es exclusivamente visual. |
+| Caracol `Snail` | A | Burbuja original Ø0,78 m, borde circular y núcleo cian saturado `#00D9F5`, volumen translúcido, emisión y estela cian. |
+| Caracol `Snail` | B | Burbuja facetada Ø0,84 m con borde decagonal y núcleo cian, misma emisión, transparencia y estela. |
+
+Abrir **`tools/galeria_propuestas.tscn` → F6**. Columna izquierda A, derecha B. **1** día, **2** anochecer real del nivel, **E** exportar. Capturas: `docs/galeria_propuestas_dia.png` y `docs/galeria_propuestas_noche.png`, 1600 × 2100 px. Cada par utiliza exactamente el mismo jardín, posición y cámara; las muestras se aíslan por capas de render. Cámaras ampliadas, movimiento lento de revisión para ver estelas, sin simular una nueva velocidad de gameplay. Los halos son volúmenes 3D de opacidad 0,10: no hay contornos negros añadidos ni discos blancos opacos. Compatibility no aporta bloom HDR; la emisión mantiene el color y el halo tenue se representa con geometría translúcida. Los cuerpos conservan sombreado y facetas.
+
+Colores, núcleos, halos, radios B, emisión (`EMISSION_GAIN=0,8`), aporte de albedo (`ALBEDO_GAIN=0,35`) y estelas (`TRAIL_ALPHA=0,55`) se configuran en constantes al inicio de `tools/galeria_propuestas.gd`. **Ninguna opción está elegida ni conectada al juego.** El tamaño visual mayor de algunas B no requiere ajustar nada para esta galería; si se eligieran para gameplay, su silueta podría exceder la hitbox actual. No se ajustó ninguna hitbox.
+
+Validación Tanda 3c: ambas capturas renderizadas en Godot 4.7.2 Compatibility y revisadas de día y noche. Solo pruebas de galería relacionadas: `validate_bee_galeria_propuestas` y `validate_bee_disparos_restaurados`, aprobadas. La primera verifica las doce opciones, geometría/escala original de A, emisión de las estelas, ausencia de colisiones, ambos perfiles y que no se modifiquen los materiales cacheados del juego. Se corrigió un problema de texto de las capturas usando una fuente propia de la galería. No se corrió suite completa.
