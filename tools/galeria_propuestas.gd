@@ -133,7 +133,7 @@ func _build_sample(sample: Node3D, kind: String) -> void:
 	var color: Color = COLORS[style]
 	var body: Node3D
 	if option == "A":
-		body = BeeShotStyles.build(style)
+		body = BeeShotStyles.build_original(style)
 		sample.add_child(body)
 		# Own resources: never mutate cached game meshes/materials.
 		for visual: MeshInstance3D in body.find_children("*", "MeshInstance3D", true, false):

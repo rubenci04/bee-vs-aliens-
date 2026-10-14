@@ -1,5 +1,8 @@
 class_name BeeShotStyles
 extends RefCounted
+## Tanda 3d: six selected B appearances dispatch to FACETED below.
+## STYLES retains the historical data and tuned hit radii/spin/pattern roles;
+## selected visual colours/sizes live in bee_facet_shot_styles.gd.
 ## LOTE 13 · ETAPA 2 — every Level 1 family fires a shot you can tell apart at a glance. The CORE is always cyan (hostile); the rim
 ## colour, the shape and the trail belong to the family. They all contrast with Bee's golden shot (warm halo, white-hot core, short
 ## warm trail): cold or dark rims, odd shapes, and the cyan dot in the middle.
@@ -16,6 +19,7 @@ extends RefCounted
 ## Presentation only: the hitbox, damage and speed of the shot are untouched except for `hit_radius` (so a big bubble reads as big).
 
 const CORE_COLOR := Color(0.25, 0.97, 1.0)
+const FACETED := preload("res://scripts/vfx/bee_facet_shot_styles.gd")
 const PLASMA_NAME := "StyledShot"
 ## The styled body is drawn a little larger than the plain orb so the shape reads at screen scale (the hitbox is `hit_radius`).
 const VISUAL_SCALE := 1.3
@@ -86,6 +90,13 @@ static func _cone(bottom_radius: float, height: float) -> CylinderMesh:
 
 ## Builds the body of `style` under a new root (centred on the shot, pointing along +X = the travel direction).
 static func build(style: StringName) -> Node3D:
+	if FACETED.has_style(style):
+		return FACETED.build(style)
+	return build_original(style)
+
+
+## Historical factory retained for the A/B comparison tool and unselected families.
+static func build_original(style: StringName) -> Node3D:
 	var spec: Dictionary = STYLES[style]
 	var rim: Color = spec["rim"]
 	var root := Node3D.new()
@@ -168,7 +179,7 @@ static func trail(style: StringName) -> CPUParticles3D:
 	elif spec["shape"] == &"bubble":
 		radius = 0.12
 	particles.mesh = _sphere(radius, 6, 3)
-	(particles.mesh as PrimitiveMesh).material = _material("trail", Color(colour, 0.6), true, 0)
+	(particles.mesh as PrimitiveMesh).material = FACETED.trail_material(style) if FACETED.has_style(style) else _material("trail", Color(colour, 0.6), true, 0)
 	var fade := Gradient.new()
 	fade.colors = PackedColorArray([Color.WHITE, Color(1, 1, 1, 0)])
 	particles.color_ramp = fade

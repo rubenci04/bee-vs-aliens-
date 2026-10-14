@@ -5,7 +5,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	# Snapshot cached game resources before gallery recolouring.
-	var baseline := BeeShotStyles.build(&"stone")
+	var baseline := BeeShotStyles.build_original(&"stone")
 	var original_mesh := baseline.get_node("Body/Rock").mesh as Mesh
 	var original_color: Color = original_mesh.surface_get_material(0).albedo_color
 	var scene: Node3D = load("res://tools/galeria_propuestas.tscn").instantiate()
@@ -19,7 +19,7 @@ func _run() -> void:
 		assert(a.position.is_equal_approx(b.position))
 		assert(a.find_children("*", "CollisionObject3D", true, false).is_empty())
 		assert(b.find_children("*", "CollisionObject3D", true, false).is_empty())
-		var source := BeeShotStyles.build(styles[row])
+		var source := BeeShotStyles.build_original(styles[row])
 		var preview := a.get_node("StyledShot") as Node3D
 		assert(preview.scale == source.scale)
 		for original: MeshInstance3D in source.find_children("*", "MeshInstance3D", true, false):

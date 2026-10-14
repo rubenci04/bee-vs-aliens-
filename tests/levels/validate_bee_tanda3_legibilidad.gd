@@ -38,7 +38,10 @@ func run() -> void:
 		check(shot.has_node(BeeShotStyles.PLASMA_NAME), "%s receives its restored family style" % style)
 		var body := shot.get_node(BeeShotStyles.PLASMA_NAME) as Node3D
 		check(body.find_children("DangerBorder", "MeshInstance3D", true, false).is_empty(), "%s has no T3 dark shell" % style)
-		check(((body.get_node("Core") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(BeeShotStyles.CORE_COLOR), "%s keeps its original small cyan core" % style)
+		if not BeeShotStyles.FACETED.has_style(style):
+			check(((body.get_node("Core") as MeshInstance3D).mesh as PrimitiveMesh).material.albedo_color.is_equal_approx(BeeShotStyles.CORE_COLOR), "%s keeps its original small cyan core" % style)
+		else:
+			check(body.has_node("Body/SoftHalo"), "%s receives selected B visuals" % style)
 		check(is_equal_approx((shot.get_node("Hitbox3D/CollisionShape3D").shape as SphereShape3D).radius, radii[style]), "%s keeps its tuned collision radius" % style)
 		check(shot.damage == 5 and shot.speed == 13.0 and shot.gravity == 1.0, "%s keeps damage, speed and gravity" % style)
 		shot.free()

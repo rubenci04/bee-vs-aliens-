@@ -82,8 +82,11 @@ func test_styles() -> void:
 	var names: Array[StringName] = []
 	for style in BeeShotStyles.STYLES:
 		var body := BeeShotStyles.build(style)
-		var core := body.get_node_or_null("Core") as MeshInstance3D
-		check(core != null and ((core.mesh as PrimitiveMesh).material as StandardMaterial3D).albedo_color.is_equal_approx(BeeShotStyles.CORE_COLOR), "%s has the cyan core" % style)
+		if BeeShotStyles.FACETED.has_style(style):
+			check(body.has_node("Body/SoftHalo"), "%s has its selected B halo" % style)
+		else:
+			var core := body.get_node_or_null("Core") as MeshInstance3D
+			check(core != null and ((core.mesh as PrimitiveMesh).material as StandardMaterial3D).albedo_color.is_equal_approx(BeeShotStyles.CORE_COLOR), "%s has the cyan core" % style)
 		var rim: Color = BeeShotStyles.STYLES[style]["rim"]
 		check(not BeeToonStyle.is_cyan(rim), "%s rim is not cyan (cyan is the core)" % style)
 		# The pebble is orange but dark, tumbling, lobbed and carries the cyan core: it still reads apart from the golden shot.
