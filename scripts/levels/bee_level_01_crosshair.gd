@@ -34,7 +34,8 @@ func _process(delta: float) -> void:
 	_t += delta
 	var aiming := bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused and bee.is_free_aiming()
 	visible = aiming
-	_set_cursor_hidden(aiming)
+	# TANDA 1 · H-03: the OS cursor stays hidden for the whole gameplay (mouse or pad); it comes back on pause and defeat.
+	_set_cursor_hidden(bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused)
 	hovered = hostile_at(bee.aim_point) if aiming else null
 	if aiming:
 		queue_redraw()

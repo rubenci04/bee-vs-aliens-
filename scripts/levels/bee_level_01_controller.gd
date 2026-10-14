@@ -778,11 +778,13 @@ func _announce_species(family: String) -> void:
 		species_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 		species_label.offset_left = -200.0
 		species_label.offset_right = 200.0
-		species_label.offset_top = 50.0
-		species_label.offset_bottom = 74.0
+		species_label.offset_top = 124.0 # H-06: own notice zone, below the boss indicator (top centre).
+		species_label.offset_bottom = 152.0
 		species_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		species_label.add_theme_font_size_override("font_size", 15)
-		species_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+		species_label.add_theme_font_size_override("font_size", 20)
+		species_label.add_theme_color_override("font_color", Color(0.93, 0.98, 1.0))
+		species_label.add_theme_color_override("font_outline_color", Color(0.04, 0.06, 0.08))
+		species_label.add_theme_constant_override("outline_size", 6)
 		species_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 		species_label.add_theme_constant_override("shadow_offset_x", 1)
 		species_label.add_theme_constant_override("shadow_offset_y", 1)

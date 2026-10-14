@@ -22,7 +22,7 @@ func run() -> void:
 	check(not stage.status.visible and not stage.debug_label.visible, "Debug text starts hidden")
 	check(not juice.pollen_label.visible and not juice.frenzy_label.visible and not juice.combo_label.visible, "Legacy debug counters are hidden")
 	check(BeeGameSettings.HUD_HEALTH_CELLS == 10 and BeeGameSettings.HUD_BOMB_ICON_COUNT == 5, "HUD shows configured honeycomb health and up to five bombs")
-	check(BeeGameSettings.HUD_PANEL_SIZE.y == 200.0 and hud.call("control_text").contains("BOMBA C"), "HUD reserves a readable row for keyboard/mouse buttons")
+	check(BeeGameSettings.HUD_PANEL_SIZE.y <= 110.0 and hud.call("control_text").contains("BOMBA C"), "HUD is compact (T1) and still names the keyboard/mouse buttons")
 	BeeGameSettings.last_input_joypad = true
 	check(hud.call("control_text").contains("PIRUETA B / LB") and hud.call("control_text").contains("AGUIJÓN Y / RB"), "HUD names the current joypad buttons")
 	BeeGameSettings.last_input_joypad = false

@@ -15,7 +15,7 @@ const TEXT_SECONDS := 1.3
 const TEXT_RISE := 0.9
 const TEXT_COLOR := Color(1.0, 0.9, 0.45)
 ## LOTE 14 · ETAPA 3.3: never more than MAX_TEXTS "LIBERADO" signs at once; further liberations merge into ONE "+N LIBERADOS" sign.
-const MAX_TEXTS := 3
+const MAX_TEXTS := 2
 const GROUP_TEXT := "+%d LIBERADOS"
 const CHIME_PITCH := 1.45
 ## LOTE 9 — every hit on a controlled animal (body, shell, wings, legs) damages its implant at BODY_MULTIPLIER; a

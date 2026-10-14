@@ -6,6 +6,7 @@ var taught: Dictionary = {}
 var debug_visible := false
 var death_panel: Panel
 var death_label: Label
+var legend_left := BeeGameSettings.HUD_LEGEND_SECONDS ## TANDA 1 · H-01: the controls legend is temporary.
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -18,13 +19,14 @@ func _ready() -> void:
 	$Hint.add_theme_color_override("font_color", BeeGameSettings.HUD_LABEL_COLOR)
 	$Hint.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.05, 1.0))
 	$Hint.add_theme_constant_override("outline_size", 5)
-	$Hint.position = Vector2(BeeGameSettings.HUD_PANEL_POSITION.x, BeeGameSettings.HUD_PANEL_POSITION.y + BeeGameSettings.HUD_PANEL_SIZE.y + BeeGameSettings.HUD_HINT_GAP)
+	$Hint.position = Vector2(BeeGameSettings.HUD_PANEL_POSITION.x, BeeGameSettings.HUD_PANEL_POSITION.y + BeeGameSettings.HUD_PANEL_SIZE.y + BeeGameSettings.HUD_HINT_GAP + 18.0)
 	$Hint.offset_right = 620.0
 	_build_death_message()
 	bee.defeated.connect(_show_death_message)
 	_sync_text_debug()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	legend_left = maxf(0.0, legend_left - delta)
 	if Input.is_action_just_pressed(BeeGameSettings.HUD_DEBUG_ACTION):
 		debug_visible = not debug_visible
 	_sync_text_debug()
@@ -33,6 +35,7 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 	if not taught.has(&"roll") and get_tree().get_nodes_in_group("alien_projectiles").size() >= BeeGameSettings.PIRUETA_HINT_SHOT_COUNT:
 		taught[&"roll"] = true
+		legend_left = maxf(legend_left, 5.0)
 		$Hint.text = "PIRUETA · %s: esquiva y rompe disparos" % ("B / LB" if BeeGameSettings.last_input_joypad else "SHIFT")
 		$Hint.show()
 		$HintTimer.start()
@@ -127,7 +130,7 @@ func _draw() -> void:
 	var health_cells := BeeGameSettings.HUD_HEALTH_CELLS
 	var cell_w := BeeGameSettings.HUD_HEX_WIDTH
 	var cell_h := BeeGameSettings.HUD_HEX_HEIGHT
-	draw_string(font, panel + Vector2(16, BeeGameSettings.HUD_ROW_HEALTH_Y), "VIDA", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(font, panel + Vector2(10, BeeGameSettings.HUD_ROW_HEALTH_Y), "VIDA", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 	for i in health_cells:
 		var fill := clampf(hp_ratio * health_cells - i, 0.0, 1.0)
 		_draw_hex(panel + Vector2(BeeGameSettings.HUD_HEALTH_CELL_START_X + i * (cell_w + BeeGameSettings.HUD_CELL_GAP), BeeGameSettings.HUD_ROW_HEALTH_Y - 14.0), cell_w, cell_h, BeeGameSettings.HUD_HEALTH_COLOR.lerp(BeeGameSettings.HUD_EMPTY_COLOR, 1.0 - fill))
@@ -138,7 +141,7 @@ func _draw() -> void:
 	if juice != null:
 		pollen_progress = int(juice.call("pollen_progress"))
 		banked_heals = int(juice.get("banked_heals"))
-	draw_string(font, panel + Vector2(16, BeeGameSettings.HUD_ROW_POLLEN_Y), "POLEN", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(font, panel + Vector2(10, BeeGameSettings.HUD_ROW_POLLEN_Y), "POLEN", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 	for i in BeeGameSettings.HUD_POLLEN_CELLS:
 		var fill := clampf(float(pollen_progress) / BeeLevel01Juice.POLLEN_PER_HEAL * BeeGameSettings.HUD_POLLEN_CELLS - i, 0.0, 1.0)
 		_draw_hex(panel + Vector2(BeeGameSettings.HUD_HEALTH_CELL_START_X + i * (cell_w + BeeGameSettings.HUD_CELL_GAP), BeeGameSettings.HUD_ROW_POLLEN_Y - 14.0), cell_w, cell_h, BeeGameSettings.HUD_POLLEN_COLOR.lerp(BeeGameSettings.HUD_EMPTY_COLOR, 1.0 - fill))
@@ -147,14 +150,21 @@ func _draw() -> void:
 		pollen_text += "  +"
 	draw_string(font, panel + Vector2(BeeGameSettings.HUD_VALUE_START_X, BeeGameSettings.HUD_ROW_POLLEN_Y), pollen_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
-	_draw_bombs(panel + Vector2(38, BeeGameSettings.HUD_ROW_ABILITY_Y - 13.0))
-	_draw_roll(panel + Vector2(200, BeeGameSettings.HUD_ROW_ABILITY_Y - 2.0))
-	_draw_stinger(panel + Vector2(356, BeeGameSettings.HUD_ROW_ABILITY_Y - 4.0))
-	var spread_text := spread_status_text()
-	draw_string(font, panel + Vector2(442, BeeGameSettings.HUD_ROW_ABILITY_Y + 1.0), spread_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR if bee.spread_ammo > 0.0 else BeeGameSettings.HUD_LABEL_COLOR)
+	_draw_bombs(panel + Vector2(14, BeeGameSettings.HUD_ROW_ABILITY_Y - 8.0))
+	_draw_roll(panel + Vector2(122, BeeGameSettings.HUD_ROW_ABILITY_Y - 3.0))
+	_draw_stinger(panel + Vector2(184, BeeGameSettings.HUD_ROW_ABILITY_Y - 9.0))
+	if bee.spread_ammo > 0.0: # H-02: no standalone "BASE" text; only the Spread timer, in its own slot.
+		draw_string(font, panel + Vector2(252, BeeGameSettings.HUD_ROW_ABILITY_Y + 2.0), spread_status_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
 
 	_draw_combo(viewport_size, juice, font)
-	draw_string(font, panel + Vector2(16, BeeGameSettings.HUD_CONTROL_ROW_Y), control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	if legend_left > 0.0:
+		var alpha := clampf(legend_left, 0.0, 1.0)
+		var at := panel + Vector2(2, panel_bottom_gap())
+		draw_string(font, at + Vector2(1, 1), control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, Color(0, 0, 0, 0.9 * alpha))
+		draw_string(font, at, control_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, Color(BeeGameSettings.HUD_LABEL_COLOR, alpha))
+
+func panel_bottom_gap() -> float:
+	return BeeGameSettings.HUD_PANEL_SIZE.y + 14.0
 
 func _draw_panel(rect: Rect2) -> void:
 	draw_rect(Rect2(rect.position + Vector2(3, 4), rect.size), Color(0.0, 0.0, 0.0, 0.35), true, -1.0, true)
@@ -171,51 +181,50 @@ func _draw_hex(origin: Vector2, width: float, height: float, color: Color) -> vo
 	draw_polyline(PackedVector2Array([points[0], points[1], points[2], points[3], points[4], points[5], points[0]]), BeeGameSettings.HUD_LABEL_COLOR, 1.0, true)
 
 func _draw_bombs(origin: Vector2) -> void:
-	var font := ThemeDB.fallback_font
-	draw_string(font, origin + Vector2(-18, -5), "BOMBAS", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 	for i in BeeGameSettings.HUD_BOMB_ICON_COUNT:
-		var center := origin + Vector2(12 + i * 22, 15)
+		var center := origin + Vector2(6 + i * 17, 8)
 		var color := BeeGameSettings.HUD_POLLEN_COLOR if i < displayed_bomb_icons() else BeeGameSettings.HUD_EMPTY_COLOR
-		draw_circle(center, 7.0, color)
-		draw_arc(center, 7.0, 0, TAU, 16, BeeGameSettings.HUD_LABEL_COLOR, 1.2, true)
-		draw_line(center + Vector2(0, -6), center + Vector2(4, -11), BeeGameSettings.HUD_LABEL_COLOR, 2.0, true)
+		draw_circle(center, 6.0, color)
+		draw_arc(center, 6.0, 0, TAU, 16, BeeGameSettings.HUD_LABEL_COLOR, 1.0, true)
+		draw_line(center + Vector2(0, -5), center + Vector2(3, -9), BeeGameSettings.HUD_LABEL_COLOR, 1.6, true)
 
 func _draw_roll(center: Vector2) -> void:
 	var ratio := pirueta_ready_ratio()
-	draw_arc(center, 15.0, 0.0, TAU, 32, BeeGameSettings.HUD_EMPTY_COLOR, 3.0, true)
+	draw_arc(center, 11.0, 0.0, TAU, 32, BeeGameSettings.HUD_EMPTY_COLOR, 3.0, true)
 	if ratio < 1.0:
-		draw_arc(center, 15.0, -PI * 0.5, -PI * 0.5 + TAU * ratio, 32, BeeGameSettings.HUD_READY_COLOR, 3.0, true)
+		draw_arc(center, 11.0, -PI * 0.5, -PI * 0.5 + TAU * ratio, 32, BeeGameSettings.HUD_READY_COLOR, 3.0, true)
 	else:
-		draw_arc(center, 15.0, 0.0, TAU, 32, BeeGameSettings.HUD_READY_COLOR, 2.0, true)
-	draw_colored_polygon(PackedVector2Array([center + Vector2(7, -9), center + Vector2(13, -11), center + Vector2(11, -4)]), BeeGameSettings.HUD_READY_COLOR)
+		draw_arc(center, 11.0, 0.0, TAU, 32, BeeGameSettings.HUD_READY_COLOR, 2.0, true)
+	draw_colored_polygon(PackedVector2Array([center + Vector2(5, -7), center + Vector2(10, -8), center + Vector2(8, -3)]), BeeGameSettings.HUD_READY_COLOR)
 	var button := "B/LB" if BeeGameSettings.last_input_joypad else "SHIFT"
-	draw_string(ThemeDB.fallback_font, center + Vector2(22, 5), "PIRUETA %s" % button, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(ThemeDB.fallback_font, center + Vector2(16, 4), button, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 func _draw_stinger(origin: Vector2) -> void:
 	var color := BeeGameSettings.HUD_HEALTH_COLOR
-	draw_line(origin + Vector2(0, 14), origin + Vector2(28, 0), color, 4.0, true)
-	draw_colored_polygon(PackedVector2Array([origin + Vector2(29, -2), origin + Vector2(41, -7), origin + Vector2(34, 4)]), color)
-	draw_line(origin + Vector2(3, 18), origin + Vector2(10, 6), BeeGameSettings.HUD_LABEL_COLOR, 3.0, true)
+	draw_line(origin + Vector2(0, 12), origin + Vector2(20, 0), color, 3.0, true)
+	draw_colored_polygon(PackedVector2Array([origin + Vector2(21, -2), origin + Vector2(30, -6), origin + Vector2(25, 3)]), color)
+	draw_line(origin + Vector2(2, 15), origin + Vector2(7, 5), BeeGameSettings.HUD_LABEL_COLOR, 2.0, true)
 	var button := "Y/RB" if BeeGameSettings.last_input_joypad else "Z"
-	draw_string(ThemeDB.fallback_font, origin + Vector2(46, 12), "AGUIJÓN %s" % button, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(ThemeDB.fallback_font, origin + Vector2(36, 11), button, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 func _draw_combo(viewport_size: Vector2, juice: Node, font: Font) -> void:
-	var rect := Rect2(Vector2(maxf(BeeGameSettings.HUD_PANEL_POSITION.x + BeeGameSettings.HUD_PANEL_SIZE.x + 18.0, viewport_size.x - BeeGameSettings.HUD_COMBO_PANEL_SIZE.x - 20.0), BeeGameSettings.HUD_PANEL_POSITION.y), BeeGameSettings.HUD_COMBO_PANEL_SIZE)
+	var rect := Rect2(Vector2(maxf(BeeGameSettings.HUD_PANEL_POSITION.x + BeeGameSettings.HUD_PANEL_SIZE.x + 18.0, viewport_size.x - BeeGameSettings.HUD_COMBO_PANEL_SIZE.x - 12.0), BeeGameSettings.HUD_PANEL_POSITION.y), BeeGameSettings.HUD_COMBO_PANEL_SIZE)
 	_draw_panel(rect)
 	var combo := int(juice.get("combo")) if juice != null else 0
 	var frenzy_left := bee.honey_left
-	draw_string(font, rect.position + Vector2(16, 28), "COMBO", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
-	draw_string(font, rect.position + Vector2(102, 31), "x%d" % combo, HORIZONTAL_ALIGNMENT_LEFT, -1, 25, BeeGameSettings.HUD_COMBO_COLOR)
-	var bar := Rect2(rect.position + Vector2(16, 43), Vector2(rect.size.x - 32, 10))
+	draw_string(font, rect.position + Vector2(12, 20), "COMBO", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(font, rect.position + Vector2(80, 22), "x%d" % combo, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, BeeGameSettings.HUD_COMBO_COLOR)
+	var bar := Rect2(rect.position + Vector2(12, 29), Vector2(rect.size.x - 24, 8))
 	draw_rect(bar, BeeGameSettings.HUD_EMPTY_COLOR, true, -1.0, true)
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(float(combo) / BeeLevel01Juice.FRENZY_COMBO, 0.0, 1.0), bar.size.y)), BeeGameSettings.HUD_COMBO_COLOR, true, -1.0, true)
 	var state_text := "FRENESÍ %.1f s" % frenzy_left if frenzy_left > 0.0 else "META x%d" % BeeLevel01Juice.FRENZY_COMBO
-	draw_string(font, rect.position + Vector2(16, 78), state_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	draw_string(font, rect.position + Vector2(12, 55), state_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):
 		return
 	taught[kind] = true
+	legend_left = maxf(legend_left, 5.0)
 	$Hint.text = ("SPREAD · A / RT — DISPARAR" if BeeGameSettings.last_input_joypad else "SPREAD · X / CLIC — DISPARAR") if kind == &"spread" else ("BOMBA · X — USAR" if BeeGameSettings.last_input_joypad else "BOMBA · C — USAR")
 	$Hint.show()
 	$HintTimer.start()

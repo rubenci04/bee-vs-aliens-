@@ -160,7 +160,7 @@ func run() -> void:
 			group_text = (node as Label3D).text
 		else:
 			singles += 1
-	check(singles == BeeLiberation.MAX_TEXTS and groups == 1 and group_text == "+3 LIBERADOS", "At most %d LIBERADO signs; the rest merge: singles %d, groups %d '%s'" % [BeeLiberation.MAX_TEXTS, singles, groups, group_text])
+	check(singles == BeeLiberation.MAX_TEXTS and groups == 1 and group_text == "+4 LIBERADOS", "At most %d LIBERADO signs; the rest merge: singles %d, groups %d '%s'" % [BeeLiberation.MAX_TEXTS, singles, groups, group_text])
 	# HUD: the zone notice (top centre) never overlaps the other HUD lines.
 	var section := stage.get_node("CanvasLayer/Section") as Label
 	section.text = "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS · 6/7"
@@ -185,7 +185,7 @@ func run() -> void:
 			origin = Vector2((layer as Control).offset_left, (layer as Control).offset_top)
 		rects.append({"rect": Rect2(Vector2(left, top) + origin, size), "text": label.text})
 	# The Lote 17 HUD draws its meters/icons directly on CanvasItem instead of creating text Labels.
-	check(rects.size() >= 2, "HUD overlays found (%d)" % rects.size())
+	check(rects.size() >= 1, "HUD overlays found (%d)" % rects.size())
 	for i in rects.size():
 		for j in range(i + 1, rects.size()):
 			var a: Rect2 = rects[i]["rect"]

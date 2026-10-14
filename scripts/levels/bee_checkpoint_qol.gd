@@ -41,7 +41,7 @@ var debug_label: Label
 func setup(value: BeeShmupStage) -> void:
 	stage = value
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	notice = label("CheckpointNotice", "", Vector2(430, 112), 28)
+	notice = label("CheckpointNotice", "", Vector2(430, 52), 28)
 	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
 	_build_pause_panel()
 	controls_hint = label("ControlsHint", "", Vector2(18, 212), 18)

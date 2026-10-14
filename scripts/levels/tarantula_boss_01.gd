@@ -214,6 +214,9 @@ var _dorsal_shell: MeshInstance3D
 var _mouth_glow: MeshInstance3D
 var _warnings: Array[Node3D] = []
 var _bar_layer: CanvasLayer
+var _hint_label: Label
+var _hint_token := 0
+const BOSS_HINT_SECONDS := 5.0
 var _bar: ProgressBar
 var _phase_label: Label
 var _anim: AnimationPlayer
@@ -1074,7 +1077,7 @@ func _armour_legs() -> void:
 	legs_armoured = true
 	legs_hurtbox.health_component = _armour_health
 	legs_hurtbox.set_meta("neutral_hit", true)
-	_phase_label_text("FASE 2 / 4 · PATAS BLINDADAS: APUNTÁ AL IMPLANTE")
+	_boss_hint("PATAS BLINDADAS: APUNTÁ AL IMPLANTE")
 
 
 func _on_armour_hit(_current: int, _maximum: int, change: int) -> void:
@@ -1147,8 +1150,6 @@ func _update_phase_label() -> void:
 	var n := current_phase_number()
 	if n == 4:
 		_phase_label.text = "FASE 4 / 4 · FURIA"
-	elif n >= 2 and legs_armoured:
-		_phase_label.text = "FASE %d / 4 · PATAS BLINDADAS: APUNTÁ AL IMPLANTE" % n
 	else:
 		_phase_label.text = "FASE %d / 4" % n
 
@@ -1156,6 +1157,19 @@ func _update_phase_label() -> void:
 func _phase_label_text(text: String) -> void:
 	if _phase_label != null:
 		_phase_label.text = text
+
+
+## TANDA 1 · H-05: a one-line instruction under the phase, visible for HINT_SECONDS only.
+func _boss_hint(text: String) -> void:
+	if _hint_label == null:
+		return
+	_hint_label.text = text
+	_hint_label.visible = true
+	_hint_token += 1
+	var token := _hint_token
+	get_tree().create_timer(BOSS_HINT_SECONDS, false).timeout.connect(func():
+		if token == _hint_token and is_instance_valid(_hint_label):
+			_hint_label.visible = false)
 
 
 func _drop_honey() -> void:
@@ -1347,19 +1361,20 @@ func _build_health_bar() -> void:
 	var box := VBoxContainer.new()
 	box.anchor_left = 0.5
 	box.anchor_right = 0.5
-	box.offset_left = -220.0
-	box.offset_right = 220.0
-	box.offset_top = 14.0
+	box.offset_left = -200.0
+	box.offset_right = 200.0
+	box.offset_top = 46.0 # TANDA 1 · H-05: top centre, between the player HUD (left) and the combo panel (right).
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar_layer.add_child(box)
 	var title := Label.new()
 	title.text = DISPLAY_NAME
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_outline_color", Color.BLACK)
 	title.add_theme_constant_override("outline_size", 5)
 	box.add_child(title)
 	_bar = ProgressBar.new()
-	_bar.custom_minimum_size = Vector2(440, 14)
+	_bar.custom_minimum_size = Vector2(400, 14)
 	_bar.show_percentage = false
 	_bar.value = 100.0
 	var fill := StyleBoxFlat.new()
@@ -1373,15 +1388,23 @@ func _build_health_bar() -> void:
 		var tick := ColorRect.new()
 		tick.color = Color(1.0, 1.0, 1.0, 0.85)
 		tick.size = Vector2(2, 14)
-		tick.position = Vector2(440.0 * ratio - 1.0, 0.0)
+		tick.position = Vector2(400.0 * ratio - 1.0, 0.0)
 		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_bar.add_child(tick)
 	_phase_label = Label.new()
 	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_phase_label.add_theme_font_size_override("font_size", 14)
+	_phase_label.add_theme_font_size_override("font_size", 16)
 	_phase_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	_phase_label.add_theme_constant_override("outline_size", 4)
 	box.add_child(_phase_label)
+	_hint_label = Label.new() # Short instruction, shown for a few seconds only.
+	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_label.add_theme_font_size_override("font_size", 16)
+	_hint_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.45))
+	_hint_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_hint_label.add_theme_constant_override("outline_size", 5)
+	_hint_label.visible = false
+	box.add_child(_hint_label)
 	_update_phase_label()
 
 

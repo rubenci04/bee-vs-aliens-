@@ -576,12 +576,12 @@ func _build_health_bar() -> void:
 	box.anchor_right = 0.5
 	box.offset_left = -160.0
 	box.offset_right = 160.0
-	box.offset_top = 14.0
+	box.offset_top = 46.0 # TANDA 1 · H-05: top centre, clear of the player HUD.
 	_bar_layer.add_child(box)
 	var title := Label.new()
 	title.text = DISPLAY_NAME
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_outline_color", Color.BLACK)
 	title.add_theme_constant_override("outline_size", 5)
 	box.add_child(title)

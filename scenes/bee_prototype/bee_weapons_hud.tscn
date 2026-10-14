@@ -5,6 +5,7 @@ mouse_filter = 2
 script = ExtResource("1")
 bee_path = NodePath("../../BeePlayer")
 [node name="State" type="Label" parent="."]
+visible = false
 offset_left = 18.0
 offset_top = 56.0
 offset_right = 880.0
