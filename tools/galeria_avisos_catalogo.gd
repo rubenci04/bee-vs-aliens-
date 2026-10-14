@@ -1,0 +1,46 @@
+extends RefCounted
+## Review data only. Representative endpoints; variable sizes are documented explicitly.
+const PROPOSAL_SECONDS := 0.75
+const RAY_DOTTED_SECONDS := 0.25
+const IMPACT_RADIUS := 0.65
+const ANTICIPATION_SCALE := 0.12
+const CASES := [
+	["Hormiga · embestida", "asset_fauna.gd", "lunge", 3.2, 0.14, 0.5, "Ant; franja a Y+0,5; 3,2 m × 0,14 m", "N1"],
+	["Gusano B · embestida", "asset_fauna.gd", "lunge", 3.6, 0.14, 0.6, "WormB; 3,6 m × 0,14 m", "N1"],
+	["Escarabajo · carga", "asset_fauna.gd", "ground", 8.45, 0.5, 0.8, "StagBeetle; 6,5 m/s × 1,3 s = 8,45 m; ancho 0,5", "N1"],
+	["Mosca · carrera", "asset_fauna.gd", "dash", 6.0, 0.12, 0.5, "FlyCommon; 6 m × 0,12 m; variante no escupitajo", "N1"],
+	["Nube · barrido", "asset_fauna.gd", "sweep", 12.0, 0.2, 0.6, "FlyCloud; largo hasta Bee +3 m", "N1"],
+	["Mariquita · barrido", "asset_fauna.gd", "sweep", 12.0, 0.2, 0.8, "Ladybird; largo hasta Bee +3 m", "N1"],
+	["Puntería de fauna", "asset_fauna.gd", "aim", 12.0, 0.04, 0.6, "Emisor→Bee, largo variable; AIM_LINE_WIDTH; duración por especie", "N1/variantes"],
+	["Gusano A · mira del láser", "worm_behavior.gd", "ray", 11.0, 0.04, 0.6, "WormA; cabeza→Bee variable; rayo activo alcanza 11 m", "N1"],
+	["Araña · columna de caída", "controlled_spider.gd", "spider", 4.5, 0.5, 0.85, "Spider; ancho 0,5, alto desde cuerpo hasta lock_y; aro R0,55", "N1"],
+	["Robot · mira del cañón", "walker_miniboss.gd", "cyan", 12.0, 0.08, 0.5, "Walker; 12 m × 0,08; carga de cañón", "N1"],
+	["Robot · morteros", "walker_miniboss.gd", "mortar", 8.0, 0.06, 0.85, "Top de encuadre→suelo; línea naranja; disco R0,7; MORTAR_FALL aparte", "N1"],
+	["Robot · salto", "walker_miniboss.gd", "jump", 2.8, 2.2, 0.75, "Columna 2,8 m de alto × 2,2 de ancho; sombra R1,3", "N1"],
+	["Robot · onda de pisotón", "bee_ground_shockwave.gd", "band", 19.0, 1.25, 0.6, "Walker; ancho de cámara +2 m; alto 1,25", "N1"],
+	["Robot · sector de láser", "walker_miniboss.gd", "sector", 16.0, 0.05, 0.85, "Dos bordes de 16 m × 0,05; HOSTILE_CYAN", "N1"],
+	["Tarántula · salto diagonal", "tarantula_boss_01.gd", "diagonal", 12.0, 1.44, 0.8, "Trayectoria entre despegue/aterrizaje; ancho BODY_SIZE.y×0,8=1,44", "N1"],
+	["Tarántula · salto al techo", "tarantula_boss_01.gd", "ceiling", 3.6, 0.3, 0.8, "Misma diagonal + barra oscura de 3,6×0,3 en destino de techo", "N1"],
+	["Tarántula · carga de suelo", "tarantula_boss_01.gd", "redband", 19.0, 2.6, 0.8, "Todo ancho visible +2 m; altura -0,1→2,5 = 2,6 m", "N1"],
+	["Tarántula · pisotón", "bee_ground_shockwave.gd", "band", 19.0, 1.3, 0.65, "Todo ancho visible +2 m; alto 1,3", "N1"],
+	["Tarántula · mira de red", "tarantula_boss_01.gd", "silk", 12.0, 0.05, 0.5, "Boca→punto bloqueado; TarantulaWebNet.WARNING", "N1"],
+	["Tarántula · péndulo", "tarantula_boss_01.gd", "vertical", 6.0, 0.08, 0.6, "Columna entre techo y punto inferior variable", "N1"],
+	["Arañitas del jefe · caída", "tarantula_drop_spider.gd", "vertical", 4.5, 0.05, 0.7, "top→hang_y; naranja antes, seda blanca durante descenso", "N1"],
+	["Tarántula · hilos barridos", "tarantula_boss_01.gd", "vertical", 5.0, 0.06, 0.75, "Techo→THREAD_BOTTOM=3; varias columnas; patrón fuera de secuencia", "legado"],
+	["Tarántula · cortina", "tarantula_boss_01.gd", "dots", 6.0, 0.1, 0.6, "Ya punteada: segmentos verticales 0,36×0,1 cada 0,55; huecos 1,7", "N1"],
+	["Regadera · guía y franja", "bee_level_01_watering_event.gd", "water", 8.5, 0.99, 1.0, "Guía 0,99×8,5; franja 1,6×0,14; disco R1,21", "N1"],
+	["Avispa · sobrecarga", "wasp_enemy.gd", "wasp", 12.0, 0.07, 0.85, "Largo distancia a Bee +3 m; ancho/profundidad 0,07", "N1"],
+	["Mosquito · carrera", "asset_fauna.gd", "dash", 7.0, 0.12, 0.5, "7 m × 0,12; especie fuera del roster N1 actual", "legado"],
+	["Libélula · corredor ondulado", "asset_fauna.gd", "ground", 17.0, 2.2, 0.65, "WaveDragonfly; 17 m × 2×wave_amp=2,2", "legado"],
+	["Tortuga · rodar", "bee_garden_turtle.gd", "ground", 16.0, 0.5, 0.9, "Emisor→borde de cámara variable; ancho 0,5; no activa en roster", "reservada"],
+	["Speeder · carrera", "speeder_enemy.gd", "dash", 13.0, 0.07, 0.75, "13 m × 0,07; solo ram_mode", "legado"],
+	["Speeder · carril clásico", "speeder_enemy.gd", "classic", 30.0, 0.05, 0.7, "30 m × 0,05 × 0,05; lane_telegraph sin ram_mode", "legado"],
+	["EyeDrone · sector", "eye_drone_enemy.gd", "redsector", 9.0, 0.05, 0.7, "Dos bordes ±20°: ancho 0,05 / 0,025; laser_every", "legado"],
+	["UFO · columna", "ufo_boss_01.gd", "ufo", 7.5, 1.5, 1.0, "1,5×7,5; disco R0,93; fases: aviso 1 /0,85 /0,7 /0,65 s", "reservado N7"],
+	["UFO · barrido de bandas", "ufo_assault.gd", "ufobands", 19.0, 1.0, 0.8, "Tres bandas variables en todo ancho; dos huecos libres; NOTICE", "reservado N7"],
+	["UFO · embestida", "ufo_assault.gd", "purple", 12.0, 1.5, 0.8, "Posición→ancla opuesta variable; ancho 1,5", "reservado N7"],
+	["Perca · salto", "asset_fauna.gd", "vertical", 4.6, 0.06, 0.7, "Superficie de agua→ápice 2,2..4,6; aro de agua", "Laguna"],
+	["Patinador · embestida", "asset_fauna.gd", "lunge", 3.6, 0.14, 0.5, "Strider; 3,6×0,14 sobre agua", "Laguna"],
+	["Sapo · lengua", "level_02_lake/lake_toad_boss.gd", "redaim", 7.5, 0.12, 0.7, "Lengua: aviso 7,5×0,12", "Laguna"],
+	["Sapo de paso · lengua", "level_02_lake/garden_toad_encounter.gd", "cyan", 12.0, 0.12, 0.6, "60% del ancho de cámara; ancho 0,12", "Laguna"],
+]
