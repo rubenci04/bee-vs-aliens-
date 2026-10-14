@@ -1,0 +1,122 @@
+extends SceneTree
+const H := preload("res://scripts/game/bee_enemy_health_settings.gd")
+const W := preload("res://scripts/game/bee_shooting_settings.gd")
+var failures := 0
+var stage: BeeShmupStage
+func _initialize() -> void: call_deferred("run")
+func check(ok: bool, message: String) -> void:
+	if not ok:
+		failures += 1
+		push_error(message)
+func frames(n: int) -> void:
+	for i in n: await physics_frame
+func body(unit: Node3D) -> DamageHurtbox3D:
+	if unit is AssetFauna:
+		return unit.body_hurtbox if unit.body_hurtbox != null else unit.hurtbox
+	return unit.get_node("Hurtbox3D")
+func spawn(family: String, slot := 0) -> Node3D:
+	stage.wave._spawn({"family":family,"event":600,"slot":slot,"hard":false})
+	var unit: Node3D = stage.wave.active_units.back()
+	unit.set_physics_process(false) # Keep collision areas active for real projectile checks.
+	return unit
+func run() -> void:
+	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
+	stage = preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate()
+	root.add_child(stage)
+	current_scene = stage
+	await frames(4)
+	stage.set_physics_process(false)
+	stage.wave.set_physics_process(false)
+	stage.get_node("CheckpointQoL").set_process(false)
+	stage.get_node("Juice").set_physics_process(false)
+	stage.distance = 25
+	stage._update_camera_and_bounds()
+	var bee := stage.bee
+	bee.set_physics_process(false)
+	bee.health.damage_blocked = true
+	bee.global_position = Vector3(23,3,0)
+	check(W.FIRE_INTERVAL == 1.0/12.0 and W.WEAPON_MODES[&"base"]["damage"] == [3] and W.WEAPON_MODES[&"triple"]["damage"] == [3,1,1], "Bee profiles and DPS unchanged")
+	check(BeeLevel01Controller.MINIBOSS_HP == 600 and BeeLevel01Controller.LEVEL_HP["Walker"] == 100, "Robot and legacy walker unchanged")
+	for family in H.COMMON_HP:
+		var hp := int(H.COMMON_HP[family])
+		var target := H.target_time(family)
+		var expected_hits := ceili(float(hp)/3)
+		var time := (expected_hits-1)*W.FIRE_INTERVAL
+		check(time >= target.x and time <= target.y, "%s perfect Base TTK %.3f in %s" % [family,time,target])
+		check(expected_hits >= 3, "%s never below three body hits" % family)
+		check(BeeLevel01Controller.level_hp(family,false) == hp, "%s escorts use the same HP, no hidden multiplier" % family)
+		for spread in [false,true]:
+			var unit := spawn(family)
+			var health := unit.get_node("HealthComponent") as HealthComponent
+			check(health.max_health == hp and not health.invulnerable and not health.damage_blocked, "%s factory HP and no invisible protection" % family)
+			unit.global_position = Vector3(28,3,0)
+			bee.spread_ammo = 20 if spread else 0
+			var volleys := 0
+			while health.current_health > 0 and volleys < 100:
+				var pellet_damage: Array = W.WEAPON_MODES[&"triple" if spread else &"base"]["damage"]
+				for damage in pellet_damage:
+					var shot := bee._spawn_projectile(Vector3.RIGHT,int(damage))
+					shot.hitbox.ignores_weak_points = true
+					body(unit).receive_hit(shot.hitbox)
+					shot.queue_free()
+				volleys += 1
+			check(volleys == ceili(float(hp)/(5 if spread else 3)), "%s real hurtbox path preserves damage per volley" % family)
+			print("T6A_TTK ",family," hp=",hp," spread=",spread," volleys=",volleys," seconds=",(volleys-1)*W.FIRE_INTERVAL)
+			unit.queue_free()
+			await frames(2)
+	# Actual continuous input: opening three clouds plus two companions each.
+	bee.spread_ammo = 0
+	bee.honey_left = 0
+	bee.set_physics_process(true)
+	var clouds: Array[Node3D] = []
+	for i in 9:
+		var cloud := spawn("FlyCloud",i)
+		cloud.global_position = Vector3(27+2*(i%3),0.8+1.7*(i/3),0)
+		clouds.append(cloud)
+	await frames(3)
+	Input.action_press("throw_orange")
+	var elapsed := 0.0
+	for i in 60*20:
+		var chosen: Node3D
+		for cloud in clouds:
+			if not is_instance_valid(cloud): continue # Liberated animals finish their departure.
+			if cloud.get_node("HealthComponent").current_health > 0:
+				chosen = cloud
+				break
+		if chosen == null: break
+		bee.set_aim_point(body(chosen).get_node("CollisionShape3D").global_position)
+		await physics_frame
+		elapsed += 1.0/60.0
+	Input.action_release("throw_orange")
+	check(clouds.all(func(cloud): return not is_instance_valid(cloud) or cloud.get_node("HealthComponent").current_health == 0) and elapsed < 20, "Continuous Base clears the opening nine-cloud batch under 20 seconds (%.3f)" % elapsed)
+	print("T6A_CLOUD seconds=",elapsed," shots=",bee.shots_fired)
+	print("T6A_CLOUD_HP ",clouds.map(func(cloud): return cloud.get_node("HealthComponent").current_health if is_instance_valid(cloud) else 0))
+	for cloud in clouds:
+		if is_instance_valid(cloud): cloud.queue_free()
+	for shot in stage.get_children():
+		if shot is BeeEnergyProjectile: shot.queue_free()
+	await frames(3)
+	clouds.clear()
+	for i in 9:
+		var cloud := spawn("FlyCloud",i)
+		cloud.global_position = Vector3(27+2*(i%3),0.8+1.7*(i/3),0)
+		cloud.set_physics_process(true) # Keep the real entry, pursuit, anticipation and sweep.
+		clouds.append(cloud)
+	await frames(3)
+	Input.action_press("throw_orange")
+	elapsed = 0
+	for i in 60*20:
+		var chosen: Node3D
+		for cloud in clouds:
+			if is_instance_valid(cloud) and cloud.health.current_health > 0:
+				chosen = cloud
+				break
+		if chosen == null: break
+		bee.set_aim_point(body(chosen).get_node("CollisionShape3D").global_position)
+		await physics_frame
+		elapsed += 1.0/60.0
+	Input.action_release("throw_orange")
+	check(clouds.all(func(cloud): return not is_instance_valid(cloud) or cloud.health.current_health == 0) and elapsed < 20, "Moving nine-cloud batch clears under 20 seconds (%.3f)" % elapsed)
+	print("T6A_CLOUD_MOVING seconds=",elapsed)
+	print("T6A_OK failures=",failures)
+	quit(1 if failures else 0)

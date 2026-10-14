@@ -8,8 +8,10 @@ const NORMAL := &"normal"
 const EASY := &"easy"
 const EASY_DAMAGE_TAKEN := 0.6
 const EASY_ENEMY_HP := 0.75
-## Lote 15: health measured against one BASE tap (10 damage), body hits.
-const SMALL_ENEMY_HP := {"FlyCommon": 10, "FlyCloud": 10, "FlyGreen": 20, "Wasp": 20, "Ant": 20}
+## Keep the existing five companion families; HP come from the T6a table.
+const ENEMY_HEALTH := preload("res://scripts/game/bee_enemy_health_settings.gd")
+const SMALL_ENEMY_HP := {"FlyCommon": ENEMY_HEALTH.COMMON_HP["FlyCommon"], "FlyCloud": ENEMY_HEALTH.COMMON_HP["FlyCloud"],
+	"FlyGreen": ENEMY_HEALTH.COMMON_HP["FlyGreen"], "Wasp": ENEMY_HEALTH.COMMON_HP["Wasp"], "Ant": ENEMY_HEALTH.COMMON_HP["Ant"]}
 ## Sustained BASE pellets keep the same hit count on small fauna; other targets retain the existing burst DPS.
 const SMALL_ENEMY_BASE_HIT_DAMAGE := 10
 const SPREAD_DURATION_SEC := 20.0

@@ -167,15 +167,8 @@ const MINION_LAUNCH_SECONDS := 0.7
 ##            showcase Walker 130 (~4.0 s). Verified by tests/levels/validate_bee_balance_liberation_v04.gd.
 ## BEFORE: Wasp 44, Probe 80, EyeDrone 40, Speeder 30, Walker 120 (showcase 150), Dragonfly 60, Spider 90, Ladybird 130,
 ## WaveDragonfly 56, Moth 60, Ant 44, StagBeetle 110, Snail 100, MushroomCannon 60, SeedCarrier 240, AlienFighter 60.
-const LEVEL_HP = {"Wasp": 36, "Probe": 70, "EyeDrone": 50, "Turret": 70, "Speeder": 40, "OrganicAlien": 100, "Walker": 100, "Dragonfly": 110, "Swarm": 10, "Spider": 80,
-		"Mosquito": 36, "Ladybird": 70, "WaveDragonfly": 64, "Moth": 70, "Ant": 64, "StagBeetle": 120, "Snail": 120, "MushroomCannon": 70, "SeedCarrier": 220, "AlienFighter": 70,
-		"FlyCommon": 30, "FlyGreen": 40, "FlyCloud": 24, "WormA": 70, "WormB": 60, "Turtle": 220} # LOTE 12: roster species (fly cloud <= 32: the bomb clears it)
+const LEVEL_HP = BeeGameSettings.ENEMY_HEALTH.LEGACY_HP
 const SHOWCASE_HP := 130
-## LOTE 13 · ETAPA 2: the dense roster keeps its enemies on screen longer (more of them visible at once): HP multiplier per family, roster only.
-const ROSTER_HP_SCALE := {"FlyCommon": 1.4, "FlyGreen": 1.3, "Wasp": 1.3, "Ladybird": 1.15, "Ant": 1.2, "WormA": 1.15, "WormB": 1.2, "Spider": 1.1}
-## LOTE 14 · ETAPA 2: the gradual table spawns fewer units, so each one stays a bit longer (3+ enemies visible from minute 2): extra HP multiplier of the roster species.
-const ROSTER_HP_EXTRA := 1.2
-const ROSTER_HP_EXTRA_FAMILIES := ["FlyCommon", "FlyGreen", "Wasp", "Ladybird", "Ant", "WormA", "WormB", "Snail", "StagBeetle", "Spider"]
 ## LOTE 13 · ETAPA 2: tuning that only applies while Level 1 plays its roster (merged over LEVEL_TUNING). Spider: it drops in and warns within ~1 s.
 const ROSTER_TUNING := {
 	"Spider": {"hang_seconds": 0.15, "enter_seconds": 0.6, "strike_damage": 5, "contact_damage": 2, "reposition_seconds": 1.2}, # LOTE 14: real damage: the thread strike hits for 8, touching the body for 4.
@@ -1403,13 +1396,9 @@ func arena_max_seconds() -> float:
 func arena_min_seconds() -> float:
 	return ROSTER_ARENA_MIN_SECONDS if roster_only else ARENA_MIN_SECONDS
 
-## HP of a family in the CURRENT flow (the roster scales some families up, see ROSTER_HP_SCALE; EASY scaling is applied by the caller).
-static func level_hp(family: String, roster_extra := true) -> int:
-	if roster_only and BeeGameSettings.SMALL_ENEMY_HP.has(family):
-		return int(BeeGameSettings.SMALL_ENEMY_HP[family])
-	var base := int(LEVEL_HP[family])
-	if roster_only and ROSTER_HP_SCALE.has(family):
-		base = roundi(float(base) * float(ROSTER_HP_SCALE[family]))
-	if roster_only and roster_extra and family in ROSTER_HP_EXTRA_FAMILIES:
-		base = roundi(float(base) * ROSTER_HP_EXTRA)
-	return base
+## T6a common roster HP have no stacked role/route/escort multipliers.
+## Reserved/legacy families and bosses keep their previous paths; EASY is applied by the caller.
+static func level_hp(family: String, _roster_extra := true) -> int:
+	if roster_only and BeeGameSettings.ENEMY_HEALTH.COMMON_HP.has(family):
+		return int(BeeGameSettings.ENEMY_HEALTH.COMMON_HP[family])
+	return int(LEVEL_HP[family])

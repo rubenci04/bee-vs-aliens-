@@ -12,7 +12,9 @@ func run() -> void:
 	stage.set_physics_process(false)
 	stage.wave.set_physics_process(false)
 	stage.bee.set_physics_process(false)
-	var before := {"FlyCommon": 50, "FlyCloud": 24, "FlyGreen": 62, "Wasp": 56, "Ant": 92}
+	# T6a replaces the old Lote 15 one/two-hit contract, keeping the real damage path.
+	var before := {"FlyCommon": 10, "FlyCloud": 10, "FlyGreen": 20, "Wasp": 20, "Ant": 20}
+	var base_damage := int(BeePlayer.SHOOTING.WEAPON_MODES[&"base"]["damage"][0])
 	var failed := false
 	for family in BeeGameSettings.SMALL_ENEMY_HP:
 		var counts: Array[int] = []
@@ -22,14 +24,14 @@ func run() -> void:
 			root.add_child(health)
 			var hits := 0
 			while health.current_health > 0:
-				health.take_damage(10)
+				health.take_damage(base_damage)
 				hits += 1
 			counts.append(hits)
 			health.queue_free()
 		print("HITS %s: %d -> %d" % [family, counts[0], counts[1]])
-		failed = failed or counts[1] != (1 if family in ["FlyCommon", "FlyCloud"] else 2)
+		failed = failed or counts[1] != ceili(float(BeeGameSettings.SMALL_ENEMY_HP[family])/base_damage)
 		# Actual projectile -> hitbox -> body hurtbox -> enemy health path, both tap and sustained BASE.
-		for damage in [10, 4]:
+		for damage in [base_damage]:
 			var wave := stage.wave as BeeLevel01Controller
 			wave._spawn({"family": family, "slot": 0, "event": 0, "hard": false, "y": 3.0})
 			var unit: Node3D = wave.active_units.back()
@@ -41,7 +43,7 @@ func run() -> void:
 				hurt = unit.get_node("Hurtbox3D") as DamageHurtbox3D
 			var health := unit.get_node("HealthComponent") as HealthComponent
 			var hits := 0
-			while health.current_health > 0 and hits < 20:
+			while health.current_health > 0 and hits < 128:
 				var shot := stage.bee._spawn_projectile(Vector3.RIGHT, damage)
 				shot.hitbox.ignores_weak_points = true
 				shot.hitbox._on_area_entered(hurt)

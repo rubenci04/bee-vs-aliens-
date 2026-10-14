@@ -95,13 +95,14 @@ func run() -> void:
 	var fly := stage.wave.active_units.back() as Node3D
 	fly.set_physics_process(false)
 	var fly_health := fly.get_node("HealthComponent") as HealthComponent
-	check(fly_health.max_health == 10, "Real Normal roster FlyCommon retains 10 HP")
+	var fly_hp := int(BeeGameSettings.ENEMY_HEALTH.COMMON_HP["FlyCommon"])
+	check(fly_health.max_health == fly_hp, "Real Normal roster FlyCommon uses the health table")
 	var body := fly.get("body_hurtbox") as DamageHurtbox3D
 	check(body != null, "Real fly has its existing body damage area")
-	for impact in 4:
+	for impact in ceili(float(fly_hp)/3):
 		var body_shot := bee.fire()
 		body_shot.hitbox.ignores_weak_points = true # Isolate body damage from the existing 2x implant reward.
 		body.receive_hit(body_shot.hitbox)
-		check(fly_health.current_health == maxi(0, 10 - 3 * (impact + 1)), "Real fly receives exactly configured body damage and releases on fourth hit")
+		check(fly_health.current_health == maxi(0, fly_hp - 3 * (impact + 1)), "Real fly receives exactly configured body damage until liberation")
 	print("TANDA4C_OK real modes/DPS, 12Hz all modes/release, hitbox/HP invariant, longer plasma/trail, impact spark without extra damage, target marker without F4")
 	quit(0)
