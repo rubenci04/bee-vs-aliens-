@@ -39,9 +39,10 @@ static func launch(parent: Node, attacker: Node, from_x: float, stop: float, dam
 
 
 ## The warning: a flat band on the ground line from `from_x` to `to_x`, `band_height` tall (caller frees it).
-static func warning_band(parent: Node, from_x: float, to_x: float, band_height: float) -> MeshInstance3D:
+static func warning_band(parent: Node, from_x: float, to_x: float, band_height: float, seconds := 0.75) -> MeshInstance3D:
 	var band := BeeAttackVisuals.line(parent, Vector3(from_x, GROUND_Y + band_height * 0.5, 0.0), Vector3(to_x, GROUND_Y + band_height * 0.5, 0.0), 1.0, WARNING_COLOR)
 	band.scale.y = band_height
+	BeeAttackVisuals.WARNING_STYLE.dress(band, WARNING_COLOR, 0.0, seconds)
 	return band
 
 

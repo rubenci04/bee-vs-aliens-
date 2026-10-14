@@ -234,6 +234,7 @@ func _begin_roll_warn() -> void:
 	var camera := get_viewport().get_camera_3d()
 	var edge := (camera.global_position.x + _roll_dir * (BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport())) - EDGE_MARGIN)) if camera != null else global_position.x + _roll_dir * 6.0
 	_warn_nodes.append(BeeAttackVisuals.line(get_parent(), Vector3(global_position.x, 0.4, 0.0), Vector3(edge, 0.4, 0.0), 0.5, Color(1.0, 0.55, 0.15, 0.3)))
+	BeeAttackVisuals.WARNING_STYLE.dress(_warn_nodes.back(), Color(1,0.55,0.15), 0.0, ROLL_WARN)
 	_contact.set_enabled(false)
 	_set_step(Step.ROLL_WARN, ROLL_WARN)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.7)

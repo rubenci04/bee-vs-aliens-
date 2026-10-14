@@ -374,6 +374,7 @@ func _build_visual() -> void:
 	_column.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_column.hide()
 	add_child(_column)
+	BeeAttackVisuals.WARNING_STYLE.dress(_column, BeeAlienPalette.CYAN, 7.0, telegraph_seconds)
 	_ring = MeshInstance3D.new()
 	_ring.name = "TelegraphRing"
 	_ring.mesh = _ring_mesh

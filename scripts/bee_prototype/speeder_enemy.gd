@@ -176,6 +176,7 @@ func _show_lane() -> void:
 	bar.size = Vector3(30.0, 0.05, 0.05)
 	bar.material = _lane_material
 	_lane.mesh = bar
+	BeeAttackVisuals.WARNING_STYLE.dress(_lane, Color(1, 0.45, 0.15), 3.0, telegraph_time)
 	_lane.top_level = true
 	_lane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_lane)

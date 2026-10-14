@@ -700,6 +700,7 @@ func _build_beam() -> void:
 	faint.size = Vector3(BEAM_WIDTH, height, 0.5)
 	faint.material = _unshaded(Color(1.0, 0.6, 0.2, 0.2))
 	_beam_column.mesh = faint
+	BeeAttackVisuals.WARNING_STYLE.dress(_beam_column, Color(1, 0.6, 0.2), 7.0, BEAM_TELEGRAPH)
 	_beam_column.visible = false
 	_beam_column.top_level = true
 	add_child(_beam_column)

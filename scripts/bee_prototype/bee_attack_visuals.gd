@@ -1,5 +1,6 @@
 class_name BeeAttackVisuals
 extends RefCounted
+const WARNING_STYLE := preload("res://scripts/vfx/bee_warning_style.gd")
 ## COMBAT VARIETY 01: tiny shared telegraph / hazard visuals built in code (no assets): warning lines, rings and discs.
 ## Everything is unshaded and transparent so it reads over any lighting; nothing here deals damage.
 
@@ -66,12 +67,17 @@ static func line(parent: Node, from: Vector3, to: Vector3, width: float, color: 
 			core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			node.add_child(core)
 	place_line(node, from, to)
+	if warning or preserve_warning:
+		var vertical := absf(to.y - from.y) > absf(to.x - from.x) * 2.0
+		var mode := 2.0 if vertical and width < 0.15 else (0.0 if width >= 0.12 else 3.0)
+		WARNING_STYLE.dress(node, color, mode, WARNING_STYLE.time_for(parent))
 	return node
 
 
 ## Warning becomes an active strand: restore its original width and material.
 static func restore_active_line(node: MeshInstance3D, color: Color, width: float) -> void:
-	for child_name in ["ReadabilityEdge", "DangerCore"]:
+	node.material_override = null
+	for child_name in ["ReadabilityEdge", "DangerCore", "ImpactMarker"]:
 		var child := node.get_node_or_null(child_name)
 		if child != null:
 			node.remove_child(child)
@@ -86,6 +92,11 @@ static func place_line(node: Node3D, from: Vector3, to: Vector3) -> void:
 	node.global_position = Vector3((from.x + to.x) * 0.5, (from.y + to.y) * 0.5, from.z)
 	node.rotation = Vector3(0.0, 0.0, atan2(delta.y, delta.x))
 	node.scale = Vector3(length, 1.0, 1.0)
+	var mark := node.get_node_or_null("ImpactMarker") as Node3D
+	if mark != null:
+		mark.scale.x = 1.0 / length
+	if node is MeshInstance3D and node.material_override is ShaderMaterial:
+		node.material_override.set_shader_parameter("repeats", maxf(4.0, length * 3.0))
 
 
 ## LOTE 14 · ETAPA 3.3: distance (m, XY) from `point` to the segment from -> to.
@@ -135,10 +146,27 @@ static func ring(parent: Node, center: Vector3, radius: float, thickness: float,
 		edge.position.y = 0.035 # Behind the camera-facing coloured ring after its X rotation.
 		edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(edge)
+	if warning and WARNING_STYLE.enabled:
+		WARNING_STYLE.dress(node, color, 5.0)
 	return node
 
 
 ## A flat disc lying on the ground (XZ plane).
+static func warning_dome(parent: Node, center: Vector3, radius: float) -> MeshInstance3D:
+	var node := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = radius
+	mesh.height = radius * 2.0
+	mesh.is_hemisphere = true
+	mesh.radial_segments = 16
+	mesh.rings = 6
+	mesh.material = material(Color(0.9, 0.94, 1, 0.25))
+	node.mesh = mesh
+	parent.add_child(node)
+	node.global_position = center
+	WARNING_STYLE.dress(node, Color(0.9, 0.94, 1), 5.0)
+	return node
+
 static func ground_disc(parent: Node, center: Vector3, radius: float, color: Color, warning := true) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	var disc := CylinderMesh.new()
@@ -174,6 +202,8 @@ static func ground_disc(parent: Node, center: Vector3, radius: float, color: Col
 		dark_edge.position.y = 0.02
 		dark_edge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(dark_edge)
+		if WARNING_STYLE.enabled:
+			WARNING_STYLE.dress(node, color, 6.0)
 	return node
 
 

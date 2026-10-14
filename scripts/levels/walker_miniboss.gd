@@ -309,6 +309,7 @@ func _next_attack() -> void:
 			aim_charge.scale = Vector3.ONE * 0.7
 			aim_charge.show()
 			_aim_line = BeeAttackVisuals.line(self, _muzzle(), _muzzle() + _aim_direction() * 12.0, 0.08, Color(0.3, 0.95, 1.0, 0.3))
+			BeeAttackVisuals.WARNING_STYLE.dress(_aim_line, Color(0.3, 0.95, 1, 0.3), 3.0, CANNON_TELEGRAPH)
 			BeeAudio.play(get_parent(), &"walker_charge", global_position)
 		&"mortars":
 			_step = &"mortar_tele"
@@ -322,7 +323,7 @@ func _next_attack() -> void:
 			_step = &"stomp_tele"
 			_left = STOMP_TELEGRAPH
 			var half := _half_width()
-			_stomp_band = BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT)
+			_stomp_band = BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH)
 			_play(&"Idle")
 			BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.7)
 		&"laser":
@@ -390,12 +391,15 @@ func _begin_laser() -> void:
 	laser_angles = Vector2(centre + half, centre - half) if down_first else Vector2(centre - half, centre + half)
 	for angle in [laser_angles.x, laser_angles.y]:
 		var tip := laser_origin + Vector3(cos(angle), sin(angle), 0.0) * LASER_LENGTH
-		_warnings.append(BeeAttackVisuals.line(get_parent(), laser_origin, tip, 0.05, BeeGameSettings.HOSTILE_CYAN))
+		var ray_warning := BeeAttackVisuals.line(get_parent(), laser_origin, tip, 0.05, BeeGameSettings.HOSTILE_CYAN)
+		BeeAttackVisuals.WARNING_STYLE.dress(ray_warning, BeeGameSettings.HOSTILE_CYAN, 1.0, LASER_WARNING)
+		_warnings.append(ray_warning)
 	if _beam == null:
 		_beam_pivot = Node3D.new()
 		_beam_pivot.top_level = true
 		add_child(_beam_pivot)
 		_beam = BeeAttackVisuals.line(_beam_pivot, Vector3.ZERO, Vector3(LASER_LENGTH, 0.0, 0.0), 0.2, BeeGameSettings.ROBOT_LASER_COLOR)
+		BeeAttackVisuals.WARNING_STYLE.dress(_beam, BeeGameSettings.ROBOT_LASER_COLOR, 4.0)
 		_beam.top_level = false
 		_beam.position = Vector3(LASER_LENGTH * 0.5, 0.0, 0.0)
 		_beam.rotation = Vector3.ZERO
@@ -423,6 +427,7 @@ func _begin_jump() -> void:
 		jump_to_x = _cam_x() - signf(global_position.x - _cam_x() + 0.001) * half
 	_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(jump_to_x, 0.03, 0.0), 1.3, Color(0.05, 0.03, 0.02, 0.6)))
 	var column := BeeAttackVisuals.line(get_parent(), Vector3(jump_to_x, 0.0, 0.0), Vector3(jump_to_x, 2.8, 0.0), 2.2, Color(1.0, 0.3, 0.2, 0.18))
+	BeeAttackVisuals.WARNING_STYLE.dress(column, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
 	_warnings.append(column)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.6)
 

@@ -445,6 +445,7 @@ func _lock_overload_line() -> void:
 	material.albedo_color = Color(1.0, 0.3, 0.1, 0.45)
 	bar.material = material
 	_overload_line.mesh = bar
+	BeeAttackVisuals.WARNING_STYLE.dress(_overload_line, Color(1, 0.3, 0.1), 3.0, overload_telegraph)
 	_overload_line.top_level = true
 	_overload_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_overload_line)

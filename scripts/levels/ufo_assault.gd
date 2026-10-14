@@ -42,6 +42,12 @@ func _physics_process(delta: float) -> void:
 		return
 	if not active:
 		active = true
+		# Warning-only treatment: the existing active hazards retain their original drawing.
+		for visual in bands:
+			if visual.has_meta("warning_original_material"):
+				visual.material_override = visual.get_meta("warning_original_material")
+		if is_instance_valid(ram_line) and ram_line.has_meta("warning_original_material"):
+			ram_line.material_override = ram_line.get_meta("warning_original_material")
 		boss.hazards.append({"kind": kind, "telegraph": NOTICE})
 		for area in boxes:
 			area.set_enabled(true)
@@ -77,6 +83,7 @@ func _start() -> void:
 			var mesh := BeeAttackVisuals.line(boss, Vector3.ZERO, Vector3.RIGHT, 1.0, Color(0.2, 0.95, 1, 0.2))
 			mesh.mesh.material = mesh.mesh.material.duplicate()
 			bands.append(mesh)
+			BeeAttackVisuals.WARNING_STYLE.dress(mesh, Color(0.2, 0.95, 1), 0.0, NOTICE)
 			var shape := BoxShape3D.new()
 			shape.size = Vector3.ONE
 			var area := BeeAttackVisuals.hazard_area(boss, boss, LASER_DAMAGE, shape)
@@ -87,6 +94,7 @@ func _start() -> void:
 		_from = boss.global_position
 		_to = Vector3(boss.camera.global_position.x - boss.side * UfoBoss01.ANCHOR_DX, _from.y, 0)
 		ram_line = BeeAttackVisuals.line(boss, _from, _to, 1.5, Color(0.6, 0.25, 1.0, 0.3))
+		BeeAttackVisuals.WARNING_STYLE.dress(ram_line, Color(0.6, 0.25, 1), 3.0, NOTICE)
 		var shape := BoxShape3D.new()
 		shape.size = Vector3(3.8, 1.5, 1.0)
 		var area := BeeAttackVisuals.hazard_area(boss, boss, RAM_DAMAGE, shape)

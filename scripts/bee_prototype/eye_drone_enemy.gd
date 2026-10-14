@@ -203,6 +203,8 @@ func _begin_laser_charge() -> void:
 	var origin := Vector3(global_position.x, global_position.y, 0.0)
 	_laser_warnings.append(BeeAttackVisuals.line(get_parent(), origin, origin + Vector3(cos(_laser_from), sin(_laser_from), 0) * LASER_LENGTH, 0.05, LASER_WARNING))
 	_laser_warnings.append(BeeAttackVisuals.line(get_parent(), origin, origin + Vector3(cos(_laser_to), sin(_laser_to), 0) * LASER_LENGTH, 0.025, Color(LASER_WARNING, 0.3)))
+	for line in _laser_warnings:
+		BeeAttackVisuals.WARNING_STYLE.dress(line, LASER_WARNING, 1.0, LASER_CHARGE)
 	telegraph.material_override = null
 	telegraph.show()
 	visual_root.scale = Vector3(1.12, 0.88, 1.12)

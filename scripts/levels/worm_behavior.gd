@@ -197,6 +197,8 @@ func _begin_mark() -> void:
 		fauna.first_telegraph_clock = fauna._clock
 	fauna._warn.append(BeeAttackVisuals.ground_disc(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.05, 0.0), 1.5, WARN_COLOR))
 	fauna._warn.append(BeeAttackVisuals.ring(fauna.get_parent(), Vector3(spot, fauna.ground_y + 0.2, 0.0), 1.1, 0.06, WARN_COLOR))
+	if BeeAttackVisuals.WARNING_STYLE.enabled:
+		fauna._warn.append(BeeAttackVisuals.warning_dome(fauna.get_parent(), Vector3(spot, fauna.ground_y, 0), 1.5))
 	_set_step(Step.MARK, MARK_SECONDS)
 
 
@@ -226,6 +228,7 @@ func _begin_peek() -> void:
 	_locked = false
 	_lock_point = fauna.target.global_position
 	_line = BeeAttackVisuals.line(fauna.get_parent(), _head(), _lock_point, LINE_WIDTH, WARN_COLOR)
+	BeeAttackVisuals.WARNING_STYLE.dress(_line, WARN_COLOR, 1.0, LASER_WARN)
 	_set_step(Step.PEEK, LASER_WARN)
 
 

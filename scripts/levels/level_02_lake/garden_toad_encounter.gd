@@ -155,6 +155,7 @@ func _start_tongue() -> void:
 func _prepare_warning() -> void:
 	_reach = _half() * 2.0 * REACH_RATIO
 	_warn.append(BeeAttackVisuals.line(self, mouth(), mouth() + _direction_to_bee() * _reach, 0.12, Color(0.2, 0.95, 1.0, 0.75)))
+	BeeAttackVisuals.WARNING_STYLE.dress(_warn.back(), Color(0.2, 0.95, 1), 3.0, WARN_SECONDS)
 	visual.scale = Vector3.ONE * MODEL_SCALE * MOUTH_OPEN_SCALE
 	_mouth_pose.global_position = mouth()
 	_mouth_pose.show()

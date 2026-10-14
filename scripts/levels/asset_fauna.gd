@@ -851,6 +851,7 @@ func _drop_bomb() -> void:
 
 func _add_line(from: Vector3, to: Vector3, width: float, color: Color = WARN_COLOR) -> void:
 	var line := BeeAttackVisuals.line(get_parent(), from, to, width, color)
+	BeeAttackVisuals.WARNING_STYLE.dress(line, color, 0.0 if width >= 0.12 else 3.0, _left)
 	_warn.append(line)
 
 

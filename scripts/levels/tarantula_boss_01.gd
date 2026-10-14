@@ -673,13 +673,14 @@ func _start_attack() -> void:
 			_left = TarantulaWebNet.WARNING
 			net_line = [_world(MOUTH), target.global_position]
 			_net_aim = BeeAttackVisuals.line(get_parent(), net_line[0], net_line[1], 0.05, Color(0.96, 0.96, 0.9, 0.45))
+			BeeAttackVisuals.WARNING_STYLE.dress(_net_aim, Color(0.96, 0.96, 0.9), 3.0, TarantulaWebNet.WARNING)
 			_warnings.append(_net_aim)
 			BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 1.1)
 		&"stomp":
 			_step = &"stomp_tele"
 			_left = STOMP_TELEGRAPH
 			var half := _half_width()
-			_warnings.append(BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT))
+			_warnings.append(BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH))
 			BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.6)
 		&"spiders":
 			_drop_spiders()
@@ -804,12 +805,16 @@ func _begin_jump(with_fan: bool) -> void:
 	_jump_to = Vector3(to_x, GROUND_Y if _jump_to_mode == &"ground" else _ceiling_y(), 0.0)
 	var land_face := signf(to_x - target.global_position.x) if target != null else -corner
 	jump_band = [_world(BODY_CENTRE), _body_centre_at(_jump_to, _jump_to_mode, land_face if land_face != 0.0 else -corner)]
-	_warnings.append(BeeAttackVisuals.line(get_parent(), jump_band[0], jump_band[1], BODY_SIZE.y * MODEL_SCALE, Color(1.0, 0.3, 0.2, 0.22)))
+	var jump_warning := BeeAttackVisuals.line(get_parent(), jump_band[0], jump_band[1], BODY_SIZE.y * MODEL_SCALE, Color(1.0, 0.3, 0.2, 0.22))
+	BeeAttackVisuals.WARNING_STYLE.dress(jump_warning, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
+	_warnings.append(jump_warning)
 	if _jump_to_mode == &"ground":
 		_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(to_x, 0.03, 0.0), 1.8, Color(0.05, 0.02, 0.02, 0.55)))
 	else:
 		var top := BeeLevel01Framing.top_y() - 0.15
-		_warnings.append(BeeAttackVisuals.line(get_parent(), Vector3(to_x - 1.8, top, 0.0), Vector3(to_x + 1.8, top, 0.0), 0.3, Color(0.05, 0.02, 0.02, 0.6)))
+		var roof_marker := BeeAttackVisuals.line(get_parent(), Vector3(to_x - 1.8, top, 0.0), Vector3(to_x + 1.8, top, 0.0), 0.3, Color(0.05, 0.02, 0.02, 0.6))
+		BeeAttackVisuals.WARNING_STYLE.dress(roof_marker, Color(0.95,0.8,0.6), 3.0, JUMP_TELEGRAPH)
+		_warnings.append(roof_marker)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.75)
 
 
@@ -965,6 +970,8 @@ func _begin_charge() -> void:
 	var band := BeeAttackVisuals.line(get_parent(), Vector3(_cam_x() - half - 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0),
 			Vector3(_cam_x() + half + 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0), 1.0, Color(1.0, 0.3, 0.2, 0.25))
 	band.scale.y = charge_band.y - charge_band.x
+	band.global_position.z = -0.4 # Behind the boss, same X/Y band and hitbox.
+	BeeAttackVisuals.WARNING_STYLE.dress(band, Color(1, 0.3, 0.2), 0.0, CHARGE_TELEGRAPH)
 	_warnings.append(band)
 	BeeAudio.play(get_parent(), &"organic_charge", global_position, 0.6)
 

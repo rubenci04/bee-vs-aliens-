@@ -99,6 +99,7 @@ func _spawn_column(x: float) -> void:
 	guide.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(guide)
 	guide.global_position = Vector3(x, COLUMN_TOP_Y * 0.5 + GROUND_Y, 0.0)
+	BeeAttackVisuals.WARNING_STYLE.dress(guide, WARNING_COLOR, 7.0, WARNING_SECONDS)
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(COLUMN_WIDTH, COLUMN_TOP_Y, 1.4)
 	var hitbox := BeeAttackVisuals.hazard_area(self, self, DAMAGE, shape)
