@@ -77,7 +77,7 @@ func run() -> void:
 	bee._try_input_fire()
 	for i in 120:
 		bee._update_sustained_fire(1.0 / 60.0)
-	check(bee.shots_fired - before == 16, "Immediate shot plus 15 uniform automatic rounds in two seconds")
+	check(bee.shots_fired - before == 25, "Immediate shot plus 24 uniform automatic rounds in two seconds")
 	check(bee._burst_left == 0 and bee.burst_count == 0, "Automatic fire has no queued three-round bursts")
 	Input.action_release("throw_orange")
 	before = bee.shots_fired
@@ -126,5 +126,5 @@ func run() -> void:
 		await physics_frame
 	check((grazing.get_node("HealthComponent") as HealthComponent).current_health == 90, "The 25% larger damage shape hits a real glancing overlap once for unchanged 10 damage")
 	grazing.free()
-	print("TANDA4A_OK manual cone/priority/visibility, uniform fire/release, RT mapping, idle real-direction reticle/F4, isolated +25% hitbox; DPS Base=30 Spread=50")
+	print("TANDA4A_OK manual cone/priority/visibility, uniform fire/release, RT mapping, idle real-direction reticle/F4, isolated +25% hitbox; updated T4c DPS Base=36 Triple=60")
 	quit(0)

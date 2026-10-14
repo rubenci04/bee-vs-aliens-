@@ -9,6 +9,7 @@ const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
 @onready var hitbox: DamageHitbox3D = $Hitbox3D
 var travel_direction := Vector3.RIGHT
 var is_spread_shot := false
+var configured_weapon_damage := false # Explicit primary profile takes precedence over the legacy small-enemy floor.
 var _time_left := 0.0
 var trail: CPUParticles3D
 static var _shared_trail_mesh: SphereMesh
@@ -28,8 +29,8 @@ func _ready() -> void:
 	hitbox.hit_confirmed.connect(_on_hit_confirmed)
 	trail = CPUParticles3D.new()
 	trail.name = "ShortTrail"
-	trail.amount = 10
-	trail.lifetime = 0.18
+	trail.amount = SHOOTING.SHOT_TRAIL_AMOUNT
+	trail.lifetime = SHOOTING.SHOT_TRAIL_SECONDS
 	trail.local_coords = false
 	trail.gravity = Vector3.ZERO
 	trail.initial_velocity_min = 0.0
@@ -44,6 +45,9 @@ func _ready() -> void:
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.albedo_color = Color(1.0, 0.62, 0.12, 0.72)
+		material.emission_enabled = true
+		material.emission = Color(1.0, 0.62, 0.12)
+		material.emission_energy_multiplier = SHOOTING.SHOT_EMISSION
 		material.vertex_color_use_as_albedo = true
 		_shared_trail_mesh.material = material
 	trail.mesh = _shared_trail_mesh
@@ -66,10 +70,26 @@ func launch(direction: Vector3, attacker: Node) -> void:
 	travel_direction = Vector3(direction.x, direction.y, 0.0).normalized()
 	if travel_direction == Vector3.ZERO:
 		travel_direction = Vector3.RIGHT
+	# Stretch only the visible plasma along the firing direction, never its hitbox.
+	var plasma := get_node_or_null("PlasmaBall") as Node3D
+	if plasma != null:
+		_elongate_visual(plasma)
+	else:
+		for name in ["Visual", "Core"]:
+			var visual := get_node_or_null(name) as Node3D
+			if visual != null:
+				_elongate_visual(visual)
 	hitbox.attacker = attacker
 	hitbox.team_id = &"bee"
 	hitbox.damage = damage
 	hitbox.set_enabled(true)
+
+
+func _elongate_visual(visual: Node3D) -> void:
+	if not visual.has_meta("shot_original_visual_scale"):
+		visual.set_meta("shot_original_visual_scale", visual.scale)
+	visual.scale = visual.get_meta("shot_original_visual_scale") * Vector3(SHOOTING.SHOT_VISUAL_LENGTH, 1.0, 1.0)
+	visual.rotation.z = atan2(travel_direction.y, travel_direction.x)
 
 
 func _physics_process(delta: float) -> void:
@@ -90,5 +110,6 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 	var organic := feedback != null and bool(feedback.get("organic"))
 	BeeAudio.play(get_parent(), &"organic_hit" if organic else &"tech_hit", global_position)
 	BeeCombatVFX.spawn(get_parent(), global_position, &"impact_organic" if organic else &"bee_impact", travel_direction)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"bee_spark", travel_direction, SHOOTING.IMPACT_SPARK_SCALE)
 	hitbox.set_enabled(false)
 	queue_free()

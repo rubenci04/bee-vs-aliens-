@@ -63,7 +63,7 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 	last_hit_weak = multiplier > 1.0
 	var amount := hitbox.damage
 	var bee_shot := hitbox.get_parent() as BeeEnergyProjectile
-	if bee_shot != null and not bee_shot.is_spread_shot and owner_entity != null and owner_entity.has_meta("small_enemy_base_hit_damage"):
+	if bee_shot != null and not bee_shot.configured_weapon_damage and not bee_shot.is_spread_shot and owner_entity != null and owner_entity.has_meta("small_enemy_base_hit_damage"):
 		amount = maxi(amount, int(owner_entity.get_meta("small_enemy_base_hit_damage")))
 	if multiplier != 1.0 and amount > 0:
 		amount = maxi(1, roundi(float(amount) * multiplier))

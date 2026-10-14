@@ -58,16 +58,12 @@ func run() -> void:
 	var burst_shots := bee.burst_shots - t0
 	print("TANDA4A hold base: %d bursts, %d automatic shots in 2.0 s (interval %.4f s)" % [bursts, burst_shots, BeePlayer.SHOOTING.FIRE_INTERVAL])
 	check(bursts == 0, "Continuous Base fire creates no bursts")
-	check(burst_shots >= 13 and burst_shots <= 15, "Base fires ~7.5 evenly timed shots/s (%d in 2 s)" % burst_shots)
+	check(burst_shots >= 23 and burst_shots <= 24, "Base fires ~12 evenly timed shots/s (%d in 2 s)" % burst_shots)
 	var held_shots := bee.shots_fired
 	await frames(40)
 	check(bee.shots_fired == held_shots, "Releasing the button stops the fire")
-	# Damage per bullet: DPS parity with 3 taps/s.
-	var base_dps_tap := 3.0 * bee.base_shot_damage
-	var burst_damage := roundi(bee.base_shot_damage * bee.hold_damage_ratio)
-	var base_dps_hold := burst_damage / BeePlayer.SHOOTING.FIRE_INTERVAL
-	print("LOTE14 DPS base: tap(3/s)=%.0f hold=%.0f (per bullet %d)" % [base_dps_tap, base_dps_hold, burst_damage])
-	check(absf(base_dps_hold - base_dps_tap) <= 0.1 * base_dps_tap, "Hold DPS %.0f must match tap DPS %.0f" % [base_dps_hold, base_dps_tap])
+	var base_dps_hold := float(BeePlayer.SHOOTING.WEAPON_MODES[&"base"]["damage"][0]) / BeePlayer.SHOOTING.FIRE_INTERVAL
+	check(is_equal_approx(base_dps_hold, 36.0), "Base sustained DPS increases 20% to 36")
 
 	# --- Sustained fire: Spread -------------------------------------------------------------------------------------------
 	for node in stage.get_children():
@@ -93,11 +89,9 @@ func run() -> void:
 	for p in pellets:
 		angles[snappedf(rad_to_deg(atan2((p as BeeEnergyProjectile).travel_direction.y, (p as BeeEnergyProjectile).travel_direction.x)), 1.0)] = true
 	print("LOTE14 spread fan angles: ", angles.keys())
-	check(angles.size() >= 5, "Spread burst is a fan of 5 pellets (angles %s)" % str(angles.keys()))
-	var pellet_damage := roundi(roundi(bee.base_shot_damage * bee.spread_damage_ratio) * bee.hold_spread_damage_ratio)
-	var spread_hold_dps := bee.burst_rate * bee.spread_burst_size * pellet_damage
-	var spread_tap_dps := 3.0 * 3.0 * roundi(bee.base_shot_damage * bee.spread_damage_ratio)
-	print("LOTE14 DPS spread: tap(3/s x 3 pellets x 8)=%.0f hold=%.0f (per pellet %d, ~3 of 5 hit a single target = %.0f)" % [spread_tap_dps, spread_hold_dps, pellet_damage, spread_hold_dps * 0.6])
+	check(angles.size() >= 3, "Spread sustained fire retains the same three-pellet fan (angles %s)" % str(angles.keys()))
+	var spread_hold_dps := 5.0 / BeePlayer.SHOOTING.SPREAD_FIRE_INTERVAL
+	check(is_equal_approx(spread_hold_dps, 60.0), "Triple nominal DPS is 60")
 	bee.spread_ammo = 0
 	for node in stage.get_children():
 		if node is BeeEnergyProjectile:

@@ -54,8 +54,8 @@ const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 @export var honey_twin_damage_ratio := 0.5 ## The second shot does this share of the first one (honey = 1.5x damage, not 2x).
 
 @export_category("Sustained fire (LOTE 14)")
-## Tanda 4a: uniform automatic Base fire / repeated Spread fan, cadence in SHOOTING.
-## Historical burst exports remain for saved scenes/bots; no queued bursts are used by gameplay input.
+## Tanda 4c: active weapon cadence, speed and damage are exclusively in SHOOTING.WEAPON_MODES.
+## Historical burst/ratio exports remain for saved scenes; they no longer tune the primary weapon.
 @export var base_shot_damage := 10 ## Damage of a base shot (the projectile scene default) the burst ratios start from.
 @export var hold_fire_enabled := true
 @export var hold_start_delay := 0.12 ## Seconds held before the first burst.
@@ -244,17 +244,17 @@ func fire() -> BeeEnergyProjectile:
 	refresh_auto_aim()
 	var direction := aim_direction() # LOTE 7: free aim (mouse) first, then auto-aim, then straight ahead.
 	var spread_shot := spread_ammo > 0
-	var projectile := _spawn_projectile(direction)
+	var profile := weapon_profile()
+	var damages: Array = profile["damage"]
+	var projectile := _spawn_projectile(direction, int(damages[0]))
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
 	var bee_visual := $VisualRoot/BeeVisual as Node3D
 	bee_visual.call("play_muzzle_effect", projectile.global_position, direction, spread_shot)
 	if spread_ammo > 0:
 		projectile.set_spread_visual()
-		var reduced_damage := maxi(1, roundi(projectile.damage * spread_damage_ratio))
-		projectile.damage = reduced_damage
-		projectile.hitbox.damage = reduced_damage
-		for angle in [-spread_angle_degrees, spread_angle_degrees]:
-			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), reduced_damage).set_spread_visual()
+		for i in 2:
+			var angle: float = -SHOOTING.SPREAD_ANGLE if i == 0 else SHOOTING.SPREAD_ANGLE
+			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), int(damages[i + 1])).set_spread_visual()
 		weapon_state_changed.emit()
 	if honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, spread_shot) # LOTE 11: honey mode = double shot.
@@ -263,8 +263,20 @@ func fire() -> BeeEnergyProjectile:
 	return projectile
 
 
+func weapon_mode() -> StringName:
+	if spread_ammo > 0.0:
+		return &"triple_double" if honey_left > 0.0 else &"triple"
+	return &"double" if honey_left > 0.0 else &"base"
+
+
+func weapon_profile() -> Dictionary:
+	return SHOOTING.WEAPON_MODES[weapon_mode()]
+
+
 func _spawn_projectile(direction: Vector3, damage_override := -1) -> BeeEnergyProjectile:
 	var projectile := projectile_scene.instantiate() as BeeEnergyProjectile
+	projectile.configured_weapon_damage = true
+	projectile.speed = float(weapon_profile()["speed"])
 	if damage_override >= 0:
 		projectile.damage = damage_override
 	get_parent().add_child(projectile)
@@ -747,8 +759,8 @@ func _update_honey(delta: float) -> void:
 
 ## The second parallel shot of honey mode (same damage and look as `main`).
 func _spawn_honey_twin(main: BeeEnergyProjectile, direction: Vector3, spread_look: bool) -> void:
-	var twin := _spawn_projectile(direction, maxi(1, roundi(float(main.damage) * honey_twin_damage_ratio)))
-	var side := Vector3(-direction.y, direction.x, 0.0).normalized() * honey_shot_offset
+	var twin := _spawn_projectile(direction, int(weapon_profile()["damage"].back()))
+	var side := Vector3(-direction.y, direction.x, 0.0).normalized() * SHOOTING.DOUBLE_OFFSET
 	main.global_position += side
 	twin.global_position -= side
 	if spread_look:
@@ -771,19 +783,16 @@ func _update_sustained_fire(delta: float) -> void:
 		return
 	_hold_time += delta
 	if _fire_cooldown <= 0.00001:
-		if spread_ammo > 0:
-			_fire_spread_burst()
-		else:
-			_fire_burst_shot()
-		fire_trigger_count += 1
-		_fire_cooldown = SHOOTING.SPREAD_FIRE_INTERVAL if spread_ammo > 0 else SHOOTING.FIRE_INTERVAL
+		fire()
+		burst_shots += weapon_profile()["damage"].size() # Historical telemetry: automatic projectiles.
+		_fire_cooldown = float(weapon_profile()["interval"])
 
 
 func _try_input_fire() -> void:
 	if _fire_cooldown > 0.00001:
 		return
-	fire() # Keep the existing first/tap shot damage (10 Base / 8 Spread).
-	_fire_cooldown = SHOOTING.SPREAD_FIRE_INTERVAL if spread_ammo > 0 else SHOOTING.FIRE_INTERVAL
+	fire() # Identical per-shot damage for taps and sustained input.
+	_fire_cooldown = float(weapon_profile()["interval"])
 
 
 ## Compatibility entry point for older bots: now requests one ordinary input shot.
@@ -800,34 +809,8 @@ func _scaled_damage(ratio: float, base: int) -> int:
 
 
 func _fire_burst_shot() -> void:
-	if is_defeated:
-		return
-	refresh_auto_aim()
-	var direction := aim_direction()
-	var projectile := _spawn_projectile(direction, _scaled_damage(hold_damage_ratio, base_shot_damage))
-	BeeAudio.play(get_parent(), &"base")
-	($VisualRoot/BeeVisual as Node3D).call("play_muzzle_effect", projectile.global_position, direction)
-	if honey_left > 0.0:
-		_spawn_honey_twin(projectile, direction, false)
-	shots_fired += 1
-	burst_shots += 1
+	fire() # Legacy bot entry point; use the same configured weapon as live input.
 
 
 func _fire_spread_burst() -> void:
-	refresh_auto_aim()
-	var direction := aim_direction()
-	var pellet_damage := _scaled_damage(hold_spread_damage_ratio, _scaled_damage(spread_damage_ratio, base_shot_damage))
-	var first: BeeEnergyProjectile
-	for i in spread_burst_size:
-		var angle := (float(i) - float(spread_burst_size - 1) * 0.5) * spread_burst_step_degrees
-		var pellet := _spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), pellet_damage)
-		pellet.set_spread_visual()
-		if first == null:
-			first = pellet
-	BeeAudio.play(get_parent(), &"spread")
-	($VisualRoot/BeeVisual as Node3D).call("play_muzzle_effect", first.global_position, direction, true)
-	weapon_state_changed.emit()
-	if honey_left > 0.0:
-		_spawn_honey_twin(first, direction, true)
-	shots_fired += 1
-	burst_shots += spread_burst_size
+	fire() # Triple/Spread never switches to a slower five-pellet cadence.

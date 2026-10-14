@@ -121,7 +121,7 @@ func firing_origin(fallback: Vector3) -> Vector3:
 
 
 func play_muzzle_effect(fallback: Vector3, direction: Vector3, spread := false) -> void:
-	var point := firing_origin(fallback)
+	var point := muzzle.global_position if is_instance_valid(muzzle) else firing_origin(fallback)
 	BeeCombatVFX.spawn(actor.get_parent(), point, &"bee_muzzle_spread" if spread else &"bee_muzzle", direction)
 	if blaster == null:
 		return

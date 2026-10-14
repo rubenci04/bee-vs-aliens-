@@ -13,6 +13,7 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 	BeeAudio.play(get_parent(), &"organic_hit" if organic else &"tech_hit", global_position)
 	BeeCombatVFX.spawn(get_parent(), global_position, &"impact_organic" if organic else &"impact", travel_direction)
 	STYLE.impact(get_parent(), global_position, IMPACT)
+	BeeCombatVFX.spawn(get_parent(), global_position, &"bee_spark", travel_direction, SHOOTING.IMPACT_SPARK_SCALE)
 	hitbox.set_enabled(false)
 	queue_free()
 

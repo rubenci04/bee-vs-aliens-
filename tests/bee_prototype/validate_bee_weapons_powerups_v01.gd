@@ -99,7 +99,7 @@ func run() -> void:
 	check(hud.spread_status_text() == "BASE" and hud.displayed_bomb_icons() == 1, "Initial graphical HUD wrong")
 	await capture("07_hud_base")
 	var base := bee.fire()
-	check(base != null and base.damage == 10 and base.hitbox.damage == 10 and shots().size() == 1, "Base shot altered")
+	check(base != null and base.damage == 3 and base.hitbox.damage == 3 and shots().size() == 1, "Configured base damage must be 3")
 	check(base.speed == 14.0 and base.lifetime == 1.4 and bee.shots_fired == 1, "Base cadence/projectile contract altered")
 	check(base.travel_direction.is_equal_approx(Vector3.RIGHT), "Base direction wrong")
 	await clear_shots()
@@ -122,7 +122,7 @@ func run() -> void:
 	check(burst.size() == 3 and bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0, "Spread count/ammo wrong")
 	check(central.travel_direction.is_equal_approx(direction), "Central lost auto-aim")
 	for shot in burst:
-		check(shot.damage == 8 and shot.hitbox.damage == 8, "Spread damage is not 80 percent")
+		check(shot.damage == (3 if shot == central else 1) and shot.hitbox.damage == shot.damage, "Triple center/side profile damage")
 		if shot != central:
 			check(is_equal_approx(rad_to_deg(direction.angle_to(shot.travel_direction)), 14.0), "Spread angle wrong")
 	var fixed := central.travel_direction
@@ -133,10 +133,14 @@ func run() -> void:
 	await clear_shots()
 	aim_target.global_position = Vector3(27, 5, 0)
 	var spread_hp: int = aim_target.get_node("HealthComponent").current_health
-	bee.fire()
-	await frames(25)
+	var isolated_central := bee.fire()
+	for shot in shots():
+		if shot != isolated_central:
+			shot.free() # Measure the center pellet independently of side-pellet overlaps.
+	isolated_central.launch((aim_target.get_node("Hurtbox3D").global_position - isolated_central.global_position).normalized(), bee)
+	await frames(40)
 	var applied := spread_hp - int(aim_target.get_node("HealthComponent").current_health)
-	check(applied == 8 or applied == 16, "Spread central applies one unchanged 8-damage hit (existing 2x implant multiplier allowed)")
+	check(applied == 3 or applied == 6, "Triple central applies one 3-damage hit (existing 2x implant multiplier allowed); applied=%d" % applied)
 	aim_target.queue_free()
 	await clear_shots()
 	var time_before := bee.spread_ammo
@@ -146,7 +150,7 @@ func run() -> void:
 	await frames(3)
 	bee.set_physics_process(false)
 	check(bee.spread_ammo == 0 and hud.spread_status_text() == "BASE", "Ammo exhaustion failed")
-	check(bee.fire().damage == 10 and shots().size() == 1, "No automatic return to Base")
+	check(bee.fire().damage == 3 and shots().size() == 1, "No automatic return to Base")
 	await clear_shots()
 
 	stage.camera.set_stage_x(166)

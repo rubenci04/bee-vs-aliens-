@@ -33,6 +33,20 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 
+func target_marker_screen_point() -> Vector2:
+	var camera := get_viewport().get_camera_3d()
+	if not SETTINGS.AIM_ASSIST_TARGET_MARKER or camera == null or not is_instance_valid(bee.aim_assist_target):
+		return Vector2.INF
+	var target := bee.aim_assist_target
+	if not bee.AIM_HELP.eligible(bee, target):
+		return Vector2.INF
+	var at: Vector3 = bee.AIM_HELP.point(bee, target)
+	if camera.is_position_behind(at):
+		return Vector2.INF
+	var screen := camera.unproject_position(at) + SETTINGS.TARGET_MARKER_OFFSET
+	return screen if get_viewport().get_visible_rect().has_point(screen) else Vector2.INF
+
+
 ## The live hostile closest to `point` within HOVER_RADIUS (X/Y plane), or null.
 func hostile_at(point: Vector3) -> Node3D:
 	var best: Node3D
@@ -81,6 +95,9 @@ func _draw() -> void:
 	for quadrant in 4:
 		var start := quadrant * PI * 0.5 + 0.12
 		draw_arc(c, SETTINGS.RETICLE_RADIUS, start, start + PI * 0.5 - 0.24, 8, color, SETTINGS.RETICLE_WIDTH, true)
+	var marker := target_marker_screen_point()
+	if marker.is_finite():
+		draw_arc(marker, SETTINGS.TARGET_MARKER_RADIUS, 0.0, TAU, 12, Color(RING, SETTINGS.TARGET_MARKER_OPACITY), 1.0, true)
 	if bee.aim_debug_enabled:
 		var camera := get_viewport().get_camera_3d()
 		var origin := bee.firing_origin()

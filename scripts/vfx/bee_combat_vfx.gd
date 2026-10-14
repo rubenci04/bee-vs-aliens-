@@ -1,5 +1,6 @@
 class_name BeeCombatVFX
 extends Node3D
+const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
 
 # Small visual-only vocabulary. No collisions, damage, timers or game state.
 var kind: StringName = &"impact"
@@ -44,8 +45,8 @@ func _ready() -> void:
 	var reach := 0.45
 	match kind:
 		&"bee_muzzle", &"bee_muzzle_spread":
-			duration = 0.07
-			var flash := _sphere(BeeGameSettings.BEE_MUZZLE_FLASH_GOLD, BeeGameSettings.BEE_MUZZLE_FLASH_SIZE if kind == &"bee_muzzle" else BeeGameSettings.BEE_MUZZLE_SPREAD_FLASH_SIZE)
+			duration = SHOOTING.MUZZLE_SECONDS
+			var flash := _sphere(BeeGameSettings.BEE_MUZZLE_FLASH_GOLD, (BeeGameSettings.BEE_MUZZLE_FLASH_SIZE if kind == &"bee_muzzle" else BeeGameSettings.BEE_MUZZLE_SPREAD_FLASH_SIZE) * SHOOTING.MUZZLE_SCALE)
 			flash.rotation.z = atan2(direction.y, direction.x)
 			_fade(flash, duration)
 		&"muzzle", &"muzzle_spread":

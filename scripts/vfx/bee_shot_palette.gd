@@ -1,5 +1,6 @@
 class_name BeeShotPalette
 extends RefCounted
+const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
 ## LOTE 9 · ETAPA B — the shots of both sides must read apart at a glance, at any distance and under every light of the day:
 ##   Bee      a round PLASMA BALL: white-hot core, warm gold halo and a short warm trail (no arrow, no streak)
 ##   enemies  a cold ORB: pale cyan core, cyan halo and a violet rim, short cyan trail (bigger on the UFO)
@@ -37,6 +38,10 @@ static func _sphere(key: String, radius: float, color: Color, priority: int, tra
 	# Restore only hostile shots; retain T3 fog handling for Bee's own plasma.
 	material.disable_fog = key.begins_with("bee_")
 	material.albedo_color = color
+	if key.begins_with("bee_"):
+		material.emission_enabled = true
+		material.emission = Color(color, 1.0)
+		material.emission_energy_multiplier = SHOOTING.SHOT_EMISSION
 	material.render_priority = priority
 	if transparent:
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -134,6 +139,8 @@ static func dress_bee(projectile: Node3D) -> void:
 		tail.mesh = template.mesh
 		tail.lifetime = template.lifetime
 		tail.amount = template.amount
+		tail.lifetime = SHOOTING.SHOT_TRAIL_SECONDS
+		tail.amount = SHOOTING.SHOT_TRAIL_AMOUNT
 		tail.color_ramp = template.color_ramp
 		tail.scale_amount_curve = template.scale_amount_curve
 		tail.emitting = true
