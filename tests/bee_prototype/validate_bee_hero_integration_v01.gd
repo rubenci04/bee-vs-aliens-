@@ -72,7 +72,11 @@ func run() -> void:
 	visual.call("sting_impact_effect")
 	check(host.find_child("BeeDrillMetalTrail", true, false) != null, "Drill trail should use stinger_tip")
 
-	check(bee.start_roll(), "Roll should start")
+	check(not bee.start_roll() and bee.sting_dash.queued_roll, "Roll should wait for sting")
+	for _i in 90:
+		if bee.is_rolling: break
+		await physics_frame
+	check(bee.is_rolling, "Queued roll should start after sting")
 	check(bee.health.invulnerable and bee.is_rolling, "Roll remains invulnerable")
 	var plate: Node = model.find_child("plates", true, false)
 	check(plate != null and plate.find_children("*", "MeshInstance3D", true, false).any(func(m: MeshInstance3D): return m.material_overlay != null), "Roll should flash armor plates")

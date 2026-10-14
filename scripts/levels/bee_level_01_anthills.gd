@@ -1,7 +1,7 @@
 class_name BeeLevel01Anthills
 extends Node3D
 ## LOTE 13 · ETAPA 1 — the anthills_v01 mounds on the soil of Level 1 and the way ants COME OUT of them: the ant is born at the
-## mound's entrance anchor, grows out of it in EMERGE_SECONDS with a dirt puff (it is never a target nor a threat meanwhile), hops
+## mound's entrance anchor, grows out of it in EMERGE_SECONDS with a dirt puff (it is never a target nor a threat meanwhile), descends
 ## down to the ground and only then the director activates it (see BeeLevel01Controller._spawn, request key "anthill").
 ## Events mark their ants with `"anthill": true`; with no mound on screen the ant enters from the right edge as before.
 
@@ -12,10 +12,12 @@ const HILL_Z := -0.9 ## Just behind the flight plane: the ant walks in front of 
 const GROUND_Y := -0.2
 const EMERGE_SECONDS := 0.7
 const EMERGE_START_SCALE := 0.25
-const EMERGE_RISE := 0.3 ## m the ant rises above the entrance while it grows.
+const EMERGE_RISE := 0.0 ## m the ant rises above the entrance while it grows.
 const HOP_SECONDS := 0.4
-const HOP_DISTANCE := 1.3 ## m towards -X (towards Bee) the ant hops out.
-const HOP_HEIGHT := 0.5
+const HOP_DISTANCE := 1.3 ## m towards -X (towards Bee) while descending from the mouth.
+const MOUTH_EXIT_FRACTION := 0.35
+const DESCENT_FRACTION := 0.65
+const HOP_HEIGHT := 0.0
 ## A mound can be used when its X is inside [camera - VISIBLE_BEHIND, camera + VISIBLE_AHEAD].
 const VISIBLE_BEHIND := 3.0
 const VISIBLE_AHEAD := 6.5
@@ -59,7 +61,7 @@ func pick(camera_x: float) -> Dictionary:
 	return best
 
 
-## Grows `unit` out of `hill`, hops it to the ground and calls `on_done`. The unit must be inactive (not yet `activate`d).
+## Grows `unit` out of `hill`, descends to the ground and calls `on_done`. The unit must be inactive (not yet `activate`d).
 func emerge(unit: Node3D, hill: Dictionary, on_done: Callable) -> void:
 	var entrance: Vector3 = hill["entrance"]
 	emerged += 1
@@ -71,7 +73,7 @@ func emerge(unit: Node3D, hill: Dictionary, on_done: Callable) -> void:
 	unit.scale = Vector3.ONE * EMERGE_START_SCALE
 	BeeCombatVFX.spawn(unit.get_parent(), entrance + Vector3(0.0, 0.1, 0.4), &"rock_break", Vector3.UP, 1.1)
 	BeeAudio.play(unit.get_parent(), &"crate", entrance, 0.7)
-	var up := Vector3(entrance.x, entrance.y + EMERGE_RISE, 0.0)
+	var up := Vector3(entrance.x - HOP_DISTANCE * MOUTH_EXIT_FRACTION, lerpf(entrance.y, GROUND_Y, DESCENT_FRACTION), 0.0)
 	var landing := Vector3(entrance.x - HOP_DISTANCE, GROUND_Y, 0.0)
 	var tween := unit.create_tween() # Owned by the unit: a level reload frees both.
 	tween.set_parallel(true)
@@ -85,7 +87,7 @@ static func _hop(progress: float, unit: Node3D, from: Vector3, to: Vector3) -> v
 	if not is_instance_valid(unit):
 		return
 	var p := from.lerp(to, progress)
-	p.y += sin(progress * PI) * HOP_HEIGHT
+	p.y = lerpf(from.y, GROUND_Y, progress)
 	unit.global_position = p
 
 
@@ -94,6 +96,7 @@ static func _land(unit: Node3D, on_done: Callable) -> void:
 		return
 	unit.scale = Vector3.ONE
 	unit.global_position.y = GROUND_Y
+	if unit is AssetFauna: (unit as AssetFauna).ground_y = GROUND_Y
 	unit.set_meta("anthill_entry", false)
 	if unit.has_method("is_defeated") and bool(unit.call("is_defeated")):
 		return

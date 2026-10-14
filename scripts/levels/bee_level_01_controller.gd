@@ -879,6 +879,7 @@ func _spawn(request: Dictionary) -> void:
 		height = minf(height, BeeLevel01Framing.max_entity_y()) # Never above the visible top edge - margin.
 	# Moving enemies are born just past the right visible edge; the static turret stays on screen
 	# (a hard gate must always be clearable).
+	if family == "Ant": height = BeeLevel01Anthills.GROUND_Y
 	var spawn_offset := BeeLevel01Framing.ONSCREEN_SPAWN_X if family == "Turret" or family == "MushroomCannon" \
 			else BeeLevel01Framing.spawn_offset_x(BeeLevel01Framing.view_aspect(get_viewport()))
 	unit.global_position = Vector3(stage.camera.global_position.x + spawn_offset + float(request.get("x", 0.0)), height, 0)

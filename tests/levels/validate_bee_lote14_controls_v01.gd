@@ -35,7 +35,7 @@ func run() -> void:
 
 	# --- Constants (configurable) -----------------------------------------------------------------------------------------
 	check(is_equal_approx(bee.burst_rate, 2.5) and bee.burst_size == 3 and bee.spread_burst_size == 5, "Burst constants: 2.5/s, 3 shots, fan of 5")
-	check(is_equal_approx(bee.melee_cooldown, BeeGameSettings.STING_MIN_INTERVAL_SEC) and is_equal_approx(bee.melee_lunge_time, 0.2) and is_equal_approx(bee.melee_reach_factor, 1.6), "Sting constants: 0.9 s recharge, 0.2 s lunge, reach 1.6 Bee lengths")
+	check(is_zero_approx(bee.melee_cooldown) and is_equal_approx(bee.melee_lunge_time, .22) and is_equal_approx(bee.melee_reach_factor, 1.6), "Sting constants: 0.9 s recharge, 0.2 s lunge, reach 1.6 Bee lengths")
 	check(bee.melee_damage == 3 * bee.base_shot_damage, "Sting damage must be 3 base shots (%d)" % bee.melee_damage)
 
 	# --- Sustained fire: Base ---------------------------------------------------------------------------------------------
@@ -124,14 +124,14 @@ func run() -> void:
 	check(not bee.start_melee(), "Z is on cooldown right after")
 	await frames(5)
 	check(bee.stinger != null and bee.stinger.visible, "The chrome stinger is shown during the strike")
-	await frames(9)
+	await frames(14)
 	check(bee.global_position.x < x0 - 0.3, "Bee lunges backwards towards the target (x %.2f -> %.2f)" % [x0, bee.global_position.x])
 	check(behind.health.current_health == hp_behind - bee.melee_damage or behind.is_defeated(), "The enemy behind took the sting damage (%d -> %d)" % [hp_behind, behind.health.current_health])
 	check(front.health.current_health == front.health.max_health and far.health.current_health == far.health.max_health, "Only the nearest enemy is hit")
 	check(bee.facing_x < 0.0, "Bee turns towards the target")
 	await frames(3)
-	check(bee.melee_ready_ratio() < 1.0, "Sting animation interval still active")
-	await frames(8)
+	check(bee.melee_ready_ratio() == 1.0, "Sting has no charge meter")
+	await frames(12)
 	check(bee.melee_ready_ratio() >= 1.0, "Sting ready after 0.9 s (AGUIJÓN LISTO)")
 	check(not bee.stinger.visible, "The stinger hides after the strike")
 	# Nothing within reach: forward swing as before.

@@ -76,4 +76,6 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 	var applied := health_component.take_damage(amount)
 	if applied > 0:
 		hits_taken += 1
+		if owner_entity is BeePlayer:
+			preload("res://scripts/game/bee_damage_trace.gd").record(owner_entity,hitbox,applied)
 	return applied

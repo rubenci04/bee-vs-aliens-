@@ -1,6 +1,7 @@
 class_name BeePlayer
 extends CharacterBody3D
 const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
+const STING := preload("res://scripts/game/bee_sting_settings.gd")
 const AIM_HELP := preload("res://scripts/bee_prototype/bee_aim_assist.gd")
 
 signal health_changed(current: int, maximum: int)
@@ -71,12 +72,12 @@ const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 ## 360-degree stinger: hits the NEAREST enemy within MELEE_REACH_FACTOR x BEE_LENGTH (front or back) with a short lunge.
 const BEE_LENGTH := 1.3 ## Measured from the model (m).
 @export var melee_reach_factor := 1.6
-@export var melee_lunge_time := 0.2 ## Seconds of the lunge towards the target (also the time the hit box is live).
-@export var melee_lunge_stop := 0.6 ## Distance (m) from the target at which the lunge stops.
+@export var melee_lunge_time := STING.DASH_SECONDS ## Seconds of the lunge towards the target (also the time the hit box is live).
+@export var melee_lunge_stop := STING.STOP_DISTANCE ## Distance (m) from the target at which the lunge stops.
 @export var melee_damage := 30 ## 3 x a base shot (10).
 @export var melee_range := 0.85 ## Forward swing when nothing is in reach.
 @export var melee_active_time := 0.2
-@export var melee_cooldown := BeeGameSettings.STING_MIN_INTERVAL_SEC
+@export var melee_cooldown := 0.0
 
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
@@ -132,6 +133,7 @@ var _turn_left := 0.0
 var _turn_tween: Tween
 var _mouse_tap_handled := false
 var _fire_cooldown := 0.0
+var sting_dash: Node
 var aim_assist_target: Node3D
 var aim_debug_enabled := SHOOTING.AIM_DEBUG_DEFAULT
 
@@ -146,6 +148,13 @@ func _ready() -> void:
 	melee_hitbox.hit_confirmed.connect(_on_melee_impact)
 	_place_melee_hitbox()
 	_build_stinger()
+	sting_dash = preload("res://scripts/bee_prototype/bee_sting_dash.gd").new()
+	sting_dash.bee = self
+	add_child(sting_dash)
+	var flash := get_node_or_null("HitFlash3D") as HitFlash3D
+	if flash != null:
+		flash.duration = STING.DAMAGE_FLASH_SECONDS
+		flash.set_flash_color(STING.DAMAGE_FLASH_COLOR)
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
 
@@ -159,31 +168,35 @@ func _physics_process(delta: float) -> void:
 	if is_defeated:
 		velocity = Vector3.ZERO
 		return
-	var input := Input.get_vector("move_left", "move_right", "move_back", "move_forward")
-	if web_locked:
-		for action in [&"move_left", &"move_right", &"move_back", &"move_forward"]:
-			if Input.is_action_just_pressed(action):
-				web_struggle()
-		input = Vector2.ZERO
-		velocity = Vector3.ZERO
-		_lunge_left = 0.0
-	var desired := Vector2(input.x * horizontal_speed, input.y * vertical_speed)
-	var rate := acceleration if desired.length_squared() > 0.0 else deceleration
-	velocity.x = move_toward(velocity.x, desired.x, rate * delta)
-	velocity.y = move_toward(velocity.y, desired.y, rate * delta)
-	velocity.z = 0.0
-	if _lunge_left > 0.0: # LOTE 14: the sting lunge overrides the flight input.
-		_lunge_left = maxf(0.0, _lunge_left - delta)
-		velocity = _lunge_velocity
-	if _roll_dash_left > 0.0:
-		_roll_dash_left = maxf(0.0, _roll_dash_left - delta)
-		velocity = _roll_dash_velocity
-	if absf(input.x) > 0.05 and not is_free_aiming() and _lunge_left <= 0.0:
-		_face_towards(input.x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE)
-	move_and_slide()
-	position.x = clampf(position.x, flight_min.x, flight_max.x)
-	position.y = clampf(position.y, flight_min.y, flight_max.y)
-	position.z = 0.0
+	if sting_dash.active:
+		sting_dash.step(delta)
+	else:
+		var input := Input.get_vector("move_left", "move_right", "move_back", "move_forward")
+		if web_locked:
+			for action in [&"move_left", &"move_right", &"move_back", &"move_forward"]:
+				if Input.is_action_just_pressed(action):
+					web_struggle()
+			input = Vector2.ZERO
+			velocity = Vector3.ZERO
+			_lunge_left = 0.0
+		var desired := Vector2(input.x * horizontal_speed, input.y * vertical_speed)
+		var rate := acceleration if desired.length_squared() > 0.0 else deceleration
+		velocity.x = move_toward(velocity.x, desired.x, rate * delta)
+		velocity.y = move_toward(velocity.y, desired.y, rate * delta)
+		velocity.z = 0.0
+		if _lunge_left > 0.0: # LOTE 14: the sting lunge overrides the flight input.
+			_lunge_left = maxf(0.0, _lunge_left - delta)
+			velocity = _lunge_velocity
+		if _roll_dash_left > 0.0:
+			_roll_dash_left = maxf(0.0, _roll_dash_left - delta)
+			velocity = _roll_dash_velocity
+		if absf(input.x) > 0.05 and not is_free_aiming() and _lunge_left <= 0.0:
+			_face_towards(input.x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE)
+		move_and_slide()
+		position.x = clampf(position.x, flight_min.x, flight_max.x)
+		position.y = clampf(position.y, flight_min.y, flight_max.y)
+		position.z = 0.0
+
 	_update_free_aim(delta)
 	_update_joypad_aim(delta)
 	refresh_auto_aim()
@@ -333,10 +346,10 @@ func use_bomb() -> BeeAlienBomb:
 	return bomb
 
 
-## LOTE 14: the Sting (Z) is a 360-degree strike. The NEAREST enemy within `melee_reach()` (in front OR behind) is hit after a short
-## lunge (`melee_lunge_time`); with nothing in reach it is the old forward swing. `melee_damage` = 3 base shots, `melee_cooldown` 0.9 s.
+## T4b: move toward the nearest enemy in 360 degrees, hit on arrival, then recoil.
+## With no target, dash along aim without damage. No charge or cooldown.
 func melee_reach() -> float:
-	return BEE_LENGTH * melee_reach_factor
+	return STING.REACH
 
 
 func nearest_melee_target() -> Node3D:
@@ -354,58 +367,19 @@ func nearest_melee_target() -> Node3D:
 
 
 func start_melee() -> bool:
-	if is_defeated or web_locked or _melee_cooldown_left > 0.0:
-		return false
-	melee_target = nearest_melee_target()
-	var chrome_dir := Vector3(facing_x, 0.0, 0.0)
-	if melee_target != null:
-		var to_target := _target_point(melee_target) - global_position
-		to_target.z = 0.0
-		var dist := to_target.length()
-		chrome_dir = to_target.normalized() if dist > 0.01 else chrome_dir
-		if absf(to_target.x) > 0.15:
-			_face_towards(to_target.x)
-		var travel := maxf(0.0, dist - melee_lunge_stop)
-		_lunge_velocity = chrome_dir * (travel / maxf(melee_lunge_time, 0.01))
-		_lunge_left = melee_lunge_time if travel > 0.0 else 0.0
-		melee_lunge_count += 1
-		melee_hitbox.global_position = _target_point(melee_target)
-	else:
-		_place_melee_hitbox()
-	melee_hitbox.damage = melee_damage
-	melee_hitbox.set_enabled(true)
-	_melee_active_left = melee_active_time
-	_melee_cooldown_left = melee_cooldown
-	melee_count += 1
-	if _melee_tween != null:
-		_melee_tween.kill()
-	visual_root.scale = Vector3(1.22, 0.82, 0.82)
-	_melee_tween = create_tween()
-	_melee_tween.tween_property(visual_root, "scale", Vector3.ONE, 0.14)
-	_show_stinger(chrome_dir)
-	($VisualRoot/BeeVisual as Node3D).call("start_drill_attack")
-	melee_started.emit()
-	return true
+	if is_defeated or web_locked: return false
+	return sting_dash.begin()
 
+func _update_melee(_delta: float) -> void:
+	_melee_cooldown_left = 0 # Always available once the current move finishes; no charge.
+	if sting_dash != null and sting_dash.queued_sting and not is_rolling and not sting_dash.active:
+		sting_dash.queued_sting = false
+		start_melee()
+	if sting_dash != null and sting_dash.queued_roll and not sting_dash.active and not is_rolling and _roll_cooldown_left <= 0.0:
+		if start_roll(): sting_dash.queued_roll = false
 
-func _update_melee(delta: float) -> void:
-	_melee_cooldown_left = maxf(0.0, _melee_cooldown_left - delta)
-	if _melee_active_left <= 0.0:
-		return
-	if melee_target != null and is_instance_valid(melee_target):
-		melee_hitbox.global_position = _target_point(melee_target) # The strike follows the target through the lunge.
-	_melee_active_left = maxf(0.0, _melee_active_left - delta)
-	if _melee_active_left == 0.0:
-		melee_hitbox.set_enabled(false)
-		melee_target = null
-		_lunge_left = 0.0
-		_place_melee_hitbox()
-		_hide_stinger()
-
-
-## 0..1 recharge progress of the sting (1 = ready); the HUD reads it ("AGUIJÓN LISTO").
 func melee_ready_ratio() -> float:
-	return 1.0 - clampf(_melee_cooldown_left / maxf(melee_cooldown, 0.001), 0.0, 1.0)
+	return 1.0
 
 
 func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
@@ -468,7 +442,7 @@ func _build_stinger() -> void:
 	dot.rings = 3
 	var dot_material := StandardMaterial3D.new()
 	dot_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	dot_material.albedo_color = Color(1.0, 0.78, 0.32, 0.85)
+	dot_material.albedo_color = STING.TRAIL_COLOR
 	dot_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dot.material = dot_material
 	_stinger_trail.mesh = dot
@@ -546,6 +520,7 @@ func _on_died() -> void:
 	velocity = Vector3.ZERO
 	current_auto_target = null
 	target_indicator.hide()
+	if sting_dash != null and sting_dash.active: sting_dash.finish()
 	melee_hitbox.set_enabled(false)
 	melee_target = null
 	_hide_stinger()
@@ -666,6 +641,7 @@ func _update_free_aim(delta: float) -> void:
 	_face_towards(dx)
 
 func _face_towards(dx: float) -> void:
+	if sting_dash != null and sting_dash.active: return
 	if absf(dx) <= BeeGameSettings.BEE_TURN_HYSTERESIS_METERS or _turn_left > 0.0 or signf(dx) == facing_x:
 		return
 	facing_x = signf(dx)
@@ -685,6 +661,9 @@ func _face_towards(dx: float) -> void:
 ## Barrel roll: `roll_duration` s of invulnerability (HealthComponent.invulnerable; common enemy shots that touch Bee are
 ## destroyed, see DamageHurtbox3D), then `roll_cooldown` s until the next one.
 func start_roll() -> bool:
+	if sting_dash != null and sting_dash.active:
+		sting_dash.queued_roll = true
+		return false
 	if is_defeated or web_locked or not roll_enabled or is_rolling or _roll_cooldown_left > 0.0:
 		return false
 	is_rolling = true
