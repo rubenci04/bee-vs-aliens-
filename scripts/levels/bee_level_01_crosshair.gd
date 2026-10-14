@@ -1,21 +1,11 @@
 class_name BeeLevel01Crosshair
 extends Control
-## LOTE 7 — FREE AIM crosshair (HUD). Drawn only while Bee is aiming with the mouse (BeePlayer.is_free_aiming()); otherwise the
-## usual auto-aim marker is used and the OS cursor comes back. Toon look like the HUD: thick dark outline + warm yellow ring,
-## four ticks and a dot. While it is shown the OS cursor is hidden (and restored on pause / defeat / exit).
+const SETTINGS := preload("res://scripts/game/bee_shooting_settings.gd")
+## Tanda 4a: always-visible gameplay reticle on the corrected firing ray.
+## Thin open ring, faint when idle; optional F4 cone/selected-target debug.
 
-const RADIUS := 13.0
-const OUTLINE := Color(0.07, 0.05, 0.04, 0.95)
 const RING := Color(1.0, 0.86, 0.28)
-const DOT := Color(0.35, 1.0, 1.0) # Same cyan as the weapon HUD.
-const OUTLINE_WIDTH := 6.0
-const RING_WIDTH := 2.6
-const TICK := 7.0
-## LOTE 9 — cyan means hostile: over an enemy / implant (within HOVER_RADIUS m of the aim point) the ring turns cyan,
-## grows and pulses, and lock brackets frame the target.
-const HOSTILE := Color(0.25, 1.0, 1.0)
 const HOVER_RADIUS := 1.1
-const HOVER_GROW := 1.3
 
 var bee: BeePlayer
 var _cursor_hidden := false
@@ -32,11 +22,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	var aiming := bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused and bee.is_free_aiming()
+	var aiming := bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused
+	if aiming and bee.get_parent().get("sector_complete") == true:
+		aiming = false
 	visible = aiming
 	# TANDA 1 · H-03: the OS cursor stays hidden for the whole gameplay (mouse or pad); it comes back on pause and defeat.
 	_set_cursor_hidden(bee != null and is_instance_valid(bee) and not bee.is_defeated and not get_tree().paused)
-	hovered = hostile_at(bee.aim_point) if aiming else null
+	hovered = bee.aim_assist_target if aiming else null
 	if aiming:
 		queue_redraw()
 
@@ -64,36 +56,43 @@ func aim_screen_point() -> Vector2:
 	var camera := get_viewport().get_camera_3d()
 	if camera == null or bee == null:
 		return get_viewport().get_mouse_position()
-	return camera.unproject_position(bee.aim_point)
+	var origin := bee.firing_origin()
+	var from := camera.unproject_position(origin)
+	var to := camera.unproject_position(origin + bee.aim_direction() * SETTINGS.RETICLE_DISTANCE)
+	var delta := to - from
+	var bounds := get_viewport().get_visible_rect().grow(-SETTINGS.RETICLE_SCREEN_MARGIN)
+	var fraction := 1.0
+	if delta.x > 0.001:
+		fraction = minf(fraction, (bounds.end.x - from.x) / delta.x)
+	elif delta.x < -0.001:
+		fraction = minf(fraction, (bounds.position.x - from.x) / delta.x)
+	if delta.y > 0.001:
+		fraction = minf(fraction, (bounds.end.y - from.y) / delta.y)
+	elif delta.y < -0.001:
+		fraction = minf(fraction, (bounds.position.y - from.y) / delta.y)
+	return from + delta * clampf(fraction, 0.0, 1.0)
 
 
 func _draw() -> void:
 	var c := aim_screen_point()
-	var hostile := hovered != null and is_instance_valid(hovered)
-	var colour := HOSTILE if hostile else RING
-	var radius := RADIUS * (HOVER_GROW + 0.08 * sin(_t * TAU * 2.0) if hostile else 1.0)
-	draw_arc(c, radius, 0.0, TAU, 32, OUTLINE, OUTLINE_WIDTH, true)
-	draw_arc(c, radius, 0.0, TAU, 32, colour, RING_WIDTH, true)
-	for direction in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-		var from: Vector2 = c + direction * (radius + 3.0)
-		var to: Vector2 = c + direction * (radius + 3.0 + TICK)
-		draw_line(from, to, OUTLINE, OUTLINE_WIDTH - 1.0, true)
-		draw_line(from, to, colour, RING_WIDTH, true)
-	draw_circle(c, 3.6, OUTLINE)
-	draw_circle(c, 2.2, DOT)
-	if hostile:
-		# Lock brackets around the hostile itself (where its cyan implant / core is).
+	var alpha := SETTINGS.RETICLE_ACTIVE_OPACITY if bee.is_free_aiming() else SETTINGS.RETICLE_IDLE_OPACITY
+	var color := Color(RING, alpha)
+	# Open, thin ring: no filled centre or enemy-covering lock brackets.
+	for quadrant in 4:
+		var start := quadrant * PI * 0.5 + 0.12
+		draw_arc(c, SETTINGS.RETICLE_RADIUS, start, start + PI * 0.5 - 0.24, 8, color, SETTINGS.RETICLE_WIDTH, true)
+	if bee.aim_debug_enabled:
 		var camera := get_viewport().get_camera_3d()
-		if camera != null:
-			var at: Vector3 = hovered.call("auto_aim_point") if hovered.has_method("auto_aim_point") else hovered.global_position
-			var p := camera.unproject_position(at)
-			var s := 22.0
-			for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
-				var k: Vector2 = p + corner * s
-				draw_line(k, k - Vector2(corner.x * 9.0, 0.0), OUTLINE, 5.0, true)
-				draw_line(k, k - Vector2(0.0, corner.y * 9.0), OUTLINE, 5.0, true)
-				draw_line(k, k - Vector2(corner.x * 9.0, 0.0), HOSTILE, 2.4, true)
-				draw_line(k, k - Vector2(0.0, corner.y * 9.0), HOSTILE, 2.4, true)
+		var origin := bee.firing_origin()
+		var raw := bee.raw_aim_direction()
+		var screen_origin := camera.unproject_position(origin)
+		for side in [-1.0, 1.0]:
+			var direction := raw.rotated(Vector3.BACK, deg_to_rad(SETTINGS.AIM_ASSIST_ANGLE * side))
+			draw_line(screen_origin, camera.unproject_position(origin + direction * SETTINGS.AIM_ASSIST_RANGE), Color(0.2, 0.9, 1, 0.4), 1.0, true)
+		if is_instance_valid(bee.aim_assist_target):
+			var target := camera.unproject_position(bee.AIM_HELP.point(bee, bee.aim_assist_target))
+			draw_line(screen_origin, target, Color(1, 0.3, 0.8, 0.6), 1.0, true)
+			draw_arc(target, 10.0, 0.0, TAU, 24, Color(1, 0.3, 0.8, 0.8), 1.5, true)
 
 
 func _set_cursor_hidden(hidden: bool) -> void:

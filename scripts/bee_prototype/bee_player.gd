@@ -1,5 +1,7 @@
 class_name BeePlayer
 extends CharacterBody3D
+const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
+const AIM_HELP := preload("res://scripts/bee_prototype/bee_aim_assist.gd")
 
 signal health_changed(current: int, maximum: int)
 signal auto_aim_changed(target: Node3D)
@@ -52,8 +54,8 @@ const BOMB_SCENE := preload("res://scenes/bee_prototype/bee_alien_bomb.tscn")
 @export var honey_twin_damage_ratio := 0.5 ## The second shot does this share of the first one (honey = 1.5x damage, not 2x).
 
 @export_category("Sustained fire (LOTE 14)")
-## Holding fire (left click or X) past HOLD_START_DELAY shoots in bursts: BURST_SIZE shots in a row, or a SPREAD_BURST_SIZE fan with Spread.
-## A quick tap still shoots one normal shot at once. Damage per shot is scaled so the sustained DPS matches the tap reference (3 taps/s).
+## Tanda 4a: uniform automatic Base fire / repeated Spread fan, cadence in SHOOTING.
+## Historical burst exports remain for saved scenes/bots; no queued bursts are used by gameplay input.
 @export var base_shot_damage := 10 ## Damage of a base shot (the projectile scene default) the burst ratios start from.
 @export var hold_fire_enabled := true
 @export var hold_start_delay := 0.12 ## Seconds held before the first burst.
@@ -129,6 +131,9 @@ var _roll_dash_velocity := Vector3.ZERO
 var _turn_left := 0.0
 var _turn_tween: Tween
 var _mouse_tap_handled := false
+var _fire_cooldown := 0.0
+var aim_assist_target: Node3D
+var aim_debug_enabled := SHOOTING.AIM_DEBUG_DEFAULT
 
 
 func _ready() -> void:
@@ -185,7 +190,7 @@ func _physics_process(delta: float) -> void:
 	if not is_free_aiming() and is_instance_valid(current_auto_target):
 		_face_towards(_target_point(current_auto_target).x - global_position.x)
 	if Input.is_action_just_pressed("throw_orange") and not _mouse_tap_handled:
-		fire()
+		_try_input_fire()
 	_mouse_tap_handled = false
 	_update_sustained_fire(delta)
 	if Input.is_action_just_pressed("debug_attack"):
@@ -211,6 +216,8 @@ func refresh_auto_aim() -> Node3D:
 		var candidate := candidate_node as Node3D
 		if not _is_valid_target(candidate):
 			continue
+		if SHOOTING.AIM_ASSIST_ENABLED and not AIM_HELP.eligible(self, candidate):
+			continue
 		var delta := Vector2(candidate.global_position.x - global_position.x, candidate.global_position.y - global_position.y)
 		var distance := delta.length()
 		if distance <= 0.001 or distance > auto_aim_range:
@@ -219,6 +226,8 @@ func refresh_auto_aim() -> Node3D:
 		if angle > half_cone:
 			continue
 		var score := distance
+		if SHOOTING.AIM_ASSIST_ENABLED and AIM_HELP.weak_point(candidate) == null:
+			score += auto_aim_range # Vulnerable implant first, then nearest within the existing cone.
 		if score < best_score:
 			best_score = score
 			best = candidate
@@ -539,13 +548,15 @@ func _on_died() -> void:
 # --- LOTE 7: free aim -------------------------------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == SHOOTING.AIM_DEBUG_KEY:
+		aim_debug_enabled = not aim_debug_enabled
 	if not mouse_aim_enabled or is_defeated:
 		return
 	if event is InputEventMouseMotion:
 		_aim_at_screen((event as InputEventMouseMotion).position)
 	elif event is InputEventMouseButton and event.is_action_pressed("throw_orange"):
 		_aim_at_screen((event as InputEventMouseButton).position)
-		fire()
+		_try_input_fire()
 		_mouse_tap_handled = true
 
 
@@ -596,7 +607,7 @@ func is_free_aiming() -> bool:
 
 
 ## Direction of the next shot: free aim if active, else the auto-aim target, else straight ahead.
-func aim_direction() -> Vector3:
+func raw_aim_direction() -> Vector3:
 	if not is_free_aiming() and not is_instance_valid(current_auto_target):
 		return Vector3(facing_x, 0.0, 0.0)
 	var target_point := global_position + Vector3(facing_x * BeeGameSettings.BEE_DEFAULT_AIM_DISTANCE, 0.0, 0.0)
@@ -611,6 +622,26 @@ func aim_direction() -> Vector3:
 		firing_point = visual.call("firing_origin", global_position)
 	var delta := target_point - firing_point
 	return delta.normalized() if delta.length() > 0.05 else Vector3(facing_x, 0.0, 0.0)
+
+
+func firing_origin() -> Vector3:
+	var visual := $VisualRoot/BeeVisual as Node3D
+	return visual.call("firing_origin", global_position) if visual != null and visual.get("muzzle") != null else global_position
+
+
+func aim_direction() -> Vector3:
+	var intended := raw_aim_direction()
+	aim_assist_target = null
+	if not SHOOTING.AIM_ASSIST_ENABLED:
+		return intended
+	var origin := firing_origin()
+	aim_assist_target = AIM_HELP.choose(self, origin, intended)
+	if aim_assist_target == null:
+		return intended
+	var desired := AIM_HELP.point(self, aim_assist_target) - origin
+	desired.z = 0.0
+	var angle := lerp_angle(atan2(intended.y, intended.x), atan2(desired.y, desired.x), clampf(SHOOTING.AIM_ASSIST_STRENGTH, 0.0, 1.0))
+	return Vector3(cos(angle), sin(angle), 0.0)
 
 
 func _update_free_aim(delta: float) -> void:
@@ -730,39 +761,38 @@ func is_fire_held() -> bool:
 	return Input.is_action_pressed("throw_orange")
 
 
-## Holding fire (past `hold_start_delay`) shoots bursts at `burst_rate`; releasing stops it at once. Taps keep their single shot.
+## Uniform fire while held; no catch-up volleys or queued rounds after release.
 func _update_sustained_fire(delta: float) -> void:
-	_burst_cooldown = maxf(0.0, _burst_cooldown - delta)
+	_fire_cooldown = maxf(0.0, _fire_cooldown - delta)
 	var held := hold_fire_enabled and is_fire_held()
+	_burst_left = 0 # No queued rounds: releasing never completes an old burst.
 	if not held:
 		_hold_time = 0.0
-		_burst_left = 0
 		return
 	_hold_time += delta
-	if _burst_left > 0:
-		_burst_gap_left -= delta
-		if _burst_gap_left <= 0.0:
-			_burst_left -= 1
-			_burst_gap_left = burst_shot_gap
+	if _fire_cooldown <= 0.00001:
+		if spread_ammo > 0:
+			_fire_spread_burst()
+		else:
 			_fire_burst_shot()
-	elif _hold_time >= hold_start_delay and _burst_cooldown <= 0.0:
-		start_burst()
+		fire_trigger_count += 1
+		_fire_cooldown = SHOOTING.SPREAD_FIRE_INTERVAL if spread_ammo > 0 else SHOOTING.FIRE_INTERVAL
 
 
-## One burst: `burst_size` quick shots (Base) or a `spread_burst_size` fan (Spread, 1 charge).
+func _try_input_fire() -> void:
+	if _fire_cooldown > 0.00001:
+		return
+	fire() # Keep the existing first/tap shot damage (10 Base / 8 Spread).
+	_fire_cooldown = SHOOTING.SPREAD_FIRE_INTERVAL if spread_ammo > 0 else SHOOTING.FIRE_INTERVAL
+
+
+## Compatibility entry point for older bots: now requests one ordinary input shot.
 func start_burst() -> bool:
 	if is_defeated or projectile_scene == null:
 		return false
-	_burst_cooldown = 1.0 / maxf(burst_rate, 0.1)
-	burst_count += 1
-	fire_trigger_count += 1
-	if spread_ammo > 0:
-		_fire_spread_burst()
-	else:
-		_burst_left = burst_size - 1
-		_burst_gap_left = burst_shot_gap
-		_fire_burst_shot()
-	return true
+	var before := shots_fired
+	_try_input_fire()
+	return shots_fired > before
 
 
 func _scaled_damage(ratio: float, base: int) -> int:

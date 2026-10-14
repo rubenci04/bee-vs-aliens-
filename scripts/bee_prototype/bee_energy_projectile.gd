@@ -1,5 +1,6 @@
 class_name BeeEnergyProjectile
 extends Node3D
+const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
 
 @export var speed := 14.0
 @export var damage := 10
@@ -15,6 +16,14 @@ static var _shared_trail_mesh: SphereMesh
 
 func _ready() -> void:
 	_time_left = lifetime
+	# Own shape copies: +25% damage reach, without scaling visuals or shared resources.
+	for collider in hitbox.get_children():
+		if collider is CollisionShape3D and collider.shape != null:
+			collider.shape = collider.shape.duplicate()
+			if collider.shape is SphereShape3D:
+				collider.shape.radius *= SHOOTING.PLAYER_SHOT_HITBOX_SCALE
+			elif collider.shape is BoxShape3D:
+				collider.shape.size *= SHOOTING.PLAYER_SHOT_HITBOX_SCALE
 	hitbox.damage = damage
 	hitbox.hit_confirmed.connect(_on_hit_confirmed)
 	trail = CPUParticles3D.new()

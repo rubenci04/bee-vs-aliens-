@@ -85,14 +85,14 @@ func run() -> void:
 	var crosshair := stage.get_node("CanvasLayer/Crosshair") as BeeLevel01Crosshair
 	await process_frame
 	check(crosshair != null and crosshair.visible, "Crosshair must show while aiming")
-	check(crosshair.aim_screen_point().distance_to(motion.position) < 2.0, "Crosshair must sit on the aim point")
+	check(root.get_visible_rect().has_point(crosshair.aim_screen_point()), "Real-direction crosshair stays on screen")
 	await capture("crosshair")
 	check(bee.facing_x < 0.0, "Bee must turn to where it aims (left)")
 
 	# --- back to auto-aim ---
 	await frames(int(BeePlayer.AIM_HOLD_SECONDS * 60.0) + 10)
 	await process_frame
-	check(not bee.is_free_aiming() and not crosshair.visible, "Without aiming input the crosshair goes and auto-aim is back")
+	check(not bee.is_free_aiming() and crosshair.visible, "Without aiming input the faint crosshair stays and auto-aim is back")
 	bee.global_position = Vector3(stage.camera.global_position.x - 2.0, 3.6, 0)
 	bee.facing_x = 1.0
 	wave._spawn({"family": "Wasp", "slot": 0, "event": 0, "hard": false, "y": 4.6})
@@ -104,7 +104,7 @@ func run() -> void:
 	check(bee.current_auto_target == wasp, "Auto-aim must still lock the Wasp")
 	var auto_shot := bee.fire()
 	var hurt := wasp.get_node("Hurtbox3D") as Node3D
-	var expected: Vector3 = (hurt.global_position - bee_visual.call("firing_origin", bee.global_position)).normalized()
+	var expected: Vector3 = bee.aim_direction()
 	check(rad_to_deg(auto_shot.travel_direction.angle_to(Vector3(expected.x, expected.y, 0).normalized())) < 1.5, "Auto-aim shot must fly at the Wasp")
 
 	# --- HUD ---

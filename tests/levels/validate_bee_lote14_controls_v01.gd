@@ -56,16 +56,16 @@ func run() -> void:
 	Input.action_release("throw_orange")
 	var bursts := bee.burst_count - bursts0
 	var burst_shots := bee.burst_shots - t0
-	print("LOTE14 hold base: %d bursts, %d shots in 2.0 s (hold delay %.2f s)" % [bursts, burst_shots, bee.hold_start_delay])
-	check(bursts >= 4 and bursts <= 5, "Base hold: ~2.5 bursts/s (got %d in 2 s)" % bursts)
-	check(burst_shots == bursts * 3 or burst_shots == bursts * 3 - 1 or burst_shots == bursts * 3 - 2, "Base bursts have 3 shots (%d shots / %d bursts)" % [burst_shots, bursts])
+	print("TANDA4A hold base: %d bursts, %d automatic shots in 2.0 s (interval %.4f s)" % [bursts, burst_shots, BeePlayer.SHOOTING.FIRE_INTERVAL])
+	check(bursts == 0, "Continuous Base fire creates no bursts")
+	check(burst_shots >= 13 and burst_shots <= 15, "Base fires ~7.5 evenly timed shots/s (%d in 2 s)" % burst_shots)
 	var held_shots := bee.shots_fired
 	await frames(40)
 	check(bee.shots_fired == held_shots, "Releasing the button stops the fire")
 	# Damage per bullet: DPS parity with 3 taps/s.
 	var base_dps_tap := 3.0 * bee.base_shot_damage
 	var burst_damage := roundi(bee.base_shot_damage * bee.hold_damage_ratio)
-	var base_dps_hold := bee.burst_rate * bee.burst_size * burst_damage
+	var base_dps_hold := burst_damage / BeePlayer.SHOOTING.FIRE_INTERVAL
 	print("LOTE14 DPS base: tap(3/s)=%.0f hold=%.0f (per bullet %d)" % [base_dps_tap, base_dps_hold, burst_damage])
 	check(absf(base_dps_hold - base_dps_tap) <= 0.1 * base_dps_tap, "Hold DPS %.0f must match tap DPS %.0f" % [base_dps_hold, base_dps_tap])
 
