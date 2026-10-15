@@ -40,7 +40,7 @@ func run() -> void:
 	robot._begin_laser()
 	check(robot._left == WalkerMiniboss.LASER_WARNING and robot._beam_box.damage == WalkerMiniboss.LASER_DAMAGE, "Robot warning timer and beam damage unchanged")
 	check(robot._beam_box.get_child(0).shape.size == Vector3(16,0.3,1.2), "Robot beam damage volume unchanged")
-	check(robot._beam.material_override.get_shader_parameter("mode") == 4.0, "Active cyan beam has gradient shader")
+	check(robot._beam.material_override.get_shader_parameter("core_fraction") == 0.25, "Active cyan beam has a fine 25-percent core")
 	robot._mark_mortars()
 	check(robot.mortar_xs.size() == WalkerMiniboss.MORTAR_COUNT, "Same three mortar lanes")
 	for node in robot._warnings:

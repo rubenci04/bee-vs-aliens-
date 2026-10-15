@@ -1,5 +1,7 @@
 class_name WalkerMiniboss
 extends GroundWalkerEnemy
+const BOSS_FX := preload("res://scripts/vfx/bee_boss_effect_settings.gd")
+var laser_effect: Node3D
 ## LOTE 12 · ETAPA 3 — the walking robot as the Level 1 MINI-BOSS (gate after checkpoint 2, with insect escorts in two waves).
 ## Same scene, model and animations as the GroundWalkerEnemy; its own short fight.
 ## LOTE 15 · ETAPA 5.2 — DYNAMIC, not harder: it walks across the WHOLE screen and jumps (warned) to Bee's column; every attack
@@ -323,7 +325,7 @@ func _next_attack() -> void:
 			_step = &"stomp_tele"
 			_left = STOMP_TELEGRAPH
 			var half := _half_width()
-			_stomp_band = BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH)
+			_stomp_band = BOSS_FX.ground_band(get_parent(),_cam_x()-half-1,_cam_x()+half+1,STOMP_TELEGRAPH) if BOSS_FX.enabled else BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH)
 			_play(&"Idle")
 			BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.7)
 		&"laser":
@@ -393,6 +395,9 @@ func _begin_laser() -> void:
 		var tip := laser_origin + Vector3(cos(angle), sin(angle), 0.0) * LASER_LENGTH
 		var ray_warning := BeeAttackVisuals.line(get_parent(), laser_origin, tip, 0.05, BeeGameSettings.HOSTILE_CYAN)
 		BeeAttackVisuals.WARNING_STYLE.dress(ray_warning, BeeGameSettings.HOSTILE_CYAN, 1.0, LASER_WARNING)
+		if BOSS_FX.enabled:
+			ray_warning.material_override.set_shader_parameter("opacity",BOSS_FX.WARNING_ALPHA)
+			ray_warning.hide()
 		_warnings.append(ray_warning)
 	if _beam == null:
 		_beam_pivot = Node3D.new()
@@ -407,6 +412,11 @@ func _begin_laser() -> void:
 		shape.size = Vector3(LASER_LENGTH, 0.3, 1.2)
 		_beam_box = BeeAttackVisuals.hazard_area(_beam_pivot, self, LASER_DAMAGE, shape)
 		_beam_box.position = Vector3(LASER_LENGTH * 0.5, 0.0, 0.0)
+	if BOSS_FX.enabled and laser_effect == null:
+		laser_effect = preload("res://scripts/vfx/bee_robot_laser_effect.gd").new()
+		laser_effect.robot = self
+		add_child(laser_effect)
+		laser_effect.dress_beam()
 	_beam.hide()
 	_place_beam(laser_angles.x)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.3)
@@ -425,10 +435,15 @@ func _begin_jump() -> void:
 	jump_to_x = clampf(target.global_position.x, _cam_x() - half, _cam_x() + half)
 	if absf(jump_to_x - global_position.x) < JUMP_MIN_DISTANCE:
 		jump_to_x = _cam_x() - signf(global_position.x - _cam_x() + 0.001) * half
-	_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(jump_to_x, 0.03, 0.0), 1.3, Color(0.05, 0.03, 0.02, 0.6)))
-	var column := BeeAttackVisuals.line(get_parent(), Vector3(jump_to_x, 0.0, 0.0), Vector3(jump_to_x, 2.8, 0.0), 2.2, Color(1.0, 0.3, 0.2, 0.18))
-	BeeAttackVisuals.WARNING_STYLE.dress(column, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
-	_warnings.append(column)
+	if BOSS_FX.enabled:
+		var mark := BOSS_FX.marker(get_parent(),Vector3(jump_to_x,BOSS_FX.MARK_HEIGHT*.4,0.12),2.2,BOSS_FX.MARK_HEIGHT,JUMP_TELEGRAPH)
+		BOSS_FX.dust(mark,2.2)
+		_warnings.append(mark)
+	else:
+		_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(jump_to_x, 0.03, 0.0), 1.3, Color(0.05, 0.03, 0.02, 0.6)))
+		var column := BeeAttackVisuals.line(get_parent(), Vector3(jump_to_x, 0.0, 0.0), Vector3(jump_to_x, 2.8, 0.0), 2.2, Color(1.0, 0.3, 0.2, 0.18))
+		BeeAttackVisuals.WARNING_STYLE.dress(column, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
+		_warnings.append(column)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.6)
 
 

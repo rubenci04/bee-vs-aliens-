@@ -101,6 +101,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.ctrl_pressed or event.alt_pressed or event.shift_pressed or event.meta_pressed:
 		return # Never consume editor chords.
 	var key: int = event.keycode if event.keycode != 0 else event.physical_keycode
+	if key == preload("res://scripts/vfx/bee_boss_effect_settings.gd").KEY:
+		var settings := preload("res://scripts/vfx/bee_boss_effect_settings.gd")
+		settings.mode = 1-settings.mode
+		apply_modes()
+		get_viewport().set_input_as_handled()
+		return
 	match key:
 		SETTINGS.KEYS[0]: bee_index = (bee_index + 1) % SETTINGS.BEE_SCALES.size()
 		SETTINGS.KEYS[1]: outline_level = (outline_level + 1) % SETTINGS.OUTLINE_PIXELS.size()
@@ -156,6 +162,8 @@ func _collect_actors() -> bool:
 		changed = true
 		bee_added = bee_added or actor == stage.bee
 		for mesh: MeshInstance3D in actor.find_children("*", "MeshInstance3D", true, false):
+			if mesh.get_meta("boss_visual_only",false):
+				continue # Laser shader supplies its own soft edge, without a hull outline.
 			if mesh.mesh == null:
 				continue
 			for surface in mesh.mesh.get_surface_count():
@@ -281,6 +289,7 @@ func apply_modes() -> void:
 		bloom_material.set_shader_parameter("gain", SETTINGS.BLOOM_GAIN[neon_level])
 	if panel != null:
 		panel.text = "DEV  9 Bee ×%.2f  0 contorno %d  I fondo %d  J neón %d" % [SETTINGS.BEE_SCALES[bee_index], outline_level, background_level, neon_level]
+		panel.text += "  K láser " + ("A" if preload("res://scripts/vfx/bee_boss_effect_settings.gd").mode == 0 else "B")
 
 func _update_background() -> void:
 	for data in background_materials:

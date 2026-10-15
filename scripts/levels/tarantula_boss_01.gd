@@ -1,5 +1,6 @@
 class_name TarantulaBoss01
 extends Node3D
+const BOSS_FX := preload("res://scripts/vfx/bee_boss_effect_settings.gd")
 ## LOTE 12 · ETAPA 3 — TARÁNTULA, final boss of Level 1 (the garden at dusk). Same structure as the UFO boss of Lote 10 (UfoBoss01):
 ## phase bar, `hazards` log with the warning of every damaging attack, sustained-DPS budget on the body (`limit_hull_damage`) so
 ## Spread does not trivialise it, bomb = BOMB_FRACTION of its life, honey between phases, boss checkpoint. It is an ANIMAL with an
@@ -680,7 +681,7 @@ func _start_attack() -> void:
 			_step = &"stomp_tele"
 			_left = STOMP_TELEGRAPH
 			var half := _half_width()
-			_warnings.append(BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH))
+			_warnings.append(BOSS_FX.ground_band(get_parent(),_cam_x()-half-1,_cam_x()+half+1,STOMP_TELEGRAPH) if BOSS_FX.enabled else BeeGroundShockwave.warning_band(get_parent(), _cam_x() - half - 1.0, _cam_x() + half + 1.0, STOMP_HEIGHT, STOMP_TELEGRAPH))
 			BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.6)
 		&"spiders":
 			_drop_spiders()
@@ -805,16 +806,22 @@ func _begin_jump(with_fan: bool) -> void:
 	_jump_to = Vector3(to_x, GROUND_Y if _jump_to_mode == &"ground" else _ceiling_y(), 0.0)
 	var land_face := signf(to_x - target.global_position.x) if target != null else -corner
 	jump_band = [_world(BODY_CENTRE), _body_centre_at(_jump_to, _jump_to_mode, land_face if land_face != 0.0 else -corner)]
-	var jump_warning := BeeAttackVisuals.line(get_parent(), jump_band[0], jump_band[1], BODY_SIZE.y * MODEL_SCALE, Color(1.0, 0.3, 0.2, 0.22))
-	BeeAttackVisuals.WARNING_STYLE.dress(jump_warning, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
-	_warnings.append(jump_warning)
-	if _jump_to_mode == &"ground":
-		_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(to_x, 0.03, 0.0), 1.8, Color(0.05, 0.02, 0.02, 0.55)))
+	if BOSS_FX.enabled:
+		var height := 0.03+BOSS_FX.MARK_HEIGHT*.4 if _jump_to_mode == &"ground" else BeeLevel01Framing.top_y()-.15-BOSS_FX.MARK_HEIGHT*.4
+		var mark := BOSS_FX.marker(get_parent(),Vector3(to_x,height,0.12),BODY_SIZE.x*MODEL_SCALE,BOSS_FX.MARK_HEIGHT,JUMP_TELEGRAPH)
+		BOSS_FX.dust(mark,BODY_SIZE.x*MODEL_SCALE)
+		_warnings.append(mark)
 	else:
-		var top := BeeLevel01Framing.top_y() - 0.15
-		var roof_marker := BeeAttackVisuals.line(get_parent(), Vector3(to_x - 1.8, top, 0.0), Vector3(to_x + 1.8, top, 0.0), 0.3, Color(0.05, 0.02, 0.02, 0.6))
-		BeeAttackVisuals.WARNING_STYLE.dress(roof_marker, Color(0.95,0.8,0.6), 3.0, JUMP_TELEGRAPH)
-		_warnings.append(roof_marker)
+		var jump_warning := BeeAttackVisuals.line(get_parent(), jump_band[0], jump_band[1], BODY_SIZE.y * MODEL_SCALE, Color(1.0, 0.3, 0.2, 0.22))
+		BeeAttackVisuals.WARNING_STYLE.dress(jump_warning, Color(1, 0.3, 0.2), 0.0, JUMP_TELEGRAPH)
+		_warnings.append(jump_warning)
+		if _jump_to_mode == &"ground":
+			_warnings.append(BeeAttackVisuals.ground_disc(get_parent(), Vector3(to_x, 0.03, 0.0), 1.8, Color(0.05, 0.02, 0.02, 0.55)))
+		else:
+			var top := BeeLevel01Framing.top_y() - 0.15
+			var roof_marker := BeeAttackVisuals.line(get_parent(), Vector3(to_x - 1.8, top, 0.0), Vector3(to_x + 1.8, top, 0.0), 0.3, Color(0.05, 0.02, 0.02, 0.6))
+			BeeAttackVisuals.WARNING_STYLE.dress(roof_marker, Color(0.95,0.8,0.6), 3.0, JUMP_TELEGRAPH)
+			_warnings.append(roof_marker)
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.75)
 
 
@@ -967,12 +974,19 @@ func _begin_charge() -> void:
 	_charge_box.damage = CHARGE_DAMAGE
 	var half := _half_width()
 	charge_band = Vector2(GROUND_Y, CHARGE_TOP)
-	var band := BeeAttackVisuals.line(get_parent(), Vector3(_cam_x() - half - 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0),
-			Vector3(_cam_x() + half + 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0), 1.0, Color(1.0, 0.3, 0.2, 0.25))
-	band.scale.y = charge_band.y - charge_band.x
-	band.global_position.z = -0.4 # Behind the boss, same X/Y band and hitbox.
-	BeeAttackVisuals.WARNING_STYLE.dress(band, Color(1, 0.3, 0.2), 0.0, CHARGE_TELEGRAPH)
-	_warnings.append(band)
+	if BOSS_FX.enabled:
+		var band := BOSS_FX.marker(get_parent(),Vector3(_cam_x(),.22,-.4),half*2+2,.45,CHARGE_TELEGRAPH,true,charge_dir)
+		_warnings.append(band)
+		var mark := BOSS_FX.marker(get_parent(),Vector3(_charge_to,.35,-.4),BODY_SIZE.x*MODEL_SCALE,BOSS_FX.MARK_HEIGHT,CHARGE_TELEGRAPH)
+		BOSS_FX.dust(mark,BODY_SIZE.x*MODEL_SCALE)
+		_warnings.append(mark)
+	else:
+		var band := BeeAttackVisuals.line(get_parent(), Vector3(_cam_x() - half - 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0),
+				Vector3(_cam_x() + half + 1.0, (charge_band.x + charge_band.y) * 0.5, 0.0), 1.0, Color(1.0, 0.3, 0.2, 0.25))
+		band.scale.y = charge_band.y - charge_band.x
+		band.global_position.z = -0.4 # Behind the boss, same X/Y band and hitbox.
+		BeeAttackVisuals.WARNING_STYLE.dress(band, Color(1, 0.3, 0.2), 0.0, CHARGE_TELEGRAPH)
+		_warnings.append(band)
 	BeeAudio.play(get_parent(), &"organic_charge", global_position, 0.6)
 
 
