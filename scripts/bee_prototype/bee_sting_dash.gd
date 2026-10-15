@@ -37,8 +37,6 @@ func begin() -> bool:
 	if bee._roll_tween != null: bee._roll_tween.kill()
 	if absf(direction.x) > .01: bee.facing_x = signf(direction.x)
 	bee.visual_root.rotation = Vector3(0,-bee.facing_x*PI*.5,atan2(direction.y,direction.x)-(PI if bee.facing_x < 0 else 0.0))
-	bee._show_stinger(direction)
-	bee.get_node("VisualRoot/BeeVisual").start_drill_attack()
 	bee.melee_started.emit()
 	return true
 
@@ -73,10 +71,10 @@ func step(delta: float) -> void:
 
 func finish() -> void:
 	active = false
+	bee.get_node("VisualRoot/BeeVisual").punch_pose.update(self)
 	bee.velocity = Vector3.ZERO
 	bee.melee_hitbox.set_enabled(false)
 	bee.melee_target = null
-	bee._hide_stinger()
 	bee.visual_root.rotation.z = 0
 	bee.health.invulnerable = prior_invulnerable
 	bee._place_melee_hitbox()

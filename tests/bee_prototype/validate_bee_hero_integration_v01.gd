@@ -68,9 +68,10 @@ func run() -> void:
 
 	check(bee.start_melee(), "Bee sting should start")
 	model = visual.get("model") as Node3D
-	check((model.find_child("AnimationPlayer", true, false) as AnimationPlayer).current_animation == "drill_spin", "Drill should spin during sting")
-	visual.call("sting_impact_effect")
-	check(host.find_child("BeeDrillMetalTrail", true, false) != null, "Drill trail should use stinger_tip")
+	check((model.find_child("AnimationPlayer", true, false) as AnimationPlayer).current_animation == "wingbeat", "T4g preserves wingbeat instead of playing drill_spin")
+	check(not model.find_child("Stinger", true, false).visible, "Model stinger hidden")
+	visual.call("sting_impact_effect", bee.melee_hitbox.global_position)
+	check(host.find_child("PunchContactStar", true, false) != null and host.find_child("BeeDrillMetalTrail", true, false) == null, "Small contact star replaces drill trail")
 
 	check(not bee.start_roll() and bee.sting_dash.queued_roll, "Roll should wait for sting")
 	for _i in 90:

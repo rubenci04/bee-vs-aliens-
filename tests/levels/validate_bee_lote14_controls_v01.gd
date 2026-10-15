@@ -123,7 +123,7 @@ func run() -> void:
 	check(bee.start_melee(), "Z accepted")
 	check(not bee.start_melee(), "Z is on cooldown right after")
 	await frames(5)
-	check(bee.stinger != null and bee.stinger.visible, "The chrome stinger is shown during the strike")
+	check(bee.stinger == null and not bee.has_node("ChromeStinger"), "T4g has no chrome cone")
 	await frames(14)
 	check(bee.global_position.x < x0 - 0.3, "Bee lunges backwards towards the target (x %.2f -> %.2f)" % [x0, bee.global_position.x])
 	check(behind.health.current_health == hp_behind - bee.melee_damage or behind.is_defeated(), "The enemy behind took the sting damage (%d -> %d)" % [hp_behind, behind.health.current_health])
@@ -133,7 +133,7 @@ func run() -> void:
 	check(bee.melee_ready_ratio() == 1.0, "Sting has no charge meter")
 	await frames(12)
 	check(bee.melee_ready_ratio() >= 1.0, "Sting ready after 0.9 s (AGUIJÓN LISTO)")
-	check(not bee.stinger.visible, "The stinger hides after the strike")
+	check(bee.stinger == null, "No stinger visual after the punch")
 	# Nothing within reach: forward swing as before.
 	behind.queue_free()
 	front.global_position = bee.global_position + Vector3(reach + 1.5, 0, 0)

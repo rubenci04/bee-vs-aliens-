@@ -31,8 +31,7 @@ var elapsed := 0.0
 var _rim_materials: Array[ShaderMaterial] = []
 var _rim_applied := -1.0
 var buzz_player: AudioStreamPlayer
-var _drill_left := 0.0
-var _drill_trail: CPUParticles3D
+var punch_pose := preload("res://scripts/bee_prototype/bee_punch_pose.gd").new()
 var _roll_burst_left := 0.0
 var _blink_visible := true
 var _last_blink_state := false
@@ -59,10 +58,6 @@ func apply_model_version(version := "") -> bool:
 		remove_child(model)
 		model.queue_free()
 	model = null
-	if is_instance_valid(_drill_trail):
-		_drill_trail.queue_free()
-	_drill_trail = null
-	_drill_left = 0.0
 	model_version = chosen
 	wings.clear()
 	rest_angles.clear()
@@ -96,6 +91,9 @@ func apply_model_version(version := "") -> bool:
 	muzzle = model.find_child("muzzle", true, false) as Node3D
 	drill = model.find_child("stinger_drill", true, false) as Node3D
 	drill_tip = model.find_child("stinger_tip", true, false) as Node3D
+	var old_stinger := model.find_child("Stinger", true, false) as Node3D
+	if old_stinger != null: old_stinger.hide()
+	punch_pose.bind(model)
 	helmet_socket = model.find_child("helmet_socket", true, false) as Node3D
 	blaster = model.find_child("antenna_R_blaster", true, false) as Node3D
 	if blaster != null:
@@ -159,7 +157,7 @@ func _process(delta: float) -> void:
 		for i in wings.size():
 			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
 	_update_thrusters(delta)
-	_update_drill(delta)
+	punch_pose.update(actor.sting_dash)
 	_update_invulnerability_blink()
 
 
@@ -221,38 +219,6 @@ func _update_thrusters(delta: float) -> void:
 		particles.initial_velocity_max = lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_MAX_PARTICLE_SPEED, BeeGameSettings.BEE_THRUSTER_MAX_PARTICLE_SPEED, intensity)
 
 
-func start_drill_attack() -> void:
-	if model_version != "v02" or drill == null:
-		return
-	_drill_left = BeeGameSettings.BEE_DRILL_ACTIVE_SECONDS
-	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
-	if player != null and player.has_animation(&"drill_spin"):
-		player.get_animation(&"drill_spin").loop_mode = Animation.LOOP_LINEAR
-		player.speed_scale = BeeGameSettings.BEE_DRILL_SPIN_RATE
-		player.play(&"drill_spin")
-	if _drill_trail == null:
-		_drill_trail = _make_drill_trail()
-	_drill_trail.global_position = drill_tip.global_position if drill_tip != null else drill.global_position
-	_drill_trail.restart()
-	_drill_trail.emitting = true
-
-
-func _update_drill(delta: float) -> void:
-	if _drill_left <= 0.0:
-		return
-	_drill_left = maxf(0.0, _drill_left - delta)
-	if _drill_trail != null and drill_tip != null:
-		_drill_trail.global_position = drill_tip.global_position
-	if _drill_left > 0.0:
-		return
-	if _drill_trail != null:
-		_drill_trail.emitting = false
-	var player := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
-	if player != null:
-		player.speed_scale = 1.0
-		player.play(&"wingbeat")
-
-
 func play_roll_effects() -> void:
 	_roll_burst_left = BeeGameSettings.BEE_THRUSTER_BURST_SECONDS
 	if model_version == "v02":
@@ -305,50 +271,11 @@ func _restore_armor_overlays() -> void:
 	_plate_overlays.clear()
 
 
-func sting_impact_effect() -> void:
-	if model_version != "v02" or drill_tip == null or actor == null:
-		return
-	BeeCombatVFX.spawn(actor.get_parent(), drill_tip.global_position, &"bee_spark", Vector3(actor.facing_x, 0.0, 0.0), 1.0)
-	if _drill_trail != null:
-		_drill_trail.global_position = drill_tip.global_position
-		_drill_trail.restart()
-		_drill_trail.emitting = true
-
-
-func _make_drill_trail() -> CPUParticles3D:
-	var particles := CPUParticles3D.new()
-	particles.name = "BeeDrillMetalTrail"
-	particles.amount = BeeGameSettings.BEE_DRILL_TRAIL_PARTICLES
-	particles.lifetime = BeeGameSettings.BEE_DRILL_TRAIL_LIFETIME
-	particles.one_shot = false
-	particles.local_coords = false
-	particles.explosiveness = 0.78
-	particles.randomness = BeeGameSettings.BEE_DRILL_TRAIL_RANDOMNESS
-	particles.direction = Vector3(actor.facing_x, 0.0, 0.0)
-	particles.spread = BeeGameSettings.BEE_DRILL_TRAIL_SPREAD_DEGREES
-	particles.gravity = Vector3(0.0, -BeeGameSettings.BEE_DRILL_TRAIL_GRAVITY, 0.0)
-	particles.initial_velocity_min = BeeGameSettings.BEE_DRILL_TRAIL_SPEED_MIN
-	particles.initial_velocity_max = BeeGameSettings.BEE_DRILL_TRAIL_SPEED_MAX
-	particles.scale_amount_min = BeeGameSettings.BEE_DRILL_TRAIL_SCALE_MIN
-	particles.scale_amount_max = BeeGameSettings.BEE_DRILL_TRAIL_SCALE_MAX
-	var gradient := Gradient.new()
-	gradient.colors = PackedColorArray([BeeGameSettings.BEE_DRILL_TRAIL_COLOR_START, BeeGameSettings.BEE_DRILL_TRAIL_COLOR_END])
-	particles.color_ramp = gradient
-	var shard := SphereMesh.new()
-	shard.radius = BeeGameSettings.BEE_DRILL_SHARD_RADIUS
-	shard.height = BeeGameSettings.BEE_DRILL_SHARD_HEIGHT
-	shard.radial_segments = 5
-	shard.rings = 2
-	var material := StandardMaterial3D.new()
-	material.metallic = BeeGameSettings.BEE_DRILL_SHARD_METALLIC
-	material.roughness = BeeGameSettings.BEE_DRILL_SHARD_ROUGHNESS
-	material.vertex_color_use_as_albedo = true
-	shard.material = material
-	particles.mesh = shard
-	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	get_parent().add_child(particles)
-	particles.global_position = drill_tip.global_position
-	return particles
+func sting_impact_effect(point: Vector3) -> void:
+	if actor == null: return
+	var star := preload("res://scripts/vfx/bee_punch_star.gd").new()
+	actor.get_parent().add_child(star)
+	star.global_position = point
 
 
 func _own_rim_materials() -> void:

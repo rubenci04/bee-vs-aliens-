@@ -24,7 +24,7 @@ func run() -> void:
 	check(BeeGameSettings.HUD_HEALTH_CELLS == 10 and BeeGameSettings.HUD_BOMB_ICON_COUNT == 5, "HUD shows configured honeycomb health and up to five bombs")
 	check(BeeGameSettings.HUD_PANEL_SIZE.y <= 110.0 and hud.call("control_text").contains("BOMBA C"), "HUD is compact (T1) and still names the keyboard/mouse buttons")
 	BeeGameSettings.last_input_joypad = true
-	check(hud.call("control_text").contains("PIRUETA B / LB") and hud.call("control_text").contains("AGUIJÓN Y / RB"), "HUD names the current joypad buttons")
+	check(hud.call("control_text").contains("PIRUETA B / LB") and hud.call("control_text").contains("PUÑETAZO Y / RB"), "HUD names the current joypad buttons")
 	BeeGameSettings.last_input_joypad = false
 	Input.action_press(BeeGameSettings.HUD_DEBUG_ACTION)
 	hud._process(1.0 / 60.0)

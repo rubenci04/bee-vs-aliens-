@@ -62,7 +62,7 @@ func _process(_delta: float) -> void:
 				probe_b.activate(bee)
 				stage = Stage.ENCOUNTER_C
 		Stage.ENCOUNTER_A:
-			status_label.text = "Z: AGUIJÓN · X: DISPARO"
+			status_label.text = "Z: PUÑETAZO · X: DISPARO"
 		Stage.ENCOUNTER_B:
 			status_label.text = "ESQUIVÁ EL PROYECTIL ALIENÍGENA"
 		Stage.ENCOUNTER_C:

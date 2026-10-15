@@ -108,8 +108,8 @@ var melee_target: Node3D ## LOTE 14: the enemy the current sting is going for (n
 var melee_lunge_count := 0
 var _lunge_left := 0.0
 var _lunge_velocity := Vector3.ZERO
-var stinger: Node3D ## Provisional chrome stinger (simple cone) shown during the lunge.
-var _stinger_flash: Tween
+var stinger: Node3D ## Compatibility handle, stays null: T4g uses the imported front legs.
+var _stinger_flash: Tween # Compatibility handle used by the local hit-stop controller.
 var _stinger_trail: CPUParticles3D
 var _hold_time := 0.0
 var _burst_cooldown := 0.0
@@ -147,7 +147,6 @@ func _ready() -> void:
 	melee_hitbox.set_enabled(false)
 	melee_hitbox.hit_confirmed.connect(_on_melee_impact)
 	_place_melee_hitbox()
-	_build_stinger()
 	sting_dash = preload("res://scripts/bee_prototype/bee_sting_dash.gd").new()
 	sting_dash.bee = self
 	add_child(sting_dash)
@@ -386,87 +385,12 @@ func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 	if sting_dash != null and sting_dash.active:
 		BeeJuice.key_event(self,&"sting",hurt.owner_entity as Node3D,Vector2(sting_dash.direction.x,sting_dash.direction.y))
 	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
-	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_melee", Vector3(facing_x, 0, 0))
-	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_impact", Vector3(facing_x, 0, 0), 1.6)
-	if stinger != null:
-		if _stinger_flash != null:
-			_stinger_flash.kill()
-		stinger.scale = Vector3(1.5, 1.5, 1.5)
-		_stinger_flash = create_tween()
-		_stinger_flash.tween_property(stinger, "scale", Vector3.ONE, 0.18)
-	($VisualRoot/BeeVisual as Node3D).call("sting_impact_effect")
+	($VisualRoot/BeeVisual as Node3D).call("sting_impact_effect", melee_hitbox.global_position)
 
 
 func _place_melee_hitbox() -> void:
 	if is_instance_valid(melee_hitbox) and melee_target == null:
 		melee_hitbox.position = Vector3(facing_x * melee_range, 0.0, 0.0)
-
-
-## PROVISIONAL (the Bee model has no separate stinger): a simple chrome cone + a silver trail, shown while the sting is live.
-const STINGER_LENGTH := 0.8
-const STINGER_COLOR := Color(0.86, 0.9, 0.96)
-
-
-func _build_stinger() -> void:
-	stinger = Node3D.new()
-	stinger.name = "ChromeStinger"
-	stinger.visible = false
-	add_child(stinger)
-	var cone := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.0
-	mesh.bottom_radius = 0.11
-	mesh.height = STINGER_LENGTH
-	mesh.radial_segments = 8
-	cone.mesh = mesh
-	cone.rotation.z = -PI * 0.5 # The cone's tip (+Y) points along +X.
-	cone.position = Vector3(STINGER_LENGTH * 0.5 + 0.35, 0.0, 0.0)
-	var material := StandardMaterial3D.new()
-	material.albedo_color = STINGER_COLOR
-	material.metallic = 1.0
-	material.roughness = 0.12
-	material.emission_enabled = true
-	material.emission = BeeGameSettings.BEE_GOLD
-	material.emission_energy_multiplier = 0.16
-	cone.material_override = material
-	cone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	stinger.add_child(cone)
-	_stinger_trail = CPUParticles3D.new()
-	_stinger_trail.amount = 14
-	_stinger_trail.lifetime = 0.25
-	_stinger_trail.local_coords = false
-	_stinger_trail.gravity = Vector3.ZERO
-	_stinger_trail.emitting = false
-	var dot := SphereMesh.new()
-	dot.radius = 0.05
-	dot.height = 0.1
-	dot.radial_segments = 6
-	dot.rings = 3
-	var dot_material := StandardMaterial3D.new()
-	dot_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	dot_material.albedo_color = STING.TRAIL_COLOR
-	dot_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	dot.material = dot_material
-	_stinger_trail.mesh = dot
-	_stinger_trail.position = Vector3(STINGER_LENGTH + 0.2, 0.0, 0.0)
-	stinger.add_child(_stinger_trail)
-
-
-func _show_stinger(direction: Vector3) -> void:
-	if stinger == null:
-		return
-	stinger.rotation.z = atan2(direction.y, direction.x)
-	stinger.scale = Vector3.ONE
-	stinger.visible = true
-	_stinger_trail.restart()
-	_stinger_trail.emitting = true
-
-
-func _hide_stinger() -> void:
-	if stinger == null:
-		return
-	stinger.visible = false
-	_stinger_trail.emitting = false
 
 
 func _is_valid_target(candidate: Node3D) -> bool:
@@ -525,7 +449,6 @@ func _on_died() -> void:
 	if sting_dash != null and sting_dash.active: sting_dash.finish()
 	melee_hitbox.set_enabled(false)
 	melee_target = null
-	_hide_stinger()
 	_melee_active_left = 0.0
 	if _melee_tween != null:
 		_melee_tween.kill()

@@ -251,7 +251,7 @@ func _show_controls() -> void:
 	box.add_theme_constant_override("separation", 9)
 	controls_panel.add_child(box)
 	var help := Label.new()
-	help.text = "CONTROLES\nMover: WASD / flechas / palanca izquierda\nApuntar: mouse / palanca derecha\nDisparar: X / clic / A\nAguijón: Z · Bomba: C / X · Pirueta: Shift / B\nNova de polen: Q / LT (L2) · requiere 20/20\nPausa: Esc / Start"
+	help.text = "CONTROLES\nMover: WASD / flechas / palanca izquierda\nApuntar: mouse / palanca derecha\nDisparar: X / clic / A\nPuñetazo: Z · Bomba: C / X · Pirueta: Shift / B\nNova de polen: Q / LT (L2) · requiere 20/20\nPausa: Esc / Start"
 	help.add_theme_font_size_override("font_size", BeeGameSettings.TITLE_OPTION_FONT_SIZE)
 	box.add_child(help)
 	var close_button := _button("Cerrar", _close_controls)

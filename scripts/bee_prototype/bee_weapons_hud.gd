@@ -54,8 +54,8 @@ func pirueta_ready_ratio() -> float:
 
 func control_text() -> String:
 	if BeeGameSettings.last_input_joypad:
-		return "FUEGO A / RT   BOMBA X   PIRUETA B / LB   AGUIJÓN Y / RB   NOVA LT/L2"
-	return "FUEGO X / CLIC   BOMBA C   PIRUETA SHIFT   AGUIJÓN Z   NOVA Q"
+		return "FUEGO A / RT   BOMBA X   PIRUETA B / LB   PUÑETAZO Y / RB   NOVA LT/L2"
+	return "FUEGO X / CLIC   BOMBA C   PIRUETA SHIFT   PUÑETAZO Z   NOVA Q"
 
 func _sync_text_debug() -> void:
 	var stage := bee.get_parent() as Node
@@ -204,9 +204,11 @@ func _draw_roll(center: Vector2) -> void:
 
 func _draw_stinger(origin: Vector2) -> void:
 	var color := BeeGameSettings.HUD_HEALTH_COLOR
-	draw_line(origin + Vector2(0, 12), origin + Vector2(20, 0), color, 3.0, true)
-	draw_colored_polygon(PackedVector2Array([origin + Vector2(21, -2), origin + Vector2(30, -6), origin + Vector2(25, 3)]), color)
-	draw_line(origin + Vector2(2, 15), origin + Vector2(7, 5), BeeGameSettings.HUD_LABEL_COLOR, 2.0, true)
+	draw_rect(Rect2(origin + Vector2(4, 2), Vector2(19, 14)), color)
+	for i in 3:
+		draw_circle(origin + Vector2(23, 4 + i * 5), 3.0, color)
+	draw_circle(origin + Vector2(12, 15), 4.0, color)
+	draw_line(origin + Vector2(2, 3), origin + Vector2(2, 15), BeeGameSettings.HUD_LABEL_COLOR, 2.0, true)
 	var button := "Y/RB" if BeeGameSettings.last_input_joypad else "Z"
 	draw_string(ThemeDB.fallback_font, origin + Vector2(36, 11), button, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
@@ -227,7 +229,7 @@ func show_hint(kind: StringName) -> void:
 	if taught.has(kind):
 		return
 	taught[kind] = true
-	var tips := {&"spread": "Spread: cubrí más espacio", &"bomb": "Bomba: despejá el grupo", &"roll": "Pirueta: esquivá y rompé disparos", &"stinger": "Aguijón: liberá de cerca"}
+	var tips := {&"spread": "Spread: cubrí más espacio", &"bomb": "Bomba: despejá el grupo", &"roll": "Pirueta: esquivá y rompé disparos", &"stinger": "Puñetazo: liberá de cerca"}
 	if not tips.has(kind):
 		return
 	$Hint.text = tips[kind] # Kept hidden; ability buttons already live in the HUD icons.
