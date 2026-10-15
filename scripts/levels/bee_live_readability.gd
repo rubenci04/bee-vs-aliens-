@@ -101,6 +101,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.ctrl_pressed or event.alt_pressed or event.shift_pressed or event.meta_pressed:
 		return # Never consume editor chords.
 	var key: int = event.keycode if event.keycode != 0 else event.physical_keycode
+	if key == preload("res://scripts/game/bee_release_settings.gd").HIT_STOP_KEY:
+		var settings := preload("res://scripts/game/bee_release_settings.gd")
+		settings.enabled = not settings.enabled
+		apply_modes()
+		get_viewport().set_input_as_handled()
+		return
 	if key == preload("res://scripts/game/bee_feedback_settings.gd").TILT_KEY:
 		var settings := preload("res://scripts/game/bee_feedback_settings.gd")
 		settings.tilt_enabled = not settings.tilt_enabled
@@ -297,6 +303,7 @@ func apply_modes() -> void:
 		panel.text = "DEV  9 Bee ×%.2f  0 contorno %d  I fondo %d  J neón %d" % [SETTINGS.BEE_SCALES[bee_index], outline_level, background_level, neon_level]
 		panel.text += "  U inclinación " + ("sí" if preload("res://scripts/game/bee_feedback_settings.gd").tilt_enabled else "no")
 		panel.text += "  K láser " + ("A" if preload("res://scripts/vfx/bee_boss_effect_settings.gd").mode == 0 else "B")
+		panel.text += "  O hit-stop " + ("sí" if preload("res://scripts/game/bee_release_settings.gd").enabled else "no")
 
 func _update_background() -> void:
 	for data in background_materials:

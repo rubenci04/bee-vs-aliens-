@@ -260,31 +260,10 @@ func _liberate() -> void:
 	hurtbox.set_deferred("monitorable", false)
 	body_shield.set_deferred("monitorable", false)
 	var at := implant.global_position
-	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 0.6)
-	BeeAudio.play(get_parent(), &"tech_death", at)
-	BeeAudio.play(get_parent(), &"liberate", at, BeeLiberation.CHIME_PITCH) # NOCHE 01: shared liberation chime + "LIBERADO".
-	BeeLiberation.float_text(get_parent(), at + Vector3(0, 0.6, 0.2))
 	add_to_group("bee_liberated")
-	# The device cracks off and falls; the glow dies.
 	_set_core(0.0)
-	var device := implant.create_tween().set_parallel(true)
-	device.tween_property(implant, "position", implant.position + Vector3(0.0, 0.5, 0.6), 0.25)
-	device.tween_property(implant, "scale", Vector3.ONE * 0.2, 0.6).set_delay(0.2)
-	device.chain().tween_callback(implant.hide)
-	# Natural colours return.
-	for part in _body_materials:
-		var material: ShaderMaterial = _body_materials[part]
-		var colour_tween := create_tween()
-		colour_tween.tween_method(func(c: Color): material.set_shader_parameter("albedo", c),
-				material.get_shader_parameter("albedo"), NATURAL[part], 0.7)
-	# A free little loop and away.
-	var free_flight := create_tween()
-	free_flight.tween_property(self, "global_position", global_position + Vector3(0.5, 0.8, 0.0), 0.6).set_trans(Tween.TRANS_SINE)
-	free_flight.parallel().tween_property(visual_root, "rotation:z", TAU, 0.8)
-	free_flight.tween_callback(func(): BeeCombatVFX.spawn(get_parent(), global_position, &"pollen", Vector3.UP, 1.0))
-	free_flight.tween_interval(0.45) # A free, natural hover: the colours are back.
-	free_flight.tween_property(self, "global_position", global_position + Vector3(-6.0, 4.6, 0.0), liberation_seconds - 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	free_flight.tween_callback(_finish_liberation)
+	BeeLiberation.free_animal(get_parent(),visual_root,implant,at)
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(self,visual_root,_finish_liberation)
 
 
 func _finish_liberation() -> void:

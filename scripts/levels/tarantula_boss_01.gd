@@ -1240,13 +1240,12 @@ func _free_tarantula() -> void:
 	BeeLiberation.free_animal(get_parent(), model, _implant_node, at)
 	for mesh: Node3D in model.find_children("implant_*", "MeshInstance3D", true, false):
 		mesh.hide() # Bracers and every plate go with the device.
-	BeeCombatVFX.spawn(get_parent(), at, &"tech_death", Vector3.UP, 1.4)
-	BeeCameraShake.kick(self, 0.08, 0.4)
 	_freed_left = FREED_WALK_SECONDS
 	side = -signf(global_position.x - _cam_x() + 0.001) # Faces the edge it walks to.
 	_play(&"walk")
 	liberated_now.emit(self)
 	phase_changed.emit(state)
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(self,model,_finish)
 
 
 func _finish() -> void:

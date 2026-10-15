@@ -10,6 +10,7 @@ func check(ok: bool, text: String) -> void:
 func frames(n: int) -> void:
 	for i in n: await physics_frame
 func run() -> void:
+	BeeJuice.hit_stop_enabled=false # T4f microfreeze is tested separately; this fixture counts exact dash/roll ticks.
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
 	root.add_child(stage)
 	current_scene = stage

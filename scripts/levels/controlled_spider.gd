@@ -303,6 +303,9 @@ func _on_died() -> void:
 	liberated_now.emit(self)
 	BeeLiberation.free_animal(get_parent(), _model, implant, implant.global_position if implant != null else global_position)
 
+	_thread.hide()
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(self,visual_root,func(): defeated.emit(self))
+
 
 func _play(clip: StringName) -> void:
 	if _player == null:

@@ -1,14 +1,13 @@
 class_name BeeJuice
 extends RefCounted
-## LOTE 11 · ETAPA C — small shared "game feel" helpers (presentation only): the 0.06 s white flash when an enemy is hit, the
-## 40-60 ms hit stop on big kills / liberations, and the pollen burst of a liberated animal. Every value is a constant.
+## Shared hit feedback. T4f reserves local microfreeze/shake for sting, roll-shot and boss-armour events.
 
 const HIT_FLASH_SECONDS := preload("res://scripts/game/bee_feedback_settings.gd").FLASH_SECONDS
 const HIT_FLASH_COLOR := preload("res://scripts/game/bee_feedback_settings.gd").FLASH_COLOR
-## Hit stop: the game runs at HIT_STOP_TIME_SCALE for HIT_STOP_SECONDS of REAL time (40-60 ms).
-const HIT_STOP_SECONDS := 0.05
+## Legacy constants remain available to old review tools; live events never change Engine.time_scale.
+const HIT_STOP_SECONDS := preload("res://scripts/game/bee_release_settings.gd").STOP_SECONDS
 const HIT_STOP_TIME_SCALE := 0.02
-## Enemies with at least this much base HP are "big": their destruction / liberation gets the hit stop.
+## Previous kill classification, kept for external tools; it no longer triggers hit stop.
 const BIG_HP := 90
 const POLLEN_BURST_AMOUNT := 26
 const POLLEN_BURST_COLOR := Color(1.0, 0.82, 0.25)
@@ -18,8 +17,6 @@ const FLASH_SCENE := preload("res://scenes/components/hit_flash_3d.tscn")
 ## Off in tests that need exact game time (they switch it on to test the hit stop itself).
 static var hit_stop_enabled := true
 static var hit_stops := 0
-static var _stop_depth := 0
-static var _restore_scale := 1.0
 
 
 ## Makes `unit` flash white for HIT_FLASH_SECONDS whenever it takes damage. Re-uses an existing HitFlash3D.
@@ -48,24 +45,13 @@ static func attach_hit_flash(unit: Node) -> HitFlash3D:
 	return flash
 
 
-## Freezes the game for `seconds` of real time. Nested stops share one restore of the original time scale.
-static func hit_stop(tree: SceneTree, seconds := HIT_STOP_SECONDS) -> void:
-	if not hit_stop_enabled or tree == null or seconds <= 0.0:
-		return
-	if Engine.time_scale < 0.5 and _stop_depth == 0:
-		return # Somebody else (a death cinematic) already slows the game: never stack on it nor restore over it.
-	hit_stops += 1
-	if _stop_depth == 0:
-		_restore_scale = Engine.time_scale
-	_stop_depth += 1
-	Engine.time_scale = HIT_STOP_TIME_SCALE
-	tree.create_timer(seconds, true, false, true).timeout.connect(_end_stop)
+## Legacy entry point kept for old tools: ordinary kills never stop time now.
+static func hit_stop(_tree: SceneTree, _seconds := HIT_STOP_SECONDS) -> void:
+	pass
 
-
-static func _end_stop() -> void:
-	_stop_depth = maxi(0, _stop_depth - 1)
-	if _stop_depth == 0 and is_equal_approx(Engine.time_scale, HIT_STOP_TIME_SCALE):
-		Engine.time_scale = _restore_scale # Only if nobody changed it meanwhile.
+static func key_event(from: Node3D, event: StringName, target: Node3D = null, direction := Vector2.RIGHT) -> bool:
+	if from == null or not from.is_inside_tree(): return false
+	return preload("res://scripts/vfx/bee_local_hit_stop.gd").for_host(from).trigger(from,event,target,direction)
 
 
 ## Warm pollen cloud where an animal was freed (one-shot CPU particles, frees itself).

@@ -383,6 +383,8 @@ func melee_ready_ratio() -> float:
 
 
 func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
+	if sting_dash != null and sting_dash.active:
+		BeeJuice.key_event(self,&"sting",hurt.owner_entity as Node3D,Vector2(sting_dash.direction.x,sting_dash.direction.y))
 	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
 	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_melee", Vector3(facing_x, 0, 0))
 	BeeCombatVFX.spawn(get_parent(), hurt.global_position, &"bee_impact", Vector3(facing_x, 0, 0), 1.6)
@@ -719,6 +721,7 @@ func fire_triggers() -> int:
 
 func absorb_shot() -> void:
 	roll_absorbed_shots += 1
+	if is_rolling: BeeJuice.key_event(self,&"roll_shot",null,Vector2(facing_x,0))
 	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0.0, 0.2, 0.0), &"bee_impact")
 
 

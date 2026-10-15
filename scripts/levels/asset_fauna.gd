@@ -971,19 +971,7 @@ func _on_died() -> void:
 	if visual.has_method("release_control"):
 		visual.call("release_control")
 	BeeLiberation.free_animal(get_parent(), visual, _device, at)
-	_facing = -1.0
-	rig.rotation.y = 0.0 # It leaves towards -X: it looks where it goes.
-	var away := create_tween()
-	if config["mode"] == &"leaper":
-		# The perch dives back and swims away under the surface.
-		away.tween_property(self, "global_position", Vector3(global_position.x - LEAVE_GROUND_SPEED * LEAVE_SECONDS, LEAP_DEPTH, 0.0), LEAVE_SECONDS)
-	elif is_ground():
-		# Walks off, relaxed (a little slower than its attack, with a soft bob from the tween's sine).
-		away.tween_property(self, "global_position", global_position + Vector3(-LEAVE_GROUND_SPEED * LEAVE_SECONDS, 0.0, 0.0), LEAVE_SECONDS)
-	else:
-		# Flies off up and to the left in a lazy arc.
-		away.tween_property(self, "global_position", global_position + Vector3(-LEAVE_AIR_SPEED * LEAVE_SECONDS, 3.2, 0.0), LEAVE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	away.tween_callback(_finish)
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(self,visual,_finish)
 
 
 func _finish() -> void:

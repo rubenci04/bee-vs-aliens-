@@ -16,6 +16,7 @@ static var _shared_trail_mesh: SphereMesh
 
 
 func _ready() -> void:
+	add_to_group("bee_projectiles")
 	_time_left = lifetime
 	# Own shape copies: +25% damage reach, without scaling visuals or shared resources.
 	for collider in hitbox.get_children():

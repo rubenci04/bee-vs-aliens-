@@ -1,13 +1,15 @@
 class_name BeeCameraShake
 extends RefCounted
-## ARCADE REBUILD 02 — micro shake, only for heavy moments (Bomb, heavy enemy death, large set-piece impacts).
-## Never for regular bullets. Uses Camera3D h_offset / v_offset, which the stage camera never writes, so the
+## T4f — directional micro shake, requested by the three approved local hit-stop events.
+## Legacy calls without a direction do nothing. Uses Camera3D h_offset / v_offset, so the
 ## framing (Camera D) and every gameplay bound stay exactly the same. A new kick never shortens a stronger one.
 
 const MAX_AMPLITUDE := 0.09 ## metres at the flight plane: barely visible, felt more than seen
 
 
-static func kick(from: Node, amplitude := 0.05, duration := 0.2) -> void:
+static func kick(from: Node, amplitude := 0.05, duration := 0.2, direction := Vector2.ZERO) -> void:
+	if direction == Vector2.ZERO:
+		return # T4f: legacy bomb/damage/death calls no longer shake; only approved local events do.
 	if not BeeGameSettings.screen_shake_enabled:
 		return # LOTE 11: switched off from the title menu.
 	if from == null or not from.is_inside_tree():
@@ -31,8 +33,8 @@ static func kick(from: Node, amplitude := 0.05, duration := 0.2) -> void:
 	for i in steps:
 		var falloff := 1.0 - float(i) / float(steps)
 		var sign_x := 1.0 if i % 2 == 0 else -1.0
-		tween.tween_property(camera, "h_offset", sign_x * amplitude * falloff, duration / float(steps + 1))
-		tween.parallel().tween_property(camera, "v_offset", -sign_x * amplitude * 0.6 * falloff, duration / float(steps + 1))
+		tween.tween_property(camera, "h_offset", sign_x * amplitude * falloff * direction.normalized().x, duration / float(steps + 1))
+		tween.parallel().tween_property(camera, "v_offset", sign_x * amplitude * falloff * direction.normalized().y, duration / float(steps + 1))
 	tween.tween_property(camera, "h_offset", 0.0, duration / float(steps + 1))
 	tween.parallel().tween_property(camera, "v_offset", 0.0, duration / float(steps + 1))
 	camera.set_meta("shake_tween", tween)

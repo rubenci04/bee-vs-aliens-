@@ -6,7 +6,7 @@ extends Node
 ##   pollen    pollen (pickups, clusters, mushrooms and flowers, +POLLEN_PER_LIBERATION per freed animal) fills a bar; every
 ##             POLLEN_PER_HEAL pollen heals POLLEN_HEAL_FRACTION of max HP (flash + sound). It never heals instantly.
 ##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
-##   juice     hit stop on big kills / liberations, camera shake when Bee is hurt, pollen burst on a liberation
+##   juice     liberation rewards; T4f reserves local hit stop/shake for key events only
 ##   magnet    items drift towards Bee when she passes close
 ## Every number is a constant. The hit flash is attached to each enemy by the controller (BeeJuice.attach_hit_flash).
 
@@ -173,14 +173,7 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 		bee.activate_honey()
 	score += roundi(float(base_points(unit, liberated)) * combo_multiplier())
 	_refresh_combo()
-	var family := str(unit.name).get_slice("_", 0)
-	var big := liberated or unit is UfoBoss01 or int(BeeLevel01Controller.LEVEL_HP.get(family, 0)) >= BeeJuice.BIG_HP
-	if big:
-		big_stops += 1
-		BeeJuice.hit_stop(get_tree())
 	if liberated:
-		if is_instance_valid(unit) and unit.is_inside_tree():
-			BeeJuice.pollen_burst(stage, unit.global_position + Vector3(0.0, 0.3, 0.0))
 		liberations_seen += 1
 		if liberations_seen % LIBERATION_POLLEN_EVERY == 0:
 			pollen_from_liberations += POLLEN_PER_LIBERATION

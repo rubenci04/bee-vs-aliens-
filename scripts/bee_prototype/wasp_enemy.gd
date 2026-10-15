@@ -317,12 +317,7 @@ func _liberate() -> void:
 	set_physics_process(false)
 	liberated_now.emit(self)
 	BeeLiberation.free_animal(get_parent(), visual_root, implant, implant.global_position)
-	facing_x = -1.0
-	visual_root.rotation.y = PI * 0.5 # Looks where it flies (-X).
-	visual_root.scale = Vector3.ONE
-	var away := create_tween()
-	away.tween_property(self, "global_position", global_position + Vector3(-7.0, 3.0, 0.0), LEAVE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	away.tween_callback(func():
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(self,visual_root,func():
 		visual_root.hide()
 		defeated.emit(self))
 

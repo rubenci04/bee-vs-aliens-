@@ -526,7 +526,7 @@ func _break_cannon() -> void:
 		gun.hide()
 	var at := global_position + Vector3(_facing_x * CANNON_CENTRE.x, CANNON_CENTRE.y, 0.3)
 	BeeLiberation.explode_tech(get_parent(), at, 1.1)
-	BeeCameraShake.kick(self, 0.05, 0.25)
+	BeeJuice.key_event(self,&"boss_armour",self,Vector2(-_facing_x,0))
 	_attack_index = 0
 	cannon_broken.emit()
 

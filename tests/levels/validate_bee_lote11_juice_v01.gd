@@ -86,33 +86,33 @@ func test_flash() -> void:
 	print("LOTE11_JUICE flash=0.06s on Wasp/Mosquito/Swarm OK")
 
 func test_hit_stop_and_shake() -> void:
-	BeeJuice.hit_stop_enabled = true
+	BeeJuice.hit_stop_enabled=true
 	var before := BeeJuice.hit_stops
-	Engine.time_scale = 1.0
+	Engine.time_scale=1.0
 	BeeJuice.hit_stop(self)
-	check(BeeJuice.hit_stops == before + 1 and Engine.time_scale < 0.1, "Hit stop did not slow the game")
-	check(BeeJuice.HIT_STOP_SECONDS >= 0.04 and BeeJuice.HIT_STOP_SECONDS <= 0.06, "Hit stop outside 40-60 ms")
-	var waited := 0
-	while Engine.time_scale < 0.9 and waited < 30:
-		await process_frame
-		waited += 1
-	check(is_equal_approx(Engine.time_scale, 1.0), "The time scale must be restored after the hit stop")
-	BeeJuice.hit_stop_enabled = false
-	BeeJuice.hit_stop(self)
-	check(is_equal_approx(Engine.time_scale, 1.0), "A disabled hit stop must not touch the time scale")
-	BeeJuice.hit_stop_enabled = true
-	# Shake: on by default, off with the setting, and Bee being hurt shakes the camera.
+	check(BeeJuice.hit_stops == before and Engine.time_scale == 1.0,"T4f ordinary kills never freeze global time")
+	var local = preload("res://scripts/vfx/bee_local_hit_stop.gd").for_host(bee)
+	check(BeeJuice.key_event(bee,&"roll_shot"),"Approved event starts a local stop")
+	check(BeeJuice.hit_stops == before+1 and Engine.time_scale == 1.0,"Local stop preserves global time")
+	await frames(8)
+	check(local.saved.is_empty(),"Local processing flags restored")
+	check(not BeeJuice.key_event(bee,&"roll_shot"),"Cooldown prevents repeated stops")
+	BeeJuice.hit_stop_enabled=false
+	await frames(32)
+	check(not BeeJuice.key_event(bee,&"roll_shot"),"Disabled hit stop does nothing")
+	BeeJuice.hit_stop_enabled=true
 	var camera := stage.camera
+	await frames(10)
 	camera.remove_meta("shake_until") if camera.has_meta("shake_until") else null
-	BeeGameSettings.screen_shake_enabled = false
-	BeeCameraShake.kick(bee, 0.05, 0.2)
-	check(not camera.has_meta("shake_until"), "Shake must do nothing when switched off")
-	BeeGameSettings.screen_shake_enabled = true
+	BeeGameSettings.screen_shake_enabled=false
+	BeeCameraShake.kick(bee,.035,.12,Vector2.RIGHT)
+	check(not camera.has_meta("shake_until"),"Shake respects menu switch")
+	BeeGameSettings.screen_shake_enabled=true
 	bee.health.take_damage(5)
-	check(camera.has_meta("shake_until") and float(camera.get_meta("shake_amplitude")) <= BeeCameraShake.MAX_AMPLITUDE + 0.0001, "Damage taken must shake the camera (leve)")
+	check(not camera.has_meta("shake_until"),"T4f ordinary damage no longer shakes")
 	bee.health.restore_health(5)
-	await frames(30)
-	print("LOTE11_JUICE hit_stop=50ms restored OK shake on/off OK damage_shake OK")
+	print("LOTE11_JUICE T4f local stop, cooldown, global time unchanged, restricted shake OK")
+
 
 func test_pollen_burst() -> void:
 	var burst := BeeJuice.pollen_burst(stage, bee.global_position)
@@ -204,7 +204,7 @@ func test_combo_and_score() -> void:
 	juice.liberations_seen = BeeLevel01Juice.LIBERATION_POLLEN_EVERY - 1 # LOTE 14: a freed animal drops pollen one time in 3; this is the third
 	wave.unit_downed.emit(popcorn, true) # a liberation: 150 points + pollen + burst
 	check(juice.score == score_before + BeeLevel01Juice.POINTS_LIBERATION and juice.pollen_total == BeeLevel01Juice.POLLEN_PER_LIBERATION, "Liberation points / pollen")
-	check(stage.find_child("PollenBurst", true, false) != null, "Liberation must burst pollen")
+	check(stage.find_child("PollenBurst", true, false) == null, "T4f: rewards no longer spawn a 26-particle cloud; release supplies bounded blue sparks")
 	check(juice.summary_text().begins_with("PUNTAJE %d" % juice.score), "Score summary for the SECTOR DESPEJADO card")
 	await clear_units()
 	print("LOTE11_JUICE combo x3 mult=1.2 reset=3s score=%d liberation OK" % juice.score)

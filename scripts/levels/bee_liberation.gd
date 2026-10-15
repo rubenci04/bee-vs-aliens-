@@ -8,7 +8,7 @@ const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 ##   implant   sparks + a mini cyan blast where the device was, then the device is hidden
 ##   colours   the body goes warm (alien tint and every glow removed): own material copies, nothing shared is touched
 ##   feedback  soft golden sparkles, a short floating "LIBERADO" and a gentle chime (the approved pollen chime, pitched up)
-## The caller stops its attacks / hitboxes and moves the animal away (flying or walking); this only does the look and sound.
+## The caller stops attacks, then BeeReleaseAnimation handles its short, harmless departure.
 ## Technology (probes, eyes, speeders, turrets, walkers, the seed carrier, the UFO...) keeps its explosion: see `explode_tech`.
 
 const WARM := Color(1.0, 0.82, 0.5)
@@ -33,14 +33,20 @@ const WEAK_POINT_RADIUS := 0.32
 static func free_animal(host: Node, visual: Node3D, implant: Node3D, at: Vector3) -> void:
 	if host == null or not is_instance_valid(host):
 		return
-	BeeCombatVFX.spawn(host, at, &"tech_hit", Vector3.UP, 0.55) # Sparks...
-	BeeCombatVFX.spawn(host, at, &"tech_death", Vector3.UP, 0.4) # ...and a mini cyan blast: only the device breaks.
+	var release := preload("res://scripts/vfx/bee_release_animation.gd")
+	var settings := preload("res://scripts/game/bee_release_settings.gd")
+	if settings.legacy_review:
+		BeeCombatVFX.spawn(host,at,&"tech_hit",Vector3.UP,.55)
+		BeeCombatVFX.spawn(host,at,&"tech_death",Vector3.UP,.4)
+		BeeCombatVFX.spawn(host,at+Vector3(0,.3,0),&"pollen",Vector3.UP,1.0)
+		BeeJuice.pollen_burst(host,at)
+	else:
+		release.spark(host,at,host.get_tree().get_nodes_in_group("bee_release_full").size()>=settings.FULL_LIMIT)
 	if implant != null and is_instance_valid(implant):
 		implant.hide()
 	if visual != null and is_instance_valid(visual):
 		COMMON_CUE.cancel(visual)
 		warm_colours(visual)
-	BeeCombatVFX.spawn(host, at + Vector3(0, 0.3, 0), &"pollen", Vector3.UP, 1.0)
 	BeeAudio.play(host, &"liberate", at, CHIME_PITCH)
 	float_text(host, at + Vector3(0, 0.6, 0.2))
 
@@ -59,15 +65,18 @@ static func warm_colours(visual: Node3D) -> void:
 				var shader := own as ShaderMaterial
 				var albedo: Variant = shader.get_shader_parameter("albedo")
 				if albedo is Color:
-					shader.set_shader_parameter("albedo", (albedo as Color).lerp(WARM, WARM_AMOUNT))
+					shader.set_shader_parameter("albedo", WARM.darkened(0.18) if BeeToonStyle.is_cyan(albedo) else (albedo as Color).lerp(WARM, WARM_AMOUNT))
 				var energy: Variant = shader.get_shader_parameter("emission_energy")
 				if energy != null:
 					shader.set_shader_parameter("emission_energy", 0.0)
 			elif own is BaseMaterial3D:
 				var base := own as BaseMaterial3D
-				base.albedo_color = base.albedo_color.lerp(WARM, WARM_AMOUNT)
+				base.albedo_color = WARM.darkened(0.18) if BeeToonStyle.is_cyan(base.albedo_color) else base.albedo_color.lerp(WARM, WARM_AMOUNT)
 				base.emission_enabled = false
-			mesh.set_surface_override_material(surface, own)
+			if mesh.material_override != null:
+				mesh.material_override = own
+			else:
+				mesh.set_surface_override_material(surface, own)
 
 
 ## A short "LIBERADO" that rises and fades (billboard, always readable, no depth test). With MAX_TEXTS signs alive, the new ones merge into "+N LIBERADOS".
