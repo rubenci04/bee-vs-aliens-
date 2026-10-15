@@ -18,7 +18,8 @@ func run() -> void:
 	stage.distance = 110
 	stage._update_camera_and_bounds()
 	stage.bee.global_position = Vector3(107, 4, 0)
-	for family in ["Ant", "FlyCommon", "FlyGreen", "FlyCloud", "Ladybird", "StagBeetle", "Snail", "WormB", "MushroomCannon", "WormA"]:
+	# T6c validates FlyCloud's individual opaque instanced cues, not the retired whole-body tween.
+	for family in ["Ant", "FlyCommon", "FlyGreen", "Ladybird", "StagBeetle", "Snail", "WormB", "MushroomCannon", "WormA"]:
 		stage.wave._spawn({"family":family, "slot":0, "event":0, "hard":false})
 		var enemy := stage.wave.active_units.back() as AssetFauna
 		enemy.global_position = Vector3(113, 0 if enemy.is_ground() else 4, 0)

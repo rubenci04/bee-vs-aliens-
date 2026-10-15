@@ -49,6 +49,7 @@ func run() -> void:
 	var base_damage := int(W.WEAPON_MODES[&"base"]["damage"][0])
 	var base_dps := base_damage / W.FIRE_INTERVAL
 	for family in H.COMMON_HP:
+		if family == "FlyCloud": continue # T6c replaces shared HP with one-hit members; validate_bee_t6c_cloud covers it.
 		var hp := int(H.COMMON_HP[family])
 		var target := H.target_time(family)
 		var expected_hits := ceili(float(hp)/base_damage)
@@ -82,59 +83,7 @@ func run() -> void:
 			print("T6A_TTK ",family," hp=",hp," spread=",spread," volleys=",volleys," seconds=",(volleys-1)*W.FIRE_INTERVAL)
 			unit.queue_free()
 			await frames(2)
-	# Actual continuous input: opening three clouds plus two companions each.
-	bee.spread_ammo = 0
-	bee.honey_left = 0
-	bee.set_physics_process(true)
-	var clouds: Array[Node3D] = []
-	for i in 9:
-		var cloud := spawn("FlyCloud",i)
-		cloud.global_position = Vector3(27+2*(i%3),0.8+1.7*(i/3),0)
-		clouds.append(cloud)
-	await frames(3)
-	Input.action_press("throw_orange")
-	var elapsed := 0.0
-	for i in 60*20:
-		var chosen: Node3D
-		for cloud in clouds:
-			if not is_instance_valid(cloud): continue # Liberated animals finish their departure.
-			if cloud.get_node("HealthComponent").current_health > 0:
-				chosen = cloud
-				break
-		if chosen == null: break
-		bee.set_aim_point(body(chosen).get_node("CollisionShape3D").global_position)
-		await physics_frame
-		elapsed += 1.0/60.0
-	Input.action_release("throw_orange")
-	check(clouds.all(func(cloud): return not is_instance_valid(cloud) or cloud.get_node("HealthComponent").current_health == 0) and elapsed < 20, "Continuous Base clears the opening nine-cloud batch under 20 seconds (%.3f)" % elapsed)
-	print("T6A_CLOUD seconds=",elapsed," shots=",bee.shots_fired)
-	print("T6A_CLOUD_HP ",clouds.map(func(cloud): return cloud.get_node("HealthComponent").current_health if is_instance_valid(cloud) else 0))
-	for cloud in clouds:
-		if is_instance_valid(cloud): cloud.queue_free()
-	for shot in stage.get_children():
-		if shot is BeeEnergyProjectile: shot.queue_free()
-	await frames(3)
-	clouds.clear()
-	for i in 9:
-		var cloud := spawn("FlyCloud",i)
-		cloud.global_position = Vector3(27+2*(i%3),0.8+1.7*(i/3),0)
-		cloud.set_physics_process(true) # Keep the real entry, pursuit, anticipation and sweep.
-		clouds.append(cloud)
-	await frames(3)
-	Input.action_press("throw_orange")
-	elapsed = 0
-	for i in 60*20:
-		var chosen: Node3D
-		for cloud in clouds:
-			if is_instance_valid(cloud) and cloud.health.current_health > 0:
-				chosen = cloud
-				break
-		if chosen == null: break
-		bee.set_aim_point(body(chosen).get_node("CollisionShape3D").global_position)
-		await physics_frame
-		elapsed += 1.0/60.0
-	Input.action_release("throw_orange")
-	check(clouds.all(func(cloud): return not is_instance_valid(cloud) or cloud.health.current_health == 0) and elapsed < 20, "Moving nine-cloud batch clears under 20 seconds (%.3f)" % elapsed)
-	print("T6A_CLOUD_MOVING seconds=",elapsed)
+	# T6c's individual fly targets/reserve and continuous-fire bank replace the shared-body cloud contract.
+	# See validate_bee_t6c_cloud.gd; the other eleven families retain all real Base/Spread checks above.
 	print("T6A_OK failures=",failures)
 	quit(1 if failures else 0)

@@ -904,14 +904,15 @@ func _spawn(request: Dictionary) -> void:
 		active_units.append(unit)
 	spawned_by_family[family] = int(spawned_by_family.get(family, 0)) + 1
 	_announce_species(family)
-	BeeHostileGlow.ensure.call_deferred(unit) # LOTE 9: every enemy shows a cyan glow (EyeDrone had none).
+	if family != "FlyCloud": BeeHostileGlow.ensure.call_deferred(unit) # T6c cloud has opaque instanced implants, no extra halo.
 	if family in ANIMAL_FAMILIES:
 		animals_total += 1
 	spawn_history.append({"event": request["event"], "family": family, "time": _clock, "distance": stage.distance, "boss_minion": bool(request.get("minion", false))})
 	var health := unit.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(level_hp(family, not bool(request["hard"]))) # NOCHE 01: EASY lowers enemy HP.
 	health.current_health = health.max_health
-	BeeJuice.attach_hit_flash(unit) # LOTE 11: 0.06 s white flash on every hit.
+	if family == "FlyCloud": unit.call("configure_population",health.max_health)
+	else: BeeJuice.attach_hit_flash(unit) # T6c members release individually; don't scan the whole cloud on each hit.
 	health.health_changed.connect(func(_current, _maximum, change): if change < 0: enemy_hit.emit())
 	if unit.get("projectile_scene") is PackedScene:
 		unit.set("projectile_scene", TOON_ALIEN_BOLT)

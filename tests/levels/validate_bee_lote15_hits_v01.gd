@@ -17,6 +17,7 @@ func run() -> void:
 	var base_damage := int(BeePlayer.SHOOTING.WEAPON_MODES[&"base"]["damage"][0])
 	var failed := false
 	for family in BeeGameSettings.SMALL_ENEMY_HP:
+		if family == "FlyCloud": continue # Individual member damage/reserve are covered by validate_bee_t6c_cloud.
 		var counts: Array[int] = []
 		for hp in [before[family], controller.call("level_hp", family)]:
 			var health := HealthComponent.new()
