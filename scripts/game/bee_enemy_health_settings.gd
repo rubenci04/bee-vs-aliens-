@@ -1,16 +1,19 @@
 extends RefCounted
-## T6a: one source for Level 01 HP. Model length / Bee v02 at art scale 1,
+## T6a/T6b: one source for Level 01 HP. Model length / Bee v02 at art scale 1,
 ## independent of the development-only visual comparator. No damage tuning here.
 const BEE_MODEL_LENGTH := 1.166667
 const ANT_CRUISE_SPEED := 2.6
 const SLOW_SPEED_RATIO := 0.5
 const SLOW_TIME_SCALE := 0.7
-const CLASS_TIME := [Vector2(0.25,0.4),Vector2(0.5,0.8),Vector2(1.0,1.5),Vector2(2.0,3.0)]
+## T6b replaces minimum survival times with uniform upper limits, including slow units.
+const COMMON_MAX_TTK := 1.5
+const LARGE_MAX_TTK := 2.0
+const CLASS_TIME := [Vector2(0,COMMON_MAX_TTK),Vector2(0,COMMON_MAX_TTK),Vector2(0,COMMON_MAX_TTK),Vector2(0,LARGE_MAX_TTK)]
 const CLASS_MAX_RATIO := [0.4,0.7,1.2]
 const COMMON_HP := {
-	"FlyCommon": 42, "FlyGreen": 45, "FlyCloud": 75, "Wasp": 45,
-	"Ant": 42, "Ladybird": 45, "WormA": 60, "WormB": 60,
-	"StagBeetle": 60, "Snail": 60, "Spider": 90, "MushroomCannon": 60,
+	"FlyCommon": 33, "FlyGreen": 36, "FlyCloud": 66, "Wasp": 36,
+	"Ant": 33, "Ladybird": 36, "WormA": 51, "WormB": 51,
+	"StagBeetle": 51, "Snail": 51, "Spider": 72, "MushroomCannon": 51,
 }
 ## [model length (m), normal movement (m/s)]. Peak attack speeds are not cruise speeds.
 const MEASUREMENTS := {
@@ -34,5 +37,5 @@ static func target_time(family: String) -> Vector2:
 	var ratio := float(measurement[0])/BEE_MODEL_LENGTH
 	var index := 0
 	while index < CLASS_MAX_RATIO.size() and ratio > CLASS_MAX_RATIO[index]: index += 1
-	var slow := float(measurement[1]) < ANT_CRUISE_SPEED*SLOW_SPEED_RATIO or family in SLOW_OVERRIDE
-	return CLASS_TIME[index] * (SLOW_TIME_SCALE if slow else 1.0)
+	# Speed metadata stays intact; T6b has no minimum TTK or extra slow-unit factor.
+	return CLASS_TIME[index]
