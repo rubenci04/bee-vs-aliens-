@@ -50,14 +50,14 @@ static func attach(item: Node3D) -> BeeItemBeacon:
 		return null
 	var existing := item.get_node_or_null("ItemBeacon") as BeeItemBeacon
 	if existing != null:
-		if item.has_node("PickupMedallion") or item.has_node("PollenHexagon"):
+		if item.has_node("PickupMedallion") or item.has_node("PollenGrains"):
 			existing.hide()
 			existing.set_process(false)
 		return existing
 	var beacon := BeeItemBeacon.new()
 	beacon.name = "ItemBeacon"
 	beacon.kind = for_item(item)
-	if item.has_node("PollenHexagon"):
+	if item.has_node("PollenGrains"):
 		item.add_child(beacon)
 		beacon.hide()
 		beacon.set_process(false)
@@ -88,8 +88,8 @@ func color() -> Color:
 
 
 func _ready() -> void:
-	if get_parent().has_node("PollenHexagon"):
-		return # The small hexagon supplies its own glow, without building a round beacon.
+	if get_parent().has_node("PollenGrains"):
+		return # Three grains supply their own shine, without building a beacon.
 	var tint := color()
 	var size := float(SIZES[kind])
 	scale = Vector3.ONE * size

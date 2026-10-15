@@ -23,6 +23,17 @@ func _ready() -> void:
 		BeeGameSettings.last_joypad_device = device
 
 func configure_actions() -> void:
+	var nova := preload("res://scripts/game/bee_pollen_nova_settings.gd")
+	if not InputMap.has_action(nova.ACTION):
+		InputMap.add_action(nova.ACTION, nova.TRIGGER_THRESHOLD)
+		var key := InputEventKey.new()
+		key.physical_keycode = KEY_Q
+		InputMap.action_add_event(nova.ACTION, key)
+		var trigger := InputEventJoypadMotion.new()
+		trigger.device = -1
+		trigger.axis = JOY_AXIS_TRIGGER_LEFT
+		trigger.axis_value = 1.0
+		InputMap.action_add_event(nova.ACTION, trigger)
 	for action in InputMap.get_actions():
 		for event in InputMap.action_get_events(action):
 			event.device = -1

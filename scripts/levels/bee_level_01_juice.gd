@@ -3,8 +3,7 @@ extends Node
 ## LOTE 11 · ETAPA C — Level 01 "life and emotion" orchestrator (presentation + small rewards, no new enemy behaviour):
 ##   combo     "xN" counter for consecutive destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
 ##             kill); points per kill x combo multiplier; the score is shown on the SECTOR DESPEJADO card
-##   pollen    pollen (pickups, clusters, mushrooms and flowers, +POLLEN_PER_LIBERATION per freed animal) fills a bar; every
-##             POLLEN_PER_HEAL pollen heals POLLEN_HEAL_FRACTION of max HP (flash + sound). It never heals instantly.
+##   pollen    20 grains charge a manually activated pollen Nova (T3m).
 ##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
 ##   juice     liberation rewards; T4f reserves local hit stop/shake for key events only
 ##   magnet    items drift towards Bee when she passes close
@@ -17,15 +16,14 @@ const POINTS_LIBERATION := 150
 const POINTS_BOSS := 1000
 ## [max base HP, points]: the first row whose HP limit covers the enemy.
 const POINTS_BY_HP := [[10, 10], [50, 40], [100, 80], [100000, 150]]
-const POLLEN_INSTANT_HEAL := 0 ## Direct healing of a pollen pickup in Level 1: none (the bar heals).
-## LOTE 14 · ETAPA 2.2: POLLEN IS SCARCE. 20 pollen fill the bar and heal 10 % (was 10 -> 15 %); liberations drop pollen 1 time in 3; at most
-## POLLEN_CAP_PER_MINUTE pollen can be gained in any rolling minute; the loose pollen of the level was halved (see BeeLevel01VerticalSlice).
-const POLLEN_PER_HEAL := 20 ## Pollen needed to fill the bar (one heal).
-const POLLEN_HEAL_FRACTION := 0.10 ## Fraction of max HP restored per full bar.
+const POLLEN_INSTANT_HEAL := 0 ## Level 1 pollen never heals directly.
+const NOVA := preload("res://scripts/game/bee_pollen_nova_settings.gd")
+const POLLEN_PER_HEAL := NOVA.CHARGE ## Historical public name: now the Nova charge threshold.
+const POLLEN_HEAL_FRACTION := 0.0 ## Compatibility for old reports/tests: pollen no longer heals.
 const LIBERATION_POLLEN_EVERY := 3 ## A freed animal drops its pollen one time in this many.
 const POLLEN_CAP_PER_MINUTE := 70 ## Pollen that can be gained per rolling minute (extra pollen is lost).
 const POLLEN_CAP_WINDOW := 60.0
-const POLLEN_BANK_MAX := 1 ## A full bar reached at full health waits (at most this many heals) and fires on the next damage.
+const POLLEN_BANK_MAX := 0 ## No stored heals.
 const FRENZY_COMBO := 8 ## Combo that starts FRENESI (double shot).
 const HEAL_FLASH_COLOR := Color(1.0, 0.86, 0.3, 0.24)
 const HEAL_FLASH_SECONDS := 0.4
@@ -55,10 +53,14 @@ var pollen_from_pickups := 0
 var pollen_from_liberations := 0
 var frenzy_activations := 0
 var pollen_heals := 0
-var pollen_healed := 0 # HP restored by the pollen bar.
-var pollen_heal_enabled := true # Tests that kill many units switch the heal off to keep their HP fixtures exact.
+var pollen_healed := 0 # Historical telemetry; stays at zero since T3m.
+var pollen_heal_enabled := false # Historical fixture compatibility; no healing path remains.
 var pollen_lost_to_cap := 0 ## Pollen picked up beyond POLLEN_CAP_PER_MINUTE.
-var banked_heals := 0
+var banked_heals := 0 # Compatibility counter; never filled.
+var pollen_spent := 0
+var nova_cooldown_left := 0.0
+var nova_protection_left := 0.0
+var novas_used := 0
 var liberations_seen := 0
 var _pollen_window: Array[Vector2] = [] ## (time, amount) gained in the last POLLEN_CAP_WINDOW seconds.
 var _pollen_clock := 0.0
@@ -128,6 +130,11 @@ func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> La
 
 func _physics_process(delta: float) -> void:
 	_pollen_clock += delta
+	nova_cooldown_left = maxf(0.0, nova_cooldown_left - delta)
+	nova_protection_left = maxf(0.0, nova_protection_left - delta)
+	bee.health.pollen_protected = nova_protection_left > 0.0
+	if Input.is_action_just_pressed(NOVA.ACTION):
+		try_pollen_nova()
 	if combo > 0:
 		combo_left -= delta
 		if combo_left <= 0.0:
@@ -212,10 +219,7 @@ func summary_text() -> String:
 
 func add_pollen(amount: int) -> void:
 	amount = _apply_pollen_cap(amount)
-	for i in amount:
-		pollen_total += 1
-		if pollen_total % POLLEN_PER_HEAL == 0:
-			_heal_from_pollen()
+	pollen_total += amount
 	_refresh_pollen()
 
 
@@ -233,69 +237,37 @@ func _apply_pollen_cap(amount: int) -> int:
 	return allowed
 
 func pollen_progress() -> int:
-	return pollen_total % POLLEN_PER_HEAL
+	return clampi(pollen_total - pollen_spent, 0, NOVA.CHARGE)
 
 
-## A full bar: POLLEN_HEAL_FRACTION of max HP back, with a golden flash, a chime and a floating text.
-func _heal_from_pollen() -> void:
-	pollen_heals += 1
-	if bee.is_defeated:
-		return
-	if not pollen_heal_enabled:
-		return
-	if bee.health.current_health >= bee.health.max_health - 1 and banked_heals < POLLEN_BANK_MAX:
-		banked_heals += 1 # LOTE 14: a full bar at full health is kept for the next hit instead of being wasted.
-		_refresh_pollen()
-		return
-	_apply_heal()
-
-
-## The healing itself (flash, chime, floating text). Also used when a banked heal is released by the next hit.
-func _apply_heal() -> void:
-	var amount := maxi(1, ceili(float(bee.health.max_health) * POLLEN_HEAL_FRACTION))
-	pollen_healed += bee.health.restore_health(amount)
+func try_pollen_nova() -> bool:
+	if get_tree().paused or bee.is_defeated or stage.sector_complete or pollen_progress() < NOVA.CHARGE or nova_cooldown_left > 0.0:
+		return false
+	# Excess collected while full does not bank extra charges.
+	pollen_spent = pollen_total
+	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
+	nova_protection_left = NOVA.INVULNERABILITY_SECONDS
+	bee.health.pollen_protected = true
+	novas_used += 1
+	var nova := preload("res://scripts/bee_prototype/bee_pollen_nova.gd").new()
+	nova.name = "PollenNova"
+	stage.add_child(nova)
+	nova.attacker = bee
+	nova.global_position = bee.global_position
+	nova.hit_confirmed.connect(func(_hurt, _damage): wave.enemy_hit.emit())
 	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
-	BeeCombatVFX.spawn(stage, bee.global_position, &"pollen", Vector3.UP, 1.3)
-	_heal_flash()
-	var text := Label3D.new()
-	text.text = "+%d%% VIDA" % roundi(POLLEN_HEAL_FRACTION * 100.0)
-	text.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	text.no_depth_test = true
-	text.font_size = 40
-	text.outline_size = 12
-	text.pixel_size = 0.0075
-	text.modulate = POLLEN_COLOR
-	text.outline_modulate = Color(0.16, 0.09, 0.03)
-	stage.add_child(text)
-	text.global_position = bee.global_position + Vector3(0.0, 0.9, 0.3)
-	var rise := text.create_tween().set_parallel(true)
-	rise.tween_property(text, "global_position", text.global_position + Vector3(0.0, 0.9, 0.0), 1.0)
-	rise.tween_property(text, "modulate:a", 0.0, 0.5).set_delay(0.5)
-	rise.chain().tween_callback(text.queue_free)
-
-
-func _heal_flash() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "PollenHealFlash"
-	layer.layer = 6
-	stage.add_child(layer)
-	var rect := ColorRect.new()
-	rect.color = HEAL_FLASH_COLOR
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	layer.add_child(rect)
-	var fade := layer.create_tween()
-	fade.tween_property(rect, "color:a", 0.0, HEAL_FLASH_SECONDS)
-	fade.tween_callback(layer.queue_free)
+	_refresh_pollen()
+	return true
 
 
 func _refresh_pollen() -> void:
 	if pollen_label == null:
 		return
 	var filled := pollen_progress()
-	var cells := filled * 10 / POLLEN_PER_HEAL
-	pollen_label.visible = true
-	pollen_label.text = "POLEN [%s%s] %d/%d · +%d%% VIDA" % ["#".repeat(cells), "-".repeat(10 - cells), filled, POLLEN_PER_HEAL, roundi(POLLEN_HEAL_FRACTION * 100.0)] + (" · CURA LISTA" if banked_heals > 0 else "")
+	var cells := filled * 10 / NOVA.CHARGE
+	pollen_label.text = "POLEN [%s%s] %d/%d" % ["#".repeat(cells), "-".repeat(10 - cells), filled, NOVA.CHARGE]
+	if filled == NOVA.CHARGE:
+		pollen_label.text += " · NOVA " + NOVA.button_hint()
 
 
 func _refresh_frenzy() -> void:
@@ -319,10 +291,7 @@ func _on_pollen_collected(pickup: BeePollenPickup, _restored: int) -> void:
 func _on_bee_health_changed(_current: int, _maximum: int, change: int) -> void:
 	if change < 0:
 		BeeCameraShake.kick(bee, DAMAGE_SHAKE_AMPLITUDE, DAMAGE_SHAKE_SECONDS)
-		if banked_heals > 0 and not bee.is_defeated and pollen_heal_enabled:
-			banked_heals -= 1 # LOTE 14: the banked heal fires on the first damage after it was earned.
-			_apply_heal.call_deferred()
-			_refresh_pollen()
+
 
 
 func _on_node_added(node: Node) -> void:

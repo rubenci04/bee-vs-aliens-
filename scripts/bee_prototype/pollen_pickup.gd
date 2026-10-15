@@ -15,12 +15,12 @@ func _ready() -> void:
 		BeeToonStyle.apply(visual, true, BeeToonStyle.OUTLINE_PROP) # VISUAL POLISH 02: same look as everything else (emission kept).
 		if not preload("res://scripts/game/bee_pollen_settings.gd").legacy_review:
 			var bounds := AssetFauna._bounds(visual,self)
-			var hex := preload("res://scripts/items/bee_pollen_hexagon.gd").new()
-			hex.name = "PollenHexagon"
-			hex.radius = maxf(bounds.size.x,bounds.size.y)*.5
+			var grains := preload("res://scripts/items/bee_pollen_hexagon.gd").new()
+			grains.name = "PollenGrains"
+			grains.radius = maxf(bounds.size.x,bounds.size.y)*.5
 			visual.hide() # Keep the original model and hover as a backup.
 			visual.set_process(false)
-			add_child(hex)
+			add_child(grains)
 	body_entered.connect(_on_body_entered)
 
 

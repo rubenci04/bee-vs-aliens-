@@ -212,7 +212,7 @@ func test_combo_and_score() -> void:
 # --- C3 honey ------------------------------------------------------------------------------------------------------------
 
 func test_honey() -> void:
-	# LOTE 13: pollen fills a bar (heal 15 % per 10 pollen); FRENESI (double shot) comes from a combo of 8.
+	# T3m: pollen charges Nova; FRENESI (double shot) still comes from a combo of 8.
 	juice.pollen_total = 0
 	juice.frenzy_activations = 0
 	juice.pollen_heals = 0
@@ -229,11 +229,10 @@ func test_honey() -> void:
 	bee.health.take_damage(40)
 	var hp_before := bee.health.current_health
 	juice.add_pollen(BeeLevel01Juice.POLLEN_PER_HEAL - 1)
-	check(bee.health.current_health == hp_before and juice.pollen_progress() == BeeLevel01Juice.POLLEN_PER_HEAL - 1 and bee.honey_left == 0.0, "Pollen must NOT heal at once: the bar waits for 10")
+	check(bee.health.current_health == hp_before and juice.pollen_progress() == BeeLevel01Juice.POLLEN_PER_HEAL - 1 and bee.honey_left == 0.0, "Pollen must NOT heal at once: the bar waits for 20")
 	juice.add_pollen(1)
-	var expected := ceili(float(bee.health.max_health) * BeeLevel01Juice.POLLEN_HEAL_FRACTION)
-	check(bee.health.current_health == hp_before + expected and juice.pollen_heals == 1 and bee.honey_left == 0.0, "A full bar heals 15 %% of max HP (got %d, want %d) and does not start frenzy" % [bee.health.current_health - hp_before, expected])
-	check(stage.find_child("PollenHealFlash", true, false) != null and stage.find_children("*", "Label3D", true, false).any(func(l): return str(l.text).begins_with("+")), "The heal has a flash and a floating text")
+	check(bee.health.current_health == hp_before and juice.pollen_heals == 0 and juice.pollen_progress() == 20 and bee.honey_left == 0.0, "T3m full pollen charges Nova, never heals or starts frenzy")
+	check(stage.find_child("PollenHealFlash", true, false) == null, "No automatic healing flash")
 	check(juice.pollen_label.text.begins_with("POLEN") and not juice.pollen_label.text.contains("MIEL"), "Visible text says POLEN, never MIEL")
 	for i in BeeLevel01Juice.FRENZY_COMBO - 1:
 		wave.unit_downed.emit(dummy, false)

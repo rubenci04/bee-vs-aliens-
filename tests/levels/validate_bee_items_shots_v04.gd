@@ -203,21 +203,21 @@ func test_items() -> void:
 			var beacon := item.get_node_or_null("ItemBeacon") as BeeItemBeacon
 			check(beacon != null, "Item without beacon: %s" % item.get_path())
 			if item is BeePollenPickup:
-				check(item.has_node("PollenHexagon") and not beacon.visible, "T3i pollen uses its own outlined hexagon instead of a round beacon")
+				check(item.has_node("PollenGrains") and not beacon.visible, "T3m pollen uses three grains without a beacon")
 			else:
 				check(beacon.halo != null and beacon.ring != null and beacon.outline != null and beacon.column != null, "Beacon parts missing")
 			beacons[beacon.kind] = beacon
 	for kind in [&"pollen", &"spread", &"bomb", &"cluster"]: # LOTE 13: the honey jar became a pollen cluster
 		check(beacons.has(kind), "No %s item with a beacon in the level" % kind)
 	# T3i: pollen rotates slowly; other items retain their previous beacons.
-	var probe: Node3D = beacons[&"pollen"].get_parent().get_node("PollenHexagon")
+	var probe: Node3D = beacons[&"pollen"].get_parent().get_node("PollenGrains")
 	var low := INF
 	var high := -INF
 	for i in 40:
 		await process_frame
 		low = minf(low, probe.rotation.z)
 		high = maxf(high, probe.rotation.z)
-	check(high - low >= 0.05, "The pollen hexagon must rotate slowly")
+	check(high - low >= 0.05, "The pollen grains must rotate slowly")
 	# Colour contrast: against the ochre soil (day palette) and between kinds; never cyan (hostile).
 	var report: Array[String] = []
 	for kind in BeeItemBeacon.COLORS:
