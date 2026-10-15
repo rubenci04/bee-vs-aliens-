@@ -174,7 +174,7 @@ func create_beacon() -> void:
 	BeeToonStyle.apply(ring, true, BeeToonStyle.OUTLINE_PROP)
 
 func _process(delta: float) -> void:
-	if stage == null:
+	if stage == null or stage.sector_complete:
 		return
 	if Input.is_action_just_pressed("bee_full_restart"):
 		restart_level(true)

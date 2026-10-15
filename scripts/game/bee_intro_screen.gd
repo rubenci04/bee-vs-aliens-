@@ -4,8 +4,10 @@ extends Control
 var current_slide := 0
 var slide_duration := BeeGameSettings.INTRO_SLIDE_SECONDS
 var elapsed := 0.0
+var current_duration := BeeGameSettings.INTRO_SLIDE_SECONDS
 var _transitioning := false
 var _final_logo := false
+var _leaving_intro := false
 var _texts: Array[String] = []
 var background: TextureRect
 var caption: Label
@@ -21,6 +23,7 @@ func _ready() -> void:
 	_build_ui()
 	_set_slide(0)
 	BeeMusic.set_intro_duck(true)
+	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 
 func _exit_tree() -> void:
@@ -148,7 +151,7 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	if caption != null:
 		caption.visible_characters = mini(caption.get_total_character_count(), floori(maxf(0.0, elapsed - BeeGameSettings.INTRO_TYPEWRITER_DELAY) * BeeGameSettings.INTRO_TYPEWRITER_CHARS_PER_SECOND))
-	if elapsed >= slide_duration:
+	if elapsed >= current_duration:
 		_advance_slide()
 
 
@@ -170,12 +173,14 @@ func _set_slide(index: int, image_override: String = "") -> void:
 	else:
 		var path := image_override if not image_override.is_empty() else str(BeeGameSettings.INTRO_IMAGES[index])
 		background.texture = load(path) as Texture2D if ResourceLoader.exists(path) else _make_fallback()
-	background.scale = Vector2.ONE * BeeGameSettings.INTRO_IMAGE_ZOOM_START
-	background.pivot_offset = get_viewport_rect().size * 0.5
-	var zoom := create_tween()
-	zoom.tween_property(background, "scale", Vector2.ONE * BeeGameSettings.INTRO_IMAGE_ZOOM_END, slide_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	caption.text = _texts[clampi(index, 0, _texts.size() - 1)] if not _texts.is_empty() else ""
+	caption.text = _texts[clampi(index,0,_texts.size()-1)] if not _texts.is_empty() else ""
 	caption.visible_characters = 0
+	elapsed=0
+	current_duration=maxf(slide_duration,BeeGameSettings.INTRO_TYPEWRITER_DELAY+float(caption.get_total_character_count())/BeeGameSettings.INTRO_TYPEWRITER_CHARS_PER_SECOND+preload("res://scripts/game/bee_flow_settings.gd").INTRO_READ_HOLD)
+	background.scale=Vector2.ONE*BeeGameSettings.INTRO_IMAGE_ZOOM_START
+	background.pivot_offset=get_viewport_rect().size*.5
+	var zoom := create_tween()
+	zoom.tween_property(background,"scale",Vector2.ONE*BeeGameSettings.INTRO_IMAGE_ZOOM_END,current_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _advance_slide() -> void:
@@ -215,13 +220,15 @@ func _show_final_logo() -> void:
 
 
 func _finish_intro() -> void:
+	if _leaving_intro: return
+	_leaving_intro=true
 	BeeMusic.set_intro_duck(false)
 	if BeeGameSettings.intro_return_to_title:
 		BeeGameSettings.intro_return_to_title = false
 		BeeGameSettings.from_title = false
-		get_tree().change_scene_to_file(BeeGameSettings.TITLE_SCENE)
+		preload("res://scripts/game/bee_scene_fade.gd").go(self,BeeGameSettings.TITLE_SCENE)
 	else:
-		get_tree().change_scene_to_file(BeeGameSettings.LEVEL_01)
+		preload("res://scripts/game/bee_scene_fade.gd").go(self,BeeGameSettings.LEVEL_01)
 
 
 func destination_scene_path() -> String:

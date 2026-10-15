@@ -34,8 +34,8 @@ func run() -> void:
 	stage.call("_layout_victory_title")
 	stage.call("_show_clear_banner")
 	await process_frame
-	var banner := stage.get_node("CanvasLayer/ClearBanner") as Label
-	check(section.text.contains("LEVEL 01 COMPLETADO") and banner.text.begins_with("SECTOR DESPEJADO"), "Victory keeps the two messages distinct")
-	check(section.get_global_rect().end.y < banner.get_global_rect().position.y, "Victory title and sector card do not overlap")
+	var results := stage.get_node("ResultsScreen")
+	check(results != null and not stage.get_node("CanvasLayer").visible and not stage.clear_banner.visible, "T2 uses a separate result screen and hides both old closing messages")
+	check(not stage.bee.visible, "Gameplay Bee is not covered by results text")
 	print("LOTE17 TERMINAL UI failures=", failures)
 	quit(1 if failures else 0)

@@ -14,10 +14,11 @@ var _logo: TextureRect
 func _ready() -> void:
 	_build_screen()
 	BeeMusic.play(&"title")
+	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 
 static func debug_menu_enabled() -> bool:
-	return OS.has_feature("editor") or "--debug-art" in OS.get_cmdline_user_args()
+	return preload("res://scripts/game/bee_readability_settings.gd").development_enabled()
 
 
 func _build_screen() -> void:
@@ -50,7 +51,7 @@ func _build_screen() -> void:
 	_logo.offset_left = -BeeGameSettings.TITLE_LOGO_WIDTH * 0.5
 	_logo.offset_right = BeeGameSettings.TITLE_LOGO_WIDTH * 0.5
 	_logo.offset_top = 0.0
-	_logo.offset_bottom = BeeGameSettings.TITLE_LOGO_HEIGHT
+	_logo.offset_bottom = preload("res://scripts/game/bee_flow_settings.gd").TITLE_LOGO_HEIGHT
 	_logo.pivot_offset = Vector2(BeeGameSettings.TITLE_LOGO_WIDTH * 0.5, BeeGameSettings.TITLE_LOGO_HEIGHT * 0.5)
 	_logo.scale = Vector2.ONE * BeeGameSettings.TITLE_LOGO_START_SCALE
 	add_child(_logo)
@@ -82,8 +83,9 @@ func _build_screen() -> void:
 	tagline.add_theme_color_override("font_outline_color", Color("251b20"))
 	tagline.anchor_left = 0.5
 	tagline.anchor_right = 0.5
-	tagline.anchor_top = BeeGameSettings.TITLE_TAGLINE_TOP
-	tagline.anchor_bottom = BeeGameSettings.TITLE_TAGLINE_TOP
+	tagline.anchor_top = preload("res://scripts/game/bee_flow_settings.gd").TAGLINE_TOP
+	tagline.anchor_bottom = tagline.anchor_top
+	tagline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tagline.offset_left = -BeeGameSettings.TITLE_TAGLINE_WIDTH * 0.5
 	tagline.offset_right = BeeGameSettings.TITLE_TAGLINE_WIDTH * 0.5
 	tagline.offset_top = 0.0
@@ -93,7 +95,7 @@ func _build_screen() -> void:
 	var panel := PanelContainer.new()
 	panel.name = "MenuPanel"
 	panel.anchor_left = 0.0
-	panel.anchor_top = BeeGameSettings.TITLE_PANEL_TOP
+	panel.anchor_top = preload("res://scripts/game/bee_flow_settings.gd").MENU_TOP
 	panel.anchor_bottom = 1.0 - BeeGameSettings.TITLE_PANEL_BOTTOM_MARGIN
 	panel.offset_left = BeeGameSettings.TITLE_PANEL_MARGIN
 	panel.offset_top = 0.0
@@ -292,14 +294,14 @@ func _panel_style(color: Color) -> StyleBoxFlat:
 func _play() -> void:
 	BeeGameSettings.from_title = true
 	BeeGameSettings.intro_return_to_title = false
-	get_tree().change_scene_to_file(INTRO_SCENE)
+	preload("res://scripts/game/bee_scene_fade.gd").go(self,INTRO_SCENE)
 
 
 func _show_intro() -> void:
 	BeeGameSettings.intro_return_to_title = true
-	get_tree().change_scene_to_file(INTRO_SCENE)
+	preload("res://scripts/game/bee_scene_fade.gd").go(self,INTRO_SCENE)
 
 
 func _play_lake() -> void:
 	BeeGameSettings.from_title = true
-	get_tree().change_scene_to_file(LAKE_SCENE)
+	preload("res://scripts/game/bee_scene_fade.gd").go(self,LAKE_SCENE)

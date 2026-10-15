@@ -85,6 +85,7 @@ func run() -> void:
 	check(int(intro.get("current_slide")) == 4 and bool(intro.get("_final_logo")), "After all five slides, the ending logo appears")
 	check(intro.destination_scene_path() == BeeGameSettings.LEVEL_01, "Playing from the title targets Level 01 after the intro")
 	intro.call("_finish_intro")
+	await wait(preload("res://scripts/game/bee_flow_settings.gd").FADE_SECONDS + 0.15)
 	for frame in 8:
 		await process_frame
 	check(current_scene != null and current_scene.scene_file_path == BeeGameSettings.LEVEL_01, "Level 01 starts after the intro completes")

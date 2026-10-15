@@ -38,8 +38,9 @@ func bind(value: Node) -> void:
 
 func run() -> void:
 	create_timer(120.0, true, false, true).timeout.connect(func(): quit(1))
-	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	var initial := LEVEL.instantiate()
+	root.add_child(initial)
+	current_scene = initial # T2 keeps a root-level transition layer beside the current scene.
 	await frames(4)
 	bind(current_scene)
 	var wave := stage.wave as BeeLevel01Controller
@@ -65,8 +66,8 @@ func run() -> void:
 		if stage.sector_complete:
 			break
 		await frames(1)
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
-	check("R — JUGAR DE NUEVO" in stage.section_label.text, "Replay prompt missing")
+	check(stage.sector_complete and stage.has_node("ResultsScreen"), "Level did not open results")
+	check(not stage.get_node("CanvasLayer").visible, "Legacy victory HUD must be hidden")
 	await frames(3)
 	check(not is_instance_valid(shot) or shot.is_queued_for_deletion(), "Enemy shot survived victory")
 	var late := ENEMY_SHOT.instantiate() as AlienEnemyProjectile
@@ -84,7 +85,7 @@ func run() -> void:
 	# --- 2. R after victory restarts the level ----------------------------
 	var old_id := stage.get_instance_id()
 	await press("restart")
-	await frames(2)
+	await frames(30) # T2 fade out/load/fade in.
 	check(current_scene.get_instance_id() != old_id, "R after victory did not reload the level")
 	bind(current_scene)
 	wave = stage.wave as BeeLevel01Controller

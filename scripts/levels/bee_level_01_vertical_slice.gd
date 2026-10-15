@@ -86,13 +86,10 @@ func _ready() -> void:
 	add_child(live_readability)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
+	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 func _process(_delta: float) -> void:
-	# Esc/Shift+R and the defeat R are handled by the always-processing QoL component.
-	# After victory R is a full restart (same as Shift+R).
-	if sector_complete and not bee.is_defeated and not get_tree().paused \
-			and Input.is_action_just_pressed("restart") and not Input.is_action_just_pressed("bee_full_restart"):
-		checkpoint.restart_level(true)
+	pass # ResultsScreen owns replay/menu input in the terminal state.
 
 func _update_camera_and_bounds() -> void:
 	# Use 95 % of the visible width with equal margins; vertical framing remains independently bounded.
@@ -118,19 +115,9 @@ func _physics_process(delta: float) -> void:
 	if bee.is_defeated:
 		return
 	if sector_complete:
-		status.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() # NOCHE 01: freed animals n/N.
-		if clear_banner == null:
-			_show_clear_banner() # LOTE 9: the big closing card after the UFO explosion.
-		section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO"
-		_layout_victory_title()
 		_secure_victory()
-		if BeeGameSettings.from_title:
-			# NOCHE 01 · ETAPA 2: back to the title (Enter, or after RETURN_TO_TITLE_SECONDS); R still replays.
-			section_label.text = "LEVEL 01 COMPLETADO\nR — JUGAR DE NUEVO · ENTER — MENÚ"
-			_layout_victory_title()
-			_victory_seconds += delta
-			if _victory_seconds >= BeeGameSettings.RETURN_TO_TITLE_SECONDS or Input.is_action_just_pressed("ui_accept"):
-				get_tree().change_scene_to_file(BeeGameSettings.TITLE_SCENE)
+		if not has_node("ResultsScreen"):
+			_show_clear_banner()
 		return
 	if not wave_clear_announced:
 		status.text = "HP %d/%d" % [bee.health.current_health, bee.health.max_health] # LOTE 13: the pollen bar has its own line (BeeLevel01Juice).
@@ -221,28 +208,20 @@ func _place_valley_supply() -> void:
 
 ## LOTE 9 · ETAPA C: the closing card (big, centred, pops in) once the UFO explosion is over.
 func _show_clear_banner() -> void:
-	clear_banner = Label.new()
-	clear_banner.name = "ClearBanner"
-	clear_banner.text = "SECTOR DESPEJADO · " + level_wave.liberation_text() + "\n" + ($Juice as BeeLevel01Juice).summary_text()
-	clear_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	clear_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	clear_banner.set_anchors_preset(Control.PRESET_CENTER)
-	clear_banner.offset_left = -480.0
-	clear_banner.offset_right = 480.0
-	clear_banner.offset_top = BeeGameSettings.HUD_VICTORY_BANNER_TOP
-	clear_banner.offset_bottom = BeeGameSettings.HUD_VICTORY_BANNER_BOTTOM
-	clear_banner.add_theme_font_size_override("font_size", BeeGameSettings.HUD_VICTORY_FONT_SIZE)
-	clear_banner.add_theme_color_override("font_color", Color(1.0, 0.9, 0.45))
-	clear_banner.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.02))
-	clear_banner.add_theme_constant_override("outline_size", 10)
-	clear_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	clear_banner.modulate.a = 0.0
-	$CanvasLayer.add_child(clear_banner)
-	clear_banner.pivot_offset = get_viewport().get_visible_rect().size * 0.5
-	clear_banner.scale = Vector2.ONE * 1.25
-	var pop := clear_banner.create_tween().set_parallel(true)
-	pop.tween_property(clear_banner, "modulate:a", 1.0, 0.35)
-	pop.tween_property(clear_banner, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if has_node("ResultsScreen"): return
+	bee.set_physics_process(false)
+	bee.hide()
+	for layer in find_children("*","CanvasLayer",true,false): layer.hide()
+	var results := preload("res://scenes/game/bee_results_screen.tscn").instantiate()
+	results.released=level_wave.liberated_count
+	results.total=level_wave.animals_total
+	results.score=($Juice as BeeLevel01Juice).score
+	results.combo=($Juice as BeeLevel01Juice).best_combo
+	add_child(results)
+	clear_banner=Label.new() # Compatibility handle for old review tools; no world text.
+	clear_banner.name="ClearBanner"
+	clear_banner.hide()
+	results.add_child(clear_banner)
 
 func _layout_victory_title() -> void:
 	section_label.set_anchors_preset(Control.PRESET_CENTER)

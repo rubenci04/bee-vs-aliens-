@@ -323,6 +323,7 @@ func _process(delta: float) -> void:
 		apply_modes() # Clip-space outline width stays constant in pixels on resize.
 	if panel != null:
 		panel.position = Vector2(SETTINGS.PANEL_POSITION.x, stage.get_viewport().get_visible_rect().size.y + SETTINGS.PANEL_POSITION.y)
+		panel.text = panel.text.get_slice(" · FPS",0) + " · FPS %d" % Engine.get_frames_per_second()
 	_timer -= delta
 	if _timer <= 0.0:
 		_timer = SETTINGS.REFRESH_INTERVAL
