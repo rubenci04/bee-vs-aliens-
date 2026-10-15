@@ -361,6 +361,9 @@ func _update_magnet(delta: float) -> void:
 	for pickup in _pickups:
 		if not is_instance_valid(pickup) or bool(pickup.get("was_collected")) or not pickup.visible or not _wants(pickup):
 			continue
+		if pickup is BeePollenPickup and not preload("res://scripts/game/bee_pollen_settings.gd").legacy_review:
+			if preload("res://scripts/items/bee_pollen_magnet.gd").step(pickup,bee,delta): magnet_pulls += 1
+			continue
 		var offset := bee.global_position - pickup.global_position
 		offset.z = 0.0
 		var distance := offset.length()

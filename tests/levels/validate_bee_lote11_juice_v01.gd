@@ -260,7 +260,7 @@ func test_magnet() -> void:
 	bee.global_position = Vector3(stage.camera.global_position.x - 3.0, 3.5, 0.0)
 	var near := POLLEN.instantiate() as BeePollenPickup
 	stage.add_child(near)
-	near.global_position = bee.global_position + Vector3(1.8, 0.0, 0.0)
+	near.global_position = bee.global_position + Vector3(0.95, 0.0, 0.0) # T3i: 0.48 × 2.5 attraction radius.
 	var far := POLLEN.instantiate() as BeePollenPickup
 	stage.add_child(far)
 	far.global_position = bee.global_position + Vector3(5.0, 0.0, 0.0)

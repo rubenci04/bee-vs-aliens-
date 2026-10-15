@@ -50,13 +50,18 @@ static func attach(item: Node3D) -> BeeItemBeacon:
 		return null
 	var existing := item.get_node_or_null("ItemBeacon") as BeeItemBeacon
 	if existing != null:
-		if item.has_node("PickupMedallion"):
+		if item.has_node("PickupMedallion") or item.has_node("PollenHexagon"):
 			existing.hide()
 			existing.set_process(false)
 		return existing
 	var beacon := BeeItemBeacon.new()
 	beacon.name = "ItemBeacon"
 	beacon.kind = for_item(item)
+	if item.has_node("PollenHexagon"):
+		item.add_child(beacon)
+		beacon.hide()
+		beacon.set_process(false)
+		return beacon
 	item.add_child(beacon)
 	if item.has_node("PickupMedallion"):
 		beacon.hide() # The legacy capsule now has its own type ring; avoid stacked halos/columns.
@@ -83,6 +88,8 @@ func color() -> Color:
 
 
 func _ready() -> void:
+	if get_parent().has_node("PollenHexagon"):
+		return # The small hexagon supplies its own glow, without building a round beacon.
 	var tint := color()
 	var size := float(SIZES[kind])
 	scale = Vector3.ONE * size

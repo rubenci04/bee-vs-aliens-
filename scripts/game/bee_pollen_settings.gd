@@ -1,0 +1,21 @@
+extends RefCounted
+const ATTRACTION_FACTOR := 2.5
+const ROLL_RADIUS_FACTOR := 1.25
+const START_SPEED := 0.30
+const MAX_SPEED := 2.40
+const ACCELERATION := 3.20
+const ROTATION_SPEED := 0.28
+const BOB_HEIGHT := 0.04
+const BOB_RATE := 1.5
+const BORDER_FRACTION := 0.14
+const INNER_RADIUS_FRACTION := 0.43
+const THICKNESS := 0.06
+const GLOW_RADIUS_FACTOR := 1.12
+const GLOW_ALPHA := 0.12
+const EMISSION := 0.55
+const SCREEN_RETIRE_MARGIN := 1.0
+const SCREEN_MARGIN_PX := 12.0
+const ARRIVAL_DISTANCE := 0.05
+const GOLD := Color(1.0,0.73,0.12)
+const BORDER := Color(0.12,0.065,0.015)
+static var legacy_review := false # Only the reproducible review tool enables the old appearance/magnet.

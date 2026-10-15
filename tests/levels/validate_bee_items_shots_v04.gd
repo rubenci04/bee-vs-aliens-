@@ -202,19 +202,22 @@ func test_items() -> void:
 		if item is BeePowerupPickup or item is BeePollenPickup:
 			var beacon := item.get_node_or_null("ItemBeacon") as BeeItemBeacon
 			check(beacon != null, "Item without beacon: %s" % item.get_path())
-			check(beacon.halo != null and beacon.ring != null and beacon.outline != null and beacon.column != null, "Beacon parts missing")
+			if item is BeePollenPickup:
+				check(item.has_node("PollenHexagon") and not beacon.visible, "T3i pollen uses its own outlined hexagon instead of a round beacon")
+			else:
+				check(beacon.halo != null and beacon.ring != null and beacon.outline != null and beacon.column != null, "Beacon parts missing")
 			beacons[beacon.kind] = beacon
 	for kind in [&"pollen", &"spread", &"bomb", &"cluster"]: # LOTE 13: the honey jar became a pollen cluster
 		check(beacons.has(kind), "No %s item with a beacon in the level" % kind)
-	# The halo pulses.
-	var probe: BeeItemBeacon = beacons[&"pollen"]
+	# T3i: pollen rotates slowly; other items retain their previous beacons.
+	var probe: Node3D = beacons[&"pollen"].get_parent().get_node("PollenHexagon")
 	var low := INF
 	var high := -INF
 	for i in 40:
 		await process_frame
-		low = minf(low, probe.halo_scale())
-		high = maxf(high, probe.halo_scale())
-	check(high - low >= 0.05, "The item halo must pulse")
+		low = minf(low, probe.rotation.z)
+		high = maxf(high, probe.rotation.z)
+	check(high - low >= 0.05, "The pollen hexagon must rotate slowly")
 	# Colour contrast: against the ochre soil (day palette) and between kinds; never cyan (hostile).
 	var report: Array[String] = []
 	for kind in BeeItemBeacon.COLORS:
