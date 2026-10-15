@@ -130,7 +130,7 @@ func test_structure() -> void:
 	check(BeeLevel01Controller.roster_only and wave.boss == null, "Level 1 has no UFO: the tarantula is its boss")
 	check(boss.global_position.x > stage.camera.global_position.x, "It enters from the right")
 	check(boss.health_bar_visible() and boss.is_in_group("bee_auto_aim_targets"), "Bar and auto-aim")
-	check(boss.hit_flash.flash_color == BeeGameSettings.TARANTULA_HIT_FLASH_COLOR and boss.hit_flash.flash_color.a < 0.5,
+	check(boss.hit_flash.flash_color == BeeGameSettings.TARANTULA_HIT_FLASH_COLOR and is_equal_approx(boss.hit_flash.flash_color.a,0.55),
 		"Tarantula hits use a brief warm accent instead of a pale wash")
 	check(boss.max_hp == BeeGameSettings.scaled_hp(1200), "Normal HP")
 	check(boss.implant_hurtbox != null and boss._implant_core != null and boss._implant_core.visible, "The implant is its own piece of the model")

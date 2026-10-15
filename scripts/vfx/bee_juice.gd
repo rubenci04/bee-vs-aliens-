@@ -3,8 +3,8 @@ extends RefCounted
 ## LOTE 11 · ETAPA C — small shared "game feel" helpers (presentation only): the 0.06 s white flash when an enemy is hit, the
 ## 40-60 ms hit stop on big kills / liberations, and the pollen burst of a liberated animal. Every value is a constant.
 
-const HIT_FLASH_SECONDS := 0.06
-const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0, 0.9)
+const HIT_FLASH_SECONDS := preload("res://scripts/game/bee_feedback_settings.gd").FLASH_SECONDS
+const HIT_FLASH_COLOR := preload("res://scripts/game/bee_feedback_settings.gd").FLASH_COLOR
 ## Hit stop: the game runs at HIT_STOP_TIME_SCALE for HIT_STOP_SECONDS of REAL time (40-60 ms).
 const HIT_STOP_SECONDS := 0.05
 const HIT_STOP_TIME_SCALE := 0.02

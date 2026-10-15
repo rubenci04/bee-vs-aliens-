@@ -223,7 +223,7 @@ const CAMERA_PRESET_F_HEIGHT := 2.45
 const GROUND_ACTOR_LOWEST_Y := -0.2
 const GROUND_ACTOR_FRAME_MARGIN := 0.35
 ## Lote 17: keep tarantula damage readable without the pale, washed-out overlay; exposed implant gets a gold contour.
-const TARANTULA_HIT_FLASH_COLOR := Color(1.0, 0.58, 0.12, 0.34)
+const TARANTULA_HIT_FLASH_COLOR := preload("res://scripts/game/bee_feedback_settings.gd").FLASH_COLOR
 const TARANTULA_EXPOSED_OUTLINE_COLOR := Color(1.0, 0.62, 0.08, 1.0)
 const TARANTULA_EXPOSED_OUTLINE_WIDTH := 0.0035
 static var vibration_enabled := true

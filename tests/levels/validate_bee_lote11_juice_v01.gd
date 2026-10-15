@@ -73,7 +73,7 @@ func test_flash() -> void:
 		var flash := unit.get_node_or_null("HitFlash3D") as HitFlash3D
 		check(flash != null, "%s has no HitFlash3D" % family)
 		check(is_equal_approx(flash.duration, BeeJuice.HIT_FLASH_SECONDS) and is_equal_approx(BeeJuice.HIT_FLASH_SECONDS, 0.06), "Flash must last 0.06 s")
-		check(flash.flash_color.r > 0.99 and flash.flash_color.g > 0.99 and flash.flash_color.b > 0.99, "The flash must be white")
+		check(flash.flash_color == BeeJuice.HIT_FLASH_COLOR and is_equal_approx(flash.flash_color.a,.55), "T4e flash mixes warm white at 55 percent")
 		var health := unit.get_node("HealthComponent") as HealthComponent
 		var hits := [0]
 		wave.enemy_hit.connect(func(): hits[0] += 1, CONNECT_ONE_SHOT)

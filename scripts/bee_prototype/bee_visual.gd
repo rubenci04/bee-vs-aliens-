@@ -1,4 +1,7 @@
 extends Node3D
+const FEEDBACK := preload("res://scripts/game/bee_feedback_settings.gd")
+var _tilt_rest := Transform3D.IDENTITY
+var _flight_tilt := Vector2.ZERO
 ## Selectable Bee model and presentation. This wrapper owns no gameplay state.
 @export var wing_frequency := 16.0
 @export var wing_amplitude := 0.55
@@ -38,6 +41,7 @@ var _plate_overlays: Dictionary = {}
 
 
 func _ready() -> void:
+	_tilt_rest = transform
 	add_to_group("bee_visual_instances")
 	_setup_buzz()
 	apply_model_version(BeeGameSettings.BEE_MODEL_VERSION)
@@ -112,10 +116,11 @@ func apply_model_version(version := "") -> bool:
 func firing_origin(fallback: Vector3) -> Vector3:
 	if muzzle == null:
 		return fallback
-	var point := muzzle.global_position
+	var point := _untilted_point(muzzle.global_position)
 	# Development visual scaling must not move the gameplay muzzle or aim origin.
 	if is_instance_valid(model) and model.has_meta("dev_readability_scale"):
-		point = model.global_position + (point - model.global_position) / float(model.get_meta("dev_readability_scale"))
+		var centre := _untilted_point(model.global_position)
+		point = centre + (point - centre) / float(model.get_meta("dev_readability_scale"))
 	point.z = actor.global_position.z if actor != null else fallback.z
 	return point
 
@@ -148,6 +153,7 @@ func _process(delta: float) -> void:
 	if actor == null or model == null or actor.is_defeated:
 		return
 	elapsed += delta
+	_update_flight_tilt(delta)
 	_update_rim()
 	if model_version == "v01":
 		for i in wings.size():
@@ -402,3 +408,16 @@ func _update_buzz(delta: float, defeated: bool) -> void:
 		return
 	buzz_player.volume_db = move_toward(buzz_player.volume_db, -80.0 if defeated else BUZZ_DB, 90.0 * delta)
 	buzz_player.stream_paused = buzz_player.volume_db <= -79.0
+
+
+## Rotate only this visual wrapper. Physics, root facing/roll and muzzle stay neutral.
+func _untilted_point(point: Vector3) -> Vector3:
+	return get_parent().global_transform * _tilt_rest * global_transform.affine_inverse() * point
+
+func _update_flight_tilt(delta: float) -> void:
+	var desired := Vector2.ZERO
+	if FEEDBACK.tilt_enabled and not actor.is_rolling and not actor.sting_dash.active:
+		desired.x = deg_to_rad(FEEDBACK.PITCH_DEGREES)*clampf(actor.velocity.y/maxf(actor.vertical_speed,.01),-1,1)
+		desired.y = -deg_to_rad(FEEDBACK.BANK_DEGREES)*clampf(actor.velocity.x*actor.facing_x/maxf(actor.horizontal_speed,.01),-1,1)
+	_flight_tilt = _flight_tilt.lerp(desired,1.0-exp(-delta/FEEDBACK.TILT_SMOOTH_SECONDS))
+	transform = _tilt_rest * Transform3D(Basis.from_euler(Vector3(_flight_tilt.x,0,_flight_tilt.y)),Vector3.ZERO)
