@@ -1,6 +1,7 @@
 extends Node
 ## T4d: Level 01 adapter for both existing AssetFauna worms.
-## Reuses WormB's projectile, mud style, speed, and the shared pattern factory.
+## T6e (Tanda C): the worm EMERGES from the soil and lobs 1 or 2 slow mud/plasma balls UP, which fall in an arc towards where Bee was
+## when the warning began (alternating 1 and 2 balls). No jump, no laser, no dome: only the 0.5 s pulse of the common enemies warns.
 enum Phase { WAIT_VISIBLE, EMERGE, REST, WARNING, FIRE }
 const EARLY_RATE_RATIO := 0.6
 const REFERENCE_REST := 0.6
@@ -16,10 +17,11 @@ const RETRY_SECONDS := 0.15
 const ENTRY_X := 4.0
 const ENTRY_SPACING := 0.4
 const MAX_ATTACKERS := 2
-const FAN_COUNT := 3
-const FAN_STEP := 16.0
-const STREAM_GAP := 0.22
-const DIAGONAL_ANGLE := 35.0
+const BALL_FLIGHT := 1.8 ## s from the mouth to the spot (slow: the ball climbs high and falls)
+const BALL_GRAVITY := 6.5 ## m/s²
+const BALL_GAP := 0.5 ## s between the two balls of a double volley
+const BALL_SPREAD := 2.0 ## m: the second ball lands this far from the first (alternating side)
+const BALL_MAX_AIM_Y := 4.8
 const ROSE_SHOT_DAMAGE := WormBehavior.LASER_DAMAGE # Preserve the replaced ranged attack's 4 damage.
 const ATTACK_GROUP := &"bee_ground_worm_attacking"
 
@@ -28,10 +30,13 @@ var phase := Phase.WAIT_VISIBLE
 var left := 0.0
 var volley_interval := 0.0
 var next_pattern := 0
-var patterns_fired: Array[int] = []
-var fired_directions: Array[Vector3] = []
-var shots_left := 0
-var diagonal_side := 1.0
+var patterns_fired: Array[int] = [] ## balls thrown per volley (1 or 2)
+var fired_directions: Array[Vector3] = [] ## initial direction of every ball (tests)
+var fired_targets: Array[Vector3] = [] ## landing spot of every ball (tests)
+var balls_left := 0
+var ball_count := 1
+var lock_point := Vector3.ZERO
+var spread_side := 1.0
 
 ## Original compost: lunge cycle + spit cycle, one three-shot fan every two cycles.
 static func reference_interval(rest_scale: float) -> float:
@@ -50,7 +55,7 @@ func setup(owner_fauna: AssetFauna, early: bool, rest_scale: float) -> void:
 	fauna._set_buried(true)
 	var level := fauna.get_parent()
 	var seed := int(level.get_meta("ground_worm_pattern_seed",0))
-	next_pattern = seed % 3
+	next_pattern = seed % 2
 	level.set_meta("ground_worm_pattern_seed",seed + 1)
 	var camera := fauna.get_viewport().get_camera_3d()
 	if camera != null:
@@ -68,7 +73,7 @@ func _claim() -> bool:
 func cancel() -> void:
 	if is_instance_valid(fauna) and fauna.is_in_group(ATTACK_GROUP):
 		fauna.remove_from_group(ATTACK_GROUP)
-	shots_left = 0
+	balls_left = 0
 
 func step_frame(delta: float) -> void:
 	left -= delta
@@ -95,38 +100,41 @@ func step_frame(delta: float) -> void:
 				return
 			phase = Phase.WARNING
 			left = WARNING_SECONDS
+			lock_point = fauna.target.global_position # The landing spot is fixed now: walking off it during the pulse is a clean dodge.
 			fauna.attacks_started += 1
 			if fauna.first_telegraph_clock < 0: fauna.first_telegraph_clock = fauna._clock
 			BeeShotWarning.volley(fauna,&"worm_b",fauna.visual,WARNING_SECONDS)
 	elif phase == Phase.WARNING and left <= 0:
 		fauna.telegraphs.append(WARNING_SECONDS)
 		phase = Phase.FIRE
-		patterns_fired.append(next_pattern)
-		if next_pattern == 0:
-			for direction in BeeEnemyPatterns.fan_directions(Vector3.UP,FAN_COUNT,FAN_STEP): _shoot(direction)
-			_finish_volley()
-		else:
-			shots_left = FAN_COUNT
-			left = 0
+		ball_count = 1 + next_pattern % 2
+		patterns_fired.append(ball_count)
+		balls_left = ball_count
+		left = 0
 	elif phase == Phase.FIRE and left <= 0:
-		var direction := Vector3.UP if next_pattern == 1 else Vector3.UP.rotated(Vector3.BACK,deg_to_rad(DIAGONAL_ANGLE * diagonal_side))
-		_shoot(direction)
-		shots_left -= 1
-		left = STREAM_GAP
-		if shots_left <= 0: _finish_volley()
+		_lob(ball_count - balls_left)
+		balls_left -= 1
+		left = BALL_GAP
+		if balls_left <= 0: _finish_volley()
 
-func _shoot(direction: Vector3) -> void:
+## Ball `index` of the volley: the first lands on the locked spot, the second BALL_SPREAD m to one side of it.
+func _lob(index: int) -> void:
 	if not BeeShmupFairness.can_fire(fauna): return
+	var spot := lock_point + Vector3(spread_side * BALL_SPREAD * float(index), 0.0, 0.0)
+	spot.y = clampf(spot.y, fauna.ground_y, BALL_MAX_AIM_Y)
 	var reference: Dictionary = AssetFauna.KINDS[&"worm_compost"].spit
 	var damage := ROSE_SHOT_DAMAGE if fauna.kind == &"worm_rose" else fauna._shot_damage()
-	BeeEnemyPatterns.spawn_styled(fauna.get_parent(),AssetFauna.PROJECTILE,fauna._muzzle(),direction,damage,float(reference.speed),fauna,StringName(reference.style))
+	var origin := fauna._muzzle()
+	var ball := BeeEnemyPatterns.spawn_lob(fauna.get_parent(),AssetFauna.PROJECTILE,origin,spot,damage,BALL_FLIGHT,BALL_GRAVITY,fauna,StringName(reference.style))
 	fauna.shots_fired += 1
-	fired_directions.append(direction)
+	fired_directions.append(ball.travel_direction)
+	fired_targets.append(spot)
+	BeeCombatVFX.spawn(fauna.get_parent(),origin,&"rock_break",Vector3.UP,0.5)
 
 func _finish_volley() -> void:
-	var elapsed := WARNING_SECONDS + (STREAM_GAP * (FAN_COUNT-1) if next_pattern != 0 else 0.0)
-	if next_pattern == 2: diagonal_side *= -1
-	next_pattern = (next_pattern + 1) % 3
+	var elapsed := WARNING_SECONDS + BALL_GAP * float(ball_count - 1)
+	spread_side *= -1.0
+	next_pattern = (next_pattern + 1) % 2
 	fauna.cycles_done += 1
 	cancel()
 	phase = Phase.REST

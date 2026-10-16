@@ -13,8 +13,8 @@ func _shot(node: Node) -> void:
 	seen_shots += 1
 	check(node.get_meta("shot_style", &"") == &"mud", "Reuses WormB's yellow mud projectile")
 	check(node.damage == (4 if node.hitbox.attacker.kind == &"worm_rose" else 3), "Original ranged damage")
-	check(node.travel_direction.y > .7 and is_zero_approx(node.travel_direction.z), "Only upward projectiles")
-	check(is_equal_approx(node.speed,4.2*BeeLevel01Controller.ROSTER_SHOT_SPEED_SCALE), "Same WormB projectile speed")
+	check(node.travel_direction.y > .5 and is_zero_approx(node.travel_direction.z), "T6e: balls are lobbed UP")
+	check(is_equal_approx(node.gravity, GROUND.BALL_GRAVITY), "T6e: they fall in an arc (gravity)")
 func run() -> void:
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
 	root.add_child(stage)
@@ -55,10 +55,10 @@ func run() -> void:
 				check(worm._worm.lasers == 0 and worm._worm.leaps == 0 and not worm._worm._beam_box.enabled, "Legacy laser and leap cannot run")
 	check(emergence_seen, "Visible gradual emergence")
 	check(max_attacking <= 2 and max_attacking > 0, "No more than two attacking worms")
-	check(seen_shots > 18, "Worms actually emit the reused shots")
+	check(seen_shots > 8, "Worms actually emit the lobbed balls")
 	for worm in worms:
 		var patterns: Array = worm._ground_worm.patterns_fired
-		check(patterns.size() >= 3 and patterns.has(0) and patterns.has(1) and patterns.has(2), "Fan, column and diagonal alternate")
+		check(patterns.size() >= 2 and patterns.has(1) and patterns.has(2) and patterns.all(func(n): return n == 1 or n == 2), "T6e: volleys alternate 1 and 2 balls")
 		worm.health.take_damage(99999)
 	for i in 3: await physics_frame
 	check(get_nodes_in_group(GROUND.ATTACK_GROUP).is_empty(), "Liberation releases attack slots")
