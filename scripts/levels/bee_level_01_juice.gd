@@ -9,6 +9,7 @@ extends Node
 ##   magnet    items drift towards Bee when she passes close
 ## Every number is a constant. The hit flash is attached to each enemy by the controller (BeeJuice.attach_hit_flash).
 
+const BOSS_COMBO_INTERVAL := 0.5
 const COMBO_RESET_SECONDS := 3.0
 const COMBO_STEP := 0.1 ## +10 % points per extra step of the combo...
 const COMBO_MAX_MULTIPLIER := 3.0 ## ...up to x3.
@@ -48,6 +49,7 @@ var combo := 0
 var best_combo := 0
 var score := 0
 var combo_left := 0.0
+var boss_combo_left := 0.0
 var pollen_total := 0
 var pollen_from_pickups := 0
 var pollen_from_liberations := 0
@@ -80,6 +82,7 @@ func _ready() -> void:
 	wave = stage.wave as BeeLevel01Controller
 	wave.unit_downed.connect(_on_unit_downed)
 	wave.enemy_hit.connect(_on_enemy_hit)
+	wave.boss_damaged.connect(_on_boss_damaged)
 	bee.health.health_changed.connect(_on_bee_health_changed)
 	bee.honey_changed.connect(_refresh_frenzy)
 	get_tree().node_added.connect(_on_node_added)
@@ -130,6 +133,7 @@ func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> La
 
 func _physics_process(delta: float) -> void:
 	_pollen_clock += delta
+	boss_combo_left = maxf(0.0, boss_combo_left - delta)
 	nova_cooldown_left = maxf(0.0, nova_cooldown_left - delta)
 	nova_protection_left = maxf(0.0, nova_protection_left - delta)
 	bee.health.pollen_protected = nova_protection_left > 0.0
@@ -172,8 +176,7 @@ static func base_points(unit: Node, liberated: bool) -> int:
 func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 	if bee.is_defeated:
 		return
-	if not bool(unit.get_meta("combo_final_hit", false)):
-		_advance_combo()
+	_advance_combo()
 	score += roundi(float(base_points(unit, liberated)) * combo_multiplier())
 	_refresh_combo()
 	if liberated:
@@ -184,8 +187,16 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 
 
 func _on_enemy_hit() -> void:
-	if not bee.is_defeated:
-		_advance_combo()
+	if not bee.is_defeated and combo > 0:
+		combo_left = COMBO_RESET_SECONDS
+
+
+func _on_boss_damaged() -> void:
+	if bee.is_defeated: return
+	if combo > 0: combo_left = COMBO_RESET_SECONDS
+	if boss_combo_left > 0.000001: return
+	boss_combo_left = BOSS_COMBO_INTERVAL
+	_advance_combo()
 
 
 func _advance_combo() -> void:
@@ -201,6 +212,7 @@ func _advance_combo() -> void:
 func _reset_combo() -> void:
 	combo = 0
 	combo_left = 0.0
+	boss_combo_left = 0.0
 	_refresh_combo()
 
 

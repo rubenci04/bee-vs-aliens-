@@ -7,6 +7,7 @@ signal director_moment(id: StringName)
 ## LOTE 11: a unit was destroyed or freed (score / combo / hit stop, see BeeLevel01Juice) and an enemy took a hit (keeps the combo alive).
 signal unit_downed(unit: Node3D, liberated: bool)
 signal enemy_hit
+signal boss_damaged
 const PREBOSS_POWER_X := 283.0 # E73; before the Robot at X294, after checkpoint 2.
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
@@ -1170,13 +1171,15 @@ func _finish_roster_level() -> void:
 	wave_completed.emit()
 
 ## T7b: one notification per applied health change, including the same boss path.
-func _connect_combo_health(health: HealthComponent, unit: Node3D, main_health := true) -> void:
+func _connect_combo_health(health: HealthComponent, unit: Node3D, _main_health := true) -> void:
 	if health.has_meta("combo_connected"): return
 	health.set_meta("combo_connected", true)
-	health.health_changed.connect(func(current, _maximum, change):
+	health.health_changed.connect(func(_current, _maximum, change):
 		if change >= 0: return
-		if main_health and current == 0: unit.set_meta("combo_final_hit", true)
-		enemy_hit.emit())
+		if unit is WalkerMiniboss or unit is TarantulaBoss01 or unit is UfoBoss01:
+			boss_damaged.emit()
+		else:
+			enemy_hit.emit())
 
 
 func combo_intermission() -> bool:
