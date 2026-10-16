@@ -15,7 +15,7 @@ enum State { IDLE, ENTER, WAIT, TELEGRAPH, ATTACK, RECOVER, EXIT, LIBERATED, DON
 
 const MIN_TELEGRAPH := 0.4
 ## T6e: modes whose attacks take one of the two shared attack slots (BeeCommonSlots); a unit without a slot waits SLOT_RETRY_SECONDS.
-const COMMON_SLOT_MODES := [&"marcher", &"hopper"]
+const COMMON_SLOT_MODES := [&"marcher", &"hopper", &"charge"]
 const SLOT_RETRY_SECONDS := 0.35
 const MARCHER_FIRE_SECONDS := 0.25 ## the `_left` of the ATTACK state of a marcher (see `_start_attack`).
 ## LOTE 13: a unit counts as arrived (and starts its first rest) once it is this far inside the screen edge, not only at its hover point.
@@ -73,8 +73,8 @@ const KINDS := {
 			"telegraph": 0.5, "damage": 8, "shot_damage": 3, "cycles": 4, "speed": 2.6, "label": "Ant",
 			"spit_every": 2.5, "spit_recover": 0.4, "style": &"pebble", "lob_flight": 1.15, "lob_gravity": 8.0},
 	&"stag_beetle": {"scene": "res://scenes/art_labs/assets_v02/controlled_stag_beetle.tscn", "mode": &"charge", "ground": true, "scale": 1.0,
-			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle",
-			"gait": [0.9, 0.22, 0.16, 0.05, 0.04]}, # LOTE 13: walks (tripod gait synced to the ground speed), charges with a 0.8 s warning, lobs stones
+			"telegraph": 0.6, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "stun": 1.0, "label": "StagBeetle",
+			"gait": [0.9, 0.22, 0.16, 0.05, 0.04]}, # LOTE 13: walks (tripod gait synced to the ground speed), charges with a 0.6 s warning and is STUNNED 1 s afterwards (T6e: no more stones)
 	&"snail": {"scene": "res://scenes/art_labs/assets_v02/controlled_woodland_snail.tscn", "mode": &"spitter", "ground": true, "scale": 1.0,
 			"telegraph": 0.6, "damage": 7, "shot_damage": 3, "cycles": 5, "speed": 0.7, "shot_speed": 4.2, "armored": true, "label": "Snail",
 			"lob": true, "style": &"bubble", "lob_flight": 1.5, "lob_gravity": 6.0}, # LOTE 13: slime bubble in an arc
@@ -556,6 +556,7 @@ func _start_telegraph() -> void:
 		&"charge":
 			var dirc := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
 			_lock_to = global_position + Vector3(dirc * float(config["charge_speed"]) * float(config["charge_time"]), 0.0, 0.0)
+			_lock_to.x = _clamp_to_screen(_lock_to.x) # T6e: the ram ends inside the frame.
 			_add_line(global_position + Vector3(0, 0.4, 0), _lock_to + Vector3(0, 0.4, 0), 0.5, Color(1.0, 0.55, 0.15, 0.25))
 		&"hopper":
 			_plan_hopper(bee)
@@ -727,6 +728,9 @@ func _attack(delta: float, _camera_x: float) -> void:
 		_left = recovery_time if mode != &"charge" else 1.4
 		if mode == &"marcher":
 			_left = float(config["spit_recover"])
+		if mode == &"charge":
+			_left = float(config.get("stun", 1.4)) # T6e: stunned after the ram.
+			stunned = true
 		if mode == &"hopper":
 			_left = _end_hopper_move()
 		if mode == &"burrow":
@@ -736,6 +740,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 
 
 func _recover(delta: float, camera_x: float) -> void:
+	if stunned:
+		_stun_wobble()
 	if config["mode"] == &"burrow":
 		_left -= delta
 		if _left <= 0.0:
@@ -759,6 +765,7 @@ func _recover(delta: float, camera_x: float) -> void:
 			global_position = global_position.move_toward(back, maxf(float(config["speed"]), 3.0) * 1.4 * delta)
 	_left -= delta
 	if _left <= 0.0:
+		_end_stun()
 		_begin(State.IDLE, _rest_after_attack())
 
 
@@ -777,6 +784,9 @@ func _begin(next: int, seconds: float) -> void:
 
 func _cancel_attack() -> void:
 	_reset_hopper_pose()
+	if stunned:
+		stunned = false
+		visual.rotation.z = 0.0
 	if _ground_worm != null: _ground_worm.cancel()
 	COMMON_CUE.cancel(visual)
 	if kind == &"Ant": visual.rotation.z = 0.0
@@ -1426,3 +1436,30 @@ func _reset_hopper_pose() -> void:
 	if _hop_orig_radius >= 0.0:
 		(attack_hitbox.get_node("CollisionShape3D").shape as SphereShape3D).radius = _hop_orig_radius
 	global_position.y = ground_y
+
+
+# --- T6e: stag beetle (slow tank, straight ram, stunned afterwards) -----------------------------------------------------------
+
+var stunned := false ## true during the stun that follows a ram (tests / feedback)
+var stuns_done := 0
+
+
+## X clamped to the readable frame (a ram or a roll never ends beyond the screen edge).
+func _clamp_to_screen(x: float) -> float:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return x
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport())) - 0.8
+	return clampf(x, camera.global_position.x - half, camera.global_position.x + half)
+
+
+## Dizzy wobble of the body while stunned; pincers stay shut.
+func _stun_wobble() -> void:
+	visual.rotation.z = sin(_clock * 16.0) * 0.09 * clampf(_left, 0.0, 1.0)
+
+
+func _end_stun() -> void:
+	if stunned:
+		stunned = false
+		stuns_done += 1
+		visual.rotation.z = 0.0
