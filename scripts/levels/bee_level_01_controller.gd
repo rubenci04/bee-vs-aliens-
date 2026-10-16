@@ -90,6 +90,7 @@ const ROUTE_DAMAGE_SCALE := 1.0 # LOTE 14: the LOTE 13 chip-damage hack (0.15) i
 const MIN_FORMATION_GAP := 0.2
 ## REBUILD 03: Wasp implant sting / overload are introduced progressively (see `_spawn`).
 const STING_FROM_X := 40.0
+const WASP_WARNING_SECONDS := 0.5 ## T6e: the kamikaze ram and the burst of the shooter wasp both warn 0.5 s (the common pulse).
 const OVERLOAD_FROM_X := 150.0
 ## Camera-relative X where a cinematic depth entry reaches the flight plane (inside the right half of the screen).
 const DEPTH_TARGET_X := 3.4
@@ -989,6 +990,19 @@ func _spawn(request: Dictionary) -> void:
 			unit.set("sting_fan_count", 3)
 		if stage.distance >= OVERLOAD_FROM_X and (slot % 2 == 0 or stage.distance >= 240.0):
 			unit.set("overload_enabled", true)
+		if roster_only:
+			# T6e: two kinds of wasp, alternating: the 1st, 3rd... is a SHOOTER (burst of 3, never dashes); the 2nd, 4th... a KAMIKAZE (0.5 s warning, then a locked ram).
+			if int(spawned_by_family.get("Wasp", 0)) % 2 == 1:
+				unit.set("variant", &"shooter")
+				unit.set("sting_shots", 3)
+				unit.set("sting_fan_count", 0)
+				unit.set("sting_windup", WASP_WARNING_SECONDS)
+				unit.set("overload_enabled", false)
+			else:
+				unit.set("variant", &"kamikaze")
+				unit.set("sting_shots", 0)
+				unit.set("sting_fan_count", 0)
+				unit.set("dash_windup", WASP_WARNING_SECONDS)
 	elif family == "Probe" or family == "EyeDrone":
 		unit.set("initial_delay", 0.35 * float(slot % 3)) # Never the same first-shot frame as a neighbour.
 	if family == "EyeDrone" and stage.distance < FAN_FROM_X:

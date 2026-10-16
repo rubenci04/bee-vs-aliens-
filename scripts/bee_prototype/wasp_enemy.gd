@@ -56,6 +56,10 @@ const STING_FAN_STEP := 13.0
 @export var overload_speed := 12.5
 @export var overload_damage := 18
 @export var overload_radius := 1.5
+## T6e (Tanda C): Level 01 splits the wasps in two kinds. `kamikaze` rams in a locked straight pass after a 0.5 s warning (no needles);
+## `shooter` stalks and fires a 3-bolt burst (0.5 s warning), repeating, and never dashes. Empty = the original behaviour (POCs, tests).
+@export var variant: StringName = &""
+const SHOOTER_FIRST_STALK := 0.6
 const IMPLANT_OFFSET := Vector3(0.0, 0.34, -0.12) ## On the thorax, in VisualRoot space (follows the facing).
 const STING_PROJECTILE := preload("res://scenes/bee_prototype/alien_enemy_projectile.tscn")
 
@@ -217,6 +221,7 @@ func _physics_process(delta: float) -> void:
 				if _sting_fired >= sting_shots:
 					if implant != null:
 						implant.set_mode(&"idle")
+					BeeCommonSlots.release(self)
 					current_state = State.STALK
 					_state_left = _stalk_resume
 		State.OVERLOAD:
@@ -267,6 +272,7 @@ func _begin_attack() -> void:
 
 
 func _begin_recovery() -> void:
+	BeeCommonSlots.release(self)
 	current_state = State.RECOVERY
 	_state_left = arcade_recovery if arcade_mode else recovery_time
 	attack_hitbox.set_enabled(false)
@@ -295,6 +301,7 @@ func _on_died() -> void:
 			_blast_visual(false)
 	_clear_overload_line()
 	BeeAttackTokens.release(self)
+	BeeCommonSlots.release(self)
 	if implant != null:
 		implant.set_mode(&"off")
 	current_state = State.DEAD
@@ -325,6 +332,8 @@ func _liberate() -> void:
 # --- Arcade mode (Level 01) ----------------------------------------------------------------------
 
 func _begin_stalk(seconds: float) -> void:
+	if variant == &"shooter" and sting_count == 0:
+		seconds = minf(seconds, SHOOTER_FIRST_STALK) # the first burst comes within ~1 s of arriving
 	add_to_group("arcade_wasps")
 	_sting_done = false
 	current_state = State.STALK
@@ -347,10 +356,20 @@ func _stalk(delta: float) -> void:
 	_stalk_cap -= delta
 	if absf(to_x) < 2.0:
 		_state_left -= delta
+		if variant == &"shooter":
+			if _state_left <= 0.0 and BeeShmupFairness.is_readable(self) and BeeCommonSlots.try_take(self):
+				_begin_sting()
+			return
 		if sting_shots > 0 and not _sting_done and BeeShmupFairness.is_readable(self):
 			_begin_sting()
 			return
+	if variant == &"shooter":
+		return
 	if (_state_left <= 0.0 and not _another_wasp_attacking()) or _stalk_cap <= 0.0:
+		if variant != &"" and not BeeCommonSlots.try_take(self):
+			_state_left = 0.35 # T6e: two common enemies are already attacking.
+			_stalk_cap = maxf(_stalk_cap, 0.6)
+			return
 		_begin_windup()
 
 
@@ -391,7 +410,7 @@ func _begin_sting() -> void:
 	BeeShotWarning.volley(self, &"wasp", visual_root, sting_windup, 1 if sting_fan_count > 0 else sting_shots, sting_gap)
 	_sting_done = true
 	_sting_fired = 0
-	_stalk_resume = _state_left # COMBAT VARIETY 01 fix: the sting no longer eats the stalk timer (the hover kept its length).
+	_stalk_resume = stalk_time if variant == &"shooter" else _state_left # COMBAT VARIETY 01 fix: the sting no longer eats the stalk timer (the hover kept its length).
 	current_state = State.STING
 	_state_left = sting_windup # The implant charges (cyan) before the first bolt.
 	if implant != null:
