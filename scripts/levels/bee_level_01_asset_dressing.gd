@@ -179,6 +179,8 @@ func _build_litter() -> void:
 		item.position = Vector3(float(entry[1]), -0.05, float(entry[2]) - (BIG_PROP_PUSH_BACK if big else 0.0))
 		item.scale = Vector3.ONE * float(entry[3]) * (BIG_PROP_SCALE if big else 1.0)
 		item.rotation = Vector3(0.0, float(entry[4]), float(entry[5]))
+		if entry[0] == BANANA_PEEL:
+			preload("res://scripts/levels/bee_grounded_prop.gd").settle(item)
 		litter.append(item)
 
 

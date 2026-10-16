@@ -54,6 +54,8 @@ func _build_codex_item() -> void:
 	item.scale = Vector3.ONE * float(spec[1])
 	item.position.y = float(spec[2])
 	visual_root.add_child(item)
+	if item_kind == 4:
+		preload("res://scripts/levels/bee_grounded_prop.gd").settle.call_deferred(item)
 	var first := true
 	var box := AABB()
 	for mesh: MeshInstance3D in item.find_children("*", "MeshInstance3D", true, false):
