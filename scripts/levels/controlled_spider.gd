@@ -47,6 +47,19 @@ const SILK := Color(0.93, 0.93, 0.88, 0.75)
 @export var contact_damage := 8
 @export var strike_damage := 14
 @export var follow_speed := 3.2 ## m/s along the web line while hanging / repositioning (camera-relative)
+## T6e (Tanda C): web mode (Level 01 roster). The spider LOWERS on its thread, SWINGS like a pendulum and every `web_every` s throws ONE web
+## (aimed where Bee was when the 0.5 s pulse began). No column, no ring and no drop strike; only its body hurts on contact.
+@export var web_mode := false
+@export var web_every := 4.0
+@export var web_drop := 1.2 ## m the spider hangs lower than `hang_height`
+@export var web_damage := 3
+@export var web_speed := 3.3
+@export var web_first := 0.4 ## s hanging before the first pulse
+const WEB_WARNING := 0.5
+const WEB_SWAY := 1.3 ## m of pendulum swing
+const WEB_SWAY_RATE := 1.15 ## rad/s
+const WEB_BOB := 0.3
+const WEB_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
@@ -75,6 +88,12 @@ var _column: MeshInstance3D
 var _ring: MeshInstance3D
 var _column_material: StandardMaterial3D
 var _t := 0.0
+var _web_lowered := false
+var _sway := 0.0
+var _sway_amp := 0.0
+var _web_left := 0.0
+var _web_aim := Vector3.ZERO
+var webs_thrown := 0 ## tests
 
 static var _thread_mesh: CylinderMesh
 static var _column_mesh: BoxMesh
@@ -104,6 +123,11 @@ func activate(new_target: BeePlayer) -> bool:
 		global_position.y = BeeLevel01Framing.top_y() + 1.6 # Legacy drop-in; persistent waves materialize inside their beam.
 	_from_y = global_position.y
 	hang_height = minf(hang_height, BeeLevel01Framing.max_entity_y() - 0.4)
+	if web_mode:
+		if not _web_lowered:
+			_web_lowered = true
+			hang_height -= web_drop # (activate() runs again after a rescue teleport: lower only once)
+		_web_left = web_first
 	show()
 	_enter(State.ENTER, enter_seconds)
 	add_to_group("bee_auto_aim_targets")
@@ -151,22 +175,28 @@ func _physics_process(delta: float) -> void:
 			if _state_left <= 0.0:
 				_enter(State.HANG, hang_seconds)
 		State.HANG:
-			y = hang_height + sin(_t * 2.4) * 0.08
-			_goal_rel_x = _bee_rel(camera)
-			if _state_left <= 0.0:
-				_try_telegraph()
-		State.TELEGRAPH:
-			y = hang_height + sin(_t * 9.0) * 0.05
-			if not locked:
-				lock_y = _strike_y()
+			if web_mode:
+				y = _web_hang(delta, camera)
+			else:
+				y = hang_height + sin(_t * 2.4) * 0.08
 				_goal_rel_x = _bee_rel(camera)
-			if _state_left <= lock_before_drop and not locked:
-				locked = true
-				_goal_rel_x = _rel_x # The column stops following Bee too.
-				_column_material.albedo_color = Color(1.0, 0.45, 0.15, 0.4) # Locked: orange, like every committed attack.
-			_update_telegraph(y)
-			if _state_left <= 0.0:
-				_begin_drop()
+				if _state_left <= 0.0:
+					_try_telegraph()
+		State.TELEGRAPH:
+			if web_mode:
+				y = _web_telegraph(delta, camera)
+			else:
+				y = hang_height + sin(_t * 9.0) * 0.05
+				if not locked:
+					lock_y = _strike_y()
+					_goal_rel_x = _bee_rel(camera)
+				if _state_left <= lock_before_drop and not locked:
+					locked = true
+					_goal_rel_x = _rel_x # The column stops following Bee too.
+					_column_material.albedo_color = Color(1.0, 0.45, 0.15, 0.4) # Locked: orange, like every committed attack.
+				_update_telegraph(y)
+				if _state_left <= 0.0:
+					_begin_drop()
 		State.DROP:
 			var t := 1.0 - clampf(_state_left / drop_seconds, 0.0, 1.0)
 			y = lerpf(hang_height, lock_y, t * t)
@@ -211,7 +241,11 @@ func _physics_process(delta: float) -> void:
 	# The web line rides with the camera; the spider slides along it.
 	if current_state in [State.HANG, State.TELEGRAPH, State.REPOSITION]:
 		_rel_x = move_toward(_rel_x, _goal_rel_x, follow_speed * delta)
-	global_position = Vector3(camera.global_position.x + _rel_x, y, 0.0)
+	if web_mode:
+		var swinging := current_state in [State.HANG, State.TELEGRAPH]
+		_sway_amp = move_toward(_sway_amp, WEB_SWAY if swinging else 0.0, 1.2 * delta)
+		_sway = _sway_amp * sin(_t * WEB_SWAY_RATE)
+	global_position = Vector3(camera.global_position.x + _rel_x + _sway, y, 0.0)
 	_update_thread(camera)
 
 
@@ -289,6 +323,7 @@ func _on_hit_confirmed(_hurtbox: DamageHurtbox3D, _damage: int) -> void:
 func _on_died() -> void:
 	if current_state == State.FREED:
 		return
+	BeeCommonSlots.release(self)
 	_from_y = global_position.y
 	_enter(State.FREED, FREED_SECONDS)
 	contact.set_enabled(false)
@@ -397,6 +432,14 @@ func _update_thread(camera: Camera3D) -> void:
 	var top := BeeLevel01Framing.top_y() + 2.5
 	var bottom := global_position.y + 0.35
 	_thread.visible = visible and current_state not in [State.FREED] and top > bottom
+	if web_mode: # T6e: pendulum - the thread hangs from a fixed anchor and tilts as the body swings.
+		var anchor := Vector3(camera.global_position.x + _rel_x, top, 0.0)
+		var body := Vector3(global_position.x, bottom, 0.0)
+		var span := anchor - body
+		_thread.global_position = (anchor + body) * 0.5 + Vector3(0.0, 0.0, -0.05)
+		_thread.scale = Vector3(1.0, maxf(span.length(), 0.01), 1.0)
+		_thread.rotation = Vector3(0.0, 0.0, atan2(-span.x, span.y))
+		return
 	var length := maxf(top - bottom, 0.01)
 	_thread.global_position = Vector3(global_position.x, bottom + length * 0.5, -0.05)
 	_thread.scale = Vector3(1.0, length, 1.0)
@@ -409,3 +452,56 @@ func _update_telegraph(y: float) -> void:
 	var pulse := 1.0 + 0.12 * sin(_t * 18.0)
 	_ring.global_position = Vector3(global_position.x, lock_y, 0.0)
 	_ring.scale = Vector3.ONE * pulse
+
+
+# --- T6e: web mode -----------------------------------------------------------------------------------------------------------------
+
+## Hanging low on the thread, bobbing; the web pulse starts every `web_every` s (first one `web_first` s after settling).
+func _web_hang(delta: float, camera: Camera3D) -> float:
+	_goal_rel_x = _bee_rel(camera)
+	_web_left -= delta
+	if _web_left <= 0.0:
+		_try_web()
+	return hang_height + sin(_t * 1.7) * WEB_BOB
+
+
+func _try_web() -> void:
+	if target.is_defeated or not BeeShmupFairness.is_inside_screen(self, 0.8) or not BeeCommonSlots.try_take(self):
+		_web_left = 0.35 # Not readable yet, or two common enemies are already attacking.
+		return
+	_web_aim = target.global_position # Fixed now: the web goes where Bee was when the pulse began.
+	telegraph_count += 1
+	BeeShotWarning.volley(self, &"spider", visual_root, WEB_WARNING)
+	if implant != null:
+		implant.set_mode(&"sting")
+	BeeAudio.play(get_parent(), &"spider_telegraph", global_position)
+	_enter(State.TELEGRAPH, WEB_WARNING)
+
+
+func _web_telegraph(delta: float, camera: Camera3D) -> float:
+	_goal_rel_x = _bee_rel(camera)
+	if _state_left <= 0.0:
+		_throw_web()
+		_web_left = web_every - WEB_WARNING # throw-to-throw = web_every
+		BeeCommonSlots.release(self)
+		if implant != null:
+			implant.set_mode(&"idle")
+		_play(&"Idle")
+		_enter(State.HANG, hang_seconds)
+	return hang_height + sin(_t * 1.7) * WEB_BOB
+
+
+func _throw_web() -> void:
+	if not BeeShmupFairness.can_fire(self):
+		return
+	var origin := (implant.global_position if implant != null else global_position + Vector3(0.0, 0.4, 0.0))
+	origin.z = 0.0
+	var aim := _web_aim - origin
+	aim.z = 0.0
+	if aim.length() < 0.1:
+		aim = Vector3.LEFT
+	BeeEnemyPatterns.spawn_styled(get_parent(), WEB_BOLT, origin, aim.normalized(), web_damage, web_speed, self, &"web")
+	webs_thrown += 1
+	attack_count += 1
+	_play(&"Attack")
+	BeeAudio.play(get_parent(), &"spider_drop", global_position)

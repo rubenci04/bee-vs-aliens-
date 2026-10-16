@@ -177,7 +177,7 @@ const LEVEL_HP = BeeGameSettings.ENEMY_HEALTH.LEGACY_HP
 const SHOWCASE_HP := 130
 ## LOTE 13 · ETAPA 2: tuning that only applies while Level 1 plays its roster (merged over LEVEL_TUNING). Spider: it drops in and warns within ~1 s.
 const ROSTER_TUNING := {
-	"Spider": {"hang_seconds": 0.15, "enter_seconds": 0.6, "strike_damage": 5, "contact_damage": 2, "reposition_seconds": 1.2}, # LOTE 14: real damage: the thread strike hits for 8, touching the body for 4.
+	"Spider": {"hang_seconds": 0.15, "enter_seconds": 0.6, "strike_damage": 5, "contact_damage": 2, "reposition_seconds": 1.2, "web_mode": true}, # T6e: web_mode = pendulum + one web every 4 s (no drop strike); # LOTE 14: real damage: the thread strike hits for 8, touching the body for 4.
 	"Wasp": {"sting_speed": 4.4, "sting_damage": 3, "overload_damage": 5, "attack_damage": 4}, # Slower needles (dodgeable, longer on screen) that do 3; the kamikaze overload 5 and the dive 4 (LOTE 14).
 }
 const ROLES := {"Swarm": &"POPCORN", "Wasp": &"LIGHT", "EyeDrone": &"LIGHT", "Speeder": &"LIGHT", "Probe": &"MEDIUM",
@@ -459,10 +459,11 @@ const EVENTS_ROSTER = [
 	{"at": 254.6, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "FlyCommon"], "delays": [0.0, 0.8, 1.5], "y": [4.0, 0.0, 4.4]},
 	{"at": 256.8, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "WormB"], "delays": [0.0, 0.9, 1.6], "y": [4.4, 0.0, 0.0]},
 	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
-	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider"], "y": [5.2], "x": [1.2],
+	# T6e: +50 % spiders in the waves where they appear (3 -> 5): the zone opens with two and its second wave brings two.
+	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider", "Spider"], "delays": [0.0, 1.2], "y": [5.2, 5.2], "x": [1.2, -2.2],
 			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
 			{"units": ["Spider"], "delays": [0.0], "y": [4.0], "x": [0.6]},
-			{"units": ["Spider"], "delays": [0.0], "y": [3.4], "x": [0.6]},
+			{"units": ["Spider", "Spider"], "delays": [0.0, 1.0], "y": [3.4, 3.4], "x": [0.6, -1.8]},
 			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0], "anthill": true},
 			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 0.0], "anthill": true},
 			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.4, 0.0], "anthill": true},
@@ -963,7 +964,7 @@ func _spawn(request: Dictionary) -> void:
 			var rest: Variant = unit.get(key)
 			if rest is float and not roster_tuning.has(key + "_fixed"):
 				unit.set(key, float(rest) * fire_slowdown(stage.distance))
-	if family in ["Mosquito", "WaveDragonfly", "Dragonfly", "Spider", "Speeder"]: # T6e: the ant spits by itself (marcher), no implant gun
+	if family in ["Mosquito", "WaveDragonfly", "Dragonfly", "Speeder"] or (family == "Spider" and not roster_only): # T6e: the ant spits by itself (marcher), no implant gun
 		var gun := BeeImplantShooter.new()
 		gun.family = family
 		gun.cooldown_scale = fire_slowdown(stage.distance) if roster_only and not bool(request["hard"]) else 1.0
