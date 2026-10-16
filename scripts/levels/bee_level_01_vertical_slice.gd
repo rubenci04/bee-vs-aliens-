@@ -7,6 +7,7 @@ var elapsed_seconds := 0.0
 ## BOSS v2 (combat variety 01): during the NODO ALIEN fight the saucer changes side, so Bee may use the whole width.
 var boss_arena_wide := false
 var _victory_seconds := 0.0
+var _robot_arena_weight := 0.0
 var clear_banner: Label # LOTE 9: "SECTOR DESPEJADO · LIBERADOS n/N" in the middle of the screen.
 @onready var checkpoint: BeeCheckpointQoL = $CheckpointQoL
 
@@ -92,6 +93,10 @@ func _process(_delta: float) -> void:
 	pass # ResultsScreen owns replay/menu input in the terminal state.
 
 func _update_camera_and_bounds() -> void:
+	var robot := level_wave.miniboss if is_instance_valid(level_wave) else null
+	var desired := 1.0 if is_instance_valid(robot) and robot.health.current_health > 0 else 0.0
+	_robot_arena_weight = move_toward(_robot_arena_weight, desired, get_physics_process_delta_time() / BeeLevel01Framing.ROBOT_TRANSITION_SECONDS)
+	BeeLevel01Framing.robot_arena_weight = _robot_arena_weight
 	# Use 95 % of the visible width with equal margins; vertical framing remains independently bounded.
 	var aspect := BeeLevel01Framing.view_aspect(get_viewport())
 	screen_left = BeeLevel01Framing.flight_left_offset(aspect)
@@ -99,9 +104,9 @@ func _update_camera_and_bounds() -> void:
 	flight_top = minf(7.2, BeeLevel01Framing.top_y() - BeeLevel01Framing.FLIGHT_MARGIN)
 	flight_bottom = maxf(0.7, BeeLevel01Framing.bottom_y() + BeeLevel01Framing.FLIGHT_MARGIN)
 	super._update_camera_and_bounds()
-	camera.global_position = Vector3(distance, BeeLevel01Framing.CAMERA_HEIGHT, BeeLevel01Framing.CAMERA_DISTANCE)
+	camera.global_position = Vector3(distance, BeeLevel01Framing.effective_height(), BeeLevel01Framing.CAMERA_DISTANCE)
 	camera.rotation = Vector3(deg_to_rad(BeeLevel01Framing.CAMERA_PITCH_DEGREES), 0.0, 0.0)
-	camera.fov = BeeLevel01Framing.CAMERA_FOV
+	camera.fov = BeeLevel01Framing.effective_fov()
 
 func _on_bee_defeated() -> void:
 	super._on_bee_defeated()
@@ -132,6 +137,7 @@ func _secure_victory() -> void:
 			node.queue_free()
 
 func _exit_tree() -> void:
+	BeeLevel01Framing.robot_arena_weight = 0.0
 	BeeCombatVFX.toon_bursts = false # Static: never leak the Level 01 look into POCs or tests that load other scenes.
 
 ## Same names, positions and settings (the checkpoint snapshot finds them by name); only the scene changes.

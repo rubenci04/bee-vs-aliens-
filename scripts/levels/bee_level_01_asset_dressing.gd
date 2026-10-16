@@ -64,6 +64,7 @@ const FIREFLY_MODEL_LENGTH := 1.293 # controlled_firefly.glb body length at scal
 ## (small screens: they filled the frame). Applied to the scenes in BIG_PROPS when the litter is built.
 const BIG_PROP_SCALE := 0.8
 const BIG_PROP_PUSH_BACK := 1.0
+const ROBOT_CAN_DEPTH := -10.0 # Only the can beside the Robot arena; reduce floor clutter.
 var BIG_PROPS: Array = [CAN, GREEN_BOTTLE, WATERING_CAN, HOLLOW_LOG]
 
 ## [scene, x, z, scale, yaw (rad), tilt (rad, z axis)]. All z < 0: behind the flight plane.
@@ -91,7 +92,7 @@ const LITTER := [
 	[BELLFLOWER, 290.0, -3.4, 1.4, 0.8, 0.0], [BELLFLOWER, 311.0, -3.2, 1.6, 3.4, 0.0], [BELLFLOWER, 322.0, -3.6, 1.5, 5.0, 0.0],
 	[BELLFLOWER, 346.0, -3.3, 1.6, 1.1, 0.0], [BELLFLOWER, 358.0, -3.1, 1.5, 4.2, 0.0],
 	[SAPLING, 252.0, -13.0, 2.5, 3.0, 0.0], [SAPLING, 296.0, -12.5, 2.7, 0.7, 0.0], [SAPLING, 334.0, -13.5, 2.6, 5.2, 0.0], [SAPLING, 20.0, -12.0, 2.5, 1.9, 0.0],
-	[CAN, 301.0, -4.6, 4.3, 2.1, 0.05], [CAN, 349.0, -4.4, 4.0, 0.9, 0.0], [CANDY, 255.0, -2.9, 1.6, 1.3, 0.0], [CANDY, 331.0, -3.0, 1.5, 4.4, 0.0],
+	[CAN, 301.0, ROBOT_CAN_DEPTH, 4.3, 2.1, 0.05], [CAN, 349.0, -4.4, 4.0, 0.9, 0.0], [CANDY, 255.0, -2.9, 1.6, 1.3, 0.0], [CANDY, 331.0, -3.0, 1.5, 4.4, 0.0],
 	[HOSE, 226.0, -3.8, 4.0, 3.6, 0.0], [HOSE, 318.0, -3.9, 4.0, 0.4, 0.0],
 	[WATERING_CAN, 38.0, -4.6, 3.3, 0.6, 0.0], [WATERING_CAN, 205.0, -4.8, 3.3, 3.4, 0.0], [WATERING_CAN, 277.0, -4.6, 3.3, 5.8, 0.0], [WATERING_CAN, 352.0, -4.7, 3.3, 2.7, 0.0],
 ]

@@ -21,6 +21,16 @@ static var CAMERA_DISTANCE: float = PRESETS[DEFAULT_PRESET]["distance"]
 static var CAMERA_HEIGHT: float = PRESETS[DEFAULT_PRESET]["height"]
 static var CAMERA_PITCH_DEGREES: float = PRESETS[DEFAULT_PRESET]["pitch"]
 static var CAMERA_FOV: float = PRESETS[DEFAULT_PRESET]["fov"]
+const ROBOT_VIEW_SCALE := 1.10
+const ROBOT_CAMERA_LOWER := 1.0
+const ROBOT_TRANSITION_SECONDS := 0.65
+static var robot_arena_weight := 0.0
+
+static func effective_height() -> float:
+	return CAMERA_HEIGHT - ROBOT_CAMERA_LOWER * robot_arena_weight
+
+static func effective_fov() -> float:
+	return rad_to_deg(2.0 * atan(tan(deg_to_rad(CAMERA_FOV * 0.5)) * lerpf(1.0, ROBOT_VIEW_SCALE, robot_arena_weight)))
 
 const FLIGHT_MARGIN := 0.4 # Vertical clearance from the visible top/bottom edges.
 const PLAYABLE_WIDTH_FRACTION := 0.95 # Equal 2.5 % screen margins on each side.
@@ -35,6 +45,7 @@ const PLAYER_ANCHOR_FRACTION := 0.32
 
 ## Switches every camera value (dev comparisons, tests). The next level load / camera update uses it.
 static func use_preset(name: StringName) -> void:
+	robot_arena_weight = 0.0
 	var preset: Dictionary = PRESETS[name]
 	preset_name = name
 	CAMERA_DISTANCE = preset["distance"]
@@ -51,7 +62,7 @@ static func view_aspect(viewport: Viewport) -> float:
 
 
 static func _tan_half_fov() -> float:
-	return tan(deg_to_rad(CAMERA_FOV * 0.5))
+	return tan(deg_to_rad(effective_fov() * 0.5))
 
 
 # Distance along the view ray to the Z=0 flight plane for the bottom (-1) / top (+1) screen edge.
@@ -62,7 +73,7 @@ static func _plane_distance(edge: float) -> float:
 
 static func _plane_y(edge: float) -> float:
 	var pitch := deg_to_rad(CAMERA_PITCH_DEGREES)
-	return CAMERA_HEIGHT + (edge * _tan_half_fov() * cos(pitch) + sin(pitch)) * _plane_distance(edge)
+	return effective_height() + (edge * _tan_half_fov() * cos(pitch) + sin(pitch)) * _plane_distance(edge)
 
 
 static func bottom_y() -> float:
