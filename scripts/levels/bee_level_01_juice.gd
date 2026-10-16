@@ -1,7 +1,7 @@
 class_name BeeLevel01Juice
 extends Node
 ## LOTE 11 · ETAPA C — Level 01 "life and emotion" orchestrator (presentation + small rewards, no new enemy behaviour):
-##   combo     "xN" counter for consecutive destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
+##   combo     "xN" counter for applied hits and destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
 ##             kill); points per kill x combo multiplier; the score is shown on the SECTOR DESPEJADO card
 ##   pollen    20 grains charge a manually activated pollen Nova (T3m).
 ##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
@@ -135,7 +135,7 @@ func _physics_process(delta: float) -> void:
 	bee.health.pollen_protected = nova_protection_left > 0.0
 	if Input.is_action_just_pressed(NOVA.ACTION):
 		try_pollen_nova()
-	if combo > 0:
+	if combo > 0 and not wave.combo_intermission():
 		combo_left -= delta
 		if combo_left <= 0.0:
 			_reset_combo()
@@ -172,12 +172,8 @@ static func base_points(unit: Node, liberated: bool) -> int:
 func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 	if bee.is_defeated:
 		return
-	combo += 1
-	best_combo = maxi(best_combo, combo)
-	combo_left = COMBO_RESET_SECONDS
-	if combo % FRENZY_COMBO == 0: # FRENESI at combo x8 (and every further x8 of an unbroken chain): the double shot no longer depends on pollen.
-		frenzy_activations += 1
-		bee.activate_honey()
+	if not bool(unit.get_meta("combo_final_hit", false)):
+		_advance_combo()
 	score += roundi(float(base_points(unit, liberated)) * combo_multiplier())
 	_refresh_combo()
 	if liberated:
@@ -188,8 +184,18 @@ func _on_unit_downed(unit: Node3D, liberated: bool) -> void:
 
 
 func _on_enemy_hit() -> void:
-	if combo > 0:
-		combo_left = COMBO_RESET_SECONDS # "no impacts for 3 s" resets it: any hit keeps the chain alive.
+	if not bee.is_defeated:
+		_advance_combo()
+
+
+func _advance_combo() -> void:
+	combo += 1
+	best_combo = maxi(best_combo, combo)
+	combo_left = COMBO_RESET_SECONDS
+	if combo % FRENZY_COMBO == 0:
+		frenzy_activations += 1
+		bee.activate_honey()
+	_refresh_combo()
 
 
 func _reset_combo() -> void:
@@ -254,7 +260,6 @@ func try_pollen_nova() -> bool:
 	stage.add_child(nova)
 	nova.attacker = bee
 	nova.global_position = bee.global_position
-	nova.hit_confirmed.connect(func(_hurt, _damage): wave.enemy_hit.emit())
 	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
 	_refresh_pollen()
 	return true

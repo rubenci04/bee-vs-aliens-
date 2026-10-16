@@ -913,7 +913,7 @@ func _spawn(request: Dictionary) -> void:
 	health.current_health = health.max_health
 	if family == "FlyCloud": unit.call("configure_population",health.max_health)
 	else: BeeJuice.attach_hit_flash(unit) # T6c members release individually; don't scan the whole cloud on each hit.
-	health.health_changed.connect(func(_current, _maximum, change): if change < 0: enemy_hit.emit())
+	_connect_combo_health(health, unit)
 	if unit.get("projectile_scene") is PackedScene:
 		unit.set("projectile_scene", TOON_ALIEN_BOLT)
 	var tuning: Dictionary = LEVEL_TUNING.get(family, {})
@@ -1168,6 +1168,23 @@ func _finish_roster_level() -> void:
 	encounter_label = "RUTA DESPEJADA"
 	wave_completed.emit()
 
+## T7b: one notification per applied health change, including the same boss path.
+func _connect_combo_health(health: HealthComponent, unit: Node3D, main_health := true) -> void:
+	if health.has_meta("combo_connected"): return
+	health.set_meta("combo_connected", true)
+	health.health_changed.connect(func(current, _maximum, change):
+		if change >= 0: return
+		if main_health and current == 0: unit.set_meta("combo_final_hit", true)
+		enemy_hit.emit())
+
+
+func combo_intermission() -> bool:
+	if is_instance_valid(miniboss) and miniboss.health.current_health > 0 and miniboss._step == &"enter": return true
+	if not roster_only: return false
+	if _tarantula_breather_left >= 0 and tarantula == null and not tarantula_freed: return true
+	return is_instance_valid(tarantula) and tarantula.state in [TarantulaBoss01.State.APPROACH, TarantulaBoss01.State.TRANSITION]
+
+
 func boss_active() -> bool:
 	return (boss != null and is_instance_valid(boss) and boss.is_active()) or (tarantula != null and is_instance_valid(tarantula) and tarantula.is_active())
 
@@ -1175,6 +1192,7 @@ func boss_active() -> bool:
 
 func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 	miniboss = robot
+	_connect_combo_health(robot.cannon_health, robot, false)
 	var health := robot.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(MINIBOSS_HP)
 	health.current_health = health.max_health
@@ -1242,6 +1260,7 @@ func _start_tarantula() -> void:
 	tarantula.liberated_now.connect(_on_tarantula_freed)
 	tarantula.phase_changed.connect(_on_tarantula_phase)
 	tarantula.summon_requested.connect(_on_boss_summon)
+	_connect_combo_health(tarantula.health, tarantula)
 	animals_total += 1 # An animal: it will be freed, never killed.
 	encounter_label = "FINAL · LA TARÁNTULA"
 	player_label = "LA TARÁNTULA"
