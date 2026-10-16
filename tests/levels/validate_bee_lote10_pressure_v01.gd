@@ -26,13 +26,13 @@ func run() -> void:
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
 	bee.global_position = Vector3(0, 4, 0)
-	wave._spawn({"family": "Ladybird", "event": 0, "slot": 0, "hard": false})
+	wave._spawn({"family": "Mosquito", "event": 0, "slot": 0, "hard": false})
 	var unit := wave.active_units.back() as AssetFauna
 	preload("res://tests/levels/bee_teleport_fixture.gd").finish(unit)
 	unit.set_physics_process(false)
 	unit.global_position = Vector3(4, 4, 0)
 	var gun := unit.get_child(unit.get_child_count() - 1) as BeeImplantShooter
-	check(gun != null, "Ladybird implant weapon missing")
+	check(gun != null, "Implant weapon missing (T6e: the ladybird now hops, the mosquito keeps the implant gun fixture)")
 	gun.set_physics_process(false)
 	gun.clock = 0.0
 	gun._physics_process(0.01)
@@ -41,7 +41,7 @@ func run() -> void:
 	gun._physics_process(0.55)
 	check(gun.volleys == 0, "No shot before minimum telegraph")
 	gun._physics_process(0.06)
-	check(gun.volleys == 1 and get_nodes_in_group("alien_projectiles").size() == 1, "LOTE 14: the ladybird fires ONE slow shot (it was a fan of three)")
+	check(gun.volleys == 1 and get_nodes_in_group("alien_projectiles").size() == 1, "LOTE 14: an implant volley is ONE shot")
 	for shot in get_nodes_in_group("alien_projectiles"):
 		shot.queue_free()
 	await frames(2)

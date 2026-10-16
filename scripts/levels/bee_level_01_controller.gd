@@ -59,7 +59,7 @@ const ANIMAL_FAMILIES := ["Wasp", "Dragonfly", "Spider", "Mosquito", "Ladybird",
 const TOON_HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: pollen cluster (was the honey jar).
 const BOSS_HEAL_BELOW := 0.7 # Fraction of max HP under which the honey jar appears before the UFO.
 const TOON_ALIEN_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn")
-const ASSET_AIR := ["Mosquito", "Ladybird", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter", "FlyCommon", "FlyGreen", "FlyCloud"]
+const ASSET_AIR := ["Mosquito", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter", "FlyCommon", "FlyGreen", "FlyCloud"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
 ## Camera-relative X where a spider drops in from above the top edge when the event gives none (inside the screen).
@@ -962,7 +962,7 @@ func _spawn(request: Dictionary) -> void:
 			var rest: Variant = unit.get(key)
 			if rest is float and not roster_tuning.has(key + "_fixed"):
 				unit.set(key, float(rest) * fire_slowdown(stage.distance))
-	if family in ["Mosquito", "Ladybird", "WaveDragonfly", "StagBeetle", "Dragonfly", "Spider", "Speeder"]: # T6e: the ant spits by itself (marcher), no implant gun
+	if family in ["Mosquito", "WaveDragonfly", "StagBeetle", "Dragonfly", "Spider", "Speeder"]: # T6e: the ant spits by itself (marcher), no implant gun
 		var gun := BeeImplantShooter.new()
 		gun.family = family
 		gun.cooldown_scale = fire_slowdown(stage.distance) if roster_only and not bool(request["hard"]) else 1.0

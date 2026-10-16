@@ -15,7 +15,7 @@ enum State { IDLE, ENTER, WAIT, TELEGRAPH, ATTACK, RECOVER, EXIT, LIBERATED, DON
 
 const MIN_TELEGRAPH := 0.4
 ## T6e: modes whose attacks take one of the two shared attack slots (BeeCommonSlots); a unit without a slot waits SLOT_RETRY_SECONDS.
-const COMMON_SLOT_MODES := [&"marcher"]
+const COMMON_SLOT_MODES := [&"marcher", &"hopper"]
 const SLOT_RETRY_SECONDS := 0.35
 const MARCHER_FIRE_SECONDS := 0.25 ## the `_left` of the ATTACK state of a marcher (see `_start_attack`).
 ## LOTE 13: a unit counts as arrived (and starts its first rest) once it is this far inside the screen edge, not only at its hover point.
@@ -60,8 +60,10 @@ const FLAP := {&"moth": [6.5, 0.25, 1.35, 0.1, 0.16, 0.8]}
 const KINDS := {
 	&"mosquito": {"scene": "res://scenes/art_labs/assets/controlled_mosquito.tscn", "mode": &"dash", "ground": false, "scale": 1.0,
 			"telegraph": 0.5, "damage": 8, "cycles": 4, "speed": 7.0, "dash_speed": 14.0, "dash_range": 7.0, "label": "Mosquito"},
-	&"ladybird": {"scene": "res://scenes/art_labs/assets_v03/controlled_flying_ladybird.tscn", "mode": &"sweep", "ground": false, "scale": 1.15,
-			"telegraph": 0.8, "damage": 7, "cycles": 3, "speed": 2.2, "pass_time": 1.5, "label": "Ladybird"},
+	# T6e: the ladybird is a GROUND hopper: two wide arc jumps that land with a small ring, then a straight rolling charge (it is stunned-tired afterwards).
+	&"ladybird": {"scene": "res://scenes/art_labs/assets_v03/controlled_flying_ladybird.tscn", "mode": &"hopper", "ground": true, "scale": 1.15, "ground_lift": true,
+			"telegraph": 0.5, "damage": 7, "cycles": 3, "speed": 0.0, "label": "Ladybird", "hops_before_roll": 2, "hop_time": 0.9, "hop_height": 3.0,
+			"hop_min": 2.5, "land_radius": 0.9, "land_time": 0.25, "hop_rest": 0.9, "roll_speed": 7.0, "roll_length": 7.0, "roll_rest": 1.3, "roll_spin": 14.0},
 	&"dragonfly": {"scene": "res://scenes/art_labs/assets_v10/controlled_dragonfly.tscn", "mode": &"wave", "ground": false, "scale": 0.8,
 			"telegraph": 0.65, "damage": 9, "cycles": 3, "speed": 6.0, "wave_speed": 10.0, "wave_amp": 1.1, "label": "WaveDragonfly"},
 	&"moth": {"scene": "res://scenes/art_labs/assets_v10/controlled_bomb_moth.tscn", "mode": &"bomber", "ground": false, "scale": 0.85,
@@ -223,6 +225,8 @@ func _build() -> void:
 	if BeeFaunaSizes.SIZE.has(kind):
 		# NOCHE 01: size relative to Bee (BeeFaunaSizes), from the model's own measured length.
 		model_scale = BeeFaunaSizes.target_length(kind) / maxf(_bounds(visual, rig).size.x, 0.01)
+	if bool(config.get("ground_lift", false)):
+		visual.position.y -= _bounds(visual, rig).position.y # T6e: a model modelled around its centre stands ON the soil.
 	visual.scale = Vector3.ONE * model_scale
 	if FLAP.has(kind):
 		for hinge: Node3D in visual.find_children("FlightWing_*", "Node3D", true, false):
@@ -553,6 +557,8 @@ func _start_telegraph() -> void:
 			var dirc := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
 			_lock_to = global_position + Vector3(dirc * float(config["charge_speed"]) * float(config["charge_time"]), 0.0, 0.0)
 			_add_line(global_position + Vector3(0, 0.4, 0), _lock_to + Vector3(0, 0.4, 0), 0.5, Color(1.0, 0.55, 0.15, 0.25))
+		&"hopper":
+			_plan_hopper(bee)
 		&"marcher":
 			_lock_to = bee # T6e: the pebble lands where Bee is when the warning STARTS (no aim line: the pulse is the warning).
 			_aim_lock_point = bee
@@ -669,6 +675,8 @@ func _start_attack() -> void:
 		&"marcher":
 			_lob_pebble()
 			_left = MARCHER_FIRE_SECONDS
+		&"hopper":
+			_begin_hopper_move()
 		&"spitter", &"cannon", &"seeder", &"fighter", &"zigzag":
 			var burst := int(config.get("burst", 1))
 			if burst > 1: # LOTE 13: the green fly spits acid in a burst, aimed again at every drop.
@@ -700,6 +708,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 			var travelled := float(config["wave_speed"]) * delta
 			global_position.x -= travelled
 			global_position.y = _lock_from.y + sin((global_position.x - _lock_from.x) * 1.6) * float(config["wave_amp"])
+		&"hopper":
+			_step_hopper(delta)
 		&"lunge", &"charge":
 			var speed := float(config["lunge_range"]) / 0.35 if mode == &"lunge" else float(config["charge_speed"])
 			if not (mode == &"lunge" and _variant == &"spit"): # Worm B spitting stays put
@@ -717,6 +727,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 		_left = recovery_time if mode != &"charge" else 1.4
 		if mode == &"marcher":
 			_left = float(config["spit_recover"])
+		if mode == &"hopper":
+			_left = _end_hopper_move()
 		if mode == &"burrow":
 			_left = float(config["exposed"]) # Surfaced and vulnerable for this long, then it digs back in.
 		if cycles_done >= max_cycles and not bool(get_meta("level_persistent",false)):
@@ -764,6 +776,7 @@ func _begin(next: int, seconds: float) -> void:
 
 
 func _cancel_attack() -> void:
+	_reset_hopper_pose()
 	if _ground_worm != null: _ground_worm.cancel()
 	COMMON_CUE.cancel(visual)
 	if kind == &"Ant": visual.rotation.z = 0.0
@@ -1159,6 +1172,8 @@ func warned_line() -> Array:
 			return [_aim_lock_point, _aim_lock_point + Vector3(0.05, 0.0, 0.0), 1.6] # Where the arc lands.
 		var from := _muzzle()
 		return [from, from + (_aim_lock_point - from).normalized() * 14.0, 0.8]
+	if config["mode"] == &"hopper":
+		return [_lock_from, _lock_to, 0.9] if _hop_is_roll else [_lock_to, _lock_to + Vector3(0.05, 0.0, 0.0), 1.2]
 	if config["mode"] == &"marcher":
 		return [_aim_lock_point, _aim_lock_point + Vector3(0.05, 0.0, 0.0), 1.6] # Where the pebble lands.
 	match config["mode"]:
@@ -1295,6 +1310,8 @@ func pincer_point() -> Vector3:
 
 ## Rest before the next warning: the marcher keeps a fixed `spit_every` s period (warning + spit + recovery + walking), the rest use idle_time.
 func _rest_after_attack() -> float:
+	if config["mode"] == &"hopper":
+		return 0.15 # The hopper rests inside its RECOVER (hop_rest / roll_rest).
 	if config["mode"] == &"marcher":
 		return maxf(float(config["spit_every"]) - maxf(float(config["telegraph"]), MIN_TELEGRAPH) - MARCHER_FIRE_SECONDS - float(config["spit_recover"]), 0.2)
 	return idle_time
@@ -1307,3 +1324,105 @@ func _lob_pebble() -> void:
 	BeeEnemyPatterns.spawn_lob(get_parent(), PROJECTILE, _muzzle(), _aim_lock_point, _shot_damage(), float(config["lob_flight"]), float(config["lob_gravity"]), self, StringName(config["style"]))
 	shots_fired += 1
 	BeeCombatVFX.spawn(get_parent(), _muzzle(), &"tech_hit", Vector3.UP, 0.5)
+
+
+# --- T6e: ladybird hopper ----------------------------------------------------------------------------------------------------
+## Two wide arc jumps (each lands under where Bee was when the warning began, with a small ring and a short ground hit), then ONE rolling
+## charge in a straight line, then it rests tired. Only the 0.5 s pulse of the common enemies warns: no line, strip or dome.
+
+var _hops_done := 0
+var _hop_is_roll := false
+var _hop_landed := false
+var _hop_orig_radius := -1.0
+var _roll_pivot := Vector3.ZERO
+var _roll_base := Vector3.ZERO
+var _roll_angle := 0.0
+var hops_landed := 0 ## tests
+var rolls_done := 0 ## tests
+
+
+func _plan_hopper(bee: Vector3) -> void:
+	_hop_is_roll = _hops_done >= int(config["hops_before_roll"])
+	_lock_from = global_position
+	var camera := get_viewport().get_camera_3d()
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport())) - 0.8
+	var cam_x := camera.global_position.x if camera != null else global_position.x
+	var toward := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
+	if _hop_is_roll:
+		_lock_to = Vector3(clampf(global_position.x + toward * float(config["roll_length"]), cam_x - half, cam_x + half), ground_y, 0.0)
+		return
+	var land_x := bee.x
+	if absf(land_x - global_position.x) < float(config["hop_min"]):
+		land_x = global_position.x + toward * float(config["hop_min"])
+	_lock_to = Vector3(clampf(land_x, cam_x - half, cam_x + half), ground_y, 0.0)
+
+
+func _begin_hopper_move() -> void:
+	_hop_landed = false
+	if _hop_is_roll:
+		_left = maxf(absf(_lock_to.x - global_position.x) / float(config["roll_speed"]), 0.3)
+		attack_hitbox.set_enabled(true)
+		var bounds := _bounds(visual, rig)
+		_roll_pivot = Vector3(bounds.get_center().x, bounds.get_center().y, 0.0)
+		_roll_base = visual.position
+		_roll_angle = 0.0
+	else:
+		_left = float(config["hop_time"]) + float(config["land_time"])
+
+
+func _step_hopper(delta: float) -> void:
+	if _hop_is_roll:
+		global_position = global_position.move_toward(_lock_to, float(config["roll_speed"]) * delta)
+		var dir := signf(_lock_to.x - _lock_from.x)
+		_roll_angle -= dir * float(config["roll_spin"]) * delta
+		var turn := Basis(Vector3.BACK, _roll_angle)
+		visual.rotation.z = _roll_angle
+		visual.position = turn * _roll_base + _roll_pivot - turn * _roll_pivot # Spins around the body centre, not around its feet.
+		return
+	var flight := float(config["hop_time"])
+	var land_time := float(config["land_time"])
+	if _left > land_time:
+		var t := clampf(1.0 - (_left - land_time) / flight, 0.0, 1.0)
+		global_position = Vector3(lerpf(_lock_from.x, _lock_to.x, t), ground_y + 4.0 * float(config["hop_height"]) * t * (1.0 - t), 0.0)
+	elif not _hop_landed:
+		_hop_landed = true
+		hops_landed += 1
+		global_position = _lock_to
+		var shape := attack_hitbox.get_node("CollisionShape3D").shape as SphereShape3D
+		if _hop_orig_radius < 0.0:
+			_hop_orig_radius = shape.radius
+		shape.radius = float(config["land_radius"])
+		attack_hitbox.set_enabled(true)
+		_landing_ring(_lock_to, float(config["land_radius"]))
+
+
+## Small ring on the ground where the jump landed (impact feedback, not a warning: it appears with the damage).
+func _landing_ring(at: Vector3, radius: float) -> void:
+	var ring := COMMON_CUE.ring(get_parent(), Vector3(at.x, ground_y + 0.05, 0.0), radius, COMMON_CUE.color_for(kind))
+	var fade := ring.create_tween()
+	fade.tween_property(ring, "scale", Vector3.ONE * 1.5, 0.3)
+	fade.tween_callback(ring.queue_free)
+	BeeCombatVFX.spawn(get_parent(), at + Vector3(0.0, 0.1, 0.3), &"rock_break", Vector3.UP, 0.5)
+
+
+## Called when the move ends: resets the pose and returns the RECOVER seconds (the roll leaves it tired for longer).
+func _end_hopper_move() -> float:
+	var was_roll := _hop_is_roll
+	_reset_hopper_pose()
+	if was_roll:
+		_hops_done = 0
+		rolls_done += 1
+		return float(config["roll_rest"])
+	_hops_done += 1
+	return float(config["hop_rest"])
+
+
+func _reset_hopper_pose() -> void:
+	if config["mode"] != &"hopper":
+		return
+	visual.rotation.z = 0.0
+	if _roll_base != Vector3.ZERO:
+		visual.position = _roll_base
+	if _hop_orig_radius >= 0.0:
+		(attack_hitbox.get_node("CollisionShape3D").shape as SphereShape3D).radius = _hop_orig_radius
+	global_position.y = ground_y
