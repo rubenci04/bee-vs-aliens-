@@ -137,4 +137,4 @@ Abrir el proyecto y `scenes/levels/bee_level_01_vertical_slice.tscn` con F6, o i
 
 Reunir 7 granos: aparece el aviso y se habilita un cartucho. Tocar Q/LT-L2 para Nova; con vida faltante, mantener 0,5 s para curar. Reunir hasta 21 para ver los tres segmentos completos. Alternar mando/teclado fuera de combate: se actualizan las pistas inmediatamente pero no hay avisos separados por menos de 15 s; durante combate no debe aparecer ninguno. Disparar sostenido a Robot/Tarántula y observar que el combo ya no suma por cada bala.
 
-Entrega organizada en commits por neón/debug, bananas, aros, flores, banners, combo y cartuchos/informe. El último usa el mensaje solicitado por el dueño. Push a `origin/lote-16-titulo-intro`.
+Entrega organizada en commits por neón/debug, bananas, aros, flores, banners, combo y cartuchos/informe. Una revisión posterior detectó finales de línea CRLF introducidos al preparar hunks en tres archivos compartidos; se normalizaron a LF en un commit adicional, sin cambios de lógica ni reescritura de commits. El último usa el mensaje solicitado por el dueño. Push a `origin/lote-16-titulo-intro`.
