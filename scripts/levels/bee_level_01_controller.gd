@@ -21,6 +21,9 @@ const ORGANIC = preload("res://scenes/bee_prototype/organic_alien_enemy.tscn")
 const WALKER = preload("res://scenes/bee_prototype/ground_walker_enemy.tscn")
 const UFO_BOSS = preload("res://scenes/levels/ufo_boss_01.tscn")
 const POWERUP_PICKUP = preload("res://scenes/bee_prototype/bee_powerup_pickup.tscn")
+## T7e (Tanda D): rewards after a boss use the SAME toon medallions as the rest of the level (hexagon + own icon per type), not the old capsule.
+const TOON_SPREAD := preload("res://scenes/items/toon/spread.tscn")
+const TOON_BOMB := preload("res://scenes/items/toon/bomb.tscn")
 const DRAGONFLY = preload("res://scenes/levels/controlled_dragonfly.tscn")
 const SWARM = preload("res://scenes/levels/popcorn_drone.tscn")
 const TURTLE = preload("res://scenes/levels/garden_turtle.tscn") # LOTE 12: garden turtle tank (BeeGardenTurtle).
@@ -480,7 +483,7 @@ const EVENTS_ROSTER = [
 	{"at": 291.1, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Wasp", "Ant"], "delays": [0.0, 0.8, 1.6], "y": [2.8, 4.0, 0.0], "anthill": true},
 	{"at": 294.0, "act": 4, "label": "ROBOT CAMINANTE · MINIJEFE CON ESCOLTA", "units": ["Walker", "Wasp", "FlyCommon", "FlyCommon"], "hard": true, "miniboss": true,
 			"delays": [0.0, 1.2, 2.4, 3.4], "y": [0.0, 4.6, 5.4, 3.0],
-			"escort_wave": {"units": ["Wasp", "FlyGreen", "FlyCommon"], "delays": [0.0, 0.9, 1.8], "y": [5.0, 3.4, 4.4]}},
+			"escort_wave": {"units": ["Wasp", "Wasp"], "delays": [0.0, 0.9], "y": [5.0, 3.4]}}, # T7d: the mid-fight call (50 % HP) brings TWO wasps (was 3 insects at 60 %)
 ]
 
 ## LOTE 12 · ETAPA 2: Level 1 plays only its roster (docs/art/LEVEL_01_ROSTER.md). false restores the old table, with the alien enemies,
@@ -1333,7 +1336,7 @@ func _post_robot_supplies() -> void:
 		if i == 2:
 			item = TOON_HEALING.instantiate()
 		else:
-			var power := POWERUP_PICKUP.instantiate() as BeePowerupPickup
+			var power := (TOON_BOMB if i == 0 else TOON_SPREAD).instantiate() as BeePowerupPickup
 			power.kind = BeePowerupPickup.Kind.BOMB if i == 0 else BeePowerupPickup.Kind.SPREAD
 			item = power
 		stage.add_child(item)
@@ -1481,7 +1484,7 @@ func _spawn_boss_supplies() -> void:
 		jar.global_position = Vector3(stage.camera.global_position.x - 1.6, 4.4, 0.0)
 	if bee.bomb_charges >= 2:
 		return
-	var pickup := POWERUP_PICKUP.instantiate() as BeePowerupPickup
+	var pickup := TOON_BOMB.instantiate() as BeePowerupPickup
 	pickup.name = "BossBomb"
 	pickup.kind = BeePowerupPickup.Kind.BOMB
 	stage.add_child(pickup) # Not under "Powerups": that node is the level's fixed pickup set.

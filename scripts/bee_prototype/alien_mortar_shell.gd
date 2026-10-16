@@ -17,6 +17,7 @@ var puddle_seconds := 1.4
 var ground_y := -0.2
 var landed := false
 var attacker: Node
+var color := COLOR ## T7c: the robot's mortars are hot plasma (cyan stays for implants); the turret keeps COLOR
 
 var _from := Vector3.ZERO
 var _to := Vector3.ZERO
@@ -34,7 +35,7 @@ func launch(from: Vector3, to: Vector3, marker: MeshInstance3D) -> void:
 	_from = Vector3(from.x, from.y, 0.0)
 	_to = Vector3(to.x, ground_y, 0.0)
 	_marker = marker
-	_shell = BeeAttackVisuals.sphere(self, _from, SHELL_RADIUS, COLOR)
+	_shell = BeeAttackVisuals.sphere(self, _from, SHELL_RADIUS, color)
 	var sphere := SphereShape3D.new()
 	sphere.radius = SHELL_RADIUS * 0.8
 	_shell_box = BeeAttackVisuals.hazard_area(self, attacker, damage, sphere)
@@ -72,7 +73,7 @@ func _land() -> void:
 	if _marker != null and is_instance_valid(_marker):
 		_marker.queue_free()
 	BeeCombatVFX.spawn(get_parent(), _to + Vector3(0, 0.2, 0), &"tech_death", Vector3.UP, 0.7)
-	var pool := BeeAttackVisuals.ground_disc(self, _to + Vector3(0, 0.04, 0), puddle_radius, Color(COLOR, 0.55), false)
+	var pool := BeeAttackVisuals.ground_disc(self, _to + Vector3(0, 0.04, 0), puddle_radius, Color(color, 0.55), false)
 	pool.name = "EnergyPuddle"
 	var box := BoxShape3D.new()
 	box.size = Vector3(puddle_radius * 1.8, PUDDLE_HEIGHT, 1.0)

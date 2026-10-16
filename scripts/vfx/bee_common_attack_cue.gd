@@ -9,6 +9,8 @@ const RING_THICKNESS := 0.045
 const ANT_CROUCH_TILT := -0.37
 static func color_for(species: StringName) -> Color:
 	species = StringName(str(species).to_snake_case())
+	if species == &"robot":
+		return Color(1.0, 0.45, 0.15) # T7d: the walking robot pulses hot orange (cyan is for parasitic implants)
 	var style: StringName = {&"ant": &"pebble", &"ladybird": &"seed", &"stag_beetle": &"stone", &"worm_b": &"mud", &"fly_common": &"pellet", &"fly_cloud": &"pellet", &"snail": &"bubble", &"fly_green": &"acid", &"wasp": &"stinger", &"spider": &"web", &"mushroom_cannon": &"spore", &"turtle": &"bile"}.get(species, &"")
 	if BeeShotStyles.FACETED.COLORS.has(style):
 		return BeeShotStyles.FACETED.COLORS[style]

@@ -51,9 +51,25 @@ const JUMP_MIN_DISTANCE := 3.0
 const STRIDE_SPEED := 3.0
 const STRIDE_MAX_SECONDS := 4.0
 const MIN_TELEGRAPH := 0.42
+## T7d (Tanda D): two more attacks, each with its own 0.5 s pulse. BURST = three slower shots, each aimed at where Bee is as it leaves,
+## available even after the cannon is broken. HOP = a short quick jump towards Bee that lands with a smaller plasma wave.
+const BURST_TELEGRAPH := 0.5
+const BURST_SHOTS := 3
+const BURST_GAP := 0.22
+const BURST_SPEED := 6.5
+const BURST_DAMAGE := 4
+const HOP_TELEGRAPH := 0.5
+const HOP_SECONDS := 0.5
+const HOP_APEX := 1.5
+const HOP_MIN := 2.5
+const HOP_MAX := 4.5
+const HOP_DAMAGE := 6
+const HOP_WAVE_SPEED := 6.0
+const HOP_WAVE_HEIGHT := 0.9
+const PLASMA_SHELL := Color(1.0, 0.4, 0.15)
 ## Pattern while the cannon lives / after it broke (the cannon fires the burst and the mortars).
-const PATTERN := [&"cannon", &"mortars", &"stride", &"laser", &"jump", &"cannon", &"mortars", &"stride", &"laser", &"stomp"]
-const PATTERN_NO_CANNON := [&"stride", &"laser", &"jump", &"laser", &"stomp", &"stride", &"jump"]
+const PATTERN := [&"cannon", &"mortars", &"stride", &"burst", &"laser", &"jump", &"hop", &"cannon", &"mortars", &"stride", &"burst", &"laser", &"hop", &"stomp"]
+const PATTERN_NO_CANNON := [&"stride", &"burst", &"laser", &"hop", &"jump", &"burst", &"laser", &"stomp", &"stride", &"hop", &"jump"]
 const REST := 0.8
 const REST_NO_CANNON := 0.7
 const CANNON_HP := 110
@@ -62,10 +78,10 @@ const CANNON_CENTRE := Vector2(0.9, 2.72) # (forward, height) of the cannon box,
 const EYE_HEIGHT := 1.35
 const EYE_RADIUS := 0.42
 const EYE_MULTIPLIER := 2.0
-const ESCORT_RATIO := 0.6
-const ESCORT_FALLBACK := 14.0
+const ESCORT_RATIO := 0.5 ## T7d: the second escort call (two wasps) comes at the middle of the fight.
+const ESCORT_FALLBACK := 24.0
 ## Sustained damage budget on the body (fraction of max HP per second, reserve): Spread cannot melt it.
-const BODY_DPS_RATIO := 0.032
+const BODY_DPS_RATIO := 0.0195 ## T7d: was 0.032 (min. ~31 s at Base); now the fastest possible fight at Base is >= 45 s (see validate_bee_tanda_d_robot)
 const BODY_BURST := 30.0
 const FIRST_REST := 0.15 ## Rest after walking in, before the first attack.
 const EDGE_INSET := 1.6 ## The stride goes from one side to this far from the other edge.
@@ -92,6 +108,11 @@ var mortar_xs: Array[float] = [] # Columns of the last mortar volley (bot reads 
 var laser_origin := Vector3.ZERO
 var laser_angles := Vector2.ZERO # (from, to) radians of the sweep.
 var jump_to_x := 0.0
+var hop_to_x := 0.0
+var hops := 0
+var bursts := 0
+var burst_shots_fired := 0
+var _hop_from := 0.0
 var _step := &"enter"
 var _left := 0.0
 var _attack_index := 0
@@ -184,7 +205,7 @@ func _physics_process(delta: float) -> void:
 		return
 	fight_seconds += delta
 	_body_tokens = minf(BODY_BURST, _body_tokens + health.max_health * BODY_DPS_RATIO * delta)
-	if not (_step in [&"stride", &"jump_air", &"laser_sweep"]):
+	if not (_step in [&"stride", &"jump_air", &"hop_air", &"laser_sweep"]):
 		_face_target()
 	_place_weak_points()
 	if not escorts_called and fight_seconds >= ESCORT_FALLBACK and health.current_health > 0:
@@ -269,6 +290,40 @@ func _physics_process(delta: float) -> void:
 				_beam_box.set_enabled(false)
 				_beam.hide()
 				_rest(REST)
+		&"burst_tele":
+			if _left <= 0.0:
+				hazards.append({"kind": &"burst", "telegraph": BURST_TELEGRAPH})
+				bursts += 1
+				_step = &"burst_fire"
+				_shots_left = BURST_SHOTS
+				_left = 0.0
+				_play(&"Shoot")
+		&"burst_fire":
+			if _left <= 0.0 and _shots_left > 0:
+				_fire_burst_shot()
+				_shots_left -= 1
+				_left = BURST_GAP
+			elif _shots_left <= 0 and _left <= 0.0:
+				_rest(REST)
+		&"hop_tele":
+			visual_root.position.y = -0.2 * smoothstep(0.0, 1.0, 1.0 - _left / HOP_TELEGRAPH) # Crouches.
+			if _left <= 0.0:
+				visual_root.position.y = 0.0
+				hazards.append({"kind": &"hop", "telegraph": HOP_TELEGRAPH})
+				hops += 1
+				_hop_from = global_position.x
+				_step = &"hop_air"
+				_left = HOP_SECONDS
+				_play(&"Idle")
+				BeeAudio.play(get_parent(), &"human_step", global_position, 0.7)
+		&"hop_air":
+			var hop_t := clampf(1.0 - _left / HOP_SECONDS, 0.0, 1.0)
+			global_position.x = lerpf(_hop_from, hop_to_x, hop_t)
+			global_position.y = _ground_y + HOP_APEX * 4.0 * hop_t * (1.0 - hop_t)
+			if _left <= 0.0:
+				global_position.y = _ground_y
+				_hop_land()
+				_rest(REST)
 		&"jump_tele":
 			visual_root.position.y = -0.25 * smoothstep(0.0, 1.0, 1.0 - _left / JUMP_TELEGRAPH) # Crouches.
 			if _left <= 0.0:
@@ -292,11 +347,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _rest(seconds: float) -> void:
+	BeeCommonSlots.release(self)
 	_step = &"rest"
 	_left = seconds
 
 
 func _next_attack() -> void:
+	if not BeeCommonSlots.try_take(self):
+		_left = 0.35 # T7d: at most two attackers at once (the robot counts as one, its escorts as the rest).
+		return
 	BeeMusic.duck_for_explosion()
 	var pattern: Array = PATTERN if cannon_alive else PATTERN_NO_CANNON
 	var kind: StringName = pattern[_attack_index % pattern.size()]
@@ -304,6 +363,13 @@ func _next_attack() -> void:
 	attacks_started += 1
 	attack_kind = kind
 	match kind:
+		&"burst":
+			_step = &"burst_tele"
+			_left = BURST_TELEGRAPH
+			BeeShotWarning.volley(self, &"robot", visual_root, BURST_TELEGRAPH)
+			BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.1)
+		&"hop":
+			_begin_hop()
 		&"cannon":
 			_step = &"cannon_tele"
 			_left = CANNON_TELEGRAPH
@@ -370,6 +436,7 @@ func _drop_mortars() -> void:
 		shell.puddle_seconds = 0.6
 		shell.puddle_radius = 0.7
 		shell.flight_time = MORTAR_FALL
+		shell.color = PLASMA_SHELL
 		shell.apex = 0.0
 		get_parent().add_child(shell)
 		var marker: MeshInstance3D = _warnings[i * 2] if i * 2 < _warnings.size() else null
@@ -453,6 +520,7 @@ func _land() -> void:
 		shape.size = Vector3(2.2, 2.8, 1.2)
 		_land_box = BeeAttackVisuals.hazard_area(get_parent(), self, JUMP_DAMAGE, shape)
 		_land_box.top_level = true
+	_land_box.damage = JUMP_DAMAGE
 	_land_box.global_position = Vector3(global_position.x, 1.4, 0.0)
 	_land_box.set_enabled(true)
 	get_tree().create_timer(0.15, false, true).timeout.connect(func():
@@ -544,6 +612,7 @@ func _call_escorts() -> void:
 
 
 func _stop_attacks() -> void:
+	BeeCommonSlots.release(self)
 	_free_line(&"aim")
 	_free_line(&"stomp")
 	_clear_warnings()
@@ -559,6 +628,7 @@ func _stop_attacks() -> void:
 func _on_died() -> void:
 	if current_state == State.DEAD:
 		return
+	BeeCommonSlots.release(self)
 	_stop_attacks()
 	cannon_hurtbox.set_deferred("monitorable", false)
 	_bar_layer.visible = false
@@ -630,3 +700,52 @@ func limit_hull_damage(amount: int, source: DamageHitbox3D) -> int:
 	var permitted := mini(amount, floori(_body_tokens / cost_scale))
 	_body_tokens -= float(permitted) * cost_scale
 	return maxi(permitted, 0)
+
+
+# --- T7d: the two new attacks ---------------------------------------------------------------------------------------------------
+
+## One shot of the burst, aimed at Bee as it leaves (each of the three re-aims: standing still is not safe, a steady strafe is).
+func _fire_burst_shot() -> void:
+	var saved_damage := projectile_damage
+	var saved_speed := projectile_speed
+	projectile_damage = BURST_DAMAGE
+	projectile_speed = BURST_SPEED
+	_fire_projectile(_aim_direction())
+	projectile_damage = saved_damage
+	projectile_speed = saved_speed
+	burst_shots_fired += 1
+
+
+## Short quick jump towards Bee: it lands 2.5-4.5 m away (never off the frame).
+func _begin_hop() -> void:
+	_step = &"hop_tele"
+	_left = HOP_TELEGRAPH
+	var half := _half_width() - EDGE_INSET
+	var gap := target.global_position.x - global_position.x
+	var dir := signf(gap) if absf(gap) > 0.1 else _facing_x
+	hop_to_x = clampf(global_position.x + dir * clampf(absf(gap), HOP_MIN, HOP_MAX), _cam_x() - half, _cam_x() + half)
+	if absf(hop_to_x - global_position.x) < 1.0:
+		hop_to_x = clampf(global_position.x - dir * HOP_MIN, _cam_x() - half, _cam_x() + half)
+	BeeShotWarning.volley(self, &"robot", visual_root, HOP_TELEGRAPH)
+	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.7)
+
+
+func _hop_land() -> void:
+	if _land_box == null:
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(2.2, 2.8, 1.2)
+		_land_box = BeeAttackVisuals.hazard_area(get_parent(), self, HOP_DAMAGE, shape)
+		_land_box.top_level = true
+	_land_box.damage = HOP_DAMAGE
+	_land_box.global_position = Vector3(global_position.x, 1.4, 0.0)
+	_land_box.set_enabled(true)
+	get_tree().create_timer(0.15, false, true).timeout.connect(func():
+		if is_instance_valid(_land_box):
+			_land_box.set_enabled(false))
+	hazards.append({"kind": &"hop_wave", "telegraph": HOP_TELEGRAPH})
+	var half := _half_width()
+	for edge in [_cam_x() - half - 1.0, _cam_x() + half + 1.0]:
+		BeeGroundShockwave.launch(get_parent(), self, global_position.x, edge, HOP_DAMAGE, HOP_WAVE_SPEED, HOP_WAVE_HEIGHT)
+	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0, 0.2, 0.3), &"rock_break", Vector3.UP, 1.1)
+	BeeCameraShake.kick(self, 0.03, 0.18)
+	BeeAudio.play(get_parent(), &"human_step", global_position, 1.1)

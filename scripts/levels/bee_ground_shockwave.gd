@@ -4,7 +4,13 @@ extends Node3D
 ## roll never destroys it (the roll only makes Bee invulnerable for its 0.35 s); the only clean answer is to fly above it.
 ## The owner draws the warning line first (see `warning_band`) and spawns the wave when the warning is over.
 
-const COLOR := Color(0.3, 0.95, 1.0, 0.55)
+## T7c (Tanda D): hot PLASMA (orange at the foot, magenta at the crown) with a jagged edge. Cyan is reserved for the parasitic implants.
+const COLOR := Color(1.0, 0.42, 0.12, 0.62)
+const CROWN := Color(1.0, 0.18, 0.55, 0.62)
+const IMPACT_RING_RADIUS := 0.7 ## small ring where the wave is born
+const JAGGED := 0.32
+const SEGMENTS := 14
+const RINGS := 5
 const WARNING_COLOR := Color(1.0, 0.62, 0.2, 0.28)
 const GROUND_Y := 0.0
 
@@ -35,6 +41,7 @@ static func launch(parent: Node, attacker: Node, from_x: float, stop: float, dam
 	wave.hitbox.position = Vector3(0.0, wave_height * 0.5, 0.0)
 	wave.hitbox.set_enabled(true)
 	wave._build()
+	wave._impact_ring()
 	return wave
 
 
@@ -48,17 +55,63 @@ static func warning_band(parent: Node, from_x: float, to_x: float, band_height: 
 
 func _build() -> void:
 	_visual = MeshInstance3D.new()
-	var mesh := SphereMesh.new() # A low dome of dust and energy.
-	mesh.radius = 0.5
-	mesh.height = 1.0
-	mesh.is_hemisphere = true
-	mesh.radial_segments = 14
-	mesh.rings = 5
-	mesh.material = BeeAttackVisuals.material(COLOR)
-	_visual.mesh = mesh
+	_visual.mesh = _plasma_mesh()
 	_visual.scale = Vector3(width * 1.1, height, 0.9)
 	_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_visual)
+
+
+## A low jagged dome of plasma: a hemisphere whose rim and rings are pushed in and out by a fixed hash (irregular, identical every time).
+static func _plasma_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var grid: Array = []
+	for ring in RINGS + 1:
+		var lat := float(ring) / float(RINGS) * PI * 0.5
+		var row: Array = []
+		for seg in SEGMENTS:
+			var lon := float(seg) / float(SEGMENTS) * TAU
+			var jag := 1.0 + JAGGED * (_hash(ring, seg) - 0.5) * (0.6 + 0.4 * float(ring) / float(RINGS))
+			if ring == RINGS:
+				jag = 1.0 + JAGGED * 1.2 * _hash(ring, seg) # spiky crown
+			var r := 0.5 * cos(lat) * jag
+			row.append(Vector3(r * cos(lon), 0.5 * sin(lat) * jag, r * sin(lon)))
+		grid.append(row)
+	for ring in RINGS:
+		for seg in SEGMENTS:
+			var next := (seg + 1) % SEGMENTS
+			var a: Vector3 = grid[ring][seg]
+			var b: Vector3 = grid[ring][next]
+			var c: Vector3 = grid[ring + 1][next]
+			var d: Vector3 = grid[ring + 1][seg]
+			var low := COLOR.lerp(CROWN, float(ring) / float(RINGS))
+			var high := COLOR.lerp(CROWN, float(ring + 1) / float(RINGS))
+			for corner in [[a, low], [b, low], [c, high], [a, low], [c, high], [d, high]]:
+				tool.set_color(corner[1])
+				tool.add_vertex(corner[0])
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.vertex_color_use_as_albedo = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.render_priority = 40
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+static func _hash(a: int, b: int) -> float:
+	return fposmod(sin(float(a) * 12.9898 + float(b) * 78.233) * 43758.5453, 1.0)
+
+
+## Small hot ring on the soil where the wave is born (fades out).
+func _impact_ring() -> void:
+	var ring := BeeAttackVisuals.ring(get_parent(), Vector3(global_position.x, GROUND_Y + 0.05, 0.0), IMPACT_RING_RADIUS, 0.18, Color(COLOR, 0.8))
+	ring.rotation.x = 0.0
+	var fade := ring.create_tween()
+	fade.tween_property(ring, "scale", Vector3.ONE * 1.8, 0.35)
+	fade.tween_callback(ring.queue_free)
+
 
 
 func _physics_process(delta: float) -> void:
