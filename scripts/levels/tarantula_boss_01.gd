@@ -53,7 +53,8 @@ const CONTACT_DAMAGE := 8
 
 const MODEL_SCALE := 0.8
 const GROUND_Y := -0.1
-const CEILING_MARGIN := 0.15 # The feet grip this far above the visible top edge.
+const CEILING_MARGIN := 1.6 # T7b: reserve camera/HUD space inside the upper edge.
+const CEILING_POSE_ALLOWANCE := 0.65 # Raised/animated feet exceed the imported rest envelope.
 const ANCHOR_DX := 3.3 # |x| of a corner (camera-relative) for jumps and charges.
 const SCREEN_INSET := 2.2 # It never walks closer than this to a screen edge (camera-relative).
 const APPROACH_SECONDS := 3.0
@@ -236,6 +237,7 @@ var _hang_t := 0.0
 var _hang_rope := 0.0
 var _hang_fans: Array = []
 var _hang_line: MeshInstance3D
+var _visual_bounds := AABB()
 var _net_aim: MeshInstance3D
 var _follow_up := false
 var follow_ups := 0
@@ -341,7 +343,7 @@ func _half_width() -> float:
 
 
 func _ceiling_y() -> float:
-	return BeeLevel01Framing.top_y() + CEILING_MARGIN
+	return BeeLevel01Framing.top_y() - CEILING_MARGIN
 
 
 ## World offset of a model-space X (forward -X) on the current side (ground pose).
@@ -364,7 +366,15 @@ func _apply_pose() -> void:
 	if mode == &"hang":
 		roll = side * PI * 0.5 + _swing
 	visual_root.basis = _pose_basis(side, _flip if mode != &"hang" else 0.0, roll)
+	_keep_below_ceiling()
 	_place_areas()
+
+
+func _keep_below_ceiling() -> void:
+	if mode not in [&"ceiling", &"hang", &"hang_return"]: return
+	var posed := Transform3D(visual_root.basis, Vector3.ZERO) * _visual_bounds.grow(CEILING_POSE_ALLOWANCE)
+	var excess := global_position.y + posed.end.y - _ceiling_y()
+	if excess > 0.0: global_position.y -= excess
 
 
 func _face() -> void:
@@ -880,6 +890,7 @@ func _update_hang(delta: float) -> void:
 	_apply_pose()
 	global_position = tip - visual_root.basis * Vector3(ATTACH.x * MODEL_SCALE, ATTACH.y * MODEL_SCALE, 0.0)
 	_apply_pose()
+	tip = _world(ATTACH) # Clamp and the visible thread share the final pose.
 	_place_hazard_box()
 	if is_instance_valid(_hang_line):
 		BeeAttackVisuals.place_line(_hang_line, pivot + Vector3(0.0, 0.5, 0.0), tip)
@@ -1288,6 +1299,7 @@ func _build_visual() -> void:
 	model.scale = Vector3.ONE * MODEL_SCALE
 	visual_root.add_child(model)
 	BeeToonStyle.apply(visual_root, true, BeeToonStyle.OUTLINE_ACTOR)
+	_visual_bounds = AssetFauna._bounds(model, visual_root)
 	for mesh: Node3D in model.find_children("implant_*", "MeshInstance3D", true, false):
 		for plate in HIDDEN_PLATES:
 			if str(mesh.name).begins_with(plate):
