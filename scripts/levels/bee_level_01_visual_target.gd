@@ -205,7 +205,7 @@ func _flower_stem(base: Vector3, height: float, index: int) -> void:
 	_flower_count += 1
 	flower_head_count += 1
 	var center := base + Vector3(0, height, 0)
-	_add(_flower_face(radius), petals, center, tilt, Vector3.ONE, "FlowerHead%d" % index, true, true)
+	_add(_flower_face(radius), petals, center, tilt, Vector3.ONE, "FlowerHead%d" % index, true, false)
 	var core := SphereMesh.new()
 	core.radial_segments = 6
 	core.rings = 3
@@ -229,6 +229,16 @@ static func _flower_face(radius: float, petals := 8) -> ArrayMesh:
 		var tip := d * radius + Vector3(0, 0, radius * 0.13)
 		for v in [base, right, left, left, right, tip]:
 			st.add_vertex(v)
+		# Closed thin petals support the same inverted-hull outline as other props.
+		var back := Vector3(0, 0, -radius * 0.04)
+		for v in [base, left, right, left, tip, right]:
+			st.add_vertex(v + back)
+		var edge := [base, right, tip, left]
+		for i in 4:
+			var a0: Vector3 = edge[i]
+			var b0: Vector3 = edge[(i + 1) % 4]
+			for v in [a0, a0 + back, b0, b0, a0 + back, b0 + back]:
+				st.add_vertex(v)
 	st.generate_normals()
 	return st.commit()
 
@@ -408,7 +418,7 @@ func _flush_batches() -> void:
 ## VISUAL POLISH 02: the decoration uses the same style C toon shader as every actor and prop (3 light bands, rim, fine
 ## outline on closed solids) instead of the smooth StandardMaterial3D it had, so nothing in the level has another "look".
 ## No rim on the ground (it faces the camera at a grazing angle and would wash out); no outline on thin blades / petals.
-const OUTLINE_KEYS := ["pebble", "pebble_warm", "flower_core", "stem"]
+const OUTLINE_KEYS := ["pebble", "pebble_warm", "flower_core", "stem", "petal_yellow", "petal_cream", "petal_warm", "petal_pink", "petal_violet"]
 const NO_RIM_KEYS := ["mulch", "mulch_dark", "mulch_light", "leaf_fallen", "grass", "grass_yellow", "foreground", "far_green", "far_dark", "veil", "veil_dark"]
 
 
