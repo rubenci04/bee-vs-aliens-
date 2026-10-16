@@ -7,6 +7,7 @@ signal director_moment(id: StringName)
 ## LOTE 11: a unit was destroyed or freed (score / combo / hit stop, see BeeLevel01Juice) and an enemy took a hit (keeps the combo alive).
 signal unit_downed(unit: Node3D, liberated: bool)
 signal enemy_hit
+const PREBOSS_POWER_X := 283.0 # E73; before the Robot at X294, after checkpoint 2.
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
 const PROBE = preload("res://scenes/bee_prototype/alien_probe_ranged.tscn")
@@ -466,7 +467,7 @@ const EVENTS_ROSTER = [
 	{"at": 276.0, "act": 4, "label": "SOMBRA · AVISPA", "units": ["Wasp"], "y": [3.4]},
 	{"at": 278.2, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
 	{"at": 280.4, "act": 4, "label": "SOMBRA · ESCARABAJO Y AVISPA", "units": ["StagBeetle", "StagBeetle", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.2]},
-	{"at": 283.0, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
+	{"at": PREBOSS_POWER_X, "act": 4, "label": "POTENCIA · PREPARATE", "units": [], "moment": "preboss_power"},
 	{"at": 284.5, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Wasp", "Ant"], "delays": [0.0, 0.8, 1.3], "y": [3.4, 5.0, 0.0], "anthill": true},
 	{"at": 286.7, "act": 4, "label": "SOMBRA · AVISPA", "units": ["Wasp"], "y": [4.4]},
 	{"at": 288.9, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.8], "y": [3.0, 0.0], "anthill": true},

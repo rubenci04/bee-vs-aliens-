@@ -161,6 +161,8 @@ func _swap_toon_pickups() -> void:
 			old.free()
 			fresh.name = label
 			fresh.transform = where
+			if BeeLevel01Controller.roster_only and label == "PrebossPower":
+				fresh.position.x = BeeLevel01Controller.PREBOSS_POWER_X
 			parent.add_child(fresh)
 
 
