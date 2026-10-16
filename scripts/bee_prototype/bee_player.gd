@@ -125,6 +125,7 @@ var _aim_from_screen := false
 ## a movement key is a struggle (the trap reads `web_struggles`).
 var web_locked := false
 var web_struggles := 0
+var web_roll_presses := 0 ## T7i: rolls attempted while trapped; one frees her from the net
 var fire_trigger_count := 0 ## Taps + bursts started.
 var _stick_aim := Vector2.RIGHT
 var _roll_dash_left := 0.0
@@ -588,6 +589,9 @@ func _face_towards(dx: float) -> void:
 func start_roll() -> bool:
 	if sting_dash != null and sting_dash.active:
 		sting_dash.queued_roll = true
+		return false
+	if web_locked and not is_defeated:
+		web_roll_presses += 1 # T7i: the pirueta tears the trapping net (the trap reads this counter)
 		return false
 	if is_defeated or web_locked or not roll_enabled or is_rolling or _roll_cooldown_left > 0.0:
 		return false

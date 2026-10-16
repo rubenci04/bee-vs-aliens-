@@ -593,6 +593,8 @@ func _physics_process(delta: float) -> void:
 		boss.minions_alive = boss_minions().size() # BOSS V2: the saucer only summons when the field allows it.
 	if tarantula != null and is_instance_valid(tarantula):
 		tarantula.minions_alive = boss_minions().size()
+		tarantula.helper_spiders_alive = _helpers_alive("Spider")
+		tarantula.helper_wasps_alive = _helpers_alive("Wasp")
 	if not _arena.is_empty():
 		_update_arena(delta)
 		return
@@ -996,7 +998,10 @@ func _spawn(request: Dictionary) -> void:
 			unit.set("overload_enabled", true)
 		if roster_only:
 			# T6e: two kinds of wasp, alternating: the 1st, 3rd... is a SHOOTER (burst of 3, never dashes); the 2nd, 4th... a KAMIKAZE (0.5 s warning, then a locked ram).
-			if int(spawned_by_family.get("Wasp", 0)) % 2 == 1:
+			var shooter_wasp := int(spawned_by_family.get("Wasp", 0)) % 2 == 1
+			if request.has("variant"):
+				shooter_wasp = str(request["variant"]) == "shooter" # T7g: the tarantula's wasps are always kamikaze
+			if shooter_wasp:
 				unit.set("variant", &"shooter")
 				unit.set("sting_shots", 3)
 				unit.set("sting_fan_count", 0)
@@ -1027,6 +1032,13 @@ func _spawn(request: Dictionary) -> void:
 			max_alive_arena = maxi(max_alive_arena, alive_count())
 		else:
 			max_alive_route = maxi(max_alive_route, alive_count())
+	if bool(request.get("boss_helper", false)):
+		unit.set_meta("boss_helper", family) # T7f-T7g: the tarantula's spiders and wasps (outside the 2-minion budget)
+		if family == "Spider":
+			unit.call("activate", bee) # Already above the top edge: it comes down on its thread.
+			return
+		CinematicDepthEntry.begin_from(unit, request["launch_from"], request["launch_slot"], _on_depth_arrived.bind(unit.get_instance_id()), MINION_LAUNCH_SECONDS)
+		return
 	if bool(request.get("minion", false)):
 		unit.set_meta("boss_minion", true)
 		CinematicDepthEntry.begin_from(unit, request["launch_from"], request["launch_slot"], _on_depth_arrived.bind(unit.get_instance_id()), MINION_LAUNCH_SECONDS)
@@ -1369,6 +1381,9 @@ func _on_tarantula_phase(state: int) -> void:
 	if state == TarantulaBoss01.State.FREED:
 		for minion in boss_minions():
 			minion.get_node("HealthComponent").take_damage(99999) # Its flies are freed with it.
+		for helper in active_units.duplicate():
+			if is_instance_valid(helper) and helper.has_meta("boss_helper") and helper.has_node("HealthComponent"):
+				helper.get_node("HealthComponent").take_damage(99999) # T7f-T7g: its spiders and wasps too
 	if state == TarantulaBoss01.State.PHASE_1:
 		player_label = "" # The health bar takes over.
 
@@ -1449,6 +1464,9 @@ func boss_minions() -> Array[Node3D]:
 func _on_boss_summon(family: StringName, count: int) -> void:
 	if ((boss == null or not is_instance_valid(boss)) and not tarantula_active()) or _frozen:
 		return
+	if tarantula_active() and family in [&"Spider", &"Wasp"]:
+		_summon_tarantula_helpers(str(family), count)
+		return
 	# COMBAT VARIETY 01 (boss v2): minions come in from several points - above the screen, the left edge and the right
 	# edge - in rotation, each to a slot on its own side (camera-relative). They keep aimed bursts (no laser) under the boss.
 	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
@@ -1517,3 +1535,35 @@ static func level_hp(family: String, _roster_extra := true) -> int:
 	if roster_only and BeeGameSettings.ENEMY_HEALTH.COMMON_HP.has(family):
 		return int(BeeGameSettings.ENEMY_HEALTH.COMMON_HP[family])
 	return int(LEVEL_HP[family])
+
+
+# --- T7f-T7g (Tanda D): the tarantula's helpers ---------------------------------------------------------------------------------
+
+const TARANTULA_MAX_HELPER_SPIDERS := 5
+const TARANTULA_MAX_HELPER_WASPS := 3
+
+func _helpers_alive(family: String) -> int:
+	var total := 0
+	for unit in active_units:
+		if is_instance_valid(unit) and str(unit.get_meta("boss_helper", "")) == family and not (unit.has_method("is_defeated") and bool(unit.call("is_defeated"))):
+			total += 1
+	return total
+
+## SPIDER: BIG black spiders (the hanging spider of the roster) drop in by thread over the arena, spread across it; their web is warned
+## 0.5 s and the shared attack slots keep at most two of them (and the boss's other helpers) attacking at once.
+## WASP: kamikaze wasps enter from the RIGHT edge and settle at the right side before their warned ram.
+func _summon_tarantula_helpers(family: String, count: int) -> void:
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
+	var cap := TARANTULA_MAX_HELPER_SPIDERS if family == "Spider" else TARANTULA_MAX_HELPER_WASPS
+	count = mini(count, cap - _helpers_alive(family))
+	for i in count:
+		var request := {"family": family, "slot": i, "event": events_table().size() - 1, "hard": false, "boss_helper": true}
+		if family == "Spider":
+			request["x"] = lerpf(-half + 1.6, half - 1.6, (float(i) + 0.5) / float(count)) # camera-relative lane
+		else:
+			var y: float = [3.0, 4.6, 3.8][i % 3]
+			request["variant"] = "kamikaze"
+			request["y"] = y
+			request["launch_from"] = Vector3(half + 1.2, y, 0.0)
+			request["launch_slot"] = Vector2(half - 1.6 - 0.9 * float(i), y)
+		_spawn(request)

@@ -11,9 +11,10 @@ const SPEED := 7.5
 const LIFETIME := 2.6
 const HIT_RADIUS := 0.55
 const TRAP_SECONDS := 2.0
-const TEARS_NEEDED := 4 ## Normal; Easy needs one less.
+const TEARS_NEEDED := 3 ## T7i: 3 shot triggers frees her (was 4); Easy needs one less. A roll (pirueta) frees her at once.
+
 const STRUGGLES_NEEDED := 8 ## Normal; Easy needs two less.
-const GRACE_SECONDS := 1.5
+const GRACE_SECONDS := 1.0 ## T7i: was 1.5, so nets chain more often
 const SILK := Color(0.96, 0.96, 0.9, 0.9)
 
 var boss: Node
@@ -25,6 +26,7 @@ var freed_by := &"" # &"shots", &"struggle", &"time" (tests / report).
 var _life := 0.0
 var _tears_from := 0
 var _struggles_from := 0
+var _rolls_from := 0
 var _ball: Node3D
 
 
@@ -94,6 +96,7 @@ func _trap() -> void:
 	bee.web_locked = true
 	_tears_from = bee.fire_triggers()
 	_struggles_from = bee.web_struggles
+	_rolls_from = bee.web_roll_presses
 	_ball.scale = Vector3.ONE * 1.9
 	BeeAudio.play(get_parent(), &"spider_retract", global_position, 0.8)
 	if boss != null and is_instance_valid(boss) and boss.has_method("on_web_trapped"):
@@ -105,7 +108,8 @@ func progress() -> float:
 		return 0.0
 	var tears := float(bee.fire_triggers() - _tears_from) / float(tears_needed())
 	var tugs := float(bee.web_struggles - _struggles_from) / float(struggles_needed())
-	return tears + tugs
+	var rolls := float(bee.web_roll_presses - _rolls_from) # T7i: the pirueta tears the whole net
+	return tears + tugs + rolls
 
 
 func _hold(delta: float) -> void:
@@ -115,7 +119,10 @@ func _hold(delta: float) -> void:
 	_ball.scale = Vector3.ONE * lerpf(1.9, 0.9, clampf(done, 0.0, 1.0))
 	_ball.rotation.z = sin(trapped_seconds * 30.0) * 0.12 * float(bee.web_struggles - _struggles_from > 0)
 	if done >= 1.0:
-		freed_by = &"shots" if bee.fire_triggers() - _tears_from >= bee.web_struggles - _struggles_from else &"struggle"
+		if bee.web_roll_presses > _rolls_from:
+			freed_by = &"roll"
+		else:
+			freed_by = &"shots" if bee.fire_triggers() - _tears_from >= bee.web_struggles - _struggles_from else &"struggle"
 		release()
 	elif trapped_seconds >= TRAP_SECONDS or bee.is_defeated:
 		freed_by = &"time"

@@ -47,6 +47,8 @@ const PHASE_4_RATIO := 0.20
 const HULL_DPS_RATIO := 0.0095
 const EASY_HULL_DPS_RATIO := 0.009
 const HULL_BURST := 18.0
+## T7h (Tanda D): in FURY the budget is lower and an exposed implant gets NO discount, so phase 4 lasts >= 60 s at Base whatever the accuracy.
+const FURY_HULL_DPS_RATIO := 0.0027
 const BOMB_FRACTION := 0.08
 const MIN_TELEGRAPH := 0.42
 const CONTACT_DAMAGE := 8
@@ -79,9 +81,9 @@ const PHASE_TUNING := {
 ## The pattern of each phase. Moves that need the other surface insert a corner-to-corner JUMP first (see _start_attack).
 const PATTERNS := {
 	State.PHASE_1: [&"stalk", &"fan", &"net", &"stomp", &"stalk", &"fan", &"crawl", &"spiders", &"fan", &"net"],
-	State.PHASE_2: [&"crawl", &"spiders", &"hang", &"net", &"crawl", &"fan", &"hang", &"stalk", &"charge", &"fan"],
-	State.PHASE_3: [&"charge", &"net", &"crawl", &"hang", &"fan", &"stalk", &"charge", &"spiders", &"net", &"fan"],
-	State.PHASE_4: [&"jump_fan", &"charge_spiders", &"net", &"hang_fan", &"jump_fan", &"curtain", &"charge_spiders", &"fan"],
+	State.PHASE_2: [&"crawl", &"spiders", &"hang", &"net", &"crawl", &"fan", &"net", &"hang", &"stalk", &"charge", &"fan"],
+	State.PHASE_3: [&"charge", &"net", &"crawl", &"hang", &"net", &"fan", &"stalk", &"charge", &"spiders", &"net", &"fan"],
+	State.PHASE_4: [&"jump_fan", &"charge_spiders", &"net", &"rain", &"hang_fan", &"net", &"jump_fan", &"rain", &"curtain", &"charge_spiders", &"net", &"fan"],
 }
 const GROUND_MOVES := [&"stalk", &"stomp", &"charge", &"double_charge", &"charge_spiders"]
 const CEILING_MOVES := [&"crawl", &"hang", &"hang_fan"]
@@ -134,6 +136,24 @@ const SPIT_EVERY := 0.9 ## While it stalks or crawls it spits a single aimed web
 const SPIT_WARNING := 0.45 ## ...after the mouth glows this long.
 const EXPOSE_SECONDS := 1.8
 const EXPOSE_MULTIPLIER := 2.0
+## T7f-T7g (Tanda D): phase 2 and 4 send BIG black spiders down on threads (3 / 5 per wave, cap on attackers = BeeCommonSlots); phase 3 sends 2-3
+## kamikaze wasps from the right every 15 s. The director spawns them (summon_requested).
+const SPIDER_WAVE_SIZE := {State.PHASE_2: 3, State.PHASE_4: 5}
+const SPIDER_WAVE_EVERY := 18.0
+const SPIDER_WAVE_FIRST := 2.5
+const WASP_EVERY := 15.0
+const WASP_FIRST := 2.0
+const WASP_MAX_ALIVE := 3
+## T7h: web rain (fury): three impact spots, at most RAIN_MAX_AT_ONCE live at once, each marked by a small ring.
+const RAIN_SPOTS := 3
+const RAIN_SPACING := 2.6
+const RAIN_WARNING := 0.6
+const RAIN_FALL := 0.45
+const RAIN_DAMAGE := 6
+const RAIN_PUDDLE_DAMAGE := 3
+const RAIN_MAX_AT_ONCE := 2
+const RAIN_RING := 0.8
+const RAIN_COLOR := Color(0.96, 0.96, 0.9)
 const SUMMON_COOLDOWN := 14.0
 const MAX_SUMMONS := 2 # Fly calls in phase 2.
 const RNG_SEED := 1207
@@ -174,6 +194,20 @@ var threads := 0
 var charges := 0
 var curtains := 0
 var spiders_dropped := 0
+var helper_spiders_alive := 0 # Written by the level director.
+var helper_wasps_alive := 0 # Written by the level director.
+var spider_waves := 0
+var spiders_requested := 0
+var wasp_calls := 0
+var wasps_requested := 0
+var rains := 0
+var rain_spots_started := 0
+var rain_max_active := 0
+var _spider_timer := 0.0
+var _spider_wave_state := -1
+var _wasp_timer := 0.0
+var _rain: Array[Dictionary] = []
+var _rain_clock := 0.0
 var exposures := 0
 var exposed_damage := 0
 var legs_absorbed := 0
@@ -408,7 +442,7 @@ func _clamp_x(x: float) -> float:
 
 func _physics_process(delta: float) -> void:
 	var easy := BeeGameSettings.difficulty == BeeGameSettings.EASY
-	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (EASY_HULL_DPS_RATIO if easy else HULL_DPS_RATIO) * delta)
+	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (FURY_HULL_DPS_RATIO if state == State.PHASE_4 else (EASY_HULL_DPS_RATIO if easy else HULL_DPS_RATIO)) * delta)
 	_web_immune_left = maxf(0.0, _web_immune_left - delta)
 	_state_time += delta
 	if _hang_return_left > 0.0 and not is_defeated():
@@ -466,10 +500,13 @@ func _change_state(value: int) -> void:
 		_pattern_index = 0 # Every phase opens with its signature move.
 		if value == State.PHASE_2:
 			_armour_legs()
+			_spider_timer = SPIDER_WAVE_FIRST
 		elif value == State.PHASE_3:
 			_drop_honey() # Half of the fight: a honey jar between phases.
+			_wasp_timer = WASP_FIRST
 		elif value == State.PHASE_4:
 			_enter_fury()
+			_spider_timer = SPIDER_WAVE_FIRST
 	_update_phase_label()
 	phase_changed.emit(state)
 
@@ -512,6 +549,7 @@ func _attack(delta: float) -> void:
 	attack_left = maxf(_left, 0.0)
 	if state in [State.PHASE_2, State.PHASE_3, State.PHASE_4]:
 		_summon_left -= delta
+	_update_helpers(delta)
 	match _step:
 		&"cooldown":
 			attack_kind = &"none"
@@ -631,6 +669,8 @@ func _attack(delta: float) -> void:
 				else:
 					BeeCombatVFX.spawn(get_parent(), _world(BODY_CENTRE), &"rock_break", Vector3.DOWN, 1.4)
 				_end_attack(0.1)
+		&"rain_run":
+			_update_rain(delta)
 		&"hang_tele":
 			if _left <= 0.0:
 				_clear_warnings()
@@ -723,6 +763,8 @@ func _start_attack() -> void:
 			_begin_jump(kind == &"jump_fan")
 		&"hang", &"hang_fan":
 			_begin_hang(kind == &"hang_fan")
+		&"rain":
+			_begin_rain()
 
 
 func _end_attack(extra := 0.0) -> void:
@@ -792,6 +834,8 @@ func _stamp(telegraph: float) -> void:
 
 
 func _drop_spiders() -> void:
+	if state in SPIDER_WAVE_SIZE:
+		return # T7f: phases 2 and 4 send the BIG black spiders instead (see _update_helpers).
 	var count := int(SPIDERS_BY_PHASE.get(state, 2))
 	var half := _half_width()
 	var top := BeeLevel01Framing.top_y() + 0.6
@@ -1133,7 +1177,6 @@ func _armour_legs() -> void:
 	legs_armoured = true
 	legs_hurtbox.health_component = _armour_health
 	legs_hurtbox.set_meta("neutral_hit", true)
-	_boss_hint("PATAS BLINDADAS: APUNTÁ AL IMPLANTE")
 
 
 func _on_armour_hit(_current: int, _maximum: int, change: int) -> void:
@@ -1176,6 +1219,7 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 
 
 func _cancel_attack() -> void:
+	_rain.clear()
 	_clear_warnings()
 	_mouth_glow.scale = Vector3.ONE * 0.01
 	_tilt = 0.0
@@ -1244,7 +1288,7 @@ func limit_hull_damage(amount: int, source: DamageHitbox3D) -> int:
 		return 0
 	var weak := implant_hurtbox.last_hit_weak
 	implant_hurtbox.last_hit_weak = false
-	var cost_scale := 1.0 / EXPOSE_MULTIPLIER if weak else 1.0
+	var cost_scale := 1.0 / EXPOSE_MULTIPLIER if (weak and state != State.PHASE_4) else 1.0 # T7h: no exposure discount in fury
 	var permitted := mini(amount, floori(_hull_tokens / cost_scale))
 	_hull_tokens -= float(permitted) * cost_scale
 	return maxi(permitted, 0)
@@ -1499,3 +1543,85 @@ func _update_spit(delta: float) -> void:
 		origin.z = 0.0
 		_spawn_web(origin, (target.global_position - origin).normalized(), FAN_SPEED)
 		_mouth_glow.scale = Vector3.ONE * 0.01
+
+
+# --- T7f-T7h: helpers (black spiders, kamikaze wasps) and the web rain ----------------------------------------------------------
+
+## Timers for the helpers the director spawns. A new black-spider wave waits until the previous one is gone.
+func _update_helpers(delta: float) -> void:
+	if state in SPIDER_WAVE_SIZE:
+		_spider_timer -= delta
+		if _spider_timer <= 0.0 and (helper_spiders_alive == 0 or _spider_wave_state != state) and state != State.TRANSITION:
+			_spider_wave_state = state # (a new phase sends its wave even if some spiders of the last one are still hanging; the director caps the total at 5)
+			_spider_timer = SPIDER_WAVE_EVERY
+			var count: int = SPIDER_WAVE_SIZE[state]
+			spider_waves += 1
+			spiders_requested += count
+			summon_requested.emit(&"Spider", count)
+			BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 0.7)
+	if state == State.PHASE_3:
+		_wasp_timer -= delta
+		if _wasp_timer <= 0.0 and helper_wasps_alive < WASP_MAX_ALIVE:
+			_wasp_timer = WASP_EVERY
+			var wasps := 2 + (wasp_calls % 2) # 2, 3, 2, 3...
+			wasps = mini(wasps, WASP_MAX_ALIVE - helper_wasps_alive)
+			wasp_calls += 1
+			wasps_requested += wasps
+			summon_requested.emit(&"Wasp", wasps)
+			BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.2)
+
+
+## WEB RAIN: three impact spots (Bee's column and one on each side). Two are marked and fall together; the third waits until they have
+## landed, so at most RAIN_MAX_AT_ONCE are ever live. Each spot is a SMALL ground ring for RAIN_WARNING s, then a web blob falls on it.
+func _begin_rain() -> void:
+	rains += 1
+	_step = &"rain_run"
+	_left = RAIN_WARNING
+	_rain_clock = 0.0
+	_rain.clear()
+	var half := _half_width() - 0.8
+	var flip := 1.0 if _rng.randf() < 0.5 else -1.0
+	var xs := [target.global_position.x, target.global_position.x + flip * RAIN_SPACING, target.global_position.x - flip * RAIN_SPACING]
+	var third := RAIN_WARNING + RAIN_FALL + 0.05
+	for i in RAIN_SPOTS:
+		_rain.append({"x": clampf(xs[i], _cam_x() - half, _cam_x() + half), "start": 0.0 if i < 2 else third, "marked": false, "fired": false, "land": 0.0})
+	BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 1.0)
+
+
+func _update_rain(delta: float) -> void:
+	_rain_clock += delta
+	var live := 0
+	var all_done := true
+	for spot in _rain:
+		if not spot.marked and _rain_clock >= spot.start:
+			spot.marked = true
+			rain_spots_started += 1
+			hazards.append({"kind": &"web_rain", "telegraph": RAIN_WARNING})
+			var ring := BeeAttackVisuals.ring(get_parent(), Vector3(spot.x, 0.05, 0.0), RAIN_RING, 0.16, Color(RAIN_COLOR, 0.8))
+			ring.rotation.x = 0.0
+			spot["ring"] = ring
+			_warnings.append(ring)
+		if spot.marked and not spot.fired and _rain_clock >= spot.start + RAIN_WARNING:
+			spot.fired = true
+			spot.land = _rain_clock + RAIN_FALL
+			var shell := AlienMortarShell.new()
+			shell.name = "WebRain"
+			shell.attacker = self
+			shell.damage = RAIN_DAMAGE
+			shell.puddle_damage = RAIN_PUDDLE_DAMAGE
+			shell.puddle_seconds = 0.5
+			shell.puddle_radius = 0.8
+			shell.flight_time = RAIN_FALL
+			shell.apex = 0.0
+			shell.color = RAIN_COLOR
+			shell.add_to_group("tarantula_hazards")
+			get_parent().add_child(shell)
+			shell.launch(Vector3(spot.x, BeeLevel01Framing.top_y() + 1.0, 0.0), Vector3(spot.x, 0.0, 0.0), spot.get("ring"))
+		if spot.marked and (not spot.fired or _rain_clock < spot.land):
+			live += 1
+		if not spot.fired or _rain_clock < spot.land + 0.25:
+			all_done = false
+	rain_max_active = maxi(rain_max_active, live)
+	if all_done:
+		_warnings.clear() # The shells own their rings.
+		_end_attack(0.2)
