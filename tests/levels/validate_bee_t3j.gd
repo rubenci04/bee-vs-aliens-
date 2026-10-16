@@ -22,6 +22,7 @@ func run() -> void:
 	for family in ["Ant", "FlyCommon", "FlyGreen", "Ladybird", "StagBeetle", "Snail", "WormB", "MushroomCannon", "WormA"]:
 		stage.wave._spawn({"family":family, "slot":0, "event":0, "hard":false})
 		var enemy := stage.wave.active_units.back() as AssetFauna
+		for frame in 75: await physics_frame
 		enemy.global_position = Vector3(113, 0 if enemy.is_ground() else 4, 0)
 		enemy.set_physics_process(false)
 		var collider := enemy.attack_hitbox.get_node("CollisionShape3D") as CollisionShape3D

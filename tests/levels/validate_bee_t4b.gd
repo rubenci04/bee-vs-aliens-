@@ -24,6 +24,7 @@ func run() -> void:
 	bee.global_position = Vector3(23,4,0)
 	stage.wave._spawn({"family":"Wasp","slot":0,"event":0,"hard":false})
 	var wasp := stage.wave.active_units.back() as WaspEnemy
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(wasp)
 	wasp.global_position = Vector3(24.8,4.5,0)
 	wasp.set_physics_process(false)
 	wasp.health.max_health = 200
@@ -68,11 +69,11 @@ func run() -> void:
 	stage.wave._spawn({"family":"Ant","slot":0,"event":0,"hard":false,"anthill":true,"y":4})
 	var ant := stage.wave.active_units.back() as AssetFauna
 	var initial_y := ant.global_position.y
-	check(ant.get_meta("anthill_entry",false) and not ant.is_active(), "Ant emerges visibly but is not active above ground")
+	check(ant.get_meta("teleporting",false) and not ant.is_active(), "Ant has a real arrival and stays inactive during the mark")
 	var last_y := initial_y
-	for i in 72:
+	for i in 75:
 		await physics_frame
-		check(ant.global_position.y <= last_y+.02, "Ant descends from mouth, never hops upward")
+		check(ant.global_position.y <= last_y+.02, "Ground arrival never hops upward")
 		last_y = ant.global_position.y
 	check(is_equal_approx(ant.global_position.y,BeeLevel01Anthills.GROUND_Y) and ant.is_active(), "Ant finishes anchored to soil despite authored y=4")
 	print("T4B_OK failures=",failures," reach=",bee.melee_reach())

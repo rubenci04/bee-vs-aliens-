@@ -702,7 +702,7 @@ func _attack(delta: float, _camera_x: float) -> void:
 		_left = recovery_time if mode != &"charge" else 1.4
 		if mode == &"burrow":
 			_left = float(config["exposed"]) # Surfaced and vulnerable for this long, then it digs back in.
-		if cycles_done >= max_cycles:
+		if cycles_done >= max_cycles and not bool(get_meta("level_persistent",false)):
 			state = State.EXIT
 
 
@@ -1046,7 +1046,7 @@ func _leaper_leap(delta: float) -> void:
 		cycles_done += 1
 		state = State.RECOVER
 		_left = recovery_time + 0.6
-		if cycles_done >= max_cycles:
+		if cycles_done >= max_cycles and not bool(get_meta("level_persistent",false)):
 			state = State.EXIT
 
 

@@ -31,6 +31,7 @@ func run() -> void:
 	check(juice.combo == after_cannon, "Cannon and hull share the boss damage throttle")
 	wave._spawn({"family":"FlyCommon", "slot":0, "event":0, "hard":false})
 	var common: Node = wave.active_units.back()
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(common)
 	common.set_physics_process(false)
 	var hp := common.get_node("HealthComponent") as HealthComponent
 	hp.max_health = 6

@@ -93,6 +93,7 @@ func run() -> void:
 	check(hurt.receive_hit(configured.hitbox) == 3 and int(victim.get_node("HealthComponent").current_health) == before_hp - 3, "Explicit profile overrides historical 10-damage floor without changing enemy HP")
 	stage.wave._spawn({"family": "FlyCommon", "slot": 0, "event": 904, "hard": false})
 	var fly := stage.wave.active_units.back() as Node3D
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(fly)
 	fly.set_physics_process(false)
 	var fly_health := fly.get_node("HealthComponent") as HealthComponent
 	var fly_hp := int(BeeGameSettings.ENEMY_HEALTH.COMMON_HP["FlyCommon"])

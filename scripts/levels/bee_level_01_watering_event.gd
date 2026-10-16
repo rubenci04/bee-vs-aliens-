@@ -1,5 +1,6 @@
 class_name BeeLevel01WateringEvent
 extends Node3D
+## Tanda B converts the old cyan columns into real arrivals. Legacy helpers remain for isolated fixtures.
 ## LOTE 11 · C5 — "la regadera": the giant watering can of act 2 (X=127) empties over the garden. Columns of water fall
 ## straight down with a 1 s warning (a pulsing mark on the ground + a faint column), do moderate damage and are easy to
 ## sidestep. Played once, from the director moment `watering_can` (EVENTS, X=128); no gate, the scroll never stops.
@@ -76,10 +77,11 @@ func _half() -> float:
 
 
 func _spawn_wave(lanes: Array) -> void:
+	var director := stage.wave
 	for lane in lanes:
-		var x := stage.camera.global_position.x + float(LANES[int(lane)]) * _half()
-		_spawn_column(x)
-
+		# The former empty rays now deliver enemies using the common arrival pipeline.
+		director._queue_units({"units":["FlyCommon"],"y":[2.4+float(lane)*0.7],"no_companions":true},-128,columns_spawned)
+		columns_spawned += 1
 
 func _spawn_column(x: float) -> void:
 	var mark := BeeAttackVisuals.ground_disc(self, Vector3(x, GROUND_Y, 0.0), COLUMN_WIDTH * 1.1, WARNING_COLOR)

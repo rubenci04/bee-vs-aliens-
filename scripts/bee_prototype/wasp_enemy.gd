@@ -232,7 +232,8 @@ func _physics_process(delta: float) -> void:
 			velocity = _kamikaze_dir * overload_speed
 			_kamikaze_left -= delta
 			if _kamikaze_left <= 0.0 or not BeeShmupFairness.is_on_screen(self, 1.0):
-				_explode(true)
+				if bool(get_meta("level_persistent",false)): _begin_recovery()
+				else: _explode(true)
 				return
 	move_and_slide()
 	position.z = 0.0
@@ -368,7 +369,7 @@ func _begin_dash() -> void:
 
 
 func _finish_recovery() -> void:
-	if arcade_mode and passes_done < max_passes:
+	if arcade_mode and (passes_done < max_passes or bool(get_meta("level_persistent",false))):
 		_begin_stalk(restalk_time)
 	elif arcade_mode:
 		current_state = State.EXIT

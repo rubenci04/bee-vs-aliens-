@@ -36,6 +36,7 @@ func run() -> void:
 			var wave := stage.wave as BeeLevel01Controller
 			wave._spawn({"family": family, "slot": 0, "event": 0, "hard": false, "y": 3.0})
 			var unit: Node3D = wave.active_units.back()
+			for frame in 75: await physics_frame
 			unit.set_physics_process(false)
 			var hurt: DamageHurtbox3D
 			if unit is AssetFauna:

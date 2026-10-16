@@ -100,7 +100,8 @@ func activate(new_target: BeePlayer) -> bool:
 	var camera := get_viewport().get_camera_3d()
 	_rel_x = global_position.x - (camera.global_position.x if camera != null else 0.0)
 	_goal_rel_x = _rel_x
-	global_position.y = BeeLevel01Framing.top_y() + 1.6 # Above the top edge: the thread is seen first.
+	if not bool(get_meta("level_persistent",false)):
+		global_position.y = BeeLevel01Framing.top_y() + 1.6 # Legacy drop-in; persistent waves materialize inside their beam.
 	_from_y = global_position.y
 	hang_height = minf(hang_height, BeeLevel01Framing.max_entity_y() - 0.4)
 	show()
@@ -182,7 +183,7 @@ func _physics_process(delta: float) -> void:
 			y = lerpf(lock_y, hang_height, ease(t, 0.5))
 			if _state_left <= 0.0:
 				attack_count += 1
-				if attack_count >= attacks and not bool(get_meta("level_hard", false)):
+				if attack_count >= attacks and not bool(get_meta("level_hard", false)) and not bool(get_meta("level_persistent",false)):
 					_from_y = hang_height
 					_enter(State.EXIT, exit_seconds)
 				else:

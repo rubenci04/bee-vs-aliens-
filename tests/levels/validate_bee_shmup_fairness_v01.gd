@@ -29,6 +29,7 @@ func frames(count: int) -> void:
 func spawn(family: String, x: float, y: float) -> Node3D:
 	wave._spawn({"family": family, "slot": 0, "event": 0, "hard": false})
 	var unit: Node3D = wave.active_units.back()
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(unit)
 	unit.global_position = Vector3(x, y, 0)
 	unit.set_physics_process(false) # Direct fire calls below; the playtest re-enables AI.
 	return unit
@@ -186,6 +187,7 @@ func run() -> void:
 	for spec in [["Probe", 3.5, 4.4], ["EyeDrone", 4.5, 3.0], ["Turret", 3.4, 0.0], ["Walker", 4.8, 0.0]]:
 		wave._spawn({"family": spec[0], "slot": 0, "event": 0, "hard": false})
 		var unit: Node3D = wave.active_units.back()
+		preload("res://tests/levels/bee_teleport_fixture.gd").finish(unit)
 		if spec[0] == "Turret" or spec[0] == "Walker":
 			unit.global_position = Vector3(camera_x + spec[1], spec[2], 0)
 		else:

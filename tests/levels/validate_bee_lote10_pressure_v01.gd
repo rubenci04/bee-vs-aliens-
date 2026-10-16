@@ -28,6 +28,7 @@ func run() -> void:
 	bee.global_position = Vector3(0, 4, 0)
 	wave._spawn({"family": "Ladybird", "event": 0, "slot": 0, "hard": false})
 	var unit := wave.active_units.back() as AssetFauna
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(unit)
 	unit.set_physics_process(false)
 	unit.global_position = Vector3(4, 4, 0)
 	var gun := unit.get_child(unit.get_child_count() - 1) as BeeImplantShooter

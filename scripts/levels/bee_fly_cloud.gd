@@ -35,6 +35,8 @@ var population := 0
 var visible_limit := S.VISIBLE_LIMIT
 var dives_started := 0
 var _next_dive := S.FIRST_DIVE_SECONDS
+var _next_volley := S.VOLLEY_SECONDS
+var volleys := 0
 var _seed := 0.0
 var _last_batch := 0
 
@@ -68,11 +70,11 @@ func _ready() -> void:
 	set_physics_process(false)
 
 func configure_population(count: int, stress_visible := 0) -> void:
-	# Only the development benchmark may raise the visible limit; exported builds stay at 24.
+	# Only a development benchmark may raise the visible limit; game groups stay at five.
 	visible_limit = S.VISIBLE_LIMIT
 	if stress_visible > 0 and OS.is_debug_build() and not OS.has_feature("standalone"):
 		visible_limit = clampi(stress_visible,1,60)
-	population = maxi(1,count)
+	population = clampi(count,1,S.VISIBLE_LIMIT) if stress_visible <= 0 else maxi(1,count)
 	health.max_health = population
 	health.current_health = population
 	reserve = population
@@ -145,8 +147,9 @@ func _spawn_member(index: int) -> void:
 
 func _formation(index: int) -> Vector3:
 	var fly := members[index]
-	var radius := sqrt((index+0.5)/float(members.size()))
-	return Vector3(cos(fly.phase)*radius*S.SPREAD.x+0.10*sin(_clock*3+fly.phase),sin(fly.phase)*radius*S.SPREAD.y+0.12*cos(_clock*4+fly.phase),0)
+	var rank := (index+1)/2
+	var side := -1.0 if index%2 == 1 else 1.0
+	return Vector3(float(rank)*S.FORMATION_STEP.x,side*float(rank)*S.FORMATION_STEP.y+S.FORMATION_BOB*sin(_clock*S.FORMATION_BOB_RATE),0)
 
 func _physics_process(delta: float) -> void:
 	_clock += delta
@@ -156,8 +159,11 @@ func _physics_process(delta: float) -> void:
 			state = State.EXIT
 			global_position.x -= 6.0*delta
 		else:
-			var goal := Vector3(target.global_position.x+S.HOVER_OFFSET+0.65*sin(_seed),clampf(target.global_position.y+0.5*sin(_seed),1.7,5.3),0)
+			var lane := int(get_meta("group_lane",0))
+			var goal := Vector3(target.global_position.x+S.HOVER_OFFSET+float(lane)*S.GROUP_LANE_X,clampf(target.global_position.y+(-S.GROUP_LANE_Y if lane == 0 else S.GROUP_LANE_Y),S.HOVER_MIN_Y,BeeLevel01Framing.max_entity_y()-S.FORMATION_TOP_MARGIN),0)
 			global_position = global_position.move_toward(goal,S.HOVER_SPEED*delta)
+			_next_volley -= delta
+			if _next_volley <= 0: _volley()
 			_next_dive -= delta
 			if _next_dive <= 0: _start_telegraph()
 	var camera := get_viewport().get_camera_3d()
@@ -301,3 +307,22 @@ func _on_died() -> void:
 
 func _exit_tree() -> void:
 	BeeAttackTokens.release(self)
+
+func _volley() -> void:
+	_next_volley = S.VOLLEY_SECONDS
+	if not BeeShmupFairness.can_fire(self): return
+	var count := 0
+	for fly in members:
+		if not fly.node.alive: continue
+		var aim := (target.global_position-fly.node.global_position).normalized()
+		BeeEnemyPatterns.spawn_styled(get_parent(),PROJECTILE,fly.node.global_position,aim,S.SHOT_DAMAGE,S.SHOT_SPEED,self,&"pellet")
+		shots_fired += 1
+		count += 1
+	if count > 0: volleys += 1
+
+func _cancel_attack() -> void:
+	BeeAttackTokens.release(self)
+	for fly in members:
+		_set_attack(fly,false)
+		if fly.node.alive: fly.mode = Flight.FORMATION
+	_next_dive = S.DIVE_INTERVAL

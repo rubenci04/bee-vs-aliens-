@@ -1,0 +1,98 @@
+extends SceneTree
+## Rendered T6d benchmark: real factory, two late groups, same frozen garden as the baseline.
+const SIZE := Vector2i(1154,648)
+const VISIBLE_FLIES := 10
+const WARMUP_SECONDS := 3.0
+const SAMPLE_SECONDS := 5.0
+var stage: BeeShmupStage
+var variant := "groups"
+var actors: Array[Node3D] = []
+
+func _initialize() -> void: call_deferred("run")
+func frames(n: int) -> void:
+	for i in n: await process_frame
+
+func census(host: Node) -> Dictionary:
+	var data := {"nodes":0,"scripts":0,"active_script_callbacks":0,"areas":0,"enabled_shapes":0,"meshes":0,"multimeshes":0,"shadow_meshes":0,"transparent_surfaces":0,"lights":0,"animation_players":0,"fly_roots":0}
+	var pending: Array[Node] = [host]
+	while not pending.is_empty():
+		var node: Node = pending.pop_back()
+		data.nodes += 1
+		if node.get_script() != null:
+			data.scripts += 1
+			if node.is_processing() or node.is_physics_processing(): data.active_script_callbacks += 1
+		if node is Area3D: data.areas += 1
+		if node is CollisionShape3D and not node.disabled: data.enabled_shapes += 1
+		if node is Light3D: data.lights += 1
+		if node is AnimationPlayer: data.animation_players += 1
+		if node is MultiMeshInstance3D: data.multimeshes += 1
+		if str(node.name).begins_with("Fly_"): data.fly_roots += 1
+		if node is MeshInstance3D:
+			data.meshes += 1
+			if node.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF: data.shadow_meshes += 1
+			if node.mesh != null:
+				for surface in node.mesh.get_surface_count():
+					var mat: Material = node.get_active_material(surface)
+					if mat is BaseMaterial3D and mat.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED: data.transparent_surfaces += 1
+					if mat is ShaderMaterial and mat.shader.code.contains("ALPHA ="): data.transparent_surfaces += 1
+		for child in node.get_children(): pending.append(child)
+	return data
+
+func sample() -> Dictionary:
+	var start := Time.get_ticks_usec()
+	var previous := start
+	var milliseconds: Array[float] = []
+	var windows: Array[float] = []
+	var window_start := start
+	var window_frames := 0
+	while Time.get_ticks_usec()-start < SAMPLE_SECONDS*1000000.0:
+		await process_frame
+		var now := Time.get_ticks_usec()
+		milliseconds.append((now-previous)/1000.0)
+		window_frames += 1
+		if now-window_start >= 1000000:
+			windows.append(window_frames*1000000.0/(now-window_start))
+			window_start = now
+			window_frames = 0
+		previous = now
+	var elapsed := (Time.get_ticks_usec()-start)/1000000.0
+	milliseconds.sort()
+	return {"fps":milliseconds.size()/elapsed,"fps_min_1s":windows.min(),"frame_ms_p95":milliseconds[int(milliseconds.size()*0.95)],"frame_ms_p99":milliseconds[int(milliseconds.size()*0.99)],"frames":milliseconds.size(),"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)}
+
+func run() -> void:
+	if DisplayServer.get_name() == "headless":
+		push_error("Run this benchmark with Compatibility rendering, without --headless or --fixed-fps")
+		quit(1)
+		return
+	root.size = SIZE
+	Engine.max_fps = 0
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	stage = preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate()
+	root.add_child(stage)
+	current_scene = stage
+	await frames(5)
+	stage.set_physics_process(false)
+	stage.wave.set_physics_process(false)
+	stage.get_node("CheckpointQoL").set_process(false)
+	stage.get_node("Juice").set_process(false)
+	stage.get_node("LightProgression").set_process(false)
+	stage.distance = 138
+	stage._update_camera_and_bounds()
+	stage.get_node("LightProgression").apply_distance(138)
+	stage.bee.global_position = Vector3(134,3,0)
+	stage.bee.set_physics_process(false)
+	stage.bee.health.damage_blocked = true
+	var empty := await sample()
+	stage.distance = 240 # Factory uses five members; keep the same camera / background.
+	for i in 2:
+		stage.wave._spawn({"family":"FlyCloud","event":606,"slot":i,"hard":false})
+		actors.append(stage.wave.active_units.back())
+	await create_timer(WARMUP_SECONDS).timeout
+	var samples: Array[Dictionary] = []
+	for i in 3: samples.append(await sample())
+	var result := {"variant":variant,"clouds":actors.size(),"visible_flies":VISIBLE_FLIES,"resolution":[SIZE.x,SIZE.y],"renderer":RenderingServer.get_current_rendering_method(),"device":RenderingServer.get_video_adapter_name(),"empty":empty,"census":census(actors[0]),"samples":samples,"headless":false}
+	FileAccess.open("res://dev/tanda_b_benchmark_after_groups.json",FileAccess.WRITE).store_string(JSON.stringify(result,"\t"))
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://dev/tanda_b_after_groups.png")
+	print("T6D_BENCHMARK ",JSON.stringify(result))
+	quit()

@@ -184,7 +184,7 @@ func _physics_process(delta: float) -> void:
 		State.RECOVERY:
 			_tick_to(State.REPOSITION, 0.0, delta)
 		State.REPOSITION:
-			if passes_done >= max_passes:
+			if passes_done >= max_passes and not bool(get_meta("level_persistent",false)):
 				_begin(State.EXIT, 0.0)
 			else:
 				var lifted := hover + Vector3(0.0, 0.8, 0.0)

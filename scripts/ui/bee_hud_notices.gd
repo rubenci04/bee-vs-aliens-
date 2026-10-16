@@ -57,6 +57,18 @@ func show_notice(text: String, seconds: float, kind := "notice", small := false)
 	else:
 		pending.append(item)
 
+func set_combat_zone(text: String) -> void:
+	if active_kind == "zone":
+		label.text = text
+		return
+	# Keep the actionable pollen hint; species/device labels must not hide the gate counter.
+	if active_kind == "pollen_ready" and left > 0:
+		pending.push_front({"text":"","seconds":left,"kind":"pollen_ready","small":false})
+	_display({"text":text,"seconds":INF,"kind":"zone","small":false})
+
+func clear_combat_zone(seconds: float) -> void:
+	_display({"text":"ZONA DESPEJADA","seconds":seconds,"kind":"zone_clear","small":false})
+
 func _display(item: Dictionary) -> void:
 	active_kind = item.kind
 	active_bucket = int(item.get("bucket", -1))

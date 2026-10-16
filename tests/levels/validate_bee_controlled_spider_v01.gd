@@ -58,6 +58,7 @@ func fresh(distance: float) -> void:
 func spider_spawn(x := 0.0) -> ControlledSpider:
 	wave._spawn({"family": "Spider", "slot": 0, "event": 0, "hard": false, "x": x})
 	var spider := wave.active_units.back() as ControlledSpider
+	preload("res://tests/levels/bee_teleport_fixture.gd").finish(spider)
 	for child in spider.get_children():
 		if child is BeeImplantShooter:
 			child.set_physics_process(false) # Isolate the web/body pattern; supplemental fire has its own test.
@@ -72,7 +73,7 @@ func run() -> void:
 	var spider := spider_spawn(1.0)
 	check(spider != null and spider.is_active(), "Spider not spawned/active")
 	check(spider.health.max_health == int(BeeLevel01Controller.LEVEL_HP["Spider"]) and BeeLevel01Controller.ROLES["Spider"] == &"MEDIUM", "Spider HP/role")
-	check(spider.global_position.y > BeeLevel01Framing.top_y(), "Spider must enter from above the visible top edge")
+	check(spider.global_position.y < BeeLevel01Framing.top_y(), "Spider arrives inside its real beam")
 	check(BeeShmupFairness.is_on_screen(spider), "Spider entry X must be inside the screen")
 	check(spider.is_in_group("bee_auto_aim_targets") and wave.active_units.has(spider), "Spider must be a targetable threat")
 	var hp_before := bee.health.current_health
@@ -108,10 +109,11 @@ func run() -> void:
 			stats["token"] = BeeAttackTokens.held_by(spider)
 			stats["targetable"] = spider.is_in_group("bee_auto_aim_targets")
 		wave._retire_soft_units(1.0 / 60.0)
+		if spider.attack_count >= 2: break
 	check(telegraphs_checked == 2 and stats["strikes"] == 2 and stats["telegraphs"] == 2, "Expected exactly two telegraphed strikes (got %d/%d)" % [stats["telegraphs"], stats["strikes"]])
 	check(stats["hits"] == 1 and bee.health.current_health == hp_before - maxi(1, roundi(int(stats["damage"]) * BeeLevel01Controller.ROUTE_DAMAGE_SCALE)), "First strike must hit once (14), the low lane must be safe (hits=%d hp=%d)" % [stats["hits"], bee.health.current_health])
 	check(float(stats["deepest"]) >= float(stats["min_y"]) - 0.001, "Body went below the low-lane limit")
-	check(bool(stats["escaped"]) and not bool(stats.get("targetable", true)) and (not is_instance_valid(spider) or not wave.active_units.has(spider)), "Spider did not leave after two attacks")
+	check(not bool(stats["escaped"]) and is_instance_valid(spider) and wave.active_units.has(spider), "Persistent spider cannot escape after its authored attack count")
 	check(not bool(stats["token"]), "Spider kept the heavy-pattern token")
 	# --- 2. the thread never hurts: once the body has dropped, the column above it is a free lane ---------------------
 	await fresh(165.0)

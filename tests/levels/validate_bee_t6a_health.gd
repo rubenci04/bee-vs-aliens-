@@ -23,6 +23,7 @@ func body(unit: Node3D) -> DamageHurtbox3D:
 func spawn(family: String, slot := 0) -> Node3D:
 	stage.wave._spawn({"family":family,"event":600,"slot":slot,"hard":false})
 	var unit: Node3D = stage.wave.active_units.back()
+	await frames(75)
 	unit.set_physics_process(false) # Keep collision areas active for real projectile checks.
 	return unit
 func run() -> void:
@@ -65,7 +66,7 @@ func run() -> void:
 		check(BeeLevel01Controller.level_hp(family,false) == hp, "%s escorts use the same HP, no hidden multiplier" % family)
 		check(BeeLevel01Controller.level_hp(family,true) == hp, "%s route uses the same HP" % family)
 		for spread in [false,true]:
-			var unit := spawn(family)
+			var unit := await spawn(family)
 			var health := unit.get_node("HealthComponent") as HealthComponent
 			check(health.max_health == hp and not health.invulnerable and not health.damage_blocked, "%s factory HP and no invisible protection" % family)
 			unit.global_position = Vector3(28,3,0)
