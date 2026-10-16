@@ -39,7 +39,7 @@ func run() -> void:
 	var cp := stage.get_node("CheckpointQoL")
 	cp.activate_second_checkpoint()
 	check(n.label.text == "CHECKPOINT 2" and is_equal_approx(n.left, 1.5), "Checkpoint uses the 1.5s banner")
-	check(not cp.beacon.get_node("CheckpointLabel").visible and not cp.beacon_2.get_node("CheckpointLabel").visible, "No world-space checkpoint titles")
+	check(cp.beacon.get_node_or_null("CheckpointLabel") == null and cp.beacon_2.get_node_or_null("CheckpointLabel") == null, "No world-space checkpoint titles")
 	n._process(1.6)
 	for i in 8: BeeLiberation.float_text(stage, Vector3(i, 4, 0))
 	check(n.label.text == "+8 LIBERADOS" and n.liberated_count == 8, "Counter includes every liberation")

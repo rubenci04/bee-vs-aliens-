@@ -67,10 +67,6 @@ func setup(value: BeeShmupStage) -> void:
 	flower.scale = Vector3.ONE * BeeGameSettings.CHECKPOINT_2_FLOWER_SCALE
 	beacon_2.add_child(flower)
 	BeeToonStyle.apply(flower, true, BeeToonStyle.OUTLINE_PROP)
-	(beacon_2.get_node("CheckpointRing") as MeshInstance3D).position.y = BeeGameSettings.CHECKPOINT_2_RING_HEIGHT
-	for title: Label3D in beacon_2.find_children("*", "Label3D", true, false):
-		title.text = "CHECKPOINT 2"
-		title.position.y = BeeGameSettings.CHECKPOINT_2_LABEL_HEIGHT
 	if get_tree().has_meta(HANDOFF):
 		snapshot = get_tree().get_meta(HANDOFF).duplicate(true)
 		get_tree().remove_meta(HANDOFF) # One-use handoff, never a save or singleton.
@@ -150,28 +146,7 @@ func create_beacon() -> void:
 	post.name = "BeaconStem"
 	post.position.y = 0.85
 	beacon.add_child(post)
-	var ring := MeshInstance3D.new()
-	var torus := TorusMesh.new()
-	torus.inner_radius = 0.36
-	torus.outer_radius = 0.46
-	torus.rings = 12
-	torus.ring_segments = 6
-	torus.material = material
-	ring.mesh = torus
-	ring.name = "CheckpointRing"
-	ring.position.y = 1.8
-	ring.rotation.x = PI * 0.5
-	beacon.add_child(ring)
-	var title := Label3D.new()
-	title.text = "CHECKPOINT"
-	title.name = "CheckpointLabel"
-	title.hide() # World marker remains; its title is a screen banner.
-	title.position.y = 2.5
-	title.font_size = 40
-	title.pixel_size = 0.009
-	beacon.add_child(title)
-	BeeToonStyle.apply(post, true, BeeToonStyle.OUTLINE_PROP) # VISUAL POLISH 02: same look as every prop.
-	BeeToonStyle.apply(ring, true, BeeToonStyle.OUTLINE_PROP)
+	BeeToonStyle.apply(post, true, BeeToonStyle.OUTLINE_PROP)
 
 func _process(delta: float) -> void:
 	if stage == null or stage.sector_complete:
