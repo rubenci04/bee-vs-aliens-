@@ -58,6 +58,7 @@ func _ready() -> void:
 		panel.add_theme_constant_override("outline_size", 3)
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		layer.add_child(panel)
+		panel.hide()
 	_collect_background()
 	_original_glow = (stage.get_node("WorldEnvironment") as WorldEnvironment).environment.glow_enabled
 	if DisplayServer.get_name() != "headless":
@@ -96,7 +97,7 @@ func _build_bloom() -> void:
 	layer.add_child(bloom)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not enabled or not event is InputEventKey or not event.pressed or event.echo:
+	if not enabled or not debug_controls_visible() or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.ctrl_pressed or event.alt_pressed or event.shift_pressed or event.meta_pressed:
 		return # Never consume editor chords.
@@ -300,6 +301,7 @@ func apply_modes() -> void:
 		bloom_material.set_shader_parameter("radius", SETTINGS.BLOOM_RADIUS[neon_level])
 		bloom_material.set_shader_parameter("gain", SETTINGS.BLOOM_GAIN[neon_level])
 	if panel != null:
+		panel.visible = debug_controls_visible()
 		panel.text = "DEV  9 Bee ×%.2f  0 contorno %d  I fondo %d  J neón %d" % [SETTINGS.BEE_SCALES[bee_index], outline_level, background_level, neon_level]
 		panel.text += "  U inclinación " + ("sí" if preload("res://scripts/game/bee_feedback_settings.gd").tilt_enabled else "no")
 		panel.text += "  K láser " + ("A" if preload("res://scripts/vfx/bee_boss_effect_settings.gd").mode == 0 else "B")
@@ -317,11 +319,15 @@ func _update_background() -> void:
 			own.set_shader_parameter("dev_contrast", SETTINGS.BACKGROUND_CONTRAST[background_level])
 
 func _process(delta: float) -> void:
+	if not debug_controls_visible() and neon_level != SETTINGS.DEFAULT_NEON:
+		neon_level = SETTINGS.DEFAULT_NEON
+		apply_modes()
 	var view_size := stage.get_viewport().get_visible_rect().size
 	if view_size != _viewport_size:
 		_viewport_size = view_size
 		apply_modes() # Clip-space outline width stays constant in pixels on resize.
 	if panel != null:
+		panel.visible = debug_controls_visible()
 		panel.position = Vector2(SETTINGS.PANEL_POSITION.x, stage.get_viewport().get_visible_rect().size.y + SETTINGS.PANEL_POSITION.y)
 		panel.text = panel.text.get_slice(" · FPS",0) + " · FPS %d" % Engine.get_frames_per_second()
 	_timer -= delta
@@ -355,3 +361,8 @@ func _process(delta: float) -> void:
 		mask_camera.size = stage.camera.size
 		mask_camera.keep_aspect = stage.camera.keep_aspect
 		bloom_material.set_shader_parameter("pixel_size", Vector2.ONE / Vector2(mask_view.size))
+
+
+func debug_controls_visible() -> bool:
+	var hud := stage.get_node_or_null("CanvasLayer/WeaponsHUD")
+	return hud != null and bool(hud.get("debug_visible"))

@@ -21,6 +21,14 @@ func run() -> void:
 	var live := stage.get_node("LiveReadability")
 	check(live.enabled, "Editor/debug binary activates dev-only controls")
 	check(live.bee_index == 2 and live.outline_level == 1 and live.background_level == 1 and live.neon_level == 1, "Final defaults")
+	var hud := stage.get_node("CanvasLayer/WeaponsHUD")
+	check(not hud.debug_visible and not live.panel.visible, "Debug starts hidden")
+	var blocked_key := InputEventKey.new()
+	blocked_key.keycode = KEY_J
+	blocked_key.pressed = true
+	live._unhandled_key_input(blocked_key)
+	check(live.neon_level == 1, "Comparator ignored without F3")
+	hud.debug_visible = true
 	var visual := stage.bee.get_node("VisualRoot/BeeVisual")
 	live.set_modes(0, 0, 0, 0)
 	var origin: Vector3 = visual.firing_origin(stage.bee.global_position)

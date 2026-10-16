@@ -69,6 +69,7 @@ func run():
    if event is InputEventKey: check(event.keycode != S.KEY and event.physical_keycode != S.KEY,"K is free in InputMap")
  var gate=preload("res://scripts/game/bee_readability_settings.gd")
  check(not gate.development_for(false,true,true),"Export cannot switch variants")
+ stage.get_node("CanvasLayer/WeaponsHUD").debug_visible = true # Tanda A: comparators require F3.
  var controls=stage.get_node("LiveReadability")
  var event=InputEventKey.new()
  event.keycode=S.KEY

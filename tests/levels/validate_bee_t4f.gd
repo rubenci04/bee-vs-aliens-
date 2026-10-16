@@ -105,6 +105,7 @@ func run():
  check(BeeJuice.hit_stops==roll_count+1,"Actual roll projectile-break callback hooks approved event")
  await frames(6)
  check(bee._roll_tween==null or bee._roll_tween.is_running(),"Roll visual tween resumes after microfreeze")
+ stage.get_node("CanvasLayer/WeaponsHUD").debug_visible = true # Tanda A: comparators require F3.
  var live=stage.get_node("LiveReadability") if stage.has_node("LiveReadability") else null
  var event := InputEventKey.new()
  event.keycode=S.HIT_STOP_KEY

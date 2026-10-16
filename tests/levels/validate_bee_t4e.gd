@@ -94,6 +94,7 @@ func run():
  stage.add_child(boss)
  boss.set_physics_process(false)
  check(is_equal_approx(boss.hit_flash.duration,.06) and boss.hit_flash.flash_color == S.FLASH_COLOR,"Tarantula shares the brief warm 55-percent flash")
+ stage.get_node("CanvasLayer/WeaponsHUD").debug_visible = true # Tanda A: comparators require F3.
  var controls=stage.get_node("LiveReadability")
  var event=InputEventKey.new()
  event.keycode=S.TILT_KEY
