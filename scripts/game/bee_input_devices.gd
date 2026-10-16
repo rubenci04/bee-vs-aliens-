@@ -2,6 +2,9 @@ extends Node
 const HUD_NOTICES := preload("res://scripts/ui/bee_hud_notices.gd")
 const HUD_TEXT := preload("res://scripts/game/bee_hud_text_settings.gd")
 ## InputMap applies to ALL devices. Autoload also runs in title/pause screens.
+const DEVICE_NOTICE_INTERVAL := 15.0
+const MOUSE_SWITCH_DISTANCE := 8.0
+var device_notice_cooldown := 0.0
 var notice: Label
 var notice_left := 0.0
 var startup_time_msec := 0
@@ -61,22 +64,26 @@ func configure_actions() -> void:
 func _input(event: InputEvent) -> void:
 	var was_joypad := BeeGameSettings.last_input_joypad
 	var old_device := BeeGameSettings.last_joypad_device
-	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > BeeGameSettings.JOYPAD_DEADZONE):
+	if (event is InputEventJoypadButton and event.pressed) or (event is InputEventJoypadMotion and absf(event.axis_value) > BeeGameSettings.JOYPAD_DEADZONE):
 		BeeGameSettings.last_input_joypad = true
 		BeeGameSettings.last_joypad_device = event.device
-	elif event is InputEventKey or event is InputEventMouseButton or (event is InputEventMouseMotion and event.relative.length_squared() > 0.0):
+	elif (event is InputEventKey and event.pressed and not event.echo) or (event is InputEventMouseButton and event.pressed) or (event is InputEventMouseMotion and event.relative.length() >= MOUSE_SWITCH_DISTANCE):
 		BeeGameSettings.last_input_joypad = false
 
 	if BeeGameSettings.last_input_joypad != was_joypad or (BeeGameSettings.last_input_joypad and old_device != BeeGameSettings.last_joypad_device):
 		show_device_notice("Mando detectado: " + Input.get_joy_name(event.device) if BeeGameSettings.last_input_joypad else "Teclado y ratón")
 
 func show_device_notice(text: String) -> void:
+	if device_notice_cooldown > 0.0 or HUD_NOTICES.combat_active(get_tree().current_scene): return
 	notice.text = text
-	notice_left = HUD_TEXT.DEVICE_SECONDS
 	var host := get_tree().current_scene
 	if host == null:
 		host = self
-	HUD_NOTICES.for_host(host).show_notice(text, HUD_TEXT.DEVICE_SECONDS, "device", true)
+	var banners := HUD_NOTICES.for_host(host)
+	if banners.left > 0.0: return # Do not queue a stale device change.
+	notice_left = HUD_TEXT.DEVICE_SECONDS
+	device_notice_cooldown = DEVICE_NOTICE_INTERVAL
+	banners.show_notice(text, HUD_TEXT.DEVICE_SECONDS, "device", true)
 
 func _connection_changed(device: int, connected: bool) -> void:
 	if connected:
@@ -91,5 +98,6 @@ func _connection_changed(device: int, connected: bool) -> void:
 			show_device_notice("Teclado y ratón")
 
 func _process(delta: float) -> void:
+	device_notice_cooldown = maxf(0.0, device_notice_cooldown - delta)
 	notice_left = maxf(0.0, notice_left - delta)
 	notice.hide()

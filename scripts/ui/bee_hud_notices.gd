@@ -87,6 +87,8 @@ func note_liberated() -> void:
 		pending.append({"text": text, "seconds": S.LIBERATION_WINDOW + S.FADE_SECONDS, "kind": "liberated", "small": false, "bucket": bucket})
 
 func _process(delta: float) -> void:
+	if active_kind == "device" and combat_active(get_parent()):
+		left = 0.0
 	window_left = maxf(0, window_left - delta)
 	if window_left <= 0:
 		liberated_count = 0
@@ -97,3 +99,11 @@ func _process(delta: float) -> void:
 		active_kind = ""
 		if not pending.is_empty():
 			_display(pending.pop_front())
+
+
+static func combat_active(host: Node) -> bool:
+	if host == null: return false
+	var wave := host.get_node_or_null("WaveController") as BeeLevel01Controller
+	if wave == null and host is BeeShmupStage: wave = host.wave as BeeLevel01Controller
+	if wave == null: return false
+	return wave.in_arena() or wave.boss_active() or not wave.active_units.is_empty() or (is_instance_valid(wave.miniboss) and wave.miniboss.health.current_health > 0)
