@@ -238,6 +238,9 @@ var _hang_rope := 0.0
 var _hang_fans: Array = []
 var _hang_line: MeshInstance3D
 var _visual_bounds := AABB()
+var _hang_return_left := 0.0
+var _hang_return_from := Transform3D.IDENTITY
+var _hang_return_to := Transform3D.IDENTITY
 var _net_aim: MeshInstance3D
 var _follow_up := false
 var follow_ups := 0
@@ -365,7 +368,8 @@ func _apply_pose() -> void:
 	var roll := _tilt * side
 	if mode == &"hang":
 		roll = side * PI * 0.5 + _swing
-	visual_root.basis = _pose_basis(side, _flip if mode != &"hang" else 0.0, roll)
+	if mode != &"hang_return":
+		visual_root.basis = _pose_basis(side, _flip if mode != &"hang" else 0.0, roll)
 	_keep_below_ceiling()
 	_place_areas()
 
@@ -407,6 +411,10 @@ func _physics_process(delta: float) -> void:
 	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (EASY_HULL_DPS_RATIO if easy else HULL_DPS_RATIO) * delta)
 	_web_immune_left = maxf(0.0, _web_immune_left - delta)
 	_state_time += delta
+	if _hang_return_left > 0.0 and not is_defeated():
+		fight_seconds += delta
+		_update_hang_return(delta)
+		return
 	match state:
 		State.APPROACH:
 			var t := clampf(_state_time / APPROACH_SECONDS, 0.0, 1.0)
@@ -875,8 +883,8 @@ func _update_hang(delta: float) -> void:
 					_mouth_glow.scale = Vector3.ONE * 0.01
 					_fire_fan(minf(FAN_TELEGRAPH, at))
 			if _left <= 0.0:
-				_step = &"hang_up"
-				_left = HANG_UP
+				_end_hang()
+				return
 		&"hang_up":
 			_swing = lerpf(_swing, 0.0, clampf(delta * 8.0, 0.0, 1.0))
 			_hang_rope = HANG_ROPE * smoothstep(0.0, 1.0, _left / HANG_UP)
@@ -899,16 +907,32 @@ func _update_hang(delta: float) -> void:
 ## Back on the ceiling (end of the swing, a phase change or the liberation).
 func _end_hang() -> void:
 	_charge_box.set_enabled(false)
+	contact.set_enabled(false)
 	_mouth_glow.scale = Vector3.ONE * 0.01
+	if mode != &"hang": return
+	_hang_return_from = Transform3D(visual_root.basis, global_position)
+	_hang_return_to = Transform3D(_pose_basis(side, PI, 0), Vector3(_clamp_x(hang_pivot_x - _mx(ATTACH.x)), _ceiling_y(), 0))
+	_hang_return_left = HANG_UP
+	mode = &"hang_return"
+	_step = &"hang_up"
+
+
+func _update_hang_return(delta: float) -> void:
+	_hang_return_left = maxf(0, _hang_return_left - delta)
+	var t := smoothstep(0.0, 1.0, 1.0 - _hang_return_left / HANG_UP)
+	global_position = _hang_return_from.origin.lerp(_hang_return_to.origin, t)
+	visual_root.basis = Basis(_hang_return_from.basis.get_rotation_quaternion().slerp(_hang_return_to.basis.get_rotation_quaternion(), t))
+	_apply_pose()
 	if is_instance_valid(_hang_line):
-		_hang_line.queue_free()
+		BeeAttackVisuals.place_line(_hang_line, Vector3(hang_pivot_x, _ceiling_y() + 0.5, 0), _world(ATTACH))
+	if _hang_return_left > 0.0: return
+	mode = &"ceiling"
+	_swing = 0.0
+	_flip = PI
+	_apply_pose()
+	if is_instance_valid(_hang_line): _hang_line.queue_free()
 	_hang_line = null
-	if mode == &"hang":
-		mode = &"ceiling"
-		_swing = 0.0
-		_flip = PI
-		global_position = Vector3(_clamp_x(hang_pivot_x - _mx(ATTACH.x)), _ceiling_y(), 0.0)
-		_apply_pose()
+	if state != State.TRANSITION and attack_kind != &"none": _end_attack(-0.2)
 
 
 func _place_hazard_box() -> void:
