@@ -14,6 +14,10 @@ signal liberated_now(enemy: AssetFauna)
 enum State { IDLE, ENTER, WAIT, TELEGRAPH, ATTACK, RECOVER, EXIT, LIBERATED, DONE }
 
 const MIN_TELEGRAPH := 0.4
+## T6e: modes whose attacks take one of the two shared attack slots (BeeCommonSlots); a unit without a slot waits SLOT_RETRY_SECONDS.
+const COMMON_SLOT_MODES := [&"marcher"]
+const SLOT_RETRY_SECONDS := 0.35
+const MARCHER_FIRE_SECONDS := 0.25 ## the `_left` of the ATTACK state of a marcher (see `_start_attack`).
 ## LOTE 13: a unit counts as arrived (and starts its first rest) once it is this far inside the screen edge, not only at its hover point.
 const ARRIVAL_INSET := 0.6
 const PROJECTILE := preload("res://scenes/projectiles/toon/alien_bolt.tscn") # NOCHE 01: Codex toon alien bolt.
@@ -62,8 +66,10 @@ const KINDS := {
 			"telegraph": 0.65, "damage": 9, "cycles": 3, "speed": 6.0, "wave_speed": 10.0, "wave_amp": 1.1, "label": "WaveDragonfly"},
 	&"moth": {"scene": "res://scenes/art_labs/assets_v10/controlled_bomb_moth.tscn", "mode": &"bomber", "ground": false, "scale": 0.85,
 			"telegraph": 0.5, "damage": 10, "cycles": 4, "speed": 2.4, "fuse": 2.0, "radius": 1.4, "label": "Moth"},
-	&"ant": {"scene": "res://scenes/art_labs/assets_v09/controlled_ant.tscn", "mode": &"lunge", "ground": true, "scale": 1.1,
-			"telegraph": 0.5, "damage": 8, "cycles": 4, "speed": 2.6, "lunge_range": 3.2, "label": "Ant"},
+	# T6e: the ant marches in a file towards Bee and, every `spit_every` s, STOPS to spit one pebble in an arc (no lunge, never floats).
+	&"ant": {"scene": "res://scenes/art_labs/assets_v09/controlled_ant.tscn", "mode": &"marcher", "ground": true, "scale": 1.1,
+			"telegraph": 0.5, "damage": 8, "shot_damage": 3, "cycles": 4, "speed": 2.6, "label": "Ant",
+			"spit_every": 2.5, "spit_recover": 0.4, "style": &"pebble", "lob_flight": 1.15, "lob_gravity": 8.0},
 	&"stag_beetle": {"scene": "res://scenes/art_labs/assets_v02/controlled_stag_beetle.tscn", "mode": &"charge", "ground": true, "scale": 1.0,
 			"telegraph": 0.8, "damage": 12, "cycles": 3, "speed": 1.4, "charge_speed": 6.5, "charge_time": 1.3, "armored": true, "label": "StagBeetle",
 			"gait": [0.9, 0.22, 0.16, 0.05, 0.04]}, # LOTE 13: walks (tripod gait synced to the ground speed), charges with a 0.8 s warning, lobs stones
@@ -493,6 +499,9 @@ func _walk_to(x: float, speed: float, delta: float) -> bool:
 
 func _start_telegraph() -> void:
 	var mode: StringName = config["mode"]
+	if mode in COMMON_SLOT_MODES and not BeeCommonSlots.try_take(self):
+		_left = SLOT_RETRY_SECONDS # T6e: at most two common enemies commit to an attack at once.
+		return
 	if mode in [&"charge", &"wave", &"sweep"] and not BeeAttackTokens.try_claim(self, float(config["telegraph"]) + 1.8):
 		_left = 0.5 # Another heavy pattern is running: wait a beat.
 		return
@@ -544,6 +553,9 @@ func _start_telegraph() -> void:
 			var dirc := signf(bee.x - global_position.x) if absf(bee.x - global_position.x) > 0.1 else _facing
 			_lock_to = global_position + Vector3(dirc * float(config["charge_speed"]) * float(config["charge_time"]), 0.0, 0.0)
 			_add_line(global_position + Vector3(0, 0.4, 0), _lock_to + Vector3(0, 0.4, 0), 0.5, Color(1.0, 0.55, 0.15, 0.25))
+		&"marcher":
+			_lock_to = bee # T6e: the pebble lands where Bee is when the warning STARTS (no aim line: the pulse is the warning).
+			_aim_lock_point = bee
 		&"fighter":
 			_lock_to = bee
 		&"leaper":
@@ -654,6 +666,9 @@ func _start_attack() -> void:
 		&"bomber":
 			_drop_bomb()
 			_left = 0.2
+		&"marcher":
+			_lob_pebble()
+			_left = MARCHER_FIRE_SECONDS
 		&"spitter", &"cannon", &"seeder", &"fighter", &"zigzag":
 			var burst := int(config.get("burst", 1))
 			if burst > 1: # LOTE 13: the green fly spits acid in a burst, aimed again at every drop.
@@ -700,6 +715,8 @@ func _attack(delta: float, _camera_x: float) -> void:
 		cycles_done += 1
 		state = State.RECOVER
 		_left = recovery_time if mode != &"charge" else 1.4
+		if mode == &"marcher":
+			_left = float(config["spit_recover"])
 		if mode == &"burrow":
 			_left = float(config["exposed"]) # Surfaced and vulnerable for this long, then it digs back in.
 		if cycles_done >= max_cycles and not bool(get_meta("level_persistent",false)):
@@ -730,7 +747,7 @@ func _recover(delta: float, camera_x: float) -> void:
 			global_position = global_position.move_toward(back, maxf(float(config["speed"]), 3.0) * 1.4 * delta)
 	_left -= delta
 	if _left <= 0.0:
-		_begin(State.IDLE, idle_time)
+		_begin(State.IDLE, _rest_after_attack())
 
 
 func _play(clip: String) -> void:
@@ -760,6 +777,7 @@ func _cancel_attack() -> void:
 
 
 func _release_token() -> void:
+	BeeCommonSlots.release(self)
 	if _token_held:
 		BeeAttackTokens.release(self)
 		_token_held = false
@@ -1141,6 +1159,8 @@ func warned_line() -> Array:
 			return [_aim_lock_point, _aim_lock_point + Vector3(0.05, 0.0, 0.0), 1.6] # Where the arc lands.
 		var from := _muzzle()
 		return [from, from + (_aim_lock_point - from).normalized() * 14.0, 0.8]
+	if config["mode"] == &"marcher":
+		return [_aim_lock_point, _aim_lock_point + Vector3(0.05, 0.0, 0.0), 1.6] # Where the pebble lands.
 	match config["mode"]:
 		&"dash":
 			return [global_position, _lock_to, 0.9]
@@ -1269,3 +1289,21 @@ func pincer_point() -> Vector3:
 	if head == null:
 		return _muzzle()
 	return head.global_position + visual.global_transform.basis * Vector3(-0.35, 0.0, 0.0)
+
+
+# --- T6e: personality helpers -------------------------------------------------------------------------------------------
+
+## Rest before the next warning: the marcher keeps a fixed `spit_every` s period (warning + spit + recovery + walking), the rest use idle_time.
+func _rest_after_attack() -> float:
+	if config["mode"] == &"marcher":
+		return maxf(float(config["spit_every"]) - maxf(float(config["telegraph"]), MIN_TELEGRAPH) - MARCHER_FIRE_SECONDS - float(config["spit_recover"]), 0.2)
+	return idle_time
+
+
+## One pebble in an arc to the spot Bee had when the warning started (it never homes, so walking off dodges it).
+func _lob_pebble() -> void:
+	if not BeeShmupFairness.can_fire(self):
+		return
+	BeeEnemyPatterns.spawn_lob(get_parent(), PROJECTILE, _muzzle(), _aim_lock_point, _shot_damage(), float(config["lob_flight"]), float(config["lob_gravity"]), self, StringName(config["style"]))
+	shots_fired += 1
+	BeeCombatVFX.spawn(get_parent(), _muzzle(), &"tech_hit", Vector3.UP, 0.5)

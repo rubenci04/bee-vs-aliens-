@@ -962,7 +962,7 @@ func _spawn(request: Dictionary) -> void:
 			var rest: Variant = unit.get(key)
 			if rest is float and not roster_tuning.has(key + "_fixed"):
 				unit.set(key, float(rest) * fire_slowdown(stage.distance))
-	if family in ["Mosquito", "Ladybird", "WaveDragonfly", "Ant", "StagBeetle", "Dragonfly", "Spider", "Speeder"]:
+	if family in ["Mosquito", "Ladybird", "WaveDragonfly", "StagBeetle", "Dragonfly", "Spider", "Speeder"]: # T6e: the ant spits by itself (marcher), no implant gun
 		var gun := BeeImplantShooter.new()
 		gun.family = family
 		gun.cooldown_scale = fire_slowdown(stage.distance) if roster_only and not bool(request["hard"]) else 1.0
