@@ -34,7 +34,7 @@ func run() -> void:
 	stage.wave.set_physics_process(false)
 
 	# --- constants ---------------------------------------------------------------------------------------------------------
-	check(BeeLevel01Juice.POLLEN_PER_HEAL == 20 and is_zero_approx(BeeLevel01Juice.POLLEN_HEAL_FRACTION), "20 pollen charge Nova, healing removed")
+	check(BeeLevel01Juice.POLLEN_PER_HEAL == 21 and is_zero_approx(BeeLevel01Juice.POLLEN_HEAL_FRACTION), "21 grains fill three cartridges; automatic healing removed")
 	check(BeeLevel01Juice.LIBERATION_POLLEN_EVERY == 3, "A liberation drops pollen one time in three")
 	check(is_equal_approx(BeeLevel01Controller.ROUTE_DAMAGE_SCALE, 1.0), "ROUTE_DAMAGE_SCALE is back to 1.0 (the chip-damage hack is gone)")
 	check(BeeImplantShooter.SHOT_DAMAGE >= 3 and BeeImplantShooter.SHOT_DAMAGE <= 5, "Common implant bullets do 3-5")
@@ -55,7 +55,7 @@ func run() -> void:
 	bee.health.restore_health(100)
 	juice._pollen_window.clear()
 	juice.add_pollen(20)
-	check(juice.banked_heals == 0 and juice.pollen_progress() == 20 and bee.health.current_health == bee.health.max_health, "Full charge remains available, no healing is banked")
+	check(juice.banked_heals == 0 and juice.pollen_progress() == 21 and bee.health.current_health == bee.health.max_health, "Full charge remains available, no healing is banked")
 	var before := bee.health.current_health
 	bee.health.take_damage(30)
 	await frames(2)

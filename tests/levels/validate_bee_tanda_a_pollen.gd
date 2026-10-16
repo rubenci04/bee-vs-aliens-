@@ -1,0 +1,53 @@
+extends "res://tests/levels/bee_t7b_fixture.gd"
+const S := preload("res://scripts/game/bee_pollen_nova_settings.gd")
+func run() -> void:
+	var stage := await fixture()
+	var juice := stage.get_node("Juice") as BeeLevel01Juice
+	var bee := stage.bee
+	bee.health.damage_blocked = false
+	bee.health.take_damage(50)
+	var hp := bee.health.current_health
+	juice.add_pollen(6)
+	check(juice.pollen_cartridges() == 0 and not juice.try_pollen_nova(), "Partial cartridge cannot be spent")
+	juice.add_pollen(15)
+	check(juice.pollen_progress() == 21 and juice.pollen_cartridges() == 3 and bee.health.current_health == hp, "Three cartridges, no automatic healing")
+	Input.action_press(S.ACTION)
+	juice._update_pollen_input(0.1)
+	check(juice.novas_used == 0, "Press waits for tap/hold decision")
+	Input.action_release(S.ACTION)
+	juice._update_pollen_input(0.01)
+	check(juice.novas_used == 1 and juice.pollen_progress() == 14 and bee.health.pollen_protected, "Tap spends exactly one cartridge on Nova")
+	check(not juice.try_pollen_heal(), "Nova and healing share the one-second cooldown")
+	juice._physics_process(1.0)
+	Input.action_press(S.ACTION)
+	juice._update_pollen_input(0.49)
+	check(bee.health.current_health == hp, "Hold below threshold does nothing")
+	juice._update_pollen_input(0.01)
+	check(bee.health.current_health == hp + ceili(bee.health.max_health * 0.2) and juice.pollen_progress() == 7, "Half-second hold spends one cartridge and heals twenty percent")
+	check(bee.get_node_or_null("PollenHealGlow") != null, "Healing adds a golden aura around Bee")
+	juice._update_pollen_input(2.0)
+	Input.action_release(S.ACTION)
+	juice._update_pollen_input(0.01)
+	check(juice.pollen_heals == 1 and juice.novas_used == 1 and juice.pollen_progress() == 7, "Long hold is one heal and no Nova on release")
+	juice._physics_process(1.0)
+	check(juice.try_pollen_nova() and juice.pollen_progress() == 0, "Final cartridge fires independently")
+	juice._physics_process(1.0)
+	juice._pollen_window.clear()
+	juice.add_pollen(50)
+	check(juice.pollen_progress() == 21, "Inventory saturates at three cartridges")
+	juice.try_pollen_nova()
+	check(juice.pollen_progress() == 14, "Overflow cannot bank hidden cartridges")
+	bee.health.restore_health(1000)
+	juice._physics_process(1.0)
+	Input.action_press(S.ACTION)
+	juice._update_pollen_input(0.5)
+	Input.action_release(S.ACTION)
+	juice._update_pollen_input(0.01)
+	check(juice.pollen_progress() == 14, "Hold at full health does not waste pollen or fall through to Nova")
+	var notices := stage.get_node("HUDNotices")
+	var count := 1 if notices.active_kind == "pollen_ready" else 0
+	for item in notices.pending:
+		if item.kind == "pollen_ready": count += 1
+	check(count == 1, "First-ready banner is announced only once per run")
+	print("TANDA_A_POLLEN failures=", failures)
+	done()

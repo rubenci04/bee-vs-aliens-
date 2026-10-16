@@ -1,9 +1,9 @@
 class_name BeeLevel01Juice
 extends Node
 ## LOTE 11 · ETAPA C — Level 01 "life and emotion" orchestrator (presentation + small rewards, no new enemy behaviour):
-##   combo     "xN" counter for applied hits and destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
+##   combo     "xN" counter for boss damage pulses and destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
 ##             kill); points per kill x combo multiplier; the score is shown on the SECTOR DESPEJADO card
-##   pollen    20 grains charge a manually activated pollen Nova (T3m).
+##   pollen    Three cartridges of seven grains; tap Nova, hold to heal (T3n).
 ##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
 ##   juice     liberation rewards; T4f reserves local hit stop/shake for key events only
 ##   magnet    items drift towards Bee when she passes close
@@ -19,8 +19,8 @@ const POINTS_BOSS := 1000
 const POINTS_BY_HP := [[10, 10], [50, 40], [100, 80], [100000, 150]]
 const POLLEN_INSTANT_HEAL := 0 ## Level 1 pollen never heals directly.
 const NOVA := preload("res://scripts/game/bee_pollen_nova_settings.gd")
-const POLLEN_PER_HEAL := NOVA.CHARGE ## Historical public name: now the Nova charge threshold.
-const POLLEN_HEAL_FRACTION := 0.0 ## Compatibility for old reports/tests: pollen no longer heals.
+const POLLEN_PER_HEAL := NOVA.CHARGE ## Historical public name: now the full three-cartridge capacity.
+const POLLEN_HEAL_FRACTION := 0.0 ## Compatibility: filling the meter never heals automatically.
 const LIBERATION_POLLEN_EVERY := 3 ## A freed animal drops its pollen one time in this many.
 const POLLEN_CAP_PER_MINUTE := 70 ## Pollen that can be gained per rolling minute (extra pollen is lost).
 const POLLEN_CAP_WINDOW := 60.0
@@ -55,14 +55,18 @@ var pollen_from_pickups := 0
 var pollen_from_liberations := 0
 var frenzy_activations := 0
 var pollen_heals := 0
-var pollen_healed := 0 # Historical telemetry; stays at zero since T3m.
-var pollen_heal_enabled := false # Historical fixture compatibility; no healing path remains.
+var pollen_healed := 0 # Manual healing telemetry (T3n).
+var pollen_heal_enabled := false # Compatibility flag; healing is explicitly requested by holding.
 var pollen_lost_to_cap := 0 ## Pollen picked up beyond POLLEN_CAP_PER_MINUTE.
 var banked_heals := 0 # Compatibility counter; never filled.
 var pollen_spent := 0
 var nova_cooldown_left := 0.0
 var nova_protection_left := 0.0
 var novas_used := 0
+var pollen_ready_announced := false
+var _pollen_held := false
+var _pollen_hold_time := 0.0
+var _pollen_hold_decided := false
 var liberations_seen := 0
 var _pollen_window: Array[Vector2] = [] ## (time, amount) gained in the last POLLEN_CAP_WINDOW seconds.
 var _pollen_clock := 0.0
@@ -137,8 +141,7 @@ func _physics_process(delta: float) -> void:
 	nova_cooldown_left = maxf(0.0, nova_cooldown_left - delta)
 	nova_protection_left = maxf(0.0, nova_protection_left - delta)
 	bee.health.pollen_protected = nova_protection_left > 0.0
-	if Input.is_action_just_pressed(NOVA.ACTION):
-		try_pollen_nova()
+	_update_pollen_input(delta)
 	if combo > 0 and not wave.combo_intermission():
 		combo_left -= delta
 		if combo_left <= 0.0:
@@ -259,10 +262,10 @@ func pollen_progress() -> int:
 
 
 func try_pollen_nova() -> bool:
-	if get_tree().paused or bee.is_defeated or stage.sector_complete or pollen_progress() < NOVA.CHARGE or nova_cooldown_left > 0.0:
+	if get_tree().paused or bee.is_defeated or stage.sector_complete or pollen_progress() < NOVA.CARTRIDGE_COST or nova_cooldown_left > 0.0:
 		return false
-	# Excess collected while full does not bank extra charges.
-	pollen_spent = pollen_total
+	# Spend one cartridge, preserving the other two and partial progress.
+	pollen_spent = pollen_total - (pollen_progress() - NOVA.CARTRIDGE_COST)
 	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
 	nova_protection_left = NOVA.INVULNERABILITY_SECONDS
 	bee.health.pollen_protected = true
@@ -281,9 +284,12 @@ func _refresh_pollen() -> void:
 	if pollen_label == null:
 		return
 	var filled := pollen_progress()
+	if filled >= NOVA.CARTRIDGE_COST and not pollen_ready_announced:
+		pollen_ready_announced = true
+		preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).show_notice("", NOVA.READY_BANNER_SECONDS, "pollen_ready")
 	var cells := filled * 10 / NOVA.CHARGE
 	pollen_label.text = "POLEN [%s%s] %d/%d" % ["#".repeat(cells), "-".repeat(10 - cells), filled, NOVA.CHARGE]
-	if filled == NOVA.CHARGE:
+	if filled >= NOVA.CARTRIDGE_COST:
 		pollen_label.text += " · NOVA " + NOVA.button_hint()
 
 
@@ -351,3 +357,41 @@ func _update_magnet(delta: float) -> void:
 		var pull := MAGNET_SPEED * (1.0 + (1.0 - distance / MAGNET_RADIUS))
 		pickup.global_position += offset / distance * minf(pull * delta, distance)
 		magnet_pulls += 1
+
+
+func pollen_cartridges() -> int:
+	return pollen_progress() / NOVA.CARTRIDGE_COST
+
+
+func _update_pollen_input(delta: float) -> void:
+	if bee.is_defeated or stage.sector_complete:
+		_pollen_held = false
+		return
+	if Input.is_action_pressed(NOVA.ACTION):
+		if not _pollen_held:
+			_pollen_held = true
+			_pollen_hold_time = 0.0
+			_pollen_hold_decided = false
+		_pollen_hold_time += delta
+		if _pollen_hold_time + 0.000001 >= NOVA.HOLD_SECONDS and not _pollen_hold_decided:
+			_pollen_hold_decided = true
+			try_pollen_heal()
+	elif _pollen_held:
+		if not _pollen_hold_decided: try_pollen_nova()
+		_pollen_held = false
+
+
+func try_pollen_heal() -> bool:
+	if get_tree().paused or bee.is_defeated or stage.sector_complete or pollen_cartridges() < 1 or nova_cooldown_left > 0.0 or bee.health.current_health >= bee.health.max_health:
+		return false
+	pollen_spent = pollen_total - (pollen_progress() - NOVA.CARTRIDGE_COST)
+	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
+	var before := bee.health.current_health
+	bee.health.restore_health(ceili(bee.health.max_health * NOVA.HEAL_FRACTION))
+	pollen_heals += 1
+	pollen_healed += bee.health.current_health - before
+	var glow := preload("res://scripts/vfx/bee_pollen_heal_glow.gd").new()
+	bee.add_child(glow)
+	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
+	_refresh_pollen()
+	return true

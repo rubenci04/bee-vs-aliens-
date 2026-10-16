@@ -141,22 +141,22 @@ func _draw() -> void:
 	if juice != null:
 		pollen_progress = int(juice.call("pollen_progress"))
 	draw_string(font, panel + Vector2(10, BeeGameSettings.HUD_ROW_POLLEN_Y), "POLEN", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
-	for i in BeeGameSettings.HUD_POLLEN_CELLS:
-		var fill := clampf(float(pollen_progress) / BeeLevel01Juice.POLLEN_PER_HEAL * BeeGameSettings.HUD_POLLEN_CELLS - i, 0.0, 1.0)
-		var center := panel + Vector2(BeeGameSettings.HUD_HEALTH_CELL_START_X + i * (cell_w + BeeGameSettings.HUD_CELL_GAP) + cell_w * 0.5, BeeGameSettings.HUD_ROW_POLLEN_Y - 7.0)
-		var grain_color := BeeGameSettings.HUD_POLLEN_COLOR.lerp(BeeGameSettings.HUD_EMPTY_COLOR, 1.0 - fill)
-		if pollen_progress == nova.CHARGE:
-			var glow := 0.5 + 0.5 * sin(float(Time.get_ticks_msec()) * 0.001 * nova.GLOW_RATE)
-			draw_circle(center, cell_h * 0.65, Color(grain_color, nova.GLOW_ALPHA * glow))
-		draw_circle(center, cell_h * 0.42, grain_color)
-		draw_circle(center + Vector2(-2, -2), 1.5, BeeGameSettings.HUD_LABEL_COLOR)
-	var pollen_text := "%d/%d" % [pollen_progress, BeeLevel01Juice.POLLEN_PER_HEAL]
-	if pollen_progress == nova.CHARGE:
+	var cartridges := pollen_progress / nova.CARTRIDGE_COST
+	for i in nova.MAX_CARTRIDGES:
+		var fill := clampf(float(pollen_progress - i * nova.CARTRIDGE_COST) / nova.CARTRIDGE_COST, 0.0, 1.0)
+		var slot := Rect2(panel + Vector2(68 + i * 57, BeeGameSettings.HUD_ROW_POLLEN_Y - 17), Vector2(51, 18))
+		draw_rect(slot, BeeGameSettings.HUD_EMPTY_COLOR)
+		draw_rect(Rect2(slot.position + Vector2(2, 2), Vector2(47 * fill, 14)), BeeGameSettings.HUD_POLLEN_COLOR)
+		draw_rect(slot, BeeGameSettings.HUD_LABEL_COLOR, false, 1.0)
+		draw_circle(slot.position + Vector2(8, 9), 3.0, Color(1, 0.95, 0.66))
+	var pollen_text := "%d/3" % cartridges
+	if cartridges > 0:
+		pollen_text += "  " + nova.button_hint()
 		var hint_rect := Rect2(panel + Vector2(0, BeeGameSettings.HUD_PANEL_SIZE.y + nova.HINT_GAP), nova.HINT_SIZE)
 		draw_rect(hint_rect, BeeGameSettings.HUD_PANEL_COLOR)
 		draw_rect(hint_rect, BeeGameSettings.HUD_POLLEN_COLOR, false, 1.0)
-		draw_string(font, hint_rect.position + nova.HINT_TEXT_OFFSET, "NOVA DE POLEN · " + nova.button_hint(), HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
-	draw_string(font, panel + Vector2(BeeGameSettings.HUD_VALUE_START_X, BeeGameSettings.HUD_ROW_POLLEN_Y), pollen_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+		draw_string(font, hint_rect.position + nova.HINT_TEXT_OFFSET, nova.button_hint() + " TOQUE: NOVA / MANTENER: CURAR", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
+	draw_string(font, panel + Vector2(244, BeeGameSettings.HUD_ROW_POLLEN_Y), pollen_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 	_draw_bombs(panel + Vector2(14, BeeGameSettings.HUD_ROW_ABILITY_Y - 8.0))
 	_draw_roll(panel + Vector2(122, BeeGameSettings.HUD_ROW_ABILITY_Y - 3.0))
