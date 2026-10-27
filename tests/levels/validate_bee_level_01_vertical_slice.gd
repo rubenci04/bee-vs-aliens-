@@ -70,8 +70,9 @@ func test_destructibles() -> void:
 	bee.global_position = Vector3(16.45, 1.2, 0)
 	bee.velocity = Vector3.ZERO
 	await capture("density02_crate_before.png")
+	bee.set_physics_process(true) # Tanda E: the sting dash advances in Bee's own physics step
 	check(bee.start_melee(), "Bee melee rejected against crate")
-	await frames(5)
+	await frames(40) # Tanda E: the sting dash needs time (and Bee physics) to arrive
 	# LOTE 14: the Sting does 30 damage (was 15): the 24 HP crate breaks with the first strike.
 	check(crate.get_node("HitFlash3D").activation_count > 0, "Crate ignored Bee melee/HitFlash")
 	check(crate.is_destroyed and crate.health.current_health == 0 and crate.collider.disabled and crate.body.collision_layer == 0, "Crate did not release route")
@@ -258,6 +259,7 @@ func sample_render_performance() -> void:
 	Engine.time_scale = saved_scale
 
 func run() -> void:
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	create_timer(300.0, true, false, true).timeout.connect(func(): quit(1))
 	stage = LEVEL.instantiate() as BeeShmupStage
 	root.add_child(stage)
@@ -281,7 +283,7 @@ func run() -> void:
 	check(stage.get_node("LogObstacle/CollisionShape3D").disabled, "Log solid collision enabled")
 	for side in ["LogTop", "LogBottom", "LogNearSide", "LogFarSide"]:
 		check(not stage.get_node("LogObstacle/" + side).disabled, "Log shell missing")
-	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 75, "Event count wrong (LOTE 14: the gradual roster table has 75+ events, got %d)" % BeeLevel01Controller.EVENTS.size())
+	check(BeeLevel01Controller.roster_only and BeeLevel01Controller.EVENTS.size() >= 74, "Event count wrong (Tanda E: the trimmed roster table has 74 events, got %d)" % BeeLevel01Controller.EVENTS.size())
 	var total := 0
 	var max_gap := 0.0
 	var valley_gap := 0.0
@@ -296,7 +298,7 @@ func run() -> void:
 				valley_gap = gap # The breathing valley of checkpoint 1: the only long stretch.
 			else:
 				max_gap = maxf(max_gap, gap)
-	check(total >= 190 and total <= 330 and max_gap <= 18 and valley_gap == 0.0, "Unit count/pacing wrong (LOTE 14: 190-330 units incl. the robot escort wave, gaps <= 18 m, NO breathing valley; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
+	check(total >= 160 and total <= 330 and max_gap <= 18 and valley_gap == 0.0, "Unit count/pacing wrong (Tanda E: 160-330 units incl. the robot escort wave, gaps <= 18 m, NO breathing valley; got %d, %.1f, %.1f)" % [total, max_gap, valley_gap])
 	await capture("density02_01_garden.png")
 	await test_destructibles()
 	# Restore authored travel; geometry tests may accelerate their own travel.
@@ -389,7 +391,7 @@ func run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Level did not complete")
 	check(wave.event_index == BeeLevel01Controller.EVENTS.size() and wave.max_active_seen >= 3 and wave.max_active_seen <= BeeLevel01Controller.MAX_ON_SCREEN_ARENA and wave.roster_complete and wave.tarantula_freed and wave.boss == null, "Progression/max active wrong (roster level ends with the tarantula freed, no UFO)")
 	check(wave.escaped_count >= 1, "Soft encounters required killing every enemy")
 	var spawned := 0

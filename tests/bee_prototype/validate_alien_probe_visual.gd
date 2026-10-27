@@ -76,16 +76,19 @@ func run() -> void:
 	check(bee.refresh_auto_aim() == probe,"Auto-aim rejected Probe")
 	var flash := probe.get_node("HitFlash3D") as HitFlash3D
 	var flash_count := flash.activation_count
+	var shot_dmg := int(bee.weapon_profile()["damage"][0]) # Tanda E: the Base shot is no longer 10
+	var hp_before: int = probe.health.current_health
 	check(bee.fire() != null,"X refused")
 	for i in 30:
-		if probe.health.current_health == 15: break
+		if probe.health.current_health == hp_before - shot_dmg: break
 		await frames(1)
-	check(probe.health.current_health == 15 and flash.activation_count > flash_count,"X/HitFlash failed")
+	check(probe.health.current_health == hp_before - shot_dmg and flash.activation_count > flash_count,"X/HitFlash failed")
 	for mesh in visual.find_children("*","MeshInstance3D",true,false):
 		check(mesh.material_overlay != null,"HitFlash missed an imported mesh")
 	probe.position = bee.position + Vector3(0.75,0,0)
+	bee.set_physics_process(true) # Tanda E: the sting dash advances in Bee's own physics step
 	check(bee.start_melee(),"Z refused")
-	for i in 15:
+	for i in 60:
 		if probe.is_defeated(): break
 		await frames(1)
 	check(probe.is_defeated() and not visual.is_visible_in_tree(),"Z/death failed")
@@ -93,6 +96,7 @@ func run() -> void:
 	var dead_pose := model.transform
 	await frames(4)
 	check(model.transform == dead_pose,"Dead visual kept animating")
+	bee.health.invulnerable = false # Tanda E: the sting dash / pirouette leave Bee protected for a moment
 	bee.health.take_damage(1000)
 	await frames(2)
 	var old_id := poc.get_instance_id()

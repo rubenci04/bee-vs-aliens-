@@ -23,7 +23,7 @@ func run() -> void:
 	var model: Node3D = visual.model
 	var pose = visual.punch_pose
 	check(pose.parts.size() == 8, "v02 has two imported front legs, joints and feet; no procedural proxy")
-	check(not model.find_child("Stinger", true, false).visible and bee.stinger == null and not bee.has_node("ChromeStinger"), "Imported and chrome stingers are absent from presentation")
+	check(model.find_child("Stinger", true, false).visible and bee.stinger == null and not bee.has_node("ChromeStinger"), "E1: imported metal drill stinger is visible (cosmetic); the chrome cone and its hitbox stay absent")
 	check(is_equal_approx(bee.melee_reach(), 2.08) and bee.melee_damage == 30 and bee.melee_cooldown == 0.0, "Reach, damage and cooldown retained")
 	check(is_equal_approx(T4B.DASH_SECONDS, 0.22) and is_equal_approx(T4B.IMPACT_SECONDS, 0.06) and is_equal_approx(T4B.RECOIL_SECONDS, 0.10) and is_equal_approx(T4B.EMPTY_DISTANCE, 1.0), "T4b timing and empty distance unchanged")
 	var shape := bee.melee_hitbox.get_node("CollisionShape3D").shape as BoxShape3D
@@ -77,7 +77,7 @@ func run() -> void:
 	check(front.transform.is_equal_approx(front_rest) and pose.angle == 0, "Finish restores exact transforms immediately, including defeat")
 	check((model.find_child("AnimationPlayer", true, false) as AnimationPlayer).current_animation == "wingbeat", "No drill animation replaces wingbeat")
 	visual.apply_model_version("v01")
-	check(visual.punch_pose.parts.size() == 4 and not visual.model.find_child("Stinger", true, false).visible, "v01 animates its own four front leg segments, hides old stinger")
+	check(visual.punch_pose.parts.size() == 4 and visual.model.find_child("Stinger", true, false).visible, "v01 animates its own four front leg segments; the cosmetic stinger stays visible")
 	visual.apply_model_version("v02")
 	var hud := stage.get_node("CanvasLayer/WeaponsHUD")
 	BeeGameSettings.last_input_joypad = false

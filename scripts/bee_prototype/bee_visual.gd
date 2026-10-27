@@ -91,8 +91,8 @@ func apply_model_version(version := "") -> bool:
 	muzzle = model.find_child("muzzle", true, false) as Node3D
 	drill = model.find_child("stinger_drill", true, false) as Node3D
 	drill_tip = model.find_child("stinger_tip", true, false) as Node3D
-	var old_stinger := model.find_child("Stinger", true, false) as Node3D
-	if old_stinger != null: old_stinger.hide()
+	var cosmetic_stinger := model.find_child("Stinger", true, false) as Node3D
+	if cosmetic_stinger != null: cosmetic_stinger.show() # Tanda E1: the metal drill stinger is permanent and purely cosmetic (no hitbox; the melee is only the punch).
 	punch_pose.bind(model)
 	helmet_socket = model.find_child("helmet_socket", true, false) as Node3D
 	blaster = model.find_child("antenna_R_blaster", true, false) as Node3D

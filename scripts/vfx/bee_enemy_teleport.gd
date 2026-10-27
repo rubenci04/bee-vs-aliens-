@@ -38,10 +38,16 @@ static func begin(unit: Node3D, at: Vector3, callback: Callable, is_return := fa
 	effect.destination = at
 	effect.on_arrive = callback
 	effect.returning = is_return
+	if not is_instance_valid(unit) or unit.get_parent() == null:
+		effect.free()
+		return null
 	unit.get_parent().add_child(effect)
 	return effect
 
 func _ready() -> void:
+	if not is_instance_valid(passenger) or not passenger.is_inside_tree():
+		queue_free()
+		return
 	name = "EnemyTeleport"
 	mark_seconds = S.RETURN_MARK_SECONDS if returning else S.MARK_SECONDS
 	base_scale = passenger.scale
@@ -106,13 +112,16 @@ func _mesh(label: String, ground: bool) -> MeshInstance3D:
 	return node
 
 func _physics_process(delta: float) -> void:
-	if not is_instance_valid(passenger):
+	if not is_instance_valid(passenger) or not passenger.is_inside_tree() or not is_inside_tree():
 		queue_free()
 		return
 	# Frozen director (defeat/victory) must never activate a late arrival.
-	var stage := get_parent().get_parent()
-	var director := stage.get_node_or_null("WaveController")
+	var stage: Node = get_parent().get_parent() if get_parent() != null else null
+	var director: Node = stage.get_node_or_null("WaveController") if stage != null else null
 	if director != null and bool(director.get("_frozen")): return
+	if mark == null or material == null or beam == null:
+		queue_free()
+		return
 	elapsed += delta
 	var pulse := sin(PI*clampf(elapsed/mark_seconds,0,1))
 	mark.scale = Vector3.ONE * (0.9+0.12*pulse)
@@ -137,6 +146,8 @@ func _physics_process(delta: float) -> void:
 	queue_free()
 
 func _restore() -> void:
+	if not is_instance_valid(passenger):
+		return
 	for entry in saved_meshes:
 		if is_instance_valid(entry.node): entry.node.material_override = entry.material
 	for entry in saved_health:

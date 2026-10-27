@@ -9,6 +9,7 @@ var failed := false
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	call_deferred("run")
 
@@ -82,7 +83,7 @@ func progress_to(destination: float) -> void:
 func run() -> void:
 	create_timer(180.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind_stage()
 	check(not qol.checkpoint_active and InputMap.has_action("bee_pause") and InputMap.has_action("bee_full_restart"), "Initial state/inputs")
@@ -205,7 +206,7 @@ func run() -> void:
 		await process_frame
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Completion after checkpoint respawn failed")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Completion after checkpoint respawn failed")
 	for entry in stage.wave.spawn_history:
 		check(entry.event >= checkpoint_event(), "Earlier encounter regenerated")
 	await capture("08_final_unaffected")

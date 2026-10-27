@@ -44,6 +44,7 @@ func kill(unit: Node3D) -> void:
 	unit.get_node("HealthComponent").take_damage(1000)
 
 func run() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(140.0).timeout.connect(func(): quit(1))
 	scene = POC.instantiate() as BeeShmupStage
 	root.add_child(scene)

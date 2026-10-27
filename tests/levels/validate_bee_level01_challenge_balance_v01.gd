@@ -27,6 +27,7 @@ var only := "" # Optional dev filter: -- only=spread (human|density|spread|boss)
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
@@ -333,7 +334,7 @@ func test_spread() -> void:
 	for node in stage.find_children("*", "Node3D", false, false):
 		if node is BeeEnergyProjectile:
 			burst += 1
-			check((node as BeeEnergyProjectile).damage == 8, "Spread pellet damage is not 8")
+			check((node as BeeEnergyProjectile).damage in [1, 3], "Spread pellet damage is 3 (centre) or 1 (side) since the weapon tiers")
 	check(burst == 3, "Spread must still fire 3 projectiles")
 	var time_before := bee.spread_ammo
 	check(bee.collect_spread() and is_equal_approx(bee.spread_ammo, time_before + 10.0), "Refill adds 10 seconds")
@@ -484,14 +485,14 @@ func test_boss() -> void:
 		bee.global_position.y = 7.0
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing after the boss died")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")) and wave.boss_defeated, "Level Complete missing after the boss died")
 	await capture("03_level_complete.png")
 	print("CHALLENGE_LEVEL_COMPLETE OK")
 
 func run() -> void:
 	create_timer(540.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("human"):

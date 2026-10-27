@@ -441,6 +441,7 @@ func _clamp_x(x: float) -> float:
 # --- main loop ----------------------------------------------------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
+	if not is_inside_tree() or get_parent() == null or get_tree() == null: return # E1: never act on a detached boss.
 	var easy := BeeGameSettings.difficulty == BeeGameSettings.EASY
 	_hull_tokens = minf(HULL_BURST, _hull_tokens + max_hp * (FURY_HULL_DPS_RATIO if state == State.PHASE_4 else (EASY_HULL_DPS_RATIO if easy else HULL_DPS_RATIO)) * delta)
 	_web_immune_left = maxf(0.0, _web_immune_left - delta)
@@ -1268,7 +1269,7 @@ func _boss_hint(text: String) -> void:
 	_hint_token += 1
 	var token := _hint_token
 	get_tree().create_timer(BOSS_HINT_SECONDS, false).timeout.connect(func():
-		if token == _hint_token and is_instance_valid(_hint_label):
+		if is_instance_valid(self) and token == _hint_token and is_instance_valid(_hint_label):
 			_hint_label.visible = false)
 
 

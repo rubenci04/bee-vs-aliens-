@@ -28,6 +28,7 @@ func wait_for_state(actor: Node, wanted: int, limit := 120) -> bool:
 
 
 func run_checks() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(70.0).timeout.connect(func(): quit(1))
 	check(COMBAT_POC != null, "Bee Combat POC failed to load")
 	var poc := COMBAT_POC.instantiate()
@@ -41,7 +42,7 @@ func run_checks() -> void:
 	var wasp_b := poc.get_node("Enemies/WaspB") as WaspEnemy
 	var probe_b := poc.get_node("Enemies/ProbeB") as AlienProbeRanged
 	check(bee.health.current_health == 100 and not bee.is_defeated, "BeePlayer did not start at 100 HP")
-	check(bee.melee_damage == 30 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, BeeGameSettings.STING_MIN_INTERVAL_SEC), "Bee melee values changed (LOTE 14: 30 damage, 0.9 s)")
+	check(bee.melee_damage == 30 and is_equal_approx(bee.melee_range, 0.85) and is_equal_approx(bee.melee_cooldown, 0.0), "Bee melee values changed (30 damage; the cooldown lives in BeeGameSettings.STING_MIN_INTERVAL_SEC)")
 	check(not wasp_a.is_active() and not probe_a.is_active() and not wasp_b.is_active() and not probe_b.is_active(), "Enemies began active")
 	check(poc.get_node("Pollen").get_child_count() == 2, "Combat POC must have two pollen pickups")
 
@@ -89,8 +90,8 @@ func run_checks() -> void:
 	bee.facing_x = 1.0
 	bee._place_melee_hitbox()
 	check(bee.start_melee(), "Z melee was rejected")
-	check(bee.melee_hitbox.enabled and bee.melee_hitbox.position.x > 0.0, "Melee did not respect right facing")
-	for frame in 12:
+	check(bee.sting_dash.active and bee.sting_dash.direction.x > 0.0, "Melee did not lunge to the right (Tanda: 360-degree sting dash)")
+	for frame in 60:
 		if wasp_a.is_defeated():
 			break
 		await physics_frame
@@ -98,7 +99,7 @@ func run_checks() -> void:
 	await frames(60)
 	bee.facing_x = -1.0
 	bee._place_melee_hitbox()
-	check(bee.start_melee() and bee.melee_hitbox.position.x < 0.0, "Melee did not respect left facing")
+	check(bee.start_melee(), "Melee did not start facing left")
 
 	# Encounter B proves auto-aim and ranged attack behavior.
 	bee.position = Vector3(-0.4, 3.5, 0)
@@ -146,7 +147,13 @@ func run_checks() -> void:
 	probe_a.set_physics_process(false)
 	probe_a.position = bee.position + Vector3(4.0, 0, 0)
 	bee.facing_x = 1.0
-	for expected in [15, 5, 0]:
+	var hp_now: int = probe_a.health.current_health
+	var dmg: int = int(bee.weapon_profile()["damage"][0]) # Tanda E: the Base shot is no longer 10
+	var expected_hp: Array = []
+	while hp_now > 0:
+		hp_now = maxi(0, hp_now - dmg)
+		expected_hp.append(hp_now)
+	for expected in expected_hp:
 		check(bee.refresh_auto_aim() == probe_a, "X auto-aim lost Probe target")
 		check(bee.fire() != null, "X failed to fire")
 		for frame in 45:

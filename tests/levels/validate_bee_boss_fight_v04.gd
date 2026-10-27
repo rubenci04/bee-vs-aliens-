@@ -29,6 +29,7 @@ var use_spread := false
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	report_only = "report" in OS.get_cmdline_user_args()
 	trace = "trace" in OS.get_cmdline_user_args()
 	call_deferred("run")
@@ -52,7 +53,7 @@ func load_level() -> void:
 		current_scene.queue_free()
 		await frames(3)
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(6)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller
@@ -302,7 +303,7 @@ func fight(label: String, with_bomb := false) -> Dictionary:
 		await physics_frame
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), label + ": no SECTOR DESPEJADO after the UFO")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), label + ": no SECTOR DESPEJADO after the UFO")
 	Engine.time_scale = 1.0
 	return result
 

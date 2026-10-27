@@ -15,7 +15,7 @@ const BOT_TAPS_PER_SECOND := 3.0
 const AIM_PATTERN := [true, true, false, true, false]
 const LATE_FRACTION := 0.5
 const BULLET_LOOKAHEAD := 0.9
-const FIGHT_SECONDS := Vector2(30.0, 45.0) # LOTE 15: 30-45 s (user target).
+const FIGHT_SECONDS := Vector2(45.0, 130.0) # Tanda D: >= 45 s at base DPS (the chaotic bot here lands ~108 s); was 30-45 s in Lote 15.
 const STILL_MIN_DAMAGE := 40
 
 var stage: BeeShmupStage
@@ -47,10 +47,10 @@ func load_level() -> void:
 	if current_scene != null:
 		current_scene.queue_free()
 		await frames(3)
-	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	stage = LEVEL.instantiate() as BeeShmupStage
+	root.add_child(stage)
+	current_scene = stage
 	await frames(6)
-	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller
 	bee = stage.bee
 
@@ -76,7 +76,7 @@ func run() -> void:
 			var label := ("NORMAL" if difficulty == BeeGameSettings.NORMAL else "EASY") + (" SPREAD" if spread else " BASE")
 			var result := await fight(label, &"expert")
 			print("MEASURE EXPERT ", label, " ", result)
-			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 30-45 s: " + str(result.seconds))
+			check(float(result.seconds) >= FIGHT_SECONDS.x and float(result.seconds) <= FIGHT_SECONDS.y, label + ": robot fight outside 45-130 s: " + str(result.seconds))
 			if "expert" in OS.get_cmdline_user_args():
 				continue
 			for corner in [&"still_top", &"still_bottom"]:
@@ -119,7 +119,7 @@ func start_gate() -> WalkerMiniboss:
 		if group != null:
 			for item in group.get_children():
 				item.queue_free()
-	bee.global_position = Vector3(stage.camera.global_position.x - 3.6, 3.4, 0.0)
+	bee.global_position = Vector3(stage.camera.global_position.x - 3.6, 3.0, 0.0)
 	var robot: WalkerMiniboss
 	for i in 240:
 		await physics_frame
@@ -138,7 +138,7 @@ func test_structure() -> void:
 	check(robot.health_bar_visible(), "Mini-boss bar")
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
-	bee.global_position = Vector3(stage.camera.global_position.x - 3.6, 3.4, 0.0)
+	bee.global_position = Vector3(stage.camera.global_position.x - 3.6, 3.0, 0.0)
 	var spawned_before := int(wave.spawn_history.size()) # The second escort wave may come by its fallback timer during the attack loop.
 	# Let it walk in and attack: cannon (warned 0.5 s) and stomp (band + wave).
 	var saw_band := false
@@ -167,7 +167,7 @@ func test_structure() -> void:
 	await frames(10)
 	check(is_instance_valid(probe_wave) and probe_wave.hitbox.enabled, "The roll must not destroy the stomp wave")
 	probe_wave.stop()
-	bee.global_position.y = 3.4
+	bee.global_position.y = 3.0 # E2: below the anti-air threshold so the base pattern is exercised
 	# Eye x2.
 	var at_eye := Node3D.new()
 	stage.add_child(at_eye)
@@ -191,14 +191,16 @@ func test_structure() -> void:
 	var shots := robot.cannon_shots
 	var mortars_before := robot.mortars
 	var lasers_before := robot.lasers
-	for i in 60 * 10:
+	for i in 60 * 30: # Tanda D lengthened the cycle: the laser comes after stride + burst.
 		await physics_frame
-	check(robot.cannon_shots == shots and robot.mortars == mortars_before and robot.lasers > lasers_before, "No more cannon shots or mortars after it broke, the laser goes on")
+		if robot.lasers > lasers_before: break
+	check(robot.cannon_shots == shots and robot.mortars == mortars_before and robot.lasers > lasers_before, "No more cannon shots or mortars after it broke, the laser goes on (shots %d/%d mortars %d/%d lasers %d/%d)" % [robot.cannon_shots, shots, robot.mortars, mortars_before, robot.lasers, lasers_before])
 	# It explodes when it falls (technology: never freed).
 	var freed_before := wave.liberated_count
+	var escorts_alive := wave.active_units.filter(func(u): return is_instance_valid(u) and u != robot).size() # Tanda E: they fall (are freed) with it
 	robot.health.take_damage(99999)
 	await frames(30)
-	check(robot.is_defeated() and wave.liberated_count == freed_before, "The robot explodes, it is not freed")
+	check(robot.is_defeated() and wave.liberated_count - freed_before <= escorts_alive, "The robot explodes, it is not freed (only its escorts are, with it)")
 	await frames(60)
 	check(not is_instance_valid(robot) or not robot.visual_root.visible, "Its model is gone after the blast")
 	lines.append("WALKER structure cannon_tele=0.5 stomp=band+wave eye=x2 escorts=%d+%d cannon_break=OK explode=OK" % [

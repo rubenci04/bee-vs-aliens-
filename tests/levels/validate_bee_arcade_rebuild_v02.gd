@@ -24,6 +24,7 @@ var only := ""
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -161,7 +162,13 @@ func test_popcorn() -> void:
 		await physics_frame
 		if drone.is_defeated():
 			break
-	check(drone.is_defeated(), "One Base shot must destroy a popcorn drone")
+	for extra in 4: # Tanda E: the Base shot does 3 damage now; a popcorn drone dies within a few
+		if drone.is_defeated(): break
+		bee._spawn_projectile((drone.global_position - bee.global_position).normalized())
+		for i in 30:
+			await physics_frame
+			if drone.is_defeated(): break
+	check(drone.is_defeated(), "A few Base shots must destroy a popcorn drone")
 	await frames(70)
 	check(not is_instance_valid(drone) or not wave.swarm_units.has(drone), "A destroyed drone must leave the popcorn list")
 	# An escaping drone is freed.
@@ -349,7 +356,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Level Complete missing")
 	check(moments == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments out of order: " + str(moments))
 	var planned := 0
 	for event: Dictionary in BeeLevel01Controller.EVENTS_LEGACY:
@@ -369,7 +376,7 @@ func test_run() -> void:
 func run() -> void:
 	create_timer(900.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("static"):

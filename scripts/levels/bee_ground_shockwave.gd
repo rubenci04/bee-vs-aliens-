@@ -19,18 +19,23 @@ var speed := 7.5
 var height := 1.3
 var width := 0.9
 var stop_x := 0.0 # World X where the wave ends (a screen edge).
+var foot_color := COLOR ## Tanda E: the stag beetle's quake wave is brown / burnt orange (defaults = the robot's plasma)
+var crown_color := CROWN
 var hitbox: DamageHitbox3D
 var _visual: MeshInstance3D
 var _dust_left := 0.0
 
 
 ## Spawns a wave on `parent` at world X `from_x`, running towards `stop_x`.
-static func launch(parent: Node, attacker: Node, from_x: float, stop: float, damage: int, wave_speed: float, wave_height: float) -> BeeGroundShockwave:
+static func launch(parent: Node, attacker: Node, from_x: float, stop: float, damage: int, wave_speed: float, wave_height: float, foot := COLOR, crown := CROWN, wave_width := 0.9) -> BeeGroundShockwave:
 	var wave := BeeGroundShockwave.new()
 	wave.name = "GroundShockwave"
 	wave.direction = signf(stop - from_x) if stop != from_x else -1.0
 	wave.speed = wave_speed
 	wave.height = wave_height
+	wave.width = wave_width
+	wave.foot_color = foot
+	wave.crown_color = crown
 	wave.stop_x = stop
 	wave.top_level = true
 	parent.add_child(wave)
@@ -55,14 +60,14 @@ static func warning_band(parent: Node, from_x: float, to_x: float, band_height: 
 
 func _build() -> void:
 	_visual = MeshInstance3D.new()
-	_visual.mesh = _plasma_mesh()
+	_visual.mesh = _plasma_mesh(foot_color, crown_color)
 	_visual.scale = Vector3(width * 1.1, height, 0.9)
 	_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_visual)
 
 
 ## A low jagged dome of plasma: a hemisphere whose rim and rings are pushed in and out by a fixed hash (irregular, identical every time).
-static func _plasma_mesh() -> ArrayMesh:
+static func _plasma_mesh(foot := COLOR, crown := CROWN) -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var grid: Array = []
@@ -84,8 +89,8 @@ static func _plasma_mesh() -> ArrayMesh:
 			var b: Vector3 = grid[ring][next]
 			var c: Vector3 = grid[ring + 1][next]
 			var d: Vector3 = grid[ring + 1][seg]
-			var low := COLOR.lerp(CROWN, float(ring) / float(RINGS))
-			var high := COLOR.lerp(CROWN, float(ring + 1) / float(RINGS))
+			var low := foot.lerp(crown, float(ring) / float(RINGS))
+			var high := foot.lerp(crown, float(ring + 1) / float(RINGS))
 			for corner in [[a, low], [b, low], [c, high], [a, low], [c, high], [d, high]]:
 				tool.set_color(corner[1])
 				tool.add_vertex(corner[0])
@@ -106,7 +111,7 @@ static func _hash(a: int, b: int) -> float:
 
 ## Small hot ring on the soil where the wave is born (fades out).
 func _impact_ring() -> void:
-	var ring := BeeAttackVisuals.ring(get_parent(), Vector3(global_position.x, GROUND_Y + 0.05, 0.0), IMPACT_RING_RADIUS, 0.18, Color(COLOR, 0.8))
+	var ring := BeeAttackVisuals.ring(get_parent(), Vector3(global_position.x, GROUND_Y + 0.05, 0.0), IMPACT_RING_RADIUS, 0.18, Color(foot_color, 0.8))
 	ring.rotation.x = 0.0
 	var fade := ring.create_tween()
 	fade.tween_property(ring, "scale", Vector3.ONE * 1.8, 0.35)

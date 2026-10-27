@@ -27,7 +27,7 @@ func check(ok: bool, message: String) -> void:
 func run() -> void:
 	test_table()
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	for i in 5:
 		await physics_frame
 	stage = current_scene as BeeShmupStage

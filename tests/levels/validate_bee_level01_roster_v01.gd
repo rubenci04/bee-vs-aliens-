@@ -30,7 +30,7 @@ func frames(count: int) -> void:
 func run() -> void:
 	test_table()
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller
@@ -75,7 +75,7 @@ func test_table() -> void:
 		check(not bool(event.get("human", false)), "No giant human in the roster level")
 		if event.has("arena"):
 			arenas += 1
-			check((event["arena"] as Array).size() == 7, "Each zone plays 7 waves (LOTE 14: 2 solo debut waves + 5 mixed)")
+			check((event["arena"] as Array).size() >= 2 and (event["arena"] as Array).size() <= 7, "Tanda E: each zone plays 2-7 inner waves (cloud 2, beetles 3, spiders 4)")
 		if i > 0:
 			check(float(event["at"]) >= float(events[i - 1]["at"]), "Events must ascend")
 		if bool(event.get("hard", false)):

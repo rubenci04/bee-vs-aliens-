@@ -36,9 +36,10 @@ func capture(label: String) -> void:
 	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(OUT + "lote7_" + label + ".png"))
 
 func run() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(300.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller
@@ -97,6 +98,7 @@ func run() -> void:
 	bee.facing_x = 1.0
 	wave._spawn({"family": "Wasp", "slot": 0, "event": 0, "hard": false, "y": 4.6})
 	var wasp := wave.active_units.back() as Node3D
+	await frames(120) # Tanda E: enemies now arrive by teleport / walking in; they are targetable only once active
 	wasp.set_physics_process(false)
 	wasp.global_position = Vector3(stage.camera.global_position.x + 2.0, 4.6, 0)
 	await frames(2)

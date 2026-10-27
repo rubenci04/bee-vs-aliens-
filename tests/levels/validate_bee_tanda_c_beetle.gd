@@ -1,16 +1,22 @@
 extends SceneTree
-## Tanda C (T6e) — ESCARABAJO: slow tank, straight ram after a 0.6 s pulse, stunned for 1 s afterwards. No stones, no lines.
+## Tanda C (T6e) — ESCARABAJO: slow tank, straight ram after a 0.5 s pulse, stunned for 1 s afterwards. No stones, no lines. Tanda E: it also lobs grenades (see validate_bee_tanda_e_beetle).
 var failures := 0
 var beetles: Array[AssetFauna] = []
 var stray_shots := 0
+var fragments := 0
+var balls: Array[BeetleCannonball] = []
 func _initialize() -> void: call_deferred("run")
 func check(ok: bool, message: String) -> void:
 	if not ok:
 		failures += 1
 		push_error(message)
 func _added(node: Node) -> void:
-	if node is AlienEnemyProjectile and node.hitbox.attacker in beetles:
-		stray_shots += 1
+	if node is AlienEnemyProjectile and node.hitbox.attacker in beetles and node.get_meta("shot_style", &"") == &"stone":
+		stray_shots += 1 # E2: only stones are forbidden; the cannonball fragments use the pellet style
+	if node is AlienEnemyProjectile and node.get_meta("shot_style", &"") == &"pellet" and node.hitbox.attacker in beetles:
+		fragments += 1
+	if node is BeetleCannonball:
+		balls.append(node)
 func run() -> void:
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
 	root.add_child(stage)
@@ -73,7 +79,7 @@ func run() -> void:
 			stun_frames = 0
 		if b.state == AssetFauna.State.IDLE:
 			walk_speed_max = maxf(walk_speed_max, absf(dx) * 60.0)
-	check(stray_shots == 0, "It throws nothing (no stones): %d shots" % stray_shots)
+	check(stray_shots == 0, "It throws no stones: %d shots" % stray_shots)
 	check(charge_runs.size() >= 2, "It rams repeatedly (%d rams)" % charge_runs.size())
 	for run_xs in charge_runs:
 		var sign := signf(run_xs[run_xs.size() - 1] - run_xs[0])

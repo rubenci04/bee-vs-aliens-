@@ -70,6 +70,7 @@ func run() -> void:
 			break
 	check(seen_waves.size() >= 4, "Ground waves were spawned (%d)" % seen_waves.size())
 	check(kinds.has(&"burst") and kinds.has(&"hop"), "Both new attack kinds ran")
+	check(WalkerMiniboss.HOP_APEX == 3.5 and WalkerMiniboss.JUMP_APEX == 4.4 and WalkerMiniboss.BURST_SPEED == 10.0, "E2: hop 3.5 m, jump 4.4 m, burst at 10 m/s")
 	check(max_slots <= 2, "At most two attackers at once (max %d)" % max_slots)
 	print("TANDA_D_ROBOT_ATTACKS bursts=", robot.bursts, " shots=", robot.burst_shots_fired, " hops=", robot.hops, " slots=", max_slots, " kinds=", kinds.keys())
 	check(robot.escorts_called and wave.escort_waves == 2, "The mid-fight call happened exactly once (waves %d)" % wave.escort_waves)

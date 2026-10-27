@@ -43,6 +43,7 @@ func capture_runtime(filename: String) -> void:
 	check(picture.save_png(directory.path_join(filename)) == OK, "Capture failed: " + filename)
 
 func run() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(160.0).timeout.connect(func(): quit(1))
 	check(POC != null and ALIEN_ASSET != null, "POC or approved Alien missing")
 	scene = POC.instantiate() as BeeShmupStage
@@ -73,7 +74,7 @@ func run() -> void:
 	for i in 100:
 		if alien.health.current_health < original_hp: break
 		await frames(1)
-	check(alien.health.current_health == original_hp - 10 and alien.get_node("HitFlash3D").activation_count > 0, "Projectile/HitFlash failed")
+	check(alien.health.current_health == original_hp - int(bee.weapon_profile()["damage"][0]) and alien.get_node("HitFlash3D").activation_count > 0, "Projectile/HitFlash failed")
 	check(await until_state(alien, OrganicAlienEnemy.State.WINDUP), "WINDUP missing")
 	check(alien.telegraph.visible and not alien.attack_hitbox.enabled, "WINDUP telegraph/hitbox wrong")
 	check(is_equal_approx(alien.windup_time, 0.65) and is_equal_approx(alien.lunge_time, 0.38) and is_equal_approx(alien.recovery_time, 0.75), "Phase timings changed")

@@ -11,7 +11,7 @@ extends SceneTree
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const EXEMPT := ["Halo", "SoftHalo"] # Emissive rings and the warm sun halo are intentionally unshaded.
 ## LOTE 9: item beacons, plasma shots and the hostile cyan core are glows by design (unshaded, no toon).
-const EXEMPT_PARENTS := ["ItemBeacon", "PlasmaBall", "HostileGlow"]
+const EXEMPT_PARENTS := ["ItemBeacon", "PlasmaBall", "HostileGlow", "PollenGrains"]
 const BEE_VISUAL_SCALE: float = preload("res://scripts/bee_prototype/bee_visual.gd").VISUAL_SCALE
 
 func _initialize() -> void:

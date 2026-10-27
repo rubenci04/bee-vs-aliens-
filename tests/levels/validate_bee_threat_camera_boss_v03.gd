@@ -107,6 +107,9 @@ func test_camera() -> void:
 	var probe := spawn("Probe", 0, 4.0) as AlienProbeRanged
 	check(probe.global_position.x - stage.camera.global_position.x >= BeeLevel01Framing.half_width_max(aspect) + 0.99, "Spawn not past the camera E edge")
 	check(not bee._is_valid_target(probe), "Auto-aim locked onto an enemy that has not entered camera E")
+	BeeLevel01Controller.instant_arrival = true # Tanda E: from here on the probe must be active at once
+	probe.queue_free()
+	probe = spawn("Probe", 0, 4.0) as AlienProbeRanged
 	place(probe, 3.0, 4.0)
 	check(bee._is_valid_target(probe), "An on-screen enemy must be targetable")
 	await clear()
@@ -160,7 +163,7 @@ func test_wasp() -> void:
 			straight = straight and kami.velocity.normalized().angle_to(dash_dir) < 0.01
 	await frames(2)
 	check(straight, "Kamikaze dash must be straight (no homing)")
-	check(kami.exploded and not kami.explosion_hit_bee and bee.health.current_health == bee.health.max_health, "A dodged overload must explode away from Bee without damage")
+	check((kami.exploded or kami.current_state == WaspEnemy.State.RECOVERY) and not kami.explosion_hit_bee and bee.health.current_health == bee.health.max_health, "A dodged overload ends away from Bee without damage (Tanda B: persistent wasps recover instead of exploding)")
 	await clear()
 	# Cancellation: shot during the telegraph -> harmless controlled blast.
 	var cancel := spawn("Wasp", 2, 4.6) as WaspEnemy
@@ -356,9 +359,10 @@ func test_presentation() -> void:
 	print("V03_PRESENTATION leaves=mesh frog_start=%.1f landings=%d bottle_clear=OK" % [start_rel, frog_event.landings])
 
 func run() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(900.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("camera"):

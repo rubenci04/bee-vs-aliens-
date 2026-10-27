@@ -45,7 +45,7 @@ const LASER_LENGTH := 16.0
 const LASER_DAMAGE := 6
 const JUMP_TELEGRAPH := 0.75
 const JUMP_SECONDS := 0.8
-const JUMP_APEX := 3.4
+const JUMP_APEX := 4.4 # E2: threatens the upper band (was 3.4)
 const JUMP_DAMAGE := 8
 const JUMP_MIN_DISTANCE := 3.0
 const STRIDE_SPEED := 3.0
@@ -56,11 +56,14 @@ const MIN_TELEGRAPH := 0.42
 const BURST_TELEGRAPH := 0.5
 const BURST_SHOTS := 3
 const BURST_GAP := 0.22
-const BURST_SPEED := 6.5
+const BURST_SPEED := 10.0 # E2: anti-air burst (was 6.5)
+const HIGH_Y := 3.2 ## E2: Bee above this for HIGH_SECONDS makes the robot prefer hop / jump / an upward burst.
+const HIGH_SECONDS := 2.0
+const AIR_PICKS := [&"hop", &"burst", &"jump"]
 const BURST_DAMAGE := 4
 const HOP_TELEGRAPH := 0.5
 const HOP_SECONDS := 0.5
-const HOP_APEX := 1.5
+const HOP_APEX := 3.5 # E2: threatens the upper band (was 1.5)
 const HOP_MIN := 2.5
 const HOP_MAX := 4.5
 const HOP_DAMAGE := 6
@@ -116,6 +119,9 @@ var _hop_from := 0.0
 var _step := &"enter"
 var _left := 0.0
 var _attack_index := 0
+var high_seconds := 0.0 ## E2: continuous time Bee spent above HIGH_Y.
+var air_priority_picks := 0
+var _last_was_air := false
 var _locked_dir := Vector3.LEFT
 var _shots_left := 0
 var _aim_line: MeshInstance3D
@@ -201,9 +207,11 @@ func _half_width() -> float:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_inside_tree() or get_parent() == null or get_tree() == null: return # E1: never act on a detached boss.
 	if not _active or target == null or target.is_defeated:
 		return
 	fight_seconds += delta
+	high_seconds = (high_seconds + delta) if target.global_position.y > HIGH_Y else 0.0
 	_body_tokens = minf(BODY_BURST, _body_tokens + health.max_health * BODY_DPS_RATIO * delta)
 	if not (_step in [&"stride", &"jump_air", &"hop_air", &"laser_sweep"]):
 		_face_target()
@@ -359,7 +367,14 @@ func _next_attack() -> void:
 	BeeMusic.duck_for_explosion()
 	var pattern: Array = PATTERN if cannon_alive else PATTERN_NO_CANNON
 	var kind: StringName = pattern[_attack_index % pattern.size()]
-	_attack_index += 1
+	if high_seconds >= HIGH_SECONDS and not _last_was_air:
+		kind = AIR_PICKS[air_priority_picks % AIR_PICKS.size()] # E2: anti-air priority; the normal pattern resumes afterwards.
+		air_priority_picks += 1
+		high_seconds = 0.0
+		_last_was_air = true
+	else:
+		_attack_index += 1
+		_last_was_air = false # Never two anti-air picks in a row: the normal pattern still advances.
 	attacks_started += 1
 	attack_kind = kind
 	match kind:
@@ -524,7 +539,7 @@ func _land() -> void:
 	_land_box.global_position = Vector3(global_position.x, 1.4, 0.0)
 	_land_box.set_enabled(true)
 	get_tree().create_timer(0.15, false, true).timeout.connect(func():
-		if is_instance_valid(_land_box):
+		if is_instance_valid(self) and is_instance_valid(_land_box):
 			_land_box.set_enabled(false))
 	_stamp(JUMP_TELEGRAPH, false)
 
@@ -740,7 +755,7 @@ func _hop_land() -> void:
 	_land_box.global_position = Vector3(global_position.x, 1.4, 0.0)
 	_land_box.set_enabled(true)
 	get_tree().create_timer(0.15, false, true).timeout.connect(func():
-		if is_instance_valid(_land_box):
+		if is_instance_valid(self) and is_instance_valid(_land_box):
 			_land_box.set_enabled(false))
 	hazards.append({"kind": &"hop_wave", "telegraph": HOP_TELEGRAPH})
 	var half := _half_width()

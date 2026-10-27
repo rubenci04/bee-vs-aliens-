@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cyy804g1xpgpd"
-path="res://.godot/imported/lvl01_enemy_fly_swarm_v01_lvl01_enemy_fly_swarm_v01_palette.png-7e580901867760c612240937d38752be.ctex"
+path.s3tc="res://.godot/imported/lvl01_enemy_fly_swarm_v01_lvl01_enemy_fly_swarm_v01_palette.png-7e580901867760c612240937d38752be.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "c1159178142dcc226df7251345b750d8"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/levels/level_01_garden/enemies/lvl01_enemy_fly_swarm_v01_lvl01_enemy_fly_swarm_v01_palette.png"
-dest_files=["res://.godot/imported/lvl01_enemy_fly_swarm_v01_lvl01_enemy_fly_swarm_v01_palette.png-7e580901867760c612240937d38752be.ctex"]
+dest_files=["res://.godot/imported/lvl01_enemy_fly_swarm_v01_lvl01_enemy_fly_swarm_v01_palette.png-7e580901867760c612240937d38752be.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

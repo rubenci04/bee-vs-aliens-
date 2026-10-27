@@ -223,7 +223,7 @@ func test_fireflies_and_turtle() -> void:
 func run() -> void:
 	create_timer(600.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller

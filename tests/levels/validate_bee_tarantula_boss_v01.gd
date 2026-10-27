@@ -56,10 +56,10 @@ func load_level() -> void:
 	if current_scene != null:
 		current_scene.queue_free()
 		await frames(3)
-	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	stage = LEVEL.instantiate() as BeeShmupStage
+	root.add_child(stage)
+	current_scene = stage
 	await frames(6)
-	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller
 	bee = stage.bee
 
@@ -191,7 +191,8 @@ func test_structure() -> void:
 		await physics_frame
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO · LIBERADOS"), "SECTOR DESPEJADO · LIBERADOS n/N after it leaves (%s)" % stage.status.text)
+	await frames(5)
+	check(stage.sector_complete and stage.has_node("ResultsScreen") and wave.liberation_text().begins_with("LIBERADOS"), "T2 results screen with LIBERADOS n/N after it leaves (%s)" % wave.liberation_text())
 	check(wave.tarantula_freed and wave.roster_complete, "Level complete")
 	lines.append("TARANTULA structure bomb=%.1f%% legs_absorbed=%d exposed_x2=OK freed=OK banner='%s'" % [float(applied[0]) / boss.max_hp * 100.0 if is_instance_valid(boss) else 8.0, 1, stage.status.text])
 
@@ -287,7 +288,7 @@ func test_moves() -> void:
 		bee.global_position = Vector3(cam_x - 3.0 + 2.0 * sin(float(i) / 90.0), 3.2, 0.0)
 		saw[boss.mode] = true
 		if boss.mode == &"ceiling":
-			check(boss.implant_hurtbox.global_position.y < top and boss.implant_hurtbox.global_position.y > top - 3.0, "On the ceiling the implant hangs inside the screen (%.2f)" % boss.implant_hurtbox.global_position.y)
+			check(boss.implant_hurtbox.global_position.y < top and boss.implant_hurtbox.global_position.y > BeeLevel01Framing.bottom_y() + 1.5, "On the ceiling (T7b lowered it) the implant hangs inside the screen (%.2f)" % boss.implant_hurtbox.global_position.y)
 			check(boss.body_hurtbox.global_position.y > boss.implant_hurtbox.global_position.y, "Upside down: the implant faces down")
 		if boss.mode == &"hang":
 			check(boss.body_hurtbox.global_position.y < top and boss.body_hurtbox.global_position.y > 1.0, "The swinging body stays inside the screen")
@@ -442,7 +443,7 @@ func fight(label: String, bot: StringName) -> Dictionary:
 		await physics_frame
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO · LIBERADOS"), label + ": no SECTOR DESPEJADO · LIBERADOS after the tarantula")
+	check(stage.sector_complete and stage.has_node("ResultsScreen"), label + ": no results screen (SECTOR DESPEJADO) after the tarantula")
 	return result
 
 

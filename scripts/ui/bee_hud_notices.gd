@@ -72,7 +72,7 @@ func clear_combat_zone(seconds: float) -> void:
 func _display(item: Dictionary) -> void:
 	active_kind = item.kind
 	active_bucket = int(item.get("bucket", -1))
-	label.text = ("Nova de polen lista: " + preload("res://scripts/game/bee_pollen_nova_settings.gd").button_hint()) if item.kind == "pollen_ready" else str(item.text)
+	label.text = ("Escudo y Cura de polen listos: " + preload("res://scripts/game/bee_pollen_nova_settings.gd").button_hint()) if item.kind == "pollen_ready" else str(item.text)
 	label.add_theme_font_size_override("font_size", S.SMALL_FONT if item.small else S.BANNER_FONT)
 	left = item.seconds
 	panel.modulate.a = 1
@@ -100,7 +100,7 @@ func note_liberated() -> void:
 
 func _process(delta: float) -> void:
 	if active_kind == "pollen_ready":
-		label.text = "Nova de polen lista: " + preload("res://scripts/game/bee_pollen_nova_settings.gd").button_hint()
+		label.text = "Escudo y Cura de polen listos: " + preload("res://scripts/game/bee_pollen_nova_settings.gd").button_hint()
 	if active_kind == "device" and combat_active(get_parent()):
 		left = 0.0
 	window_left = maxf(0, window_left - delta)

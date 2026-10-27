@@ -30,6 +30,7 @@ func capture_runtime(name: String) -> void:
 	var image := root.get_viewport().get_texture().get_image()
 	check(image.save_png("res://dev/ground_threat_review/"+name) == OK,"Runtime capture failed")
 func run() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(115.0).timeout.connect(func(): quit(1))
 	check(POC != null and MODEL != null,"Scene/turret asset failed to load")
 	scene = POC.instantiate() as BeeShmupStage
@@ -94,7 +95,7 @@ func run() -> void:
 	bee._place_melee_hitbox()
 	var before_melee := a.health.current_health
 	check(bee.start_melee(),"Bee melee rejected")
-	for i in 10:
+	for i in 45:
 		if a.health.current_health < before_melee: break
 		await frames(1)
 	check(a.health.current_health < before_melee,"Reachable turret ignored melee")

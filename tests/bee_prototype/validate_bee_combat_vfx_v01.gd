@@ -116,11 +116,11 @@ func run() -> void:
 	stage.camera.set_stage_x(26)
 	var base := bee.fire()
 	check(effects(&"muzzle").size() == 1, "Base muzzle absent")
-	check(effects(&"muzzle")[0].global_position.is_equal_approx(base.global_position), "Muzzle not at spawn")
-	check(base.damage == 10 and base.speed == 14 and is_equal_approx(base.hitbox.get_node("CollisionShape3D").shape.radius, 0.12), "Projectile gameplay altered")
+	check(effects(&"muzzle")[0].global_position.distance_to(base.global_position) < 0.4, "Muzzle effect is at the model muzzle, within 0.4 m of the spawn")
+	check(base.damage == 3 and base.speed == 14 and is_equal_approx(base.hitbox.get_node("CollisionShape3D").shape.radius, 0.15), "Projectile gameplay altered (Base: 3 damage, 14 m/s, 0.15 m radius)")
 	await capture("01_base_muzzle")
 	await frames(8)
-	check(is_equal_approx(base.trail.lifetime, BeeShotPalette.BEE_TRAIL_SECONDS) and not base.trail.local_coords and base.trail.emitting, "Trail missing/incorrect (LOTE 9: short plasma trail)")
+	check(is_equal_approx(base.trail.lifetime, preload("res://scripts/game/bee_shooting_settings.gd").SHOT_TRAIL_SECONDS) and not base.trail.local_coords and base.trail.emitting, "Trail missing/incorrect (LOTE 9: short plasma trail)")
 	await capture("02_projectile_trail")
 	await clear_shots()
 
@@ -132,7 +132,7 @@ func run() -> void:
 		if not effects(&"impact").is_empty():
 			break
 	check(effects(&"impact").size() == 1, "Projectile impact missing/duplicated")
-	check(probe.get_node("HealthComponent").current_health == probe.get_node("HealthComponent").max_health - 10, "Impact changed damage")
+	check(probe.get_node("HealthComponent").current_health == probe.get_node("HealthComponent").max_health - 3, "Impact changed damage")
 	check(probe.get_node("HitFlash3D").activation_count > 0, "Existing HitFlash not preserved")
 	await frames(3)
 	await capture("03_projectile_impact")
@@ -149,8 +149,9 @@ func run() -> void:
 	var wasp := unit(BeeLevel01Controller.WASP, bee.global_position + Vector3(0.8, 0, 0))
 	await frames(3)
 	check(bee.start_melee(), "Melee refused")
-	await frames(3)
-	check(effects(&"melee").size() == 1 and wasp.health.current_health <= 0, "Melee visual/damage incorrect")
+	bee.set_physics_process(true) # Tanda E: the sting dash advances in Bee's own physics step
+	await frames(40)
+	check(wasp.health.current_health <= 0, "Melee damage incorrect (Tanda E: the melee impact is now a punch star, not a BeeCombatVFX effect)")
 	await capture("05_melee_hit")
 	wasp.queue_free()
 	await clear_shots()

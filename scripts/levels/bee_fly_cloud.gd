@@ -35,7 +35,7 @@ var population := 0
 var visible_limit := S.VISIBLE_LIMIT
 var dives_started := 0
 var _next_dive := S.FIRST_DIVE_SECONDS
-var _next_volley := S.VOLLEY_SECONDS
+var _next_volley := S.FIRST_VOLLEY_SECONDS
 var volleys := 0
 var _seed := 0.0
 var _last_batch := 0
@@ -70,7 +70,7 @@ func _ready() -> void:
 	set_physics_process(false)
 
 func configure_population(count: int, stress_visible := 0) -> void:
-	# Only a development benchmark may raise the visible limit; game groups stay at five.
+	# Only a development benchmark may raise the visible limit; game groups stay within VISIBLE_LIMIT.
 	visible_limit = S.VISIBLE_LIMIT
 	if stress_visible > 0 and OS.is_debug_build() and not OS.has_feature("standalone"):
 		visible_limit = clampi(stress_visible,1,60)

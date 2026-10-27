@@ -88,7 +88,8 @@ func run() -> void:
 	await frames(20)
 	check(wave.player_label == "SEÑAL DESCONOCIDA", "Missing SEÑAL DESCONOCIDA warning (%s)" % wave.player_label)
 	check(stage.get_node_or_null("BossBomb") != null, "No bomb pickup before the boss")
-	check(stage.get_node("Pollen").get_node("PollenM").position.x < 340.0, "No pollen before the arena")
+	for pollen_item in stage.get_node("Pollen").get_children():
+		check(pollen_item.position.x < 340.0, "No pollen before the arena") # Tanda E: loose pollen was thinned (PollenM no longer exists)
 	check(UfoBoss01.DISPLAY_NAME == "NODO ALIEN", "Boss name wrong")
 	for i in 400:
 		await frames(1)
@@ -187,7 +188,7 @@ func run() -> void:
 		await frames(1)
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "SECTOR DESPEJADO did not appear after the explosion")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "SECTOR DESPEJADO did not appear after the explosion")
 	await frames(5)
 	check(bee.health.damage_blocked, "Bee must be invulnerable after the win")
 	var hp_win := bee.health.current_health

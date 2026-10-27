@@ -24,6 +24,7 @@ var _shots: Array[Dictionary] = []
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -512,13 +513,13 @@ func test_checkpoint_and_complete() -> void:
 		bee.global_position.y = 7.0
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing after the boss died")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Level Complete missing after the boss died")
 	print("PATTERN_CHECKPOINT_COMPLETE OK (UFO %d HP)" % BOSS_HP)
 
 func run() -> void:
 	create_timer(560.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("probe"):

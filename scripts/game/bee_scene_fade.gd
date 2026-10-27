@@ -37,6 +37,7 @@ static func go(from: Node, path: String):
 func change(path: String):
  get_tree().paused=false
  await get_tree().process_frame # Present a black frame before synchronous loading.
+ if path == BeeGameSettings.LEVEL_01: BeeGameSettings.level_intro_pending = true
  var error := get_tree().change_scene_to_file(path)
  if error!=OK: push_error("Scene transition failed: "+path)
  await get_tree().process_frame

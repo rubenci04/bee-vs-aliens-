@@ -86,7 +86,7 @@ func _build_pause_panel() -> void:
 	music_slider = _slider_row(box, "MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume)
 	sfx_slider = _slider_row(box, "EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume)
 	var hint := Label.new()
-	hint.text = "POLEN Q / LT (L2): toque = Nova; mantener 0,5 s = curar 20%.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
+	hint.text = "POLEN Q / LT (L2): curar +25 VIDA y escudo de polen 2,5 s.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
 	hint.add_theme_font_size_override("font_size", 14)
 	box.add_child(hint)
 	stage.get_node("CanvasLayer").add_child(pause_panel)
@@ -357,6 +357,8 @@ func restart_level(full: bool) -> void:
 		get_tree().remove_meta(HANDOFF)
 	if not full and checkpoint_active:
 		get_tree().set_meta(HANDOFF, snapshot.duplicate(true))
+	else:
+		BeeGameSettings.level_intro_pending = true
 	get_tree().reload_current_scene()
 
 func _exit_tree() -> void:

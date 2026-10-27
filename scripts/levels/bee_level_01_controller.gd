@@ -10,6 +10,7 @@ signal enemy_hit
 signal boss_damaged
 const ENCOUNTER := preload("res://scripts/game/bee_encounter_settings.gd")
 const TELEPORT := preload("res://scripts/vfx/bee_enemy_teleport.gd")
+const BOMB_RECHARGE_X := 306.0 # Tanda E: inside the screen the post-robot advance ends on (was 302, on its left edge).
 const PREBOSS_POWER_X := 283.0 # E73; before the Robot at X294, after checkpoint 2.
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
@@ -408,15 +409,11 @@ const EVENTS_ROSTER = [
 	{"at": 121.4, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.8], "y": [2.8, 0.0], "anthill": true},
 	{"at": 124.2, "act": 3, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 4.4, 2.8], "anthill": true},
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
-	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.8, 1.5], "y": [3.0, 4.6, 2.8],
+	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.8], "y": [3.0, 4.6],
 			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
-			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.2, 4.6, 5.0]},
-			{"units": ["FlyCloud", "FlyCloud", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 3.0, 5.0]},
+			# Tanda E: 2 inner waves (was 7): W1 = 2 groups, W2 = 2 ants + 1 group.
+			{"units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.7], "y": [5.2, 4.6]},
 			{"units": ["Ant", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
-			{"units": ["Ant", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 4.4], "anthill": true},
-			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 3.4], "anthill": true},
-			{"units": ["FlyCloud", "Ant", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [4.6, 0.0, 5.0], "anthill": true},
-			{"units": ["FlyCloud", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 0.0], "anthill": true},
 		]},
 	{"at": 149.0, "act": 3, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.2]},
 	{"at": 151.2, "act": 3, "label": "MACIZO · HORMIGA Y AVISPA Y NUBE", "units": ["Ant", "Wasp", "FlyCloud"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 4.0], "anthill": true},
@@ -442,25 +439,18 @@ const EVENTS_ROSTER = [
 	{"at": 209.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "FlyGreen", "Snail"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 5.0, 0.0]},
 	{"at": 214.0, "act": 4, "label": "ZONA · INICIO · ESCARABAJO", "units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0],
 			"debut": "StagBeetle", "arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
-			{"units": ["StagBeetle", "StagBeetle", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 0.0]},
+			# Tanda E: 3 inner waves (was 7).
 			{"units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
-			{"units": ["Wasp", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 0.0, 3.4]},
-			{"units": ["Wasp", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 4.6]},
-			{"units": ["WormA", "Wasp", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 5.2, 5.2]},
-			{"units": ["Wasp", "WormA", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 0.0]},
-			{"units": ["WormA", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 4.6]},
+			{"units": ["Wasp", "Wasp", "WormA"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 3.4, 0.0]},
+			{"units": ["StagBeetle", "WormA", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 5.0]},
 		]},
 	{"at": 227.0, "act": 4, "label": "HUERTA · GUSANO ROSA Y AVISPA", "units": ["WormA", "Wasp"], "delays": [0.0, 0.9], "y": [0.0, 4.0]},
-	{"at": 229.2, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "Wasp", "WormA"], "delays": [0.0, 0.7, 1.3], "y": [5.2, 4.0, 0.0]},
-	{"at": 231.4, "act": 4, "label": "HUERTA · AVISPA Y GUSANO ROSA", "units": ["Wasp", "WormA"], "delays": [0.0, 0.7], "y": [4.6, 0.0]},
+	# Tanda E: about half of the pre-spider events removed (229.2, 231.4, 250.2, 254.6, 256.8; 227 stays so no 21 m empty stretch follows the beetle zone); the compost worm debut stays.
 	{"at": 235.0, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB", "WormB"], "delays": [0.0, 0.6, 1.5], "y": [0.0, 0.0, 0.0], "debut": "WormB"},
 	{"at": 238.3, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
 	{"at": 241.7, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
 	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST Y MOSCA VERDE", "units": ["FlyCommon", "WormB", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 4.0]},
-	{"at": 250.2, "act": 4, "label": "HUERTA · MOSCA", "units": ["FlyCommon"], "y": [5.0]},
 	{"at": 252.4, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
-	{"at": 254.6, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "FlyCommon"], "delays": [0.0, 0.8, 1.5], "y": [4.0, 0.0, 4.4]},
-	{"at": 256.8, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST", "units": ["FlyCommon", "WormB", "WormB"], "delays": [0.0, 0.9, 1.6], "y": [4.4, 0.0, 0.0]},
 	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
 	# T6e: +50 % spiders in the waves where they appear (3 -> 5): the zone opens with two and its second wave brings two.
 	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider", "Spider"], "delays": [0.0, 1.2], "y": [5.2, 5.2], "x": [1.2, -2.2],
@@ -468,10 +458,8 @@ const EVENTS_ROSTER = [
 			{"units": ["Spider"], "delays": [0.0], "y": [4.0], "x": [0.6]},
 			{"units": ["Spider", "Spider"], "delays": [0.0, 1.0], "y": [3.4, 3.4], "x": [0.6, -1.8]},
 			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0], "anthill": true},
-			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [4.0, 0.0, 0.0], "anthill": true},
+			# Tanda E: 4 inner waves (was 7).
 			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.4, 0.0], "anthill": true},
-			{"units": ["Wasp", "Ant", "Wasp"], "delays": [0.0, 0.7, 1.4], "y": [2.8, 0.0, 3.0], "anthill": true},
-			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
 		]},
 	{"at": 276.0, "act": 4, "label": "SOMBRA · AVISPA", "units": ["Wasp"], "y": [3.4]},
 	{"at": 278.2, "act": 4, "label": "SOMBRA · AVISPA Y HORMIGA", "units": ["Wasp", "Ant"], "delays": [0.0, 0.9], "y": [3.4, 0.0], "anthill": true},
@@ -492,6 +480,7 @@ const LEVEL01_ROSTER_ONLY := true
 const EVENTS = EVENTS_ROSTER if LEVEL01_ROSTER_ONLY else EVENTS_LEGACY
 ## Runtime switch (tests of the legacy flow set it to false before loading the level, like `giant_human_enabled`).
 static var roster_only := LEVEL01_ROSTER_ONLY
+static var instant_arrival := false # Tests only (see _spawn): enemies appear active at once instead of teleporting in.
 
 ## The table that plays now (EVENTS is the default one, for static references).
 static func events_table() -> Array:
@@ -556,13 +545,22 @@ var tarantula: TarantulaBoss01
 var tarantula_freed := false
 var _tarantula_breather_left := -1.0
 var _post_robot_target_x := 0.0
+var _robot_dead_clock := -1.0 # Tanda E: _clock when the robot fell; -1 = alive. Safety net for the post-robot gate.
+var _forced_calm := false
 var _last_roster_entry_clock := -INF
+
+var _intro_left := 0.0
+var _intro_card: Node
+var _intro_running := false
 
 func _ready() -> void:
 	human.crossing_exited.connect(_on_human_exited)
 	if not giant_human_enabled:
 		call_deferred("_switch_off_human") # The human node is ready after this one.
 	stage.scroll_speed = LEVEL_SCROLL # LOTE 7: the scene keeps 2.0 for the POCs that share it.
+	if BeeGameSettings.level_intro_pending:
+		BeeGameSettings.level_intro_pending = false
+		_begin_intro()
 	BeeShmupFairness.live_shot_ceiling = LIVE_SHOT_CEILING
 	BeeShmupFairness.screen_bound_combat = true
 	BeeAttackTokens.enabled = true # REBUILD 03: one heavy pattern at a time.
@@ -576,11 +574,19 @@ func _exit_tree() -> void:
 func _physics_process(delta: float) -> void:
 	if _frozen or _complete:
 		return
+	if _intro_left > 0.0:
+		_intro_left = maxf(0.0, _intro_left - delta)
+		stage.scroll_speed = 0.0
+		if _intro_left <= 0.0:
+			_end_intro()
+		return # E2: no clock, no spawns, no scroll - Bee just flies and tries its actions.
 	_clock += delta
 	_retire_soft_units(delta)
 	_update_hold()
 	if _waiting_for_human:
 		return
+	if _robot_dead_clock >= 0.0 and tarantula == null and _tarantula_breather_left < 0.0 and _clock - _robot_dead_clock >= BeeGameSettings.POST_ROBOT_FORCE_SEC:
+		_force_post_robot_sequence()
 	if _hard_gate:
 		if active_units.is_empty() and _pending.is_empty():
 			_hard_gate = false
@@ -768,10 +774,12 @@ func _update_arena(delta: float) -> void:
 		preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).clear_combat_zone(1.6)
 		return
 	if _clock >= float(_arena["next_arrival"]):
-		_arena["next_arrival"] = _clock+ENCOUNTER.EXTRA_ARRIVAL_SECONDS
-		if _pending.is_empty() and alive_count() < on_screen_cap():
+		# Tanda E: a reinforcement only arrives when fewer than REINFORCE_BELOW enemies are left (and 30 s went by).
+		if _pending.is_empty() and alive_count() < ENCOUNTER.REINFORCE_BELOW:
+			_arena["next_arrival"] = _clock+ENCOUNTER.EXTRA_ARRIVAL_SECONDS
 			_queue_units({"units":[_arena["reinforcement"]],"no_companions":true},int(_arena["event"]),900+int(_clock))
-		elif not active_units.is_empty(): _return_enemy(active_units[0])
+		else:
+			_arena["next_arrival"] = _clock+ENCOUNTER.REINFORCE_RECHECK_SECONDS
 	_update_zone_banner()
 
 ## LOTE 14: true while a species debuts alone and `units` holds another family.
@@ -984,6 +992,11 @@ func _spawn(request: Dictionary) -> void:
 		unit.add_child(ground_worm)
 		(unit as AssetFauna)._ground_worm = ground_worm
 		ground_worm.setup(unit, family == "WormA", ROSTER_FIRE_SLOWDOWN)
+	if roster_only and family == "StagBeetle":
+		var cannon := BeetleCannon.new()
+		cannon.beetle = unit as AssetFauna
+		cannon.target = bee
+		unit.add_child(cannon)
 	if family == "Wasp":
 		# Different presence per Wasp and different hover lines, so two Wasps never attack in lockstep.
 		unit.set("stalk_time", 2.2 + 0.7 * float(slot % 3))
@@ -1049,6 +1062,14 @@ func _spawn(request: Dictionary) -> void:
 	if unit is WalkerMiniboss:
 		unit.call("activate",bee)
 		return
+	if _walks_in_naturally(request, family):
+		unit.call("activate", bee)
+		if not str(unit.name).begins_with("FlyCloud_"): BeeHostileGlow.ensure.call_deferred(unit)
+		return
+	if instant_arrival: # Tests only: skip the beam-in so a spawned enemy is active at once.
+		unit.global_position = _arrival_point(unit,int(request["slot"]))
+		_on_teleport_arrived(unit.get_instance_id(),false)
+		return
 	TELEPORT.begin(unit,_arrival_point(unit,int(request["slot"])),_on_teleport_arrived.bind(unit.get_instance_id(),false))
 
 func _fly_groups_alive() -> int:
@@ -1056,7 +1077,10 @@ func _fly_groups_alive() -> int:
 
 func _arrival_point(unit: Node3D, slot := 0) -> Vector3:
 	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
-	var x := clampf(bee.global_position.x+ENCOUNTER.ARRIVAL_OFFSET+0.65*(slot%3),stage.camera.global_position.x-half+1.0,stage.camera.global_position.x+half-1.6)
+	var cam_x := stage.camera.global_position.x
+	# Tanda E1: always the right third of the frame, >= 4.5 m ahead of Bee when there is room.
+	var right_limit := cam_x+half-ENCOUNTER.ARRIVAL_RIGHT_MARGIN
+	var x := minf(maxf(cam_x+ENCOUNTER.ARRIVAL_MIN_FROM_CAMERA,bee.global_position.x+ENCOUNTER.ARRIVAL_OFFSET+0.65*(slot%3)),right_limit)
 	var y := unit.global_position.y
 	if unit.has_method("is_ground") and bool(unit.call("is_ground")):
 		y = float(unit.get("ground_y")) if unit.get("ground_y") != null else -0.2
@@ -1175,6 +1199,7 @@ func is_complete() -> bool:
 	return _complete
 
 func resume_after_checkpoint(progress: float) -> void:
+	_end_intro()
 	# New scene: no actors/pending shots to serialize. Earlier events are consumed.
 	event_index = 0
 	while event_index < events_table().size() and float(events_table()[event_index]["at"]) < progress:
@@ -1311,8 +1336,40 @@ func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 			escort_waves += 1
 			_queue_units(escort, event_id, 200))
 	robot.defeated.connect(func(_robot):
-		miniboss_seconds = robot.fight_seconds)
+		miniboss_seconds = robot.fight_seconds
+		_on_robot_defeated())
 	escort_waves = 1 # The first wave comes with it (the event's own escorts).
+
+## Tanda E: the escorts fall with the robot (like the UFO minions) and nothing queued for the gate survives it.
+func _on_robot_defeated() -> void:
+	_robot_dead_clock = _clock
+	_drop_robot_leftovers()
+
+func _drop_robot_leftovers() -> void:
+	_pending.clear()
+	_swarm_pending.clear()
+	for unit in active_units.duplicate() + swarm_units.duplicate():
+		if not is_instance_valid(unit) or unit is WalkerMiniboss or not unit.has_node("HealthComponent"): continue
+		var health := unit.get_node("HealthComponent") as HealthComponent
+		health.damage_blocked = false # A teleporting escort must not keep the gate shut.
+		health.take_damage(99999)
+
+## Tanda E: 8 s after the robot fell and the calm still has not begun: release whatever holds the gate and start it.
+func _force_post_robot_sequence() -> void:
+	_drop_robot_leftovers()
+	for unit in active_units.duplicate() + swarm_units.duplicate():
+		if is_instance_valid(unit) and not unit is WalkerMiniboss:
+			active_units.erase(unit)
+			swarm_units.erase(unit)
+			unit.queue_free()
+	_hard_gate = false
+	_robot_dead_clock = -1.0
+	_forced_calm = true
+	push_warning("Level 01: post-robot gate forced after %.0f s" % BeeGameSettings.POST_ROBOT_FORCE_SEC)
+
+## Tanda E: a forced sequence shortens the calm so the tarantula still enters within 12 s of the robot's fall.
+func _calm_seconds() -> float:
+	return BeeGameSettings.POST_ROBOT_FORCED_CALM_SEC if _forced_calm else TARANTULA_BREATHER
 
 ## After the robot gate: breather (arena locked, supplies), then the tarantula walks in from the right at dusk.
 func _advance_tarantula(delta: float) -> void:
@@ -1321,11 +1378,11 @@ func _advance_tarantula(delta: float) -> void:
 	if tarantula != null:
 		return
 	if _tarantula_breather_left < 0.0:
-		_tarantula_breather_left = TARANTULA_BREATHER
+		_tarantula_breather_left = _calm_seconds()
 		current_act = 5
 		var screen_width := 2.0 * BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
 		_post_robot_target_x = stage.camera.global_position.x + screen_width
-		stage.scroll_speed = screen_width / TARANTULA_BREATHER
+		stage.scroll_speed = screen_width / _calm_seconds()
 		encounter_label = "FINAL · LA TARÁNTULA"
 		player_label = "ALGO SE MUEVE EN LAS TELARAÑAS"
 		_post_robot_supplies()
@@ -1335,6 +1392,7 @@ func _advance_tarantula(delta: float) -> void:
 		_start_tarantula()
 
 func _post_robot_supplies() -> void:
+	if not is_inside_tree() or not is_instance_valid(bee) or not is_instance_valid(stage): return # E1
 	bee.health.restore_health(roundi(bee.health.max_health * BeeGameSettings.POST_ROBOT_HEAL_FRACTION))
 	bee.bomb_charges = mini(bee.max_bomb_charges, maxi(bee.bomb_charges, BeeGameSettings.POST_ROBOT_MIN_BOMBS))
 	bee.weapon_state_changed.emit()
@@ -1343,6 +1401,7 @@ func _post_robot_supplies() -> void:
 		# Guaranteed refill even when the route's rolling pollen cap is exhausted.
 		juice.pollen_total += BeeGameSettings.POST_ROBOT_MIN_POLLEN - juice.pollen_progress()
 		juice._refresh_pollen()
+	var supply_x := _post_robot_target_x if _post_robot_target_x > 0.0 else stage.camera.global_position.x + 2.0 * BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
 	for i in BeeGameSettings.POST_ROBOT_PICKUP_OFFSETS.size():
 		var item: Node3D
 		if i == 2:
@@ -1353,9 +1412,10 @@ func _post_robot_supplies() -> void:
 			item = power
 		stage.add_child(item)
 		var offset: Vector2 = BeeGameSettings.POST_ROBOT_PICKUP_OFFSETS[i]
-		item.global_position = Vector3(stage.camera.global_position.x + offset.x, offset.y, 0.0)
+		item.global_position = Vector3(supply_x + offset.x, offset.y, 0.0) # Tanda E: in view where the advance ends.
 
 func _start_tarantula() -> void:
+	if not is_inside_tree() or not is_instance_valid(bee) or get_node_or_null("../Enemies") == null: return # E1
 	var checkpoint := stage.get_node_or_null("CheckpointQoL") as BeeCheckpointQoL
 	if checkpoint != null:
 		checkpoint.activate_boss_checkpoint() # Before counting it: a retry counts it again from the snapshot.
@@ -1567,3 +1627,34 @@ func _summon_tarantula_helpers(family: String, count: int) -> void:
 			request["launch_from"] = Vector3(half + 1.2, y, 0.0)
 			request["launch_slot"] = Vector2(half - 1.6 - 0.9 * float(i), y)
 		_spawn(request)
+
+## Tanda E1: only the demo wave, arena reinforcements, hard gates and returns use the beam; most route
+## ants / snails / beetles / flies / wasps just walk or fly in from the right edge.
+func _walks_in_naturally(request: Dictionary, family: String) -> bool:
+	if not roster_only or in_arena() or bool(request["hard"]) or bool(request.get("anthill", false)) or bool(request.get("depth", false)):
+		return false
+	if int(request["event"]) <= 0 or not family in ENCOUNTER.NATURAL_ENTRY_FAMILIES:
+		return false
+	return int(request["slot"]) % ENCOUNTER.BEAM_ONE_IN != 0
+
+## Tanda E2: 4 s of introductory flight at the start of Level 1 (never after a checkpoint respawn) with the "CÓMO JUGAR" card.
+func _begin_intro() -> void:
+	_intro_running = true
+	_intro_left = BeeGameSettings.LEVEL_INTRO_SECONDS
+	stage.scroll_speed = 0.0
+	player_label = ""
+	_intro_card = preload("res://scripts/ui/bee_howto_card.gd").new()
+	_intro_card.dismissed.connect(func(): _intro_left = minf(_intro_left, 0.001)) # Dismissed: the player has read it, the action starts.
+	stage.add_child.call_deferred(_intro_card)
+
+func intro_active() -> bool:
+	return _intro_left > 0.0
+
+func _end_intro() -> void:
+	if _intro_card != null and is_instance_valid(_intro_card):
+		_intro_card.queue_free()
+	_intro_card = null
+	if _intro_running:
+		stage.scroll_speed = LEVEL_SCROLL
+	_intro_running = false
+	_intro_left = 0.0

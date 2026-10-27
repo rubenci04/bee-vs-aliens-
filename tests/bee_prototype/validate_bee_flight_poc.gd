@@ -25,6 +25,7 @@ func release_flight_input() -> void:
 
 
 func run_checks() -> void:
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(45.0).timeout.connect(func(): quit(1))
 	check(POC != null, "Bee Flight POC scene failed to load")
 	var poc := POC.instantiate()
@@ -90,12 +91,17 @@ func run_checks() -> void:
 	# Real projectiles damage and kill the proxy through reusable hitbox/hurtbox components.
 	enemy.position = Vector3(4, 3, 0)
 	bee.position = Vector3(0, 3, 0)
-	var expected_health := [15, 5, 0]
+	var hp_now: int = enemy.health.current_health
+	var dmg: int = int(bee.weapon_profile()["damage"][0]) # Tanda E: the Base shot is no longer 10
+	var expected_health: Array = []
+	while hp_now > 0:
+		hp_now = maxi(0, hp_now - dmg)
+		expected_health.append(hp_now)
 	for expected in expected_health:
 		check(bee.refresh_auto_aim() == enemy, "Enemy stopped being a valid target before defeat")
 		var projectile := bee.fire()
 		check(projectile != null, "X failed to create an energy projectile")
-		for frame in 45:
+		for frame in 90:
 			if enemy.health.current_health == expected:
 				break
 			await physics_frame

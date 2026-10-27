@@ -66,6 +66,8 @@ func run() -> void:
 	var music_bus := AudioServer.get_bus_index(&"Music")
 	var sfx_bus := AudioServer.get_bus_index(&"SFX")
 	check(music_bus >= 0 and sfx_bus >= 0 and music_bus != sfx_bus, "Separate music and effects buses")
+	BeeGameSettings.music_volume = BeeGameSettings.MUSIC_DEFAULT_VOLUME # Tanda E: independent of the player's saved slider (not written to disk)
+	manager.apply_volumes()
 	check(is_equal_approx(AudioServer.get_bus_volume_db(music_bus), -8.0 + linear_to_db(BeeGameSettings.music_volume)) and is_equal_approx(manager.MUSIC_DEFAULT_DB, -8.0), "The music bus defaults to -8 dB")
 	check(is_equal_approx(BeeGameSettings.MUSIC_DEFAULT_VOLUME, 0.25) and is_equal_approx(BeeGameSettings.sfx_volume, 1.0), "Sliders start at 100 %")
 

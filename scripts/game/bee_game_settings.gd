@@ -76,7 +76,9 @@ const POST_ROBOT_CALM_SEC := 5.5
 const POST_ROBOT_HEAL_FRACTION := 0.5
 const POST_ROBOT_MIN_BOMBS := 3
 const POST_ROBOT_MIN_POLLEN := 10
-const POST_ROBOT_PICKUP_OFFSETS := [Vector2(3.0, 3.2), Vector2(7.0, 4.4), Vector2(11.0, 3.8)]
+const POST_ROBOT_PICKUP_OFFSETS := [Vector2(-3.0, 3.2), Vector2(0.5, 4.4), Vector2(4.0, 3.8)] # Tanda E: relative to where the advance ends (in view when it stops)
+const POST_ROBOT_FORCE_SEC := 8.0 # Tanda E: safety net, the calm starts at most this long after the robot falls
+const POST_ROBOT_FORCED_CALM_SEC := 3.5 # Tanda E: shorter calm when the sequence had to be forced (8 + 3.5 < 12 s)
 const ROBOT_LASER_WARNING_SEC := 0.85
 const ROBOT_LASER_COLOR := Color(0.72, 1.0, 1.0, 0.95)
 const MUSIC_DEFAULT_VOLUME := 0.25
@@ -318,6 +320,8 @@ const RETURN_TO_TITLE_SECONDS := 8.0
 static var difficulty: StringName = NORMAL
 ## True when Level 01 was opened from the title screen (tests and F6 open it directly: no automatic return).
 static var from_title := false
+static var level_intro_pending := false ## E2: set when Level 1 starts from the beginning (not from a checkpoint respawn).
+const LEVEL_INTRO_SECONDS := 4.0
 ## LOTE 11: camera shake (bomb, boss, damage taken). Title menu option; the shake code reads it, so it also covers the POCs.
 static var screen_shake_enabled := true
 

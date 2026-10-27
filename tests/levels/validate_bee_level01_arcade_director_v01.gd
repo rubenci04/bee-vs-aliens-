@@ -21,6 +21,7 @@ var only := ""
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
 			only = arg.substr(5)
@@ -155,7 +156,7 @@ func test_run() -> void:
 	var moments_seen: Array[String] = []
 	wave.director_moment.connect(func(id: StringName): moments_seen.append(str(id)))
 	var bomb := stage.get_node("Powerups/BombRecharge") as Node3D
-	check(absf(bomb.global_position.x - 302.0) < 0.5, "Bomb reward should sit after the Walker gate (X=302)")
+	check(absf(bomb.global_position.x - (BeeLevel01Controller.BOMB_RECHARGE_X if BeeLevel01Controller.roster_only else 302.0)) < 0.5, "Bomb reward should sit after the Walker gate (Tanda E: inside the post-robot screen)")
 	bee.set_physics_process(false)
 	bee.hurtbox.monitorable = false # Structure run, not survival.
 	Engine.time_scale = 3.0
@@ -186,7 +187,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO") and wave.boss_defeated, "Level Complete missing")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")) and wave.boss_defeated, "Level Complete missing")
 	check(wave.event_index == BeeLevel01Controller.EVENTS_LEGACY.size(), "Not every event ran")
 	check(moments_seen == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Moments emitted wrong: " + str(moments_seen))
 	check(acts_seen.has(1) and acts_seen.has(2) and acts_seen.has(3) and acts_seen.has(4) and acts_seen.has(5), "Acts not all reached: " + str(acts_seen.keys()))
@@ -220,7 +221,7 @@ func test_checkpoint() -> void:
 func run() -> void:
 	create_timer(600.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("static"):

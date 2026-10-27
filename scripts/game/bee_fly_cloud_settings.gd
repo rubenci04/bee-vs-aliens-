@@ -1,7 +1,7 @@
 extends RefCounted
 ## T6c: population is the FlyCloud entry in ENEMY_HEALTH, not a second HP table.
-const VISIBLE_LIMIT := 5
-const FLY_HP := 1
+const VISIBLE_LIMIT := 9
+const FLY_HP := 14
 const HIT_RADIUS := 0.22
 const NEAR_RADIUS := 5.0
 const VISUAL_SCALE := 0.8
@@ -9,7 +9,7 @@ const SPREAD := Vector2(1.6,1.0)
 const HOVER_SPEED := 2.0
 const HOVER_OFFSET := 3.5
 const FIRST_DIVE_SECONDS := 6.0
-const DIVE_INTERVAL := 6.0
+const DIVE_INTERVAL := 3.0
 const DIVE_MIN := 2
 const DIVE_MAX := 2
 const WARNING_SECONDS := 0.5
@@ -22,7 +22,8 @@ const RETURN_SPEED := 8.0
 const RELEASE_SECONDS := 0.25
 const TOKEN_RETRY_SECONDS := 0.25
 
-const VOLLEY_SECONDS := 3.75
+const FIRST_VOLLEY_SECONDS := 0.85
+const VOLLEY_SECONDS := 2.2
 const SHOT_SPEED := 4.4
 const SHOT_DAMAGE := 3
 const FORMATION_STEP := Vector2(0.55,0.65)

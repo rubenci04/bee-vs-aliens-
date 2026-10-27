@@ -50,7 +50,17 @@ func run() -> void:
 	await frames(18)
 	check(unit.scale.x>1 and unit.scale.x<=1.1201,"Return has its own small scale cue")
 	await frames(65)
-	check(not unit.get_meta("teleporting") and unit.global_position.distance_to(stage.bee.global_position)<S.REACH,"Return arrives within Bee's reach")
+	check(not unit.get_meta("teleporting") and unit.global_position.distance_to(stage.bee.global_position)<S.REACH,"Return arrives within Bee reach %s %s tele=%s" % [str(unit.global_position),str(stage.bee.global_position),str(unit.get_meta("teleporting"))])
+	# E1: every beam arrival lands in the right third of the frame, >= 4.5 m ahead of Bee when there is room.
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(stage.get_viewport()))
+	for bee_x in [stage.camera.global_position.x-6.0, stage.camera.global_position.x, stage.camera.global_position.x+3.0]:
+		stage.bee.global_position.x = bee_x
+		for slot in 3:
+			var point: Vector3 = wave._arrival_point(unit,slot)
+			var cam_x: float = stage.camera.global_position.x
+			check(point.x >= cam_x+2.8-0.001 and point.x <= cam_x+half-1.0+0.001,"Arrival x=%.1f inside the right third (cam %.1f)" % [point.x,cam_x])
+			if bee_x+4.5 <= cam_x+half-1.0: check(point.x >= bee_x+4.5-0.001,"Arrival >= 4.5 m ahead of Bee")
+	stage.bee.global_position = Vector3(134,3,0)
 	unit.set_physics_process(false)
 	unit.global_position.x = stage.camera.global_position.x+30
 	unit.set_meta("last_near",0.0)
@@ -120,5 +130,12 @@ func run() -> void:
 	wave._return_enemy(drone)
 	await frames(80)
 	check(wave.swarm_units.has(drone) and drone._kz_state!=2 and not drone.escaped and not drone.get_meta("teleporting"),"Expired popcorn attack returns as a live enemy with a fresh warning, without a teleport loop")
+	stage.bee.global_position = Vector3(134,3,0)
+	wave._spawn({"family":"Ant","event":3,"slot":1,"hard":false})
+	var walker_in = wave.active_units.back()
+	check(not walker_in.get_meta("teleporting",false) and walker_in.global_position.x > stage.camera.global_position.x+half-0.5,"E1: route units (slot 1) walk in from the right edge instead of the beam")
+	wave._spawn({"family":"Ant","event":3,"slot":3,"hard":false})
+	check(wave.active_units.back().get_meta("teleporting",false),"E1: every third route unit still uses the beam")
+	await frames(80)
 	print("TANDA_B_OK failures=",failures)
 	quit(1 if failures else 0)

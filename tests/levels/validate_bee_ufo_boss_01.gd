@@ -232,7 +232,7 @@ func run() -> void:
 		await frames(1)
 		if stage.sector_complete:
 			break
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level did not complete after the boss")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Level did not complete after the boss")
 	await capture("09_level_complete")
 	print("UFO_BOSS_FLOW_OK approach=%.2fs peak_phase3=%d death=%.2fs" % [approach_seconds, phase3_peak, death_frames / 60.0])
 

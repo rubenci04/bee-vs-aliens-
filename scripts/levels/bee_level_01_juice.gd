@@ -3,7 +3,7 @@ extends Node
 ## LOTE 11 · ETAPA C — Level 01 "life and emotion" orchestrator (presentation + small rewards, no new enemy behaviour):
 ##   combo     "xN" counter for boss damage pulses and destructions / liberations (reset after COMBO_RESET_SECONDS without any hit or
 ##             kill); points per kill x combo multiplier; the score is shown on the SECTOR DESPEJADO card
-##   pollen    Three cartridges of seven grains; tap Nova, hold to heal (T3n).
+##   pollen    Three cartridges of seven grains; one press = heal 25 + 2.5 s shield (E1).
 ##   frenzy    a combo of FRENZY_COMBO starts FRENESI (6 s of double shot, BeePlayer.activate_honey: the internal name is kept)
 ##   juice     liberation rewards; T4f reserves local hit stop/shake for key events only
 ##   magnet    items drift towards Bee when she passes close
@@ -65,8 +65,6 @@ var nova_protection_left := 0.0
 var novas_used := 0
 var pollen_ready_announced := false
 var _pollen_held := false
-var _pollen_hold_time := 0.0
-var _pollen_hold_decided := false
 var liberations_seen := 0
 var _pollen_window: Array[Vector2] = [] ## (time, amount) gained in the last POLLEN_CAP_WINDOW seconds.
 var _pollen_clock := 0.0
@@ -270,6 +268,13 @@ func try_pollen_nova() -> bool:
 	nova_protection_left = NOVA.INVULNERABILITY_SECONDS
 	bee.health.pollen_protected = true
 	novas_used += 1
+	# E1: every press heals 25 HP (even at full health it still raises the shield) and wraps Bee in the 2.5 s bubble.
+	var before := bee.health.current_health
+	bee.health.restore_health(NOVA.HEAL_AMOUNT)
+	var gained := bee.health.current_health - before
+	pollen_heals += 1
+	pollen_healed += gained
+	_spawn_pollen_feedback(gained)
 	var nova := preload("res://scripts/bee_prototype/bee_pollen_nova.gd").new()
 	nova.name = "PollenNova"
 	stage.add_child(nova)
@@ -290,7 +295,7 @@ func _refresh_pollen() -> void:
 	var cells := filled * 10 / NOVA.CHARGE
 	pollen_label.text = "POLEN [%s%s] %d/%d" % ["#".repeat(cells), "-".repeat(10 - cells), filled, NOVA.CHARGE]
 	if filled >= NOVA.CARTRIDGE_COST:
-		pollen_label.text += " · NOVA " + NOVA.button_hint()
+		pollen_label.text += " · " + NOVA.button_hint() + ": " + NOVA.HINT_LABEL
 
 
 func _refresh_frenzy() -> void:
@@ -367,31 +372,32 @@ func _update_pollen_input(delta: float) -> void:
 	if bee.is_defeated or stage.sector_complete:
 		_pollen_held = false
 		return
-	if Input.is_action_pressed(NOVA.ACTION):
-		if not _pollen_held:
-			_pollen_held = true
-			_pollen_hold_time = 0.0
-			_pollen_hold_decided = false
-		_pollen_hold_time += delta
-		if _pollen_hold_time + 0.000001 >= NOVA.HOLD_SECONDS and not _pollen_hold_decided:
-			_pollen_hold_decided = true
-			try_pollen_heal()
-	elif _pollen_held:
-		if not _pollen_hold_decided: try_pollen_nova()
-		_pollen_held = false
+	var pressed := Input.is_action_pressed(NOVA.ACTION) # Edge detection: one press = one activation, holding never repeats.
+	if pressed and not _pollen_held:
+		try_pollen_nova()
+	_pollen_held = pressed
 
 
-func try_pollen_heal() -> bool:
-	if get_tree().paused or bee.is_defeated or stage.sector_complete or pollen_cartridges() < 1 or nova_cooldown_left > 0.0 or bee.health.current_health >= bee.health.max_health:
-		return false
-	pollen_spent = pollen_total - (pollen_progress() - NOVA.CARTRIDGE_COST)
-	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
-	var before := bee.health.current_health
-	bee.health.restore_health(ceili(bee.health.max_health * NOVA.HEAL_FRACTION))
-	pollen_heals += 1
-	pollen_healed += bee.health.current_health - before
+func _spawn_pollen_feedback(gained: int) -> void:
+	var shield := preload("res://scripts/vfx/bee_pollen_shield.gd").new()
+	for old in bee.find_children("PollenShield", "", false, false):
+		old.queue_free()
+	bee.add_child(shield)
 	var glow := preload("res://scripts/vfx/bee_pollen_heal_glow.gd").new()
 	bee.add_child(glow)
-	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
-	_refresh_pollen()
-	return true
+	var text := Label3D.new()
+	text.text = "+%d VIDA" % NOVA.HEAL_AMOUNT
+	text.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	text.no_depth_test = true
+	text.font_size = 56
+	text.outline_size = 14
+	text.pixel_size = 0.008
+	text.modulate = Color(0.5, 1.0, 0.45)
+	text.outline_modulate = Color(0.05, 0.16, 0.04)
+	stage.add_child(text)
+	text.global_position = bee.global_position + Vector3(0, 1.2, 0)
+	var tween := text.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(text, "global_position:y", text.global_position.y + 1.4, 1.0)
+	tween.tween_property(text, "modulate:a", 0.0, 1.0)
+	tween.chain().tween_callback(text.queue_free)

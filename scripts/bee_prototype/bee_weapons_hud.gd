@@ -54,8 +54,8 @@ func pirueta_ready_ratio() -> float:
 
 func control_text() -> String:
 	if BeeGameSettings.last_input_joypad:
-		return "FUEGO A / RT   BOMBA X   PIRUETA B / LB   PUÑETAZO Y / RB   NOVA LT/L2"
-	return "FUEGO X / CLIC   BOMBA C   PIRUETA SHIFT   PUÑETAZO Z   NOVA Q"
+		return "FUEGO A / RT   BOMBA X   PIRUETA B / LB   PUÑETAZO Y / RB   CURAR+ESCUDO LT/L2"
+	return "FUEGO X / CLIC   BOMBA C   PIRUETA SHIFT   PUÑETAZO Z   CURAR+ESCUDO Q"
 
 func _sync_text_debug() -> void:
 	var stage := bee.get_parent() as Node
@@ -155,7 +155,7 @@ func _draw() -> void:
 		var hint_rect := Rect2(panel + Vector2(0, BeeGameSettings.HUD_PANEL_SIZE.y + nova.HINT_GAP), nova.HINT_SIZE)
 		draw_rect(hint_rect, BeeGameSettings.HUD_PANEL_COLOR)
 		draw_rect(hint_rect, BeeGameSettings.HUD_POLLEN_COLOR, false, 1.0)
-		draw_string(font, hint_rect.position + nova.HINT_TEXT_OFFSET, nova.button_hint() + " TOQUE: NOVA / MANTENER: CURAR", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
+		draw_string(font, hint_rect.position + nova.HINT_TEXT_OFFSET, nova.button_hint() + ": " + nova.HINT_LABEL, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_POLLEN_COLOR)
 	draw_string(font, panel + Vector2(244, BeeGameSettings.HUD_ROW_POLLEN_Y), pollen_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
 
 	_draw_bombs(panel + Vector2(14, BeeGameSettings.HUD_ROW_ABILITY_Y - 8.0))

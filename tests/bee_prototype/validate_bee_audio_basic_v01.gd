@@ -54,7 +54,7 @@ func impact(scene: PackedScene, cue: StringName) -> void:
 	var hp := health.current_health
 	bee.fire()
 	await frames(25)
-	check(count(cue) == before + 1 and health.current_health == hp - 10, "Impact audio/damage mismatch " + str(cue))
+	check(count(cue) == before + 1 and health.current_health == hp - int(bee.weapon_profile()["damage"][0]), "Impact audio/damage mismatch " + str(cue))
 	enemy.queue_free()
 	await clear_shots()
 
@@ -137,7 +137,8 @@ func run() -> void:
 	var wasp := unit(BeeLevel01Controller.WASP, bee.global_position + Vector3(0.8, 0, 0))
 	await frames(3)
 	check(bee.start_melee(), "Melee refused")
-	await frames(3)
+	bee.set_physics_process(true)
+	await frames(40)
 	check(count(&"melee") == 1 and wasp.get_node("HealthComponent").current_health <= 0, "Melee hit cue/damage wrong (LOTE 14: 30 damage kills the 30 HP wasp)")
 	wasp.queue_free()
 	bee.melee_hitbox.set_enabled(false)

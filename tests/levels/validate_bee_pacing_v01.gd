@@ -74,8 +74,9 @@ func check(ok: bool, message: String) -> void:
 func run() -> void:
 	create_timer(900.0, true, false, true).timeout.connect(func(): quit(1))
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
-	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	var level_node := LEVEL.instantiate()
+	root.add_child(level_node)
+	current_scene = level_node # Tanda E: the last child of root is no longer the level (the scene-fade autoload joins it)
 	for i in 5:
 		await physics_frame
 	stage = current_scene as BeeShmupStage

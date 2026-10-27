@@ -27,24 +27,25 @@ func run() -> void:
 	stage.wave._spawn({"family":"FlyCloud","event":606,"slot":0,"hard":false})
 	var cloud = stage.wave.active_units.back()
 	await frames(75)
-	check(cloud.population==3 and cloud.members.size()==3 and cloud.reserve==0,"Normal group has three independent flies, no hidden reserve")
-	check(cloud.visual is MultiMeshInstance3D and cloud.instances.instance_count==3,"Single instanced visual")
+	check(cloud.population==6 and cloud.members.size()==6 and cloud.reserve==0,"E2: normal group has six independent flies, no hidden reserve")
+	check(cloud.visual is MultiMeshInstance3D and cloud.instances.instance_count==6,"Single instanced visual")
 	check(not cloud.is_in_group("bee_auto_aim_targets") and not cloud.has_node("HostileGlow"),"No shared target or transparent halo")
 	check(cloud.visual.cast_shadow==GeometryInstance3D.SHADOW_CASTING_SETTING_OFF,"No fly shadows")
 	for surface in cloud.instances.mesh.get_surface_count():
 		var material: ShaderMaterial = cloud.instances.mesh.surface_get_material(surface)
 		check(not material.shader.code.contains("ALPHA ="),"Opaque fly materials")
 	for fly in cloud.members:
-		check(fly.hp.max_health==1 and not fly.node.is_physics_processing() and not fly.node.is_processing(),"Passive one-hit members")
+		check(fly.hp.max_health==14 and not fly.node.is_physics_processing() and not fly.node.is_processing(),"Passive 14 HP members")
 	cloud.global_position = Vector3(137,3,0)
 	cloud._next_dive = 999.0
 	cloud._next_volley = 999.0
 	await frames(3)
 	var before: int = cloud.shots_fired
 	cloud._volley()
-	check(cloud.shots_fired-before==3 and cloud.volleys==1,"All three fire in the same frame")
-	check(S.VOLLEY_SECONDS>=3.5 and S.VOLLEY_SECONDS<=4.0 and S.DIVE_INTERVAL==6.0,"Configured volley and dive cadence")
+	check(cloud.shots_fired-before==6 and cloud.volleys==1,"All six fire in the same frame")
+	check(is_equal_approx(S.FIRST_VOLLEY_SECONDS,0.85) and is_equal_approx(S.VOLLEY_SECONDS,2.2) and S.DIVE_INTERVAL==3.0 and S.WARNING_SECONDS==0.5,"Configured volley and dive cadence")
 	cloud._start_telegraph()
+	cloud._next_dive = 999.0 # E2: the interval is now 3 s, keep the test to one dive pair
 	var warned: Array = cloud.members.filter(func(fly): return fly.mode==1)
 	check(warned.size()==2,"Exactly two flies detach")
 	await frames(15)
@@ -56,15 +57,18 @@ func run() -> void:
 	check(cloud.members.all(func(fly):return fly.mode==0),"Survivors return to V formation")
 	cloud.global_position = Vector3(137,3,0)
 	await frames(2)
-	var shot := bee._spawn_projectile(Vector3.RIGHT,1)
-	shot.hitbox._on_area_entered(cloud.members[0].hurt)
-	check(cloud.health.current_health==2 and not cloud.members[0].node.alive,"One physical pellet releases one fly")
-	shot.queue_free()
+	var pellet := bee._spawn_projectile(Vector3.RIGHT,1)
+	pellet.hitbox._on_area_entered(cloud.members[0].hurt)
+	pellet.queue_free()
+	check(cloud.members[0].node.alive and cloud.members[0].hp.current_health<14,"E2: one pellet no longer kills a 14 HP fly")
+	cloud.members[0].hp.damage_blocked = false
+	cloud.members[0].hp.take_damage(100)
+	check(cloud.health.current_health==5 and not cloud.members[0].node.alive,"One physical pellet releases one fly")
 	await frames(20)
 	check(cloud.reserve==0 and cloud.members[0].mode==5,"No replacement from an invisible cloud")
 	before = cloud.shots_fired
 	cloud._volley()
-	check(cloud.shots_fired-before==2,"Only surviving flies fire")
+	check(cloud.shots_fired-before==5,"Only surviving flies fire")
 	var bomb := DamageHitbox3D.new()
 	bomb.damage = 32
 	bomb.team_id = &"bee"
@@ -80,6 +84,6 @@ func run() -> void:
 	stage.wave._spawn({"family":"FlyCloud","event":607,"slot":2,"hard":false})
 	check(stage.wave._fly_groups_alive()==2,"Never more than two simultaneous groups, including materializing groups")
 	for group in stage.wave.active_units:
-		check(group.population==5 and group.reserve==0,"Late waves use five one-hit flies")
+		check(group.population==9 and group.reserve==0,"Late waves use nine 14 HP flies")
 	print("T6D_OK failures=",failures)
 	quit(1 if failures else 0)

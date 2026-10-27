@@ -20,6 +20,7 @@ var only := ""
 
 func _initialize() -> void:
 	BeeLevel01Controller.roster_only = false # LOTE 12: this test covers the pre-roster flow (alien enemies, frog, UFO), which stays intact behind LEVEL01_ROSTER_ONLY.
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	BeeLevel01Controller.giant_human_enabled = true # NOCHE 01: the human is off in the game (GIANT_HUMAN_ENABLED); this test covers it.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("only="):
@@ -150,7 +151,7 @@ func test_run() -> void:
 		if stage.sector_complete:
 			break
 	Engine.time_scale = 1.0
-	check(stage.sector_complete and stage.status.text.begins_with("SECTOR DESPEJADO"), "Level Complete missing")
+	check(stage.sector_complete and (stage.status.text.begins_with("SECTOR DESPEJADO") or stage.has_node("ResultsScreen")), "Level Complete missing")
 	check(acts.size() == 5, "Not every act was reached: " + str(acts.keys()))
 	check(moments == ["opening_can", "watering_can", "human_aftermath", "walker_showcase", "scale_event", "contaminated_garden", "bomb_reward", "preboss_power", "last_silence"], "Director moments out of order: " + str(moments))
 	check(heights_checked >= 10 and heights_ok == heights_checked, "Formation heights not applied (%d/%d)" % [heights_ok, heights_checked])
@@ -180,7 +181,7 @@ func test_checkpoint() -> void:
 func run() -> void:
 	create_timer(600.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	bind(current_scene)
 	if wants("escalation"):

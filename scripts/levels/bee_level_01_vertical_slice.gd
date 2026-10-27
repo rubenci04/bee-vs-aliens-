@@ -163,6 +163,8 @@ func _swap_toon_pickups() -> void:
 			fresh.transform = where
 			if BeeLevel01Controller.roster_only and label == "PrebossPower":
 				fresh.position.x = BeeLevel01Controller.PREBOSS_POWER_X
+			if BeeLevel01Controller.roster_only and label == "BombRecharge":
+				fresh.position.x = BeeLevel01Controller.BOMB_RECHARGE_X
 			parent.add_child(fresh)
 
 

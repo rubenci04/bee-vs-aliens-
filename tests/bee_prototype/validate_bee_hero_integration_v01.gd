@@ -69,7 +69,8 @@ func run() -> void:
 	check(bee.start_melee(), "Bee sting should start")
 	model = visual.get("model") as Node3D
 	check((model.find_child("AnimationPlayer", true, false) as AnimationPlayer).current_animation == "wingbeat", "T4g preserves wingbeat instead of playing drill_spin")
-	check(not model.find_child("Stinger", true, false).visible, "Model stinger hidden")
+	check(model.find_child("Stinger", true, false).visible, "E1: cosmetic metal drill stinger visible")
+	check(model.find_child("Stinger", true, false).find_children("*", "Area3D", true, false).is_empty(), "E1: cosmetic stinger has no hitbox")
 	visual.call("sting_impact_effect", bee.melee_hitbox.global_position)
 	check(host.find_child("PunchContactStar", true, false) != null and host.find_child("BeeDrillMetalTrail", true, false) == null, "Small contact star replaces drill trail")
 

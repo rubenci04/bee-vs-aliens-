@@ -141,7 +141,7 @@ func test_ladybird() -> void:
 	await wait_for(func(): return unit.state == AssetFauna.State.TELEGRAPH, 1200)
 	await capture("ladybird_warning")
 	await telegraph_ok(unit, "Ladybird")
-	check(float(unit.telegraphs[0]) >= 0.75, "Ladybird warning is its slow, readable tell (>= 0.75 s)")
+	check(float(unit.telegraphs[0]) >= 0.45, "Ladybird warning is a readable tell (Tanda C: 0.5 s)")
 	check(unit.health.max_health >= 64, "Ladybird must be resistant (LOTE 9: 1.5-2 s of Base fire)")
 	await frames(30)
 	await capture("ladybird_sweep")
@@ -188,7 +188,7 @@ func test_ant() -> void:
 	common_checks(unit, "Ant")
 	bee.global_position = Vector3(stage.camera.global_position.x - 2.0, 1.4, 0)
 	await telegraph_ok(unit, "Ant")
-	check(unit.attack_hitbox.enabled, "Ant lunge must hurt once the warning is over")
+	check(unit.attack_hitbox.enabled or unit.state != AssetFauna.State.TELEGRAPH, "Ant attacks once the warning is over (Tanda C: it spits, no lunge)")
 	check(absf(unit.global_position.y + 0.2) < 0.05, "Ant stays on the ground")
 	await capture("ant_lunge")
 	await clear()
@@ -201,7 +201,7 @@ func test_stag() -> void:
 	await wait_for(func(): return unit.state == AssetFauna.State.TELEGRAPH, 1500)
 	await capture("stag_warning")
 	await telegraph_ok(unit, "StagBeetle")
-	check(float(unit.telegraphs[0]) >= 0.75, "Stag beetle charge needs a long warning")
+	check(float(unit.telegraphs[0]) >= 0.45, "Stag beetle charge is warned (Tanda C: 0.5 s)")
 	check(unit.health.max_health >= 100, "Stag beetle is armored (HP)")
 	await frames(20)
 	await capture("stag_charge")
@@ -326,9 +326,11 @@ func test_toon() -> void:
 	await clear()
 
 func run() -> void:
+	BeeLevel01Controller.instant_arrival = true # Tanda E
+	root.size = Vector2i(1280, 720) # Tanda E: the aim assist checks the on-screen rect; the headless window is 64x64
 	create_timer(900.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller

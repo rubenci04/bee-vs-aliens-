@@ -11,7 +11,7 @@ const LARGE_MAX_TTK := 2.0
 const CLASS_TIME := [Vector2(0,COMMON_MAX_TTK),Vector2(0,COMMON_MAX_TTK),Vector2(0,COMMON_MAX_TTK),Vector2(0,LARGE_MAX_TTK)]
 const CLASS_MAX_RATIO := [0.4,0.7,1.2]
 const COMMON_HP := {
-	"FlyCommon": 33, "FlyGreen": 36, "FlyCloud": 3, "Wasp": 36,
+	"FlyCommon": 33, "FlyGreen": 36, "FlyCloud": 6, "Wasp": 36,
 	"Ant": 33, "Ladybird": 36, "WormA": 51, "WormB": 51,
 	"StagBeetle": 51, "Snail": 51, "Spider": 72, "MushroomCannon": 51,
 }

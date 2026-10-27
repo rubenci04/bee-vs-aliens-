@@ -64,9 +64,10 @@ func clear() -> void:
 	await frames(2)
 
 func run() -> void:
+	BeeLevel01Controller.instant_arrival = true # Tanda E
 	create_timer(240.0, true, false, true).timeout.connect(func(): quit(1))
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(6)
 	stage = current_scene as BeeShmupStage
 	wave = stage.wave as BeeLevel01Controller

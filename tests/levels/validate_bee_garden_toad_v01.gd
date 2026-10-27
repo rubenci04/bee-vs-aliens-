@@ -15,7 +15,7 @@ func frames(count: int) -> void:
 		await physics_frame
 func run() -> void:
 	root.add_child(LEVEL.instantiate())
-	current_scene = root.get_child(root.get_child_count() - 1)
+	current_scene = root.get_children().filter(func(n): return n.name != "SceneFade").back() # Tanda E: the scene-fade cover is added after the level
 	await frames(5)
 	var stage := current_scene as BeeShmupStage
 	stage.wave.set_physics_process(false)
