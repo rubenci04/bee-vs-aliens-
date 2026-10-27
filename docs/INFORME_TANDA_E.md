@@ -96,12 +96,11 @@ Primera pasada: 106 PASS / 50 con fallo. Lo que arreglé (tests, sin tocar jefes
 - validate_bee_visual_polish_v02
 - validate_bee_walker_miniboss_v01
 - validate_toon_projectiles_v01
-- validate_wasp_visual
 
 Causas típicas vistas: expectativas viejas (volumen del bus de música, valores del aguijón, auto-aim, brillos, `PollenM` que ya no existe), harnesses de nivel completo que esperan el UFO o que no limpian las zonas bloqueantes, y los bots de jefes (`tarantula_boss_v01`: el bot experto no libera a la tarántula, daño 796 contra 55-80; `walker_miniboss_v01`: pasa todas las comprobaciones hasta la matriz de duración pero no termina dentro del tiempo del test). No toqué vida/daño de jefes.
 
 ### Segunda ronda (arreglo de suites viejas)
-Se actualizaron expectativas viejas en ~25 tests (daño del disparo Base 10→3, tamaño de ventana headless para el apuntado asistido, aguijón que necesita la física de Bee, aviso de 0,5 s, pantalla de resultados, avispa persistente, `PollenM`, volumen guardado de música) y se agregó el flag de test `BeeLevel01Controller.instant_arrival` (los enemigos aparecen activos sin teletransporte). Pasaron de 43 a 26 las suites que fallan. Siguen fallando (cada una arrastra una cadena de números de balance/diseño ya superados, p. ej. Spread 8 de daño, vuelta automática a Base, duración del UFO, `Ant` que embiste, objetos de Tanda D):
+Se actualizaron expectativas viejas en ~25 tests (daño del disparo Base 10→3, tamaño de ventana headless para el apuntado asistido, aguijón que necesita la física de Bee, aviso de 0,5 s, pantalla de resultados, avispa persistente, `PollenM`, volumen guardado de música) y se agregó el flag de test `BeeLevel01Controller.instant_arrival` (los enemigos aparecen activos sin teletransporte). Pasaron de 43 a 25 las suites que fallan. Siguen fallando (cada una arrastra una cadena de números de balance/diseño ya superados, p. ej. Spread 8 de daño, vuelta automática a Base, duración del UFO, `Ant` que embiste, objetos de Tanda D):
 - validate_bee_arcade_combat_patterns_v02
 - validate_bee_arcade_pressure_world_interaction_v01
 - validate_bee_arcade_rebuild_v02
@@ -127,4 +126,3 @@ Se actualizaron expectativas viejas en ~25 tests (daño del disparo Base 10→3,
 - validate_bee_tarantula_boss_v01
 - validate_bee_walker_miniboss_v01
 - validate_toon_projectiles_v01
-- validate_wasp_visual

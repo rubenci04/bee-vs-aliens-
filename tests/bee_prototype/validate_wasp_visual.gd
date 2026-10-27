@@ -90,6 +90,7 @@ func run() -> void:
 	check(poc.stage == poc.Stage.PAUSE_B, "Encounter did not advance")
 
 	# Actual R reload keeps the new asset on enemies.
+	bee.health.invulnerable = false # Tanda E: the sting dash leaves Bee protected for a moment
 	bee.health.take_damage(1000)
 	await frames(2)
 	var old_id := poc.get_instance_id()
