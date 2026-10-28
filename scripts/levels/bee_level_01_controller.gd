@@ -1324,6 +1324,7 @@ func boss_active() -> bool:
 
 func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 	miniboss = robot
+	BeeMusic.boss()
 	_connect_combo_health(robot.cannon_health, robot, false)
 	var health := robot.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(MINIBOSS_HP)
@@ -1449,12 +1450,12 @@ func _on_tarantula_phase(state: int) -> void:
 
 func _on_tarantula_freed(freed: TarantulaBoss01) -> void:
 	liberated_count += 1
-	BeeMusic.victory() # LOTE 14: the victory theme plays once, then fades.
 	unit_downed.emit(freed, true)
 	player_label = ""
 
 ## The tarantula has walked away: the level is complete (short run-out, then SECTOR DESPEJADO · LIBERADOS n/N).
 func _on_tarantula_gone(_gone: TarantulaBoss01) -> void:
+	BeeMusic.victory()
 	tarantula_freed = true
 	boss_defeated = true
 	tarantula = null

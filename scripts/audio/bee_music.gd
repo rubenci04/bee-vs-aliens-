@@ -32,6 +32,10 @@ static func boss() -> void:
 	play(&"boss", BeeMusic.CROSSFADE_SECONDS)
 
 
+static func tarantula() -> void:
+	play(&"boss_tarantula", BeeMusic.CROSSFADE_SECONDS)
+
+
 static func victory() -> void:
 	play(&"victory", BeeMusic.VICTORY_FADE_IN_SECONDS)
 

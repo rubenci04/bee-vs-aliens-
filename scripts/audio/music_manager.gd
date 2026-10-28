@@ -2,9 +2,11 @@ extends Node
 ## LOTE 14 · ETAPA 4 — MusicManager (autoload `MusicManager`). One music bus ("Music", -8 dB by default so the sound effects stay audible),
 ## two players for crossfades, and the rules of the game:
 ##   title    loops on the title screen
-##   level    loops from the start of Level 1 and keeps going through the robot mini-boss
-##   boss     crossfades in (CROSSFADE_SECONDS) when the tarantula's health bar appears (loops)
-##   victory  plays ONCE when the tarantula is freed, then fades out at its end
+##   story    loops through the illustrated introduction
+##   level    loops during Level 1 action
+##   boss     starts when the robot mini-boss enters
+##   boss_tarantula crossfades in when the final boss enters
+##   victory  plays ONCE with the results after the tarantula leaves
 ##   pause    the music ducks (PAUSE_DUCK_DB) while the game is paused
 ##   death    fades out (DEATH_FADE_SECONDS) when Bee is defeated; a restart starts the right theme again
 ##   explosions  a big explosion (the bomb) ducks the music for a moment (EXPLOSION_DUCK_DB)
@@ -12,10 +14,12 @@ extends Node
 ## Volumes: `set_music_volume` / `set_sfx_volume` (0..1, the pause menu sliders) around the default dB of each bus.
 
 const TRACKS := {
-	&"title": {"path": "res://audio/Menú Principal y Pantalla de Títulos.mp3", "loop": true},
-	&"level": {"path": "res://audio/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3", "loop": true},
-	&"boss": {"path": "res://audio/Introducción al Jefe Final 1era opcion.mp3", "loop": true},
-	&"victory": {"path": "res://audio/Jefe Derrotado y Pantalla de Victoria.mp3", "loop": false},
+	&"title": {"path": "res://audio/musica titulos.mp3", "loop": true},
+	&"story": {"path": "res://audio/musica storyboard.mp3", "loop": true},
+	&"level": {"path": "res://audio/musica gameplay accion!.mp3", "loop": true},
+	&"boss": {"path": "res://audio/entra minijefe.mp3", "loop": true},
+	&"boss_tarantula": {"path": "res://audio/entra jefe tarantula.mp3", "loop": true},
+	&"victory": {"path": "res://audio/victoria! jefe vencido y nivel pasado.mp3", "loop": false},
 }
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"

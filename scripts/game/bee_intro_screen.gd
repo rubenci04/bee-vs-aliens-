@@ -22,7 +22,8 @@ func _ready() -> void:
 	_load_story()
 	_build_ui()
 	_set_slide(0)
-	BeeMusic.set_intro_duck(true)
+	BeeMusic.set_intro_duck(false)
+	BeeMusic.play(&"story")
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 

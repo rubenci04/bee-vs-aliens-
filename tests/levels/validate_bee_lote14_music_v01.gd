@@ -1,6 +1,6 @@
 extends SceneTree
 
-# LOTE 14 · ETAPA 4: MusicManager. Files and loops, music bus (-8 dB) and sliders, title / level / boss / victory themes, crossfade of 1.5 s, pause duck,
+# LOTE 14 · ETAPA 4: MusicManager. Files and loops, music bus (-8 dB) and sliders, title / story / level / robot / tarantula / victory themes, crossfade of 1.5 s, pause duck,
 # death fade, restart, explosion duck.
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
@@ -57,12 +57,12 @@ func run() -> void:
 
 	# --- files, formats, loops, buses ---------------------------------------------------------------------------------------------
 	var tracks: Dictionary = manager.TRACKS
-	check(tracks.size() == 4, "Four themes: title, level, boss, victory")
+	check(tracks.size() == 6, "Six themes: title, story, level, robot, tarantula, victory")
 	for id in tracks:
 		var stream := load(str(tracks[id]["path"])) as AudioStreamMP3
 		check(stream != null and stream.get_length() > 55.0, "%s: an mp3 of more than 55 s" % id)
 		check(stream.loop == bool(tracks[id]["loop"]), "%s: the import loop flag matches (%s)" % [id, str(tracks[id]["loop"])])
-	check(bool(tracks[&"title"]["loop"]) and bool(tracks[&"level"]["loop"]) and bool(tracks[&"boss"]["loop"]) and not bool(tracks[&"victory"]["loop"]), "Title, level and boss loop; victory does not")
+	check(bool(tracks[&"title"]["loop"]) and bool(tracks[&"story"]["loop"]) and bool(tracks[&"level"]["loop"]) and bool(tracks[&"boss"]["loop"]) and bool(tracks[&"boss_tarantula"]["loop"]) and not bool(tracks[&"victory"]["loop"]), "All but victory loop")
 	var music_bus := AudioServer.get_bus_index(&"Music")
 	var sfx_bus := AudioServer.get_bus_index(&"SFX")
 	check(music_bus >= 0 and sfx_bus >= 0 and music_bus != sfx_bus, "Separate music and effects buses")
@@ -80,23 +80,23 @@ func run() -> void:
 	check(manager.current_track == &"title" and manager.is_playing(), "The title theme plays on the title screen")
 	await wait(2.5)
 	check(volume(&"title") > -4.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
-	var title_volume := volume(&"title")
-	BeeMusic.set_intro_duck(true)
-	await wait(0.05)
-	check(volume(&"title") < title_volume - 1.8, "The title theme ducks slightly during the intro")
-	BeeMusic.set_intro_duck(false)
-	await wait(0.05)
-	check(volume(&"title") > title_volume - 0.5, "The title theme returns to its normal level after the intro")
 	title.queue_free()
 	await process_frame
+	var intro: Node = load("res://scenes/game/bee_intro_screen.tscn").instantiate()
+	root.add_child(intro)
+	current_scene = intro
+	await process_frame
+	check(manager.current_track == &"story" and manager.track_player(&"story") != null, "The illustrated introduction starts the story theme")
+	intro.queue_free()
+	await process_frame
 
-	# --- level starts: crossfade from the title, loops, continues -----------------------------------------------------------------------------
+	# --- level starts: crossfade from the story, loops, continues -----------------------------------------------------------------------------
 	var crossfades_before := int(manager.crossfades)
 	await load_level()
 	check(manager.current_track == &"level" and manager.track_player(&"level") != null, "The level theme starts with Level 1")
-	check(int(manager.crossfades) == crossfades_before + 1 and manager.track_player(&"title") != null, "Title -> level is a crossfade")
+	check(int(manager.crossfades) == crossfades_before + 1 and manager.track_player(&"story") != null, "Story -> level is a crossfade")
 	await wait(2.7)
-	check(manager.track_player(&"title") == null and volume(&"level") > -4.0, "The title theme is gone after the crossfade")
+	check(manager.track_player(&"story") == null and volume(&"level") > -4.0, "The story theme is gone after the crossfade")
 	check((manager.track_player(&"level").stream as AudioStreamMP3).loop, "The level theme loops")
 	check(not stage.bee.is_defeated and manager.current_track == &"level", "The level theme goes on")
 
@@ -128,7 +128,16 @@ func run() -> void:
 	await wait(1.6)
 	check(volume(&"level") > level_db - 0.5, "...and it comes back")
 
-	# --- boss: crossfade when the tarantula's bar appears ----------------------------------------------------------------------------------------------
+	# --- robot theme starts at the mini-boss and survives its defeat ---------------------------------------------------------------------------
+	BeeMusic.boss()
+	check(manager.current_track == &"boss" and manager.track_player(&"level") != null, "The robot theme crossfades from gameplay")
+	await wait(manager.CROSSFADE_SECONDS + 0.1)
+	var robot_player: AudioStreamPlayer = manager.track_player(&"boss")
+	var robot_starts: int = manager.starts
+	BeeMusic.boss()
+	check(manager.track_player(&"boss") == robot_player and manager.starts == robot_starts, "The robot theme does not restart")
+
+	# --- tarantula: crossfade when its bar appears ------------------------------------------------------------------------------------------------
 	var wave := stage.wave as BeeLevel01Controller
 	stage.scroll_speed = 0.0
 	stage.distance = 296.0
@@ -148,19 +157,22 @@ func run() -> void:
 			break
 	check(boss != null and boss.health_bar_visible(), "The tarantula walked in")
 	boss.set_physics_process(false) # Isolate crossfade from the new boss-attack ducking.
-	check(manager.current_track == &"boss", "The boss theme starts when the health bar appears")
-	check(manager.track_player(&"level") != null and manager.track_player(&"boss") != null, "Both themes overlap during the crossfade")
+	check(manager.current_track == &"boss_tarantula", "The tarantula theme starts when the health bar appears")
+	check(manager.track_player(&"boss") != null and manager.track_player(&"boss_tarantula") != null, "Both boss themes overlap during the crossfade")
 	await wait(0.75)
-	var mid_level := volume(&"level")
-	var mid_boss := volume(&"boss")
+	var mid_level := volume(&"boss")
+	var mid_boss := volume(&"boss_tarantula")
 	check(mid_level < -1.0 and mid_level > -8.0 and mid_boss < -1.0 and mid_boss > -8.0, "Halfway the crossfade both sit near -3 dB (equal power, %.1f / %.1f dB)" % [mid_level, mid_boss])
 	await wait(2.5)
-	check(manager.track_player(&"level") == null and volume(&"boss") > -4.0, "After %.1f s only the boss theme is left" % manager.CROSSFADE_SECONDS)
+	check(manager.track_player(&"boss") == null and volume(&"boss_tarantula") > -4.0, "After %.1f s only the tarantula theme is left" % manager.CROSSFADE_SECONDS)
 	check(is_equal_approx(manager.CROSSFADE_SECONDS, 1.5), "The crossfade lasts 1.5 s")
-	check((manager.track_player(&"boss").stream as AudioStreamMP3).loop, "The boss theme loops")
+	check((manager.track_player(&"boss_tarantula").stream as AudioStreamMP3).loop, "The tarantula theme loops")
 
 	# --- victory: once, then fade ------------------------------------------------------------------------------------------------------------------------
 	wave._on_tarantula_freed(boss)
+	await wait(0.2)
+	check(manager.current_track == &"boss_tarantula", "Victory does not play at the robot or before the results")
+	wave._on_tarantula_gone(boss)
 	await wait(0.2)
 	check(manager.current_track == &"victory", "The victory theme plays when the tarantula is freed")
 	var victory_player := manager.track_player(&"victory") as AudioStreamPlayer
@@ -183,5 +195,5 @@ func run() -> void:
 	await load_level()
 	await wait(0.4)
 	check(manager.current_track == &"level" and manager.is_playing() and manager.track_player(&"level").get_playback_position() < 2.0, "A restart plays the level theme again from the start")
-	print("BEE_LOTE14_MUSIC_V01_OK themes=4 loops=title,level,boss crossfade=1.5s music_bus=-8dB sliders pause_duck death_fade victory_once explosion_duck")
+	print("BEE_LOTE14_MUSIC_V01_OK themes=6 loops=title,story,level,boss,boss_tarantula crossfade=1.5s music_bus=-8dB sliders pause_duck death_fade victory_once explosion_duck")
 	quit(0)
