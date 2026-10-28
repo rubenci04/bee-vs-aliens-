@@ -17,7 +17,7 @@ func frames(count: int) -> void:
 		if is_instance_valid(mission) and mission.is_inside_tree():
 			var active := 0
 			for enemy in mission.get_node("Enemies").get_children():
-				if enemy.is_active(): active += 1
+				if enemy.has_method("is_active") and enemy.is_active(): active += 1
 			max_active_seen = maxi(max_active_seen, active)
 			check(active <= 2, "More than two enemies active")
 func release_controls() -> void:

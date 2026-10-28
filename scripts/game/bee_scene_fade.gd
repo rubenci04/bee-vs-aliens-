@@ -16,11 +16,13 @@ static func enter(from: Node):
  var root := from.get_tree().root
  if root.has_node("SceneFade"): return
  var cover := new()
- root.add_child(cover)
- cover.animation=cover.create_tween()
- cover.animation.tween_property(cover.shade,"color:a",0.0,S.FADE_SECONDS)
- cover.animation.tween_callback(func():
-  if not cover.leaving: cover.queue_free())
+ cover.ready.connect(cover._start_enter_animation, CONNECT_ONE_SHOT)
+ root.add_child.call_deferred(cover)
+func _start_enter_animation():
+ animation=create_tween()
+ animation.tween_property(shade,"color:a",0.0,S.FADE_SECONDS)
+ animation.tween_callback(func():
+  if not leaving: queue_free())
 static func go(from: Node, path: String):
  var tree := from.get_tree()
  var cover=tree.root.get_node_or_null("SceneFade")

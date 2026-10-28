@@ -32,7 +32,7 @@ enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, TRANSITION, FREED, DO
 
 const MODEL := preload("res://assets/models/levels/level_01_garden/bosses/lvl01_boss_giant_spider_v01.glb")
 const EXPOSED_OUTLINE := preload("res://assets/style/toon_outline.gdshader")
-const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
+const PROJECTILE_PATH := "res://scenes/levels/ufo_boss_projectile.tscn"
 const HEALTH_SCENE := preload("res://scenes/components/health_component.tscn")
 const HURTBOX_SCENE := preload("res://scenes/components/hurtbox_3d.tscn")
 const PROJECTILE_GROUP := &"tarantula_projectiles"
@@ -796,7 +796,7 @@ func _fire_fan(telegraph := FAN_TELEGRAPH) -> void:
 
 
 func _spawn_web(origin: Vector3, direction: Vector3, speed: float, lifetime := 3.0) -> AlienEnemyProjectile:
-	var projectile := PROJECTILE.instantiate() as AlienEnemyProjectile
+	var projectile := (load(PROJECTILE_PATH) as PackedScene).instantiate() as AlienEnemyProjectile
 	projectile.damage = SHOT_DAMAGE
 	projectile.speed = speed
 	projectile.lifetime = lifetime

@@ -490,6 +490,7 @@ func _begin_laser() -> void:
 		_beam.top_level = false
 		_beam.position = Vector3(LASER_LENGTH * 0.5, 0.0, 0.0)
 		_beam.rotation = Vector3.ZERO
+	if _beam_box == null:
 		var shape := BoxShape3D.new()
 		shape.size = Vector3(LASER_LENGTH, 0.3, 1.2)
 		_beam_box = BeeAttackVisuals.hazard_area(_beam_pivot, self, LASER_DAMAGE, shape)

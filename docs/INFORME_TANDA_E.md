@@ -126,3 +126,13 @@ Se actualizaron expectativas viejas en ~25 tests (daño del disparo Base 10→3,
 - validate_bee_tarantula_boss_v01
 - validate_bee_walker_miniboss_v01
 - validate_toon_projectiles_v01
+
+## Tanda F — arranque real y ciclo de carga
+
+El título cargaba la escena de la bala de jefes mientras se resolvían los scripts del jugador, el nivel y los jefes. Los `preload` de esa bala en la tarántula y el UFO cerraban el ciclo: Godot informaba `Parse Error` y la constante quedaba nula. Ambos jefes cargan ahora la escena al disparar. No se detectó otro `preload` de escena fallido en el recorrido real.
+
+`SceneFade.enter` agrega la capa al root en diferido y crea su tween cuando la capa está lista. El test nuevo `validate_bee_boot_order.gd` reproduce título → nivel → X=293 → robot → tarántula en un proceso limpio, sin referencias a clases de gameplay que alteren la carga. En `57589f6` falló con el error de recurso y las telarañas nulas; con el arreglo pasó: robot con láser y salto, tarántula en `PHASE_1`, telarañas disparadas y daño recibido, sin errores capturados por el Logger. Los tests dirigidos de post-robot, integración hasta liberar a la tarántula y UFO también pasaron.
+
+El hitbox del láser del robot dependía de la rama que creaba su malla: se separó su inicialización para que cada aviso de láser garantice el hitbox antes de activarlo. El fallo `set_enabled` nulo no se reprodujo en los recorridos de esta tanda; el test comprueba los hitboxes de láser y aterrizaje después de sus ataques. En `validate_bee_mission_01.gd` se filtraron los proyectiles del conteo de enemigos activos: ya no emite `is_active` sobre ellos; sus aserciones antiguas siguen fallando.
+
+Se ejecutaron las 25 suites históricas de la lista anterior. Las 25 conservan fallos (incluidas dos que devuelven 0 pero imprimen `SCRIPT ERROR` de aserción); no se vio una falla nueva de carga ni el hitbox nulo. `validate_bee_boot_order.gd` pasó en la última corrida. El árbol de trabajo preexistente tiene cuatro MP3 antiguos borrados y nuevos audios sin commit: algunas corridas informaron `Resource file not found` de esos MP3. El test registra esos errores del motor y falla por errores de parseo, recursos inexistentes y scripts; no se tocaron los audios.

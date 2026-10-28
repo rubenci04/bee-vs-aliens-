@@ -13,7 +13,7 @@ signal summon_requested(family: StringName, count: int)
 
 enum State { APPROACH, PHASE_1, PHASE_2, PHASE_3, PHASE_4, PHASE_5, TRANSITION, DEATH, DONE }
 
-const PROJECTILE := preload("res://scenes/levels/ufo_boss_projectile.tscn")
+const PROJECTILE_PATH := "res://scenes/levels/ufo_boss_projectile.tscn"
 const PROJECTILE_GROUP := &"ufo_boss_projectiles"
 const DISPLAY_NAME := "NODO ALIEN"
 
@@ -582,7 +582,7 @@ func _fire_fan() -> void:
 
 
 func _spawn_projectile(origin: Vector3, direction: Vector3, speed: float, pattern: StringName) -> void:
-	var projectile := PROJECTILE.instantiate() as AlienEnemyProjectile
+	var projectile := (load(PROJECTILE_PATH) as PackedScene).instantiate() as AlienEnemyProjectile
 	projectile.damage = SHOT_DAMAGE
 	projectile.speed = speed
 	projectile.add_to_group(PROJECTILE_GROUP)
