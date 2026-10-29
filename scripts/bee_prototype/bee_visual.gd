@@ -1,7 +1,9 @@
 extends Node3D
 const FEEDBACK := preload("res://scripts/game/bee_feedback_settings.gd")
+const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
+const STING := preload("res://scripts/game/bee_sting_settings.gd")
 var _tilt_rest := Transform3D.IDENTITY
-var _flight_tilt := Vector2.ZERO
+var _flight_tilt := Vector3.ZERO
 ## Selectable Bee model and presentation. This wrapper owns no gameplay state.
 @export var wing_frequency := 16.0
 @export var wing_amplitude := 0.55
@@ -37,6 +39,18 @@ var _blink_visible := true
 var _last_blink_state := false
 var _roll_flash_tween: Tween
 var _plate_overlays: Dictionary = {}
+var _last_velocity := Vector3.ZERO
+var _last_facing := 1.0
+var _turn_arc := 0.0
+var _shot_left := 0.0
+var _weapon_left := 0.0
+var _roll_recovery_left := 0.0
+var _was_rolling := false
+var _model_rest_scale := Vector3.ONE
+var _drill_rest := Vector3.ZERO
+var _antennae: Array[Dictionary] = []
+var _soft_texture: Texture2D
+var motion_trail: CPUParticles3D
 
 
 func _ready() -> void:
@@ -46,6 +60,8 @@ func _ready() -> void:
 	apply_model_version(BeeGameSettings.BEE_MODEL_VERSION)
 	if actor != null:
 		actor.roll_started.connect(play_roll_effects)
+		actor.weapon_state_changed.connect(_weapon_gesture)
+		_last_facing = actor.facing_x
 
 
 func apply_model_version(version := "") -> bool:
@@ -63,6 +79,7 @@ func apply_model_version(version := "") -> bool:
 	rest_angles.clear()
 	_rim_materials.clear()
 	nozzles.clear()
+	_antennae.clear()
 	muzzle = null
 	drill = null
 	drill_tip = null
@@ -78,6 +95,7 @@ func apply_model_version(version := "") -> bool:
 		return false
 	model.name = "Model"
 	add_child(model)
+	_model_rest_scale = model.scale
 	BeeToonStyle.apply(model, true, BeeToonStyle.OUTLINE_BEE)
 	_own_rim_materials()
 	for wing_name in ["Wing_L", "Wing_R"]:
@@ -90,6 +108,8 @@ func apply_model_version(version := "") -> bool:
 		return false
 	muzzle = model.find_child("muzzle", true, false) as Node3D
 	drill = model.find_child("stinger_drill", true, false) as Node3D
+	if drill != null:
+		_drill_rest = drill.rotation
 	drill_tip = model.find_child("stinger_tip", true, false) as Node3D
 	var cosmetic_stinger := model.find_child("Stinger", true, false) as Node3D
 	if cosmetic_stinger != null: cosmetic_stinger.show() # Tanda E1: the metal drill stinger is permanent and purely cosmetic (no hitbox; the melee is only the punch).
@@ -98,10 +118,17 @@ func apply_model_version(version := "") -> bool:
 	blaster = model.find_child("antenna_R_blaster", true, false) as Node3D
 	if blaster != null:
 		_blaster_rest_position = blaster.position
+	for part_name in ["antenna_L", "antenna_R"]:
+		var antenna := model.find_child(part_name, true, false) as Node3D
+		if antenna != null:
+			_antennae.append({"node": antenna, "rest": antenna.rotation})
 	for side in ["L", "R"]:
 		var nozzle := model.find_child("nozzle_"+side, true, false) as Node3D
 		if nozzle != null:
 			nozzles[side] = {"node": nozzle, "rest": nozzle.rotation, "particles": _make_thruster(nozzle, side)}
+	if is_instance_valid(motion_trail):
+		motion_trail.queue_free()
+	motion_trail = _make_motion_trail()
 	var facing := actor.facing_x if actor != null else 1.0
 	get_parent().rotation.y = -facing * PI * 0.5
 	get_parent().scale = Vector3.ONE * (BeeGameSettings.BEE_V01_VISUAL_SCALE if chosen == "v01" else BeeGameSettings.BEE_VISUAL_SCALE)
@@ -126,6 +153,8 @@ func firing_origin(fallback: Vector3) -> Vector3:
 func play_muzzle_effect(fallback: Vector3, direction: Vector3, spread := false) -> void:
 	var point := muzzle.global_position if is_instance_valid(muzzle) else firing_origin(fallback)
 	BeeCombatVFX.spawn(actor.get_parent(), point, &"bee_muzzle_spread" if spread else &"bee_muzzle", direction)
+	if MOTION.enabled:
+		_shot_left = MOTION.SHOT_RECOIL_SECONDS
 	if blaster == null:
 		return
 	if _blaster_recoil_tween != null:
@@ -152,43 +181,115 @@ func _process(delta: float) -> void:
 		return
 	elapsed += delta
 	_update_flight_tilt(delta)
+	_update_motion_pose(delta)
 	_update_rim()
 	if model_version == "v01":
 		for i in wings.size():
-			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * wing_frequency) * wing_amplitude * (-1.0 if i == 0 else 1.0))
+			wings[i].rotation = rest_angles[i] + Vector3(0, 0, sin(elapsed * TAU * _wing_hz()) * wing_amplitude * (-1.0 if i == 0 else 1.0))
+	elif MOTION.enabled:
+		var animator := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+		if animator != null:
+			animator.speed_scale = _wing_hz() / maxf(wing_frequency, 0.01)
 	_update_thrusters(delta)
 	punch_pose.update(actor.sting_dash)
 	_update_invulnerability_blink()
 
 
+func _wing_hz() -> float:
+	if not MOTION.enabled or actor == null:
+		return wing_frequency
+	var effort := clampf(Vector2(actor.velocity.x / maxf(actor.horizontal_speed, 0.01), actor.velocity.y / maxf(actor.vertical_speed, 0.01)).length(), 0.0, 1.0)
+	var shot_boost := MOTION.WING_SHOT_BOOST_HZ * clampf(_shot_left / MOTION.WING_SHOT_SECONDS, 0.0, 1.0)
+	return lerpf(MOTION.WING_IDLE_HZ, MOTION.WING_EFFORT_HZ, effort) + shot_boost
+
+
+func _weapon_gesture() -> void:
+	if MOTION.enabled:
+		_weapon_left = MOTION.WEAPON_GESTURE_SECONDS
+
+
+func _update_motion_pose(delta: float) -> void:
+	if not MOTION.enabled:
+		model.scale = _model_rest_scale
+		if drill != null:
+			drill.rotation = _drill_rest
+		if motion_trail != null:
+			motion_trail.emitting = false
+		return
+	_shot_left = maxf(0.0, _shot_left - delta)
+	_weapon_left = maxf(0.0, _weapon_left - delta)
+	if _was_rolling and not actor.is_rolling:
+		_roll_recovery_left = MOTION.ROLL_RECOVERY_SECONDS
+	_was_rolling = actor.is_rolling
+	_roll_recovery_left = maxf(0.0, _roll_recovery_left - delta)
+	var shape := Vector3.ONE
+	if actor.is_rolling:
+		var progress := 1.0 - clampf(actor._roll_left / maxf(actor.roll_duration, 0.01), 0.0, 1.0)
+		var anticipation := MOTION.ROLL_ANTICIPATION_SECONDS / maxf(actor.roll_duration, 0.01)
+		var bend := clampf(progress / anticipation, 0.0, 1.0) if progress < anticipation else 1.0 - clampf((progress - anticipation) / maxf(1.0 - anticipation, 0.01), 0.0, 1.0)
+		shape = Vector3(1.0 + MOTION.ROLL_SQUASH * bend, 1.0 - MOTION.ROLL_SQUASH * bend, 1.0)
+	elif _roll_recovery_left > 0.0:
+		var bounce := sin(PI * (1.0 - _roll_recovery_left / MOTION.ROLL_RECOVERY_SECONDS))
+		shape = Vector3(1.0 - MOTION.ROLL_SQUASH * bounce * 0.5, 1.0 + MOTION.ROLL_SQUASH * bounce * 0.5, 1.0)
+	var dash: Node = actor.sting_dash
+	if dash != null and dash.active:
+		if dash.phase == dash.Phase.OUT:
+			var strike_start := MOTION.PUNCH_ANTICIPATION_SECONDS
+			var age := maxf(0.0, STING.DASH_SECONDS - dash.left)
+			if age < strike_start:
+				var prepare := age / strike_start
+				shape = Vector3(1.0 - MOTION.PUNCH_STRETCH * prepare * 0.5, 1.0 + MOTION.PUNCH_STRETCH * prepare * 0.5, 1.0)
+			else:
+				var strike := clampf((age - strike_start) / maxf(STING.DASH_SECONDS - strike_start, 0.01), 0.0, 1.0)
+				shape = Vector3(1.0 + MOTION.PUNCH_STRETCH * strike, 1.0 - MOTION.PUNCH_STRETCH * strike * 0.45, 1.0)
+		elif dash.phase == dash.Phase.IMPACT:
+			shape = Vector3(1.0 + MOTION.PUNCH_STRETCH, 1.0 - MOTION.PUNCH_STRETCH * 0.45, 1.0)
+		else:
+			var recover := clampf(dash.left / maxf(MOTION.PUNCH_RECOVERY_SECONDS, 0.01), 0.0, 1.0)
+			shape = Vector3(1.0 + MOTION.PUNCH_STRETCH * recover, 1.0 - MOTION.PUNCH_STRETCH * recover * 0.45, 1.0)
+		if drill != null:
+			drill.rotate_z(delta * TAU * MOTION.DRILL_REVOLUTIONS_PER_SECOND)
+	elif drill != null:
+		drill.rotation = _drill_rest
+	model.scale = _model_rest_scale * shape
+	var antenna_sway := deg_to_rad(MOTION.ANTENNA_SWAY_DEGREES) * sin(elapsed * TAU * MOTION.WING_IDLE_HZ * 0.25) * clampf(_shot_left / MOTION.SHOT_RECOIL_SECONDS, 0.0, 1.0)
+	for entry in _antennae:
+		var antenna: Node3D = entry["node"]
+		if is_instance_valid(antenna):
+			antenna.rotation = entry["rest"] + Vector3(antenna_sway, 0.0, 0.0)
+	if motion_trail != null:
+		motion_trail.emitting = actor.is_rolling
+
+
 func _make_thruster(nozzle: Node3D, side: String) -> CPUParticles3D:
 	var particles := CPUParticles3D.new()
 	particles.name = "BeeThruster_"+side
-	particles.amount = BeeGameSettings.BEE_THRUSTER_PARTICLES
-	particles.lifetime = BeeGameSettings.BEE_THRUSTER_PARTICLE_LIFETIME
+	particles.amount = MOTION.THRUSTER_PARTICLES if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_PARTICLES
+	particles.lifetime = MOTION.THRUSTER_LIFETIME if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_PARTICLE_LIFETIME
 	particles.local_coords = true
 	particles.explosiveness = 0.0
 	particles.randomness = BeeGameSettings.BEE_THRUSTER_PARTICLE_RANDOMNESS
 	particles.direction = Vector3(0.0, 0.0, 1.0)
-	particles.spread = BeeGameSettings.BEE_THRUSTER_PARTICLE_SPREAD_DEGREES
+	particles.spread = MOTION.THRUSTER_SPREAD_DEGREES if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_PARTICLE_SPREAD_DEGREES
 	particles.gravity = Vector3.ZERO
 	particles.initial_velocity_min = BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED
 	particles.initial_velocity_max = BeeGameSettings.BEE_THRUSTER_IDLE_MAX_PARTICLE_SPEED
-	particles.scale_amount_min = BeeGameSettings.BEE_THRUSTER_PARTICLE_SCALE_MIN
-	particles.scale_amount_max = BeeGameSettings.BEE_THRUSTER_PARTICLE_SCALE_MAX
+	particles.scale_amount_min = MOTION.THRUSTER_IDLE_SCALE if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_PARTICLE_SCALE_MIN
+	particles.scale_amount_max = MOTION.THRUSTER_FULL_SCALE if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_PARTICLE_SCALE_MAX
 	particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	particles.emission_sphere_radius = BeeGameSettings.BEE_THRUSTER_EMISSION_RADIUS
 	var gradient := Gradient.new()
-	gradient.colors = PackedColorArray([BeeGameSettings.BEE_THRUSTER_COLOR_START, BeeGameSettings.BEE_THRUSTER_COLOR_MID, BeeGameSettings.BEE_THRUSTER_COLOR_END])
+	gradient.colors = PackedColorArray([MOTION.THRUSTER_COLOR_CORE, MOTION.THRUSTER_COLOR_CORE.lerp(MOTION.THRUSTER_COLOR_EDGE, 0.5), MOTION.THRUSTER_COLOR_EDGE]) if MOTION.enabled else PackedColorArray([BeeGameSettings.BEE_THRUSTER_COLOR_START, BeeGameSettings.BEE_THRUSTER_COLOR_MID, BeeGameSettings.BEE_THRUSTER_COLOR_END])
 	particles.color_ramp = gradient
-	var spark := SphereMesh.new()
-	spark.radius = BeeGameSettings.BEE_THRUSTER_MESH_RADIUS
-	spark.height = BeeGameSettings.BEE_THRUSTER_MESH_HEIGHT
-	spark.radial_segments = 6
-	spark.rings = 3
+	var spark := QuadMesh.new()
+	spark.size = Vector2.ONE
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.vertex_color_use_as_albedo = true
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.albedo_texture = _soft_disc_texture()
 	spark.material = material
 	particles.mesh = spark
 	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -198,29 +299,88 @@ func _make_thruster(nozzle: Node3D, side: String) -> CPUParticles3D:
 	return particles
 
 
+func _soft_disc_texture() -> Texture2D:
+	if _soft_texture != null:
+		return _soft_texture
+	var size: int = MOTION.THRUSTER_TEXTURE_SIZE
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	for y in size:
+		for x in size:
+			var radius := Vector2((float(x) + 0.5) / size * 2.0 - 1.0, (float(y) + 0.5) / size * 2.0 - 1.0).length()
+			var t := clampf(radius, 0.0, 1.0)
+			var color: Color = MOTION.THRUSTER_COLOR_CORE.lerp(MOTION.THRUSTER_COLOR_EDGE, t)
+			color.a *= pow(1.0 - t, 2.0)
+			img.set_pixel(x, y, color)
+	_soft_texture = ImageTexture.create_from_image(img)
+	return _soft_texture
+
+
+func _make_motion_trail() -> CPUParticles3D:
+	var trail := CPUParticles3D.new()
+	trail.name = "BeeMotionTrail"
+	trail.amount = MOTION.THRUSTER_PARTICLES
+	trail.lifetime = MOTION.ROLL_TRAIL_SECONDS
+	trail.emitting = false
+	trail.local_coords = false
+	trail.direction = Vector3(-1.0, 0.0, 0.0)
+	trail.spread = MOTION.THRUSTER_SPREAD_DEGREES
+	trail.gravity = Vector3.ZERO
+	trail.initial_velocity_min = MOTION.THRUSTER_IDLE_SPEED
+	trail.initial_velocity_max = MOTION.THRUSTER_FULL_SPEED
+	trail.scale_amount_min = MOTION.THRUSTER_IDLE_SCALE
+	trail.scale_amount_max = MOTION.THRUSTER_FULL_SCALE
+	trail.color = MOTION.TRAIL_COLOR
+	var quad := QuadMesh.new()
+	quad.size = Vector2.ONE
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.albedo_texture = _soft_disc_texture()
+	quad.material = material
+	trail.mesh = quad
+	trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(trail)
+	return trail
+
+
 func _update_thrusters(delta: float) -> void:
 	_roll_burst_left = maxf(0.0, _roll_burst_left - delta)
 	var speed := Vector2(actor.velocity.x, actor.velocity.y).length()
 	var max_speed := maxf(Vector2(actor.horizontal_speed, actor.vertical_speed).length(), 0.1)
 	var speed_ratio := clampf(speed / max_speed, 0.0, 1.0)
-	var intensity := lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_INTENSITY, BeeGameSettings.BEE_THRUSTER_MAX_INTENSITY, speed_ratio)
-	if _roll_burst_left > 0.0:
-		intensity = 1.0
-	for entry: Dictionary in nozzles.values():
+	var acceleration := (actor.velocity - _last_velocity) / maxf(delta, 0.001)
+	_last_velocity = actor.velocity
+	var effort := clampf(Vector2(acceleration.x, acceleration.y).length() / MOTION.THRUSTER_ACCEL_REFERENCE, 0.0, 1.0)
+	for side in nozzles:
+		var entry: Dictionary = nozzles[side]
 		var nozzle: Node3D = entry["node"]
 		var rest: Vector3 = entry["rest"]
 		var particles: CPUParticles3D = entry["particles"]
 		var vertical := clampf(actor.velocity.y / maxf(actor.vertical_speed, 0.1), -1.0, 1.0)
-		nozzle.rotation = rest + Vector3(-vertical * BeeGameSettings.BEE_THRUSTER_MAX_TILT_RADIANS, 0.0, 0.0)
+		var intensity := lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_INTENSITY, BeeGameSettings.BEE_THRUSTER_MAX_INTENSITY, speed_ratio)
+		if MOTION.enabled:
+			var lateral := clampf((-acceleration.x if side == "L" else acceleration.x) / MOTION.THRUSTER_ACCEL_REFERENCE, 0.0, 1.0)
+			intensity = clampf(MOTION.THRUSTER_IDLE_INTENSITY + maxf(speed_ratio * (1.0 - MOTION.THRUSTER_ACCEL_WEIGHT), effort * MOTION.THRUSTER_ACCEL_WEIGHT) + lateral * MOTION.THRUSTER_DIRECTION_WEIGHT + MOTION.THRUSTER_IDLE_FLICKER * sin(elapsed * TAU * MOTION.THRUSTER_FLICKER_HZ), MOTION.THRUSTER_IDLE_INTENSITY * 0.5, 1.0)
+		if _roll_burst_left > 0.0:
+			intensity = 1.0
+		entry["intensity"] = intensity
+		nozzle.rotation = rest + Vector3(-vertical * (deg_to_rad(MOTION.THRUSTER_TILT_DEGREES) if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_MAX_TILT_RADIANS), 0.0, 0.0)
 		particles.visible = BeeGameSettings.BEE_THRUSTERS_ENABLED
 		particles.emitting = BeeGameSettings.BEE_THRUSTERS_ENABLED
-		particles.scale = Vector3.ONE * lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_SCALE, BeeGameSettings.BEE_THRUSTER_FULL_SCALE, intensity)
-		particles.initial_velocity_min = lerpf(BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED, BeeGameSettings.BEE_THRUSTER_ACCEL_PARTICLE_SPEED, intensity)
-		particles.initial_velocity_max = lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_MAX_PARTICLE_SPEED, BeeGameSettings.BEE_THRUSTER_MAX_PARTICLE_SPEED, intensity)
+		if MOTION.enabled:
+			particles.scale = Vector3.ONE * lerpf(MOTION.THRUSTER_NODE_IDLE_SCALE, MOTION.THRUSTER_NODE_FULL_SCALE, intensity)
+			particles.initial_velocity_min = lerpf(MOTION.THRUSTER_IDLE_SPEED, MOTION.THRUSTER_FULL_SPEED * 0.5, intensity)
+			particles.initial_velocity_max = lerpf(MOTION.THRUSTER_IDLE_SPEED, MOTION.THRUSTER_FULL_SPEED, intensity)
+		else:
+			particles.scale = Vector3.ONE * lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_SCALE, BeeGameSettings.BEE_THRUSTER_FULL_SCALE, intensity)
+			particles.initial_velocity_min = lerpf(BeeGameSettings.BEE_THRUSTER_MIN_PARTICLE_SPEED, BeeGameSettings.BEE_THRUSTER_ACCEL_PARTICLE_SPEED, intensity)
+			particles.initial_velocity_max = lerpf(BeeGameSettings.BEE_THRUSTER_IDLE_MAX_PARTICLE_SPEED, BeeGameSettings.BEE_THRUSTER_MAX_PARTICLE_SPEED, intensity)
 
 
 func play_roll_effects() -> void:
-	_roll_burst_left = BeeGameSettings.BEE_THRUSTER_BURST_SECONDS
+	_roll_burst_left = MOTION.ROLL_TRAIL_SECONDS if MOTION.enabled else BeeGameSettings.BEE_THRUSTER_BURST_SECONDS
 	if model_version == "v02":
 		_flash_armor()
 
@@ -342,9 +502,28 @@ func _untilted_point(point: Vector3) -> Vector3:
 	return get_parent().global_transform * _tilt_rest * global_transform.affine_inverse() * point
 
 func _update_flight_tilt(delta: float) -> void:
-	var desired := Vector2.ZERO
+	var desired := Vector3.ZERO
+	var speed_x := clampf(actor.velocity.x / maxf(actor.horizontal_speed, 0.01), -1.0, 1.0)
+	var speed_y := clampf(actor.velocity.y / maxf(actor.vertical_speed, 0.01), -1.0, 1.0)
+	if actor.facing_x != _last_facing:
+		_turn_arc = deg_to_rad(MOTION.TURN_ARC_DEGREES) * actor.facing_x
+		_last_facing = actor.facing_x
+	_turn_arc *= exp(-delta / MOTION.TURN_ARC_SECONDS)
 	if FEEDBACK.tilt_enabled and not actor.is_rolling and not actor.sting_dash.active:
-		desired.x = deg_to_rad(FEEDBACK.PITCH_DEGREES)*clampf(actor.velocity.y/maxf(actor.vertical_speed,.01),-1,1)
-		desired.y = -deg_to_rad(FEEDBACK.BANK_DEGREES)*clampf(actor.velocity.x*actor.facing_x/maxf(actor.horizontal_speed,.01),-1,1)
-	_flight_tilt = _flight_tilt.lerp(desired,1.0-exp(-delta/FEEDBACK.TILT_SMOOTH_SECONDS))
-	transform = _tilt_rest * Transform3D(Basis.from_euler(Vector3(_flight_tilt.x,0,_flight_tilt.y)),Vector3.ZERO)
+		if MOTION.enabled:
+			desired.x = clampf(deg_to_rad(MOTION.PITCH_MAX_DEGREES) * speed_y + deg_to_rad(MOTION.FORWARD_LEAN_DEGREES) * maxf(0.0, speed_x * actor.facing_x), -deg_to_rad(MOTION.PITCH_MAX_DEGREES), deg_to_rad(MOTION.PITCH_MAX_DEGREES))
+			desired.y = _turn_arc
+			desired.z = -deg_to_rad(MOTION.ROLL_MAX_DEGREES) * speed_x * actor.facing_x
+		else:
+			desired.x = deg_to_rad(FEEDBACK.PITCH_DEGREES) * speed_y
+			desired.z = -deg_to_rad(FEEDBACK.BANK_DEGREES) * speed_x * actor.facing_x
+	var response := MOTION.TILT_RESPONSE_SECONDS if MOTION.enabled else FEEDBACK.TILT_SMOOTH_SECONDS
+	_flight_tilt = _flight_tilt.lerp(desired, 1.0 - exp(-delta / response))
+	var bob := 0.0
+	var recoil := 0.0
+	if MOTION.enabled:
+		var speed := Vector2(actor.velocity.x, actor.velocity.y).length()
+		bob = MOTION.HOVER_HEIGHT * clampf(1.0 - speed / MOTION.HOVER_SPEED_THRESHOLD, 0.0, 1.0) * sin(elapsed * TAU * MOTION.HOVER_HZ)
+		recoil = MOTION.SHOT_RECOIL_DISTANCE * sin(PI * clampf(_shot_left / MOTION.SHOT_RECOIL_SECONDS, 0.0, 1.0))
+		bob += deg_to_rad(MOTION.WEAPON_GESTURE_DEGREES) * MOTION.HOVER_HEIGHT * sin(PI * clampf(_weapon_left / MOTION.WEAPON_GESTURE_SECONDS, 0.0, 1.0))
+	transform = _tilt_rest * Transform3D(Basis.from_euler(_flight_tilt), Vector3(0.0, bob, recoil))

@@ -2,6 +2,7 @@ extends RefCounted
 ## Animates the imported front leg meshes without changing their hierarchy or assets.
 const S := preload("res://scripts/game/bee_punch_settings.gd")
 const DASH := preload("res://scripts/game/bee_sting_settings.gd")
+const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
 var parts: Array[Dictionary] = []
 var extension := 0.0
 var angle := 0.0
@@ -23,11 +24,12 @@ func update(dash: Node) -> void:
 	if dash != null and dash.active:
 		if dash.phase == dash.Phase.OUT:
 			var elapsed: float = DASH.DASH_SECONDS - dash.left
-			var start := DASH.DASH_SECONDS - S.PREPARE_SECONDS - S.STRIKE_SECONDS
-			if elapsed >= start and elapsed < start + S.PREPARE_SECONDS:
-				angle = lerpf(0.0, S.DRAW_BACK_ANGLE, clampf((elapsed - start) / S.PREPARE_SECONDS, 0, 1))
-			elif elapsed >= start + S.PREPARE_SECONDS:
-				extension = clampf((elapsed - start - S.PREPARE_SECONDS) / S.STRIKE_SECONDS, 0, 1)
+			var prepare_seconds: float = MOTION.PUNCH_ANTICIPATION_SECONDS if MOTION.enabled else S.PREPARE_SECONDS
+			var start := DASH.DASH_SECONDS - prepare_seconds - S.STRIKE_SECONDS
+			if elapsed >= start and elapsed < start + prepare_seconds:
+				angle = lerpf(0.0, S.DRAW_BACK_ANGLE, clampf((elapsed - start) / prepare_seconds, 0, 1))
+			elif elapsed >= start + prepare_seconds:
+				extension = clampf((elapsed - start - prepare_seconds) / S.STRIKE_SECONDS, 0, 1)
 				angle = lerpf(S.DRAW_BACK_ANGLE, S.CONTACT_ANGLE, extension)
 		elif dash.phase == dash.Phase.IMPACT:
 			angle = S.CONTACT_ANGLE

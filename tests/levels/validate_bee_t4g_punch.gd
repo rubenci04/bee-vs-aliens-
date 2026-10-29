@@ -1,6 +1,7 @@
 extends SceneTree
 const S := preload("res://scripts/game/bee_punch_settings.gd")
 const T4B := preload("res://scripts/game/bee_sting_settings.gd")
+const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
 var failures := 0
 func _initialize() -> void: call_deferred("run")
 func check(ok: bool, message: String) -> void:
@@ -36,11 +37,11 @@ func run() -> void:
 	check(bee.start_melee(), "Punch starts through the same action")
 	var hitbox_rest := bee.melee_hitbox.transform
 	var dash = bee.sting_dash
-	var cases := [[0.12, 0.0], [0.06, S.DRAW_BACK_ANGLE], [0.03, (S.DRAW_BACK_ANGLE + S.CONTACT_ANGLE) * 0.5]]
+	var cases := [[MOTION.PUNCH_ANTICIPATION_SECONDS + S.STRIKE_SECONDS, 0.0], [S.STRIKE_SECONDS, S.DRAW_BACK_ANGLE], [S.STRIKE_SECONDS * 0.5, (S.DRAW_BACK_ANGLE + S.CONTACT_ANGLE) * 0.5]]
 	for sample in cases:
 		dash.left = sample[0]
 		pose.update(dash)
-		check(is_equal_approx(pose.angle, sample[1]), "Preparation/strike interpolates in the last 0.12 s of OUT")
+		check(is_equal_approx(pose.angle, sample[1]), "Preparation/strike interpolates in the last 0.16 s of OUT: left=%s actual=%s expected=%s" % [sample[0], pose.angle, sample[1]])
 	dash.phase = dash.Phase.IMPACT
 	dash.left = T4B.IMPACT_SECONDS
 	pose.update(dash)

@@ -1,0 +1,9 @@
+# Tanda J — movimiento de Bee
+
+Bee v02 responde al movimiento en el primer frame y alcanza más del 70 % de la velocidad solicitada en 80 ms; acelera y frena con curvas suaves sin cambiar la velocidad máxima. El modelo inclina pitch/roll dentro de límites, hace un arco breve de yaw al girar, flota en reposo y acelera el aleteo al avanzar o disparar. Disparo, pirueta y puñetazo tienen gestos de cuerpo y antenas, estela suave y giro del taladro durante el golpe. Los propulsores usan quads con textura radial difusa y varían por aceleración, dirección y esquiva; los disparos de Bee conservan su color.
+
+`scripts/game/bee_motion_settings.gd` reúne las magnitudes nuevas. `BeeMotionSettings.enabled = false` recupera la respuesta y poses anteriores sin tocar hitboxes, velocidad máxima, daño ni recargas. La pirueta conserva 1,2 s. El puñetazo conserva sus fases físicas; solo su anticipación visual dura 0,10 s.
+
+Para probar: abrir el proyecto en Godot 4.7.2, jugar el nivel 1, mover Bee con WASD o stick, disparar con X, hacer la pirueta con Shift y el puñetazo con Z. Mirar inclinación, alas, antenas y las dos llamas naranjas. Las cuatro capturas están en `docs/capturas_tanda_j/`; se regeneran con `godot --path . --script res://tests/bee_prototype/capture_bee_motion_j.gd` en ventana.
+
+Pruebas dirigidas: `validate_bee_motion_j.gd`, `validate_bee_visual.gd`, `validate_bee_t4g_punch.gd`, `validate_bee_lote14_controls_v01.gd` y `validate_bee_visual_polish_v02.gd` pasaron. Se ejecutaron las 25 suites históricas de Tanda E: 20 terminaron con los fallos ya registrados; cinco recorridos largos superaron el límite de dos minutos (`boss_fight`, `arcade_director`, `transformation`, `tarantula_boss`, `walker_miniboss`). La comparación con los logs de I no encontró `SCRIPT ERROR` nuevo; tampoco hubo `Parse Error`, recursos inexistentes, llamadas inválidas ni asignaciones sobre `Nil`. Los cinco recorridos cortados no verifican su desenlace completo.

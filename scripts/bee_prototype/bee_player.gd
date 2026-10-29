@@ -3,6 +3,7 @@ extends CharacterBody3D
 const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
 const STING := preload("res://scripts/game/bee_sting_settings.gd")
 const AIM_HELP := preload("res://scripts/bee_prototype/bee_aim_assist.gd")
+const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
 
 signal health_changed(current: int, maximum: int)
 signal auto_aim_changed(target: Node3D)
@@ -180,9 +181,14 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector3.ZERO
 			_lunge_left = 0.0
 		var desired := Vector2(input.x * horizontal_speed, input.y * vertical_speed)
-		var rate := acceleration if desired.length_squared() > 0.0 else deceleration
-		velocity.x = move_toward(velocity.x, desired.x, rate * delta)
-		velocity.y = move_toward(velocity.y, desired.y, rate * delta)
+		if MOTION.enabled:
+			var smooth := _flight_velocity_step(Vector2(velocity.x, velocity.y), desired, delta)
+			velocity.x = smooth.x
+			velocity.y = smooth.y
+		else:
+			var rate := acceleration if desired.length_squared() > 0.0 else deceleration
+			velocity.x = move_toward(velocity.x, desired.x, rate * delta)
+			velocity.y = move_toward(velocity.y, desired.y, rate * delta)
 		velocity.z = 0.0
 		if _lunge_left > 0.0: # LOTE 14: the sting lunge overrides the flight input.
 			_lunge_left = maxf(0.0, _lunge_left - delta)
@@ -214,6 +220,13 @@ func _physics_process(delta: float) -> void:
 		if mouse_aim_enabled and is_free_aiming() and not BeeGameSettings.last_input_joypad and not is_instance_valid(active_bomb):
 			_aim_at_screen(get_viewport().get_mouse_position())
 		use_bomb()
+
+
+func _flight_velocity_step(current: Vector2, desired: Vector2, delta: float) -> Vector2:
+	var response: float = MOTION.ACCEL_RESPONSE_SECONDS if desired.length_squared() > 0.0 else MOTION.BRAKE_RESPONSE_SECONDS
+	var weight := 1.0 - exp(-delta / response)
+	var result := current.lerp(desired, weight)
+	return Vector2(clampf(result.x, -horizontal_speed, horizontal_speed), clampf(result.y, -vertical_speed, vertical_speed))
 
 
 func refresh_auto_aim() -> Node3D:
