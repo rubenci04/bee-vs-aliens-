@@ -1,0 +1,20 @@
+# Tanda Q — validación de G sobre N, O y P
+- Base: `tanda-p-arranque-pausa` (`ecda68c`). `git merge-base --is-ancestor ca741e5 HEAD` dio 0: G está en la cadena. Rama: `tanda-q-validar-g`; no hubo integración.
+- Agrupación de `git show --stat ca741e5` (13 archivos):
+- (1) Vida menor, **activo**: `scripts/game/bee_enemy_health_settings.gd`.
+- (2) Mariquita, **activo**: `scripts/levels/asset_fauna.gd` (salta, abanico de 5, daño 2).
+- (3) Hormigas con hormigueros, **no verificable por test**: el commit G no cambió un archivo específico; la tabla ya tenía eventos `anthill=true`. Requiere mirar el juego.
+- (4) Polen de flores y más flores, **no verificable por test**: `scripts/levels/bee_garden_mushroom.gd`, `bee_level_01_garden_mushrooms.gd`, `breakable_rock.gd`, `destructible_obstacle_3d.gd`, `impact_surface.gd` (todos en `scripts/levels/`).
+- (5) Latas apoyadas, **no verificable por test**: `scripts/levels/bee_grounded_prop.gd`, `bee_level_01_asset_dressing.gd`. El commit intenta asentarlas; hay que mirar si siguen flotando.
+- (6) Bomba, **activo parcial**: `scripts/bee_prototype/bee_alien_bomb.gd`, `scripts/vfx/bee_honey_bomb_burst.gd`. G agregó guiado y explosión visual de miel/polen; el código hace una sola consulta de daño, sin segunda explosión dañina.
+- (7) Robot aéreo, **activo**: `scripts/levels/walker_miniboss.gd` (ráfaga de 5).
+- (8) Tres arañas extra, **activo**: `scripts/levels/bee_level_01_controller.gd` (esperan a que caigan las primeras).
+- `validate_bee_tanda_q.gd` pasó: HP de 11 familias, 5 disparos/daño 2 de mariquita, patrón aéreo del robot, tres arañas con espera, guiado y efecto visual de la bomba. Es prueba de lógica sin jugar; no verifica la percepción en pantalla.
+- Ritmo con `dev/tanda_e/measure_pacing.gd`: zona nube E33 **25 s**, escarabajos E56 **27 s**, arañas E64 **26 s**; todas ≥ `ZONE_MIN_SECONDS=25` de N (bot que elimina a los 6 s de aparecer, tiempo de juego).
+- Esa medición imprimió tres `SCRIPT ERROR` en `hurtbox_3d.gd:76`: llegó un golpe con `hitbox.attacker` ya liberado al método del tope de ráfaga de O. No se atribuyó a G ni se tocó combate; los tiempos se informan con esa salvedad.
+- No se apagó ningún cambio: los chequeos propios de G pasaron y no se demostró un choque específico con N, O o P.
+- Manual: F5 → Jugar. Tirar bomba (X) a un grupo y al jefe; mirar si persigue y cómo explota. Ver saltar y disparar a la mariquita, al robot disparar al aire y a las tres arañas nuevas después de las primeras.
+- Manual visual pendiente: comprobar hormigas junto a hormigueros, polen solo de flores y latas realmente apoyadas.
+- Tests dirigidos sin fallos: `validate_bee_tanda_q`, `validate_bee_tanda_n`, `validate_bee_tanda_o`, `validate_bee_tanda_p`, `validate_bee_tanda_k`, `validate_bee_tanda_e_post_robot`, `validate_bee_tanda_e_beetle`, `validate_bee_boot_order`.
+- `validate_bee_dead_air` midió máximo 3,2 s y salió 0, pero imprimió un `SCRIPT ERROR` de atacante liberado: se cuenta como **fallo**, según `CLAUDE.md`. No se corrieron las 156 suites.
+- Godot también avisó que no pudo escribir `user://logs/godot.log`; es un problema de este entorno de pruebas.
