@@ -18,6 +18,7 @@ const FIREFLY := preload("res://scenes/art_labs/assets_v03/controlled_firefly.ts
 ## NOCHE 01 · ETAPA 2 — Codex props (miniature world: Bee 1.18 m). All behind the flight plane, no collision.
 const GREEN_BOTTLE := preload("res://scenes/art_labs/ground_litter_v01/glass_bottle.tscn")
 const TUNA_TIN := preload("res://scenes/art_labs/ground_litter_v02/open_tuna_tin.tscn")
+const GROUNDED_PROP := preload("res://scripts/levels/bee_grounded_prop.gd")
 const BANANA_PEEL := preload("res://scenes/art_labs/ground_litter_v02/banana_peel.tscn")
 const HOSE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_hose.tscn")
 const FENCE := preload("res://scenes/art_labs/garden_backdrop_v01/garden_fence_module.tscn")
@@ -179,8 +180,8 @@ func _build_litter() -> void:
 		item.position = Vector3(float(entry[1]), -0.05, float(entry[2]) - (BIG_PROP_PUSH_BACK if big else 0.0))
 		item.scale = Vector3.ONE * float(entry[3]) * (BIG_PROP_SCALE if big else 1.0)
 		item.rotation = Vector3(0.0, float(entry[4]), float(entry[5]))
-		if entry[0] == BANANA_PEEL:
-			preload("res://scripts/levels/bee_grounded_prop.gd").settle(item)
+		if entry[0] == BANANA_PEEL or entry[0] == TUNA_TIN:
+			GROUNDED_PROP.settle(item, 0.0 if entry[0] == TUNA_TIN else GROUNDED_PROP.TILT)
 		litter.append(item)
 
 

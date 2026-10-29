@@ -54,7 +54,6 @@ func _break() -> void:
 	if is_instance_valid(solid_shape):
 		solid_shape.set_deferred("disabled", true)
 	BeeCombatVFX.spawn(get_parent(), global_position, &"crate")
-	BeeObstacleDrops.spawn(get_parent(), global_position, int(global_position.x))
 	broken.emit()
 
 func restore_broken() -> void:

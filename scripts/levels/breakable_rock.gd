@@ -57,7 +57,6 @@ func _on_died() -> void:
 	is_destroyed = true
 	BeeAudio.play(get_parent(), &"crate", _centre())
 	BeeCombatVFX.spawn(get_parent(), _centre(), &"rock_break", Vector3.UP, _size())
-	BeeObstacleDrops.spawn(get_parent(), _centre(), int(global_position.x))
 	_remove()
 	destroyed.emit(self)
 

@@ -63,7 +63,7 @@ const KINDS := {
 	# T6e: the ladybird is a GROUND hopper: two wide arc jumps that land with a small ring, then a straight rolling charge (it is stunned-tired afterwards).
 	&"ladybird": {"scene": "res://scenes/art_labs/assets_v03/controlled_flying_ladybird.tscn", "mode": &"hopper", "ground": true, "scale": 1.15, "ground_lift": true,
 			"telegraph": 0.5, "damage": 7, "cycles": 3, "speed": 0.0, "label": "Ladybird", "hops_before_roll": 2, "hop_time": 0.9, "hop_height": 3.0,
-			"hop_min": 2.5, "land_radius": 0.9, "land_time": 0.25, "hop_rest": 0.9, "roll_speed": 7.0, "roll_length": 7.0, "roll_rest": 1.3, "roll_spin": 14.0},
+			"hop_min": 2.5, "land_radius": 0.9, "land_time": 0.25, "hop_rest": 3.0, "roll_speed": 7.0, "roll_length": 7.0, "roll_rest": 3.0, "roll_spin": 14.0},
 	&"dragonfly": {"scene": "res://scenes/art_labs/assets_v10/controlled_dragonfly.tscn", "mode": &"wave", "ground": false, "scale": 0.8,
 			"telegraph": 0.65, "damage": 9, "cycles": 3, "speed": 6.0, "wave_speed": 10.0, "wave_amp": 1.1, "label": "WaveDragonfly"},
 	&"moth": {"scene": "res://scenes/art_labs/assets_v10/controlled_bomb_moth.tscn", "mode": &"bomber", "ground": false, "scale": 0.85,
@@ -1112,6 +1112,8 @@ func is_submerged() -> bool:
 
 ## Seconds of rest after arriving: the short first rest only before the first attack.
 func _start_idle() -> float:
+	if kind == &"ladybird" and attacks_started == 0:
+		return LADYBIRD_FIRST_REST
 	return first_idle_time if first_idle_time >= 0.0 and attacks_started == 0 else idle_time
 
 
@@ -1341,6 +1343,14 @@ func _lob_pebble() -> void:
 ## charge in a straight line, then it rests tired. Only the 0.5 s pulse of the common enemies warns: no line, strip or dome.
 
 var _hops_done := 0
+const LADYBIRD_FIRST_REST := 0.05
+const LADYBIRD_VOLLEY_COUNT := 5
+const LADYBIRD_VOLLEY_DAMAGE := 2
+const LADYBIRD_VOLLEY_SPEED := 7.0
+const LADYBIRD_VOLLEY_STEP_DEGREES := 18.0
+const LADYBIRD_VOLLEY_SCALE := 0.65
+const LADYBIRD_VOLLEY_APEX := 0.48
+var _hop_volley_fired := false
 var _hop_is_roll := false
 var _hop_landed := false
 var _hop_orig_radius := -1.0
@@ -1369,6 +1379,7 @@ func _plan_hopper(bee: Vector3) -> void:
 
 func _begin_hopper_move() -> void:
 	_hop_landed = false
+	_hop_volley_fired = false
 	if _hop_is_roll:
 		_left = maxf(absf(_lock_to.x - global_position.x) / float(config["roll_speed"]), 0.3)
 		attack_hitbox.set_enabled(true)
@@ -1394,6 +1405,9 @@ func _step_hopper(delta: float) -> void:
 	if _left > land_time:
 		var t := clampf(1.0 - (_left - land_time) / flight, 0.0, 1.0)
 		global_position = Vector3(lerpf(_lock_from.x, _lock_to.x, t), ground_y + 4.0 * float(config["hop_height"]) * t * (1.0 - t), 0.0)
+		if t >= LADYBIRD_VOLLEY_APEX and not _hop_volley_fired:
+			_hop_volley_fired = true
+			_fire_hopper_volley()
 	elif not _hop_landed:
 		_hop_landed = true
 		hops_landed += 1
@@ -1404,6 +1418,17 @@ func _step_hopper(delta: float) -> void:
 		shape.radius = float(config["land_radius"])
 		attack_hitbox.set_enabled(true)
 		_landing_ring(_lock_to, float(config["land_radius"]))
+
+
+func _fire_hopper_volley() -> void:
+	if not BeeShmupFairness.can_fire(self) or target == null:
+		return
+	var origin := _muzzle()
+	var aim := (target.global_position - origin).normalized()
+	for shot_direction in BeeEnemyPatterns.fan_directions(aim, LADYBIRD_VOLLEY_COUNT, LADYBIRD_VOLLEY_STEP_DEGREES):
+		var shot := BeeEnemyPatterns.spawn_shot(get_parent(), PROJECTILE, origin, shot_direction, LADYBIRD_VOLLEY_DAMAGE, LADYBIRD_VOLLEY_SPEED, self)
+		shot.scale = Vector3.ONE * LADYBIRD_VOLLEY_SCALE
+		shots_fired += 1
 
 
 ## Small ring on the ground where the jump landed (impact feedback, not a warning: it appears with the damage).

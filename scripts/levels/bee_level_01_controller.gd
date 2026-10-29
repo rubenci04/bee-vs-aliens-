@@ -66,6 +66,8 @@ const TOON_ALIEN_BOLT := preload("res://scenes/projectiles/toon/alien_bolt.tscn"
 const ASSET_AIR := ["Mosquito", "WaveDragonfly", "Moth", "SeedCarrier", "AlienFighter", "FlyCommon", "FlyGreen", "FlyCloud"]
 ## GARDEN IDENTITY 04: alien-controlled garden spider, a VERTICAL LANE THREAT (3 appearances: acts 2, 3, 4).
 const SPIDER = preload("res://scenes/levels/controlled_spider.tscn")
+const SPIDER_SECOND_WAVE := ["Spider", "Spider", "Spider"]
+const SPIDER_SECOND_WAVE_DELAYS := [0.0, 0.8, 1.6]
 ## Camera-relative X where a spider drops in from above the top edge when the event gives none (inside the screen).
 const SPIDER_ENTRY_X := 1.2
 ## One-off hint the first time controlled fauna appears: the animal is not the enemy, the implant is.
@@ -462,7 +464,7 @@ const EVENTS_ROSTER = [
 	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider", "Spider"], "delays": [0.0, 1.2], "y": [5.2, 5.2], "x": [1.2, -2.2],
 			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
 			{"units": ["Spider"], "delays": [0.0], "y": [4.0], "x": [0.6]},
-			{"units": ["Spider", "Spider"], "delays": [0.0, 1.0], "y": [3.4, 3.4], "x": [0.6, -1.8]},
+			{"units": SPIDER_SECOND_WAVE, "delays": SPIDER_SECOND_WAVE_DELAYS, "y": [3.4, 3.4, 3.4], "x": [0.6, -1.8, 2.4], "after_spiders_clear": true},
 			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0], "anthill": true},
 			# Tanda E: 4 inner waves (was 7).
 			{"units": ["Ant", "Wasp", "StagBeetle"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.4, 0.0], "anthill": true},
@@ -794,7 +796,8 @@ func _update_arena(delta: float) -> void:
 	_arena["clear_for"] = float(_arena["clear_for"])+delta if field_clear else 0.0
 	var next := int(_arena["next"])
 	if next < waves.size():
-		if float(_arena["wave_clock"]) >= arena_cadence() and not _event_blocked_by_solo(waves[next]["units"]):
+		var wait_spiders := bool(waves[next].get("after_spiders_clear", false)) and (active_units.any(func(unit): return is_instance_valid(unit) and unit is ControlledSpider) or _pending.any(func(request): return str(request.get("family", "")) == "Spider"))
+		if float(_arena["wave_clock"]) >= arena_cadence() and not wait_spiders and not _event_blocked_by_solo(waves[next]["units"]):
 			_arena["next"] = next+1
 			_queue_units(waves[next],int(_arena["event"]),100+next*10)
 			_arena["wave_clock"] = 0.0

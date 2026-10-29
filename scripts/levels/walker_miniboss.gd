@@ -61,6 +61,11 @@ const HIGH_Y := 3.2 ## E2: Bee above this for HIGH_SECONDS makes the robot prefe
 const HIGH_SECONDS := 2.0
 const AIR_PICKS := [&"hop", &"burst", &"jump"]
 const BURST_DAMAGE := 4
+const AIR_VOLLEY_TELEGRAPH := 0.5
+const AIR_VOLLEY_SHOTS := 5
+const AIR_VOLLEY_GAP := 0.14
+const AIR_VOLLEY_SPREAD_DEGREES := 14.0
+const AIR_VOLLEY_SPEED := 8.0
 const HOP_TELEGRAPH := 0.5
 const HOP_SECONDS := 0.5
 const HOP_APEX := 3.5 # E2: threatens the upper band (was 1.5)
@@ -71,10 +76,10 @@ const HOP_WAVE_SPEED := 6.0
 const HOP_WAVE_HEIGHT := 0.9
 const PLASMA_SHELL := Color(1.0, 0.4, 0.15)
 ## Pattern while the cannon lives / after it broke (the cannon fires the burst and the mortars).
-const PATTERN := [&"cannon", &"mortars", &"stride", &"burst", &"laser", &"jump", &"hop", &"cannon", &"mortars", &"stride", &"burst", &"laser", &"hop", &"stomp"]
-const PATTERN_NO_CANNON := [&"stride", &"burst", &"laser", &"hop", &"jump", &"burst", &"laser", &"stomp", &"stride", &"hop", &"jump"]
-const REST := 0.8
-const REST_NO_CANNON := 0.7
+const PATTERN := [&"cannon", &"air_volley", &"mortars", &"stride", &"burst", &"laser", &"jump", &"hop", &"air_volley", &"cannon", &"mortars", &"stride", &"burst", &"laser", &"hop", &"stomp"]
+const PATTERN_NO_CANNON := [&"air_volley", &"stride", &"burst", &"laser", &"hop", &"jump", &"air_volley", &"burst", &"laser", &"stomp", &"stride", &"hop", &"jump"]
+const REST := 0.55
+const REST_NO_CANNON := 0.5
 const CANNON_HP := 110
 const CANNON_BOX := Vector3(2.4, 0.6, 1.0)
 const CANNON_CENTRE := Vector2(0.9, 2.72) # (forward, height) of the cannon box, mirrored with the facing.
@@ -313,6 +318,20 @@ func _physics_process(delta: float) -> void:
 				_left = BURST_GAP
 			elif _shots_left <= 0 and _left <= 0.0:
 				_rest(REST)
+		&"air_volley_tele":
+			if _left <= 0.0:
+				hazards.append({"kind": &"air_volley", "telegraph": AIR_VOLLEY_TELEGRAPH})
+				_step = &"air_volley_fire"
+				_shots_left = AIR_VOLLEY_SHOTS
+				_left = 0.0
+				_play(&"Shoot")
+		&"air_volley_fire":
+			if _left <= 0.0 and _shots_left > 0:
+				_fire_air_volley_shot(AIR_VOLLEY_SHOTS - _shots_left)
+				_shots_left -= 1
+				_left = AIR_VOLLEY_GAP
+			elif _shots_left <= 0 and _left <= 0.0:
+				_rest(REST)
 		&"hop_tele":
 			visual_root.position.y = -0.2 * smoothstep(0.0, 1.0, 1.0 - _left / HOP_TELEGRAPH) # Crouches.
 			if _left <= 0.0:
@@ -378,6 +397,11 @@ func _next_attack() -> void:
 	attacks_started += 1
 	attack_kind = kind
 	match kind:
+		&"air_volley":
+			_step = &"air_volley_tele"
+			_left = AIR_VOLLEY_TELEGRAPH
+			BeeShotWarning.volley(self, &"robot", visual_root, AIR_VOLLEY_TELEGRAPH)
+			BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.1)
 		&"burst":
 			_step = &"burst_tele"
 			_left = BURST_TELEGRAPH
@@ -730,6 +754,15 @@ func _fire_burst_shot() -> void:
 	projectile_damage = saved_damage
 	projectile_speed = saved_speed
 	burst_shots_fired += 1
+
+
+func _fire_air_volley_shot(index: int) -> void:
+	var base := Vector3(_facing_x, 0.9, 0.0).normalized()
+	var offset := (float(index) - float(AIR_VOLLEY_SHOTS - 1) * 0.5) * AIR_VOLLEY_SPREAD_DEGREES
+	var saved_speed := projectile_speed
+	projectile_speed = AIR_VOLLEY_SPEED
+	_fire_projectile(base.rotated(Vector3.BACK, deg_to_rad(offset)))
+	projectile_speed = saved_speed
 
 
 ## Short quick jump towards Bee: it lands 2.5-4.5 m away (never off the frame).

@@ -14,7 +14,8 @@ const KINDS := {
 	&"bellflower": {"scene": "res://scenes/art_labs/forest_floor_v01/garden_bellflower.tscn", "hp": 20, "scale": 1.9, "radius": 0.7},
 }
 const GROUND_Y := -0.1
-const POLLEN_DROPS := 2 ## LOTE 13: pollen per broken mushroom or flower (it fills the pollen bar, see BeeLevel01Juice).
+const POLLEN_DROPS := 2 ## Flowers only.
+const POLLEN_KINDS := [&"bellflower"]
 
 var kind: StringName = &"button"
 
@@ -53,8 +54,12 @@ func _on_died() -> void:
 	if is_destroyed:
 		return
 	is_destroyed = true
-	BeeAudio.play(get_parent(), &"pollen", _centre())
-	BeeCombatVFX.spawn(get_parent(), _centre(), &"pollen", Vector3.UP, 1.4)
-	BeeObstacleDrops.spawn_pollen(get_parent(), _centre(), POLLEN_DROPS)
+	if kind in POLLEN_KINDS:
+		BeeAudio.play(get_parent(), &"pollen", _centre())
+		BeeCombatVFX.spawn(get_parent(), _centre(), &"pollen", Vector3.UP, 1.4)
+		BeeObstacleDrops.spawn_pollen(get_parent(), _centre(), POLLEN_DROPS)
+	else:
+		BeeAudio.play(get_parent(), &"crate", _centre())
+		BeeCombatVFX.spawn(get_parent(), _centre(), &"rock_break", Vector3.UP, 1.0)
 	_remove()
 	destroyed.emit(self)

@@ -37,7 +37,6 @@ func _on_died() -> void:
 	is_destroyed = true
 	BeeAudio.play(get_parent(), &"crate", global_position + Vector3(0, 1.1, 0))
 	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(0, 1.1, 0), &"crate")
-	BeeObstacleDrops.spawn(get_parent(), global_position + Vector3(0, 1, 0), int(global_position.x))
 	visual_root.hide()
 	body.collision_layer = 0
 	collider.set_deferred("disabled", true)
