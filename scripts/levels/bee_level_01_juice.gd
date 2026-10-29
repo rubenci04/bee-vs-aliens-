@@ -19,6 +19,7 @@ const POINTS_BOSS := 1000
 const POINTS_BY_HP := [[10, 10], [50, 40], [100, 80], [100000, 150]]
 const POLLEN_INSTANT_HEAL := 0 ## Level 1 pollen never heals directly.
 const NOVA := preload("res://scripts/game/bee_pollen_nova_settings.gd")
+const POLLEN_POWERS := preload("res://scripts/game/bee_pollen_powers.gd")
 const POLLEN_PER_HEAL := NOVA.CHARGE ## Historical public name: now the full three-cartridge capacity.
 const POLLEN_HEAL_FRACTION := 0.0 ## Compatibility: filling the meter never heals automatically.
 const LIBERATION_POLLEN_EVERY := 3 ## A freed animal drops its pollen one time in this many.
@@ -73,6 +74,7 @@ var big_stops := 0
 var combo_label: Label
 var pollen_label: Label
 var frenzy_label: Label
+var pollen_double_label: Label
 var _pickups: Array[Area3D] = []
 var _connected_pollen := {}
 var _scan_left := 0.0
@@ -87,12 +89,14 @@ func _ready() -> void:
 	wave.boss_damaged.connect(_on_boss_damaged)
 	bee.health.health_changed.connect(_on_bee_health_changed)
 	bee.honey_changed.connect(_refresh_frenzy)
+	bee.pollen_double_changed.connect(_refresh_pollen_double)
 	get_tree().node_added.connect(_on_node_added)
 	_build_hud()
 	for pickup in stage.find_children("*", "Area3D", true, false):
 		_register_pickup(pickup)
 	_refresh_pollen()
 	_refresh_frenzy()
+	_refresh_pollen_double()
 
 
 func _build_hud() -> void:
@@ -114,6 +118,7 @@ func _build_hud() -> void:
 	layer.add_child(combo_label)
 	pollen_label = _hud_label(layer, "PollenLabel", 148.0, POLLEN_COLOR)
 	frenzy_label = _hud_label(layer, "FrenzyLabel", 178.0, FRENZY_COLOR)
+	pollen_double_label = _hud_label(layer, "PollenDoubleLabel", 240.0, POLLEN_COLOR)
 
 
 func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> Label:
@@ -146,6 +151,8 @@ func _physics_process(delta: float) -> void:
 			_reset_combo()
 	if bee.honey_left > 0.0:
 		_refresh_frenzy()
+	if bee.pollen_double_left > 0.0:
+		_refresh_pollen_double()
 	_scan_left -= delta
 	if _scan_left <= 0.0:
 		_scan_left = MAGNET_SCAN_SECONDS
@@ -265,15 +272,11 @@ func try_pollen_nova() -> bool:
 	# Spend one cartridge, preserving the other two and partial progress.
 	pollen_spent = pollen_total - (pollen_progress() - NOVA.CARTRIDGE_COST)
 	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
-	nova_protection_left = NOVA.INVULNERABILITY_SECONDS
-	bee.health.pollen_protected = true
 	novas_used += 1
-	# E1: every press heals 25 HP (even at full health it still raises the shield) and wraps Bee in the 2.5 s bubble.
-	var before := bee.health.current_health
-	bee.health.restore_health(NOVA.HEAL_AMOUNT)
-	var gained := bee.health.current_health - before
+	var gained := POLLEN_POWERS.apply(bee, self)
 	pollen_heals += 1
 	pollen_healed += gained
+	preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).show_notice("POLEN: CURA + ESCUDO + DISPARO DOBLE", NOVA.READY_BANNER_SECONDS, "pollen_active")
 	_spawn_pollen_feedback(gained)
 	var nova := preload("res://scripts/bee_prototype/bee_pollen_nova.gd").new()
 	nova.name = "PollenNova"
@@ -282,7 +285,14 @@ func try_pollen_nova() -> bool:
 	nova.global_position = bee.global_position
 	BeeAudio.play(stage, &"liberate", bee.global_position, 1.25)
 	_refresh_pollen()
+	_refresh_pollen_double()
 	return true
+
+func _refresh_pollen_double() -> void:
+	if pollen_double_label == null:
+		return
+	pollen_double_label.visible = bee.pollen_double_left > 0.0
+	pollen_double_label.text = "POLEN · DISPARO DOBLE %.1f s" % bee.pollen_double_left
 
 
 func _refresh_pollen() -> void:

@@ -75,7 +75,8 @@ func test_table() -> void:
 		check(not bool(event.get("human", false)), "No giant human in the roster level")
 		if event.has("arena"):
 			arenas += 1
-			check((event["arena"] as Array).size() >= 2 and (event["arena"] as Array).size() <= 7, "Tanda E: each zone plays 2-7 inner waves (cloud 2, beetles 3, spiders 4)")
+			var wave_count := (event["arena"] as Array).size()
+			check(wave_count == 1 if is_equal_approx(float(event["at"]), 138.0) else wave_count >= 2 and wave_count <= 7, "Cloud has one internal wave; later zones retain their waves")
 		if i > 0:
 			check(float(event["at"]) >= float(events[i - 1]["at"]), "Events must ascend")
 		if bool(event.get("hard", false)):

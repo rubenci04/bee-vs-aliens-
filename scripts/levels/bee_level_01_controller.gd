@@ -11,7 +11,7 @@ signal boss_damaged
 const ENCOUNTER := preload("res://scripts/game/bee_encounter_settings.gd")
 const TELEPORT := preload("res://scripts/vfx/bee_enemy_teleport.gd")
 const BOMB_RECHARGE_X := 306.0 # Tanda E: inside the screen the post-robot advance ends on (was 302, on its left edge).
-const PREBOSS_POWER_X := 283.0 # E73; before the Robot at X294, after checkpoint 2.
+const PREBOSS_POWER_X := 282.0 # 12 m before the Robot at X294, just after checkpoint 2.
 
 const WASP = preload("res://scenes/bee_prototype/wasp_enemy.tscn")
 const PROBE = preload("res://scenes/bee_prototype/alien_probe_ranged.tscn")
@@ -418,8 +418,7 @@ const EVENTS_ROSTER = [
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
 	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.8], "y": [3.0, 4.6],
 			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
-			# Tanda E: 2 inner waves (was 7): W1 = 2 groups, W2 = 2 ants + 1 group.
-			{"units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.7], "y": [5.2, 4.6]},
+			# Tanda K: one inner wave after the two opening clouds.
 			{"units": ["Ant", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
 		]},
 	{"at": 149.0, "act": 3, "label": "MACIZO · AVISPA", "units": ["Wasp"], "y": [5.2]},
@@ -563,8 +562,9 @@ var _forced_calm := false
 var _last_roster_entry_clock := -INF
 
 var _intro_left := 0.0
-var _intro_card: Node
+var _intro_card
 var _intro_running := false
+var _intro_restore_scroll := LEVEL_SCROLL
 
 func _ready() -> void:
 	_director_log = DIRECTOR_LOG.new()
@@ -1777,11 +1777,29 @@ func _walks_in_naturally(request: Dictionary, family: String) -> bool:
 ## Tanda E2: 4 s of introductory flight at the start of Level 1 (never after a checkpoint respawn) with the "CÓMO JUGAR" card.
 func _begin_intro() -> void:
 	_intro_running = true
-	_intro_left = BeeGameSettings.LEVEL_INTRO_SECONDS
+	_intro_restore_scroll = LEVEL_SCROLL
+	var show_training: bool = not preload("res://scripts/game/bee_controls_guide.gd").seen()
+	_intro_left = INF if show_training else BeeGameSettings.LEVEL_INTRO_SECONDS
 	stage.scroll_speed = 0.0
 	player_label = ""
+	if show_training:
+		_show_training_card()
+
+func show_training_from_pause() -> void:
+	if _intro_card != null and is_instance_valid(_intro_card):
+		return
+	_intro_running = true
+	_intro_restore_scroll = stage.scroll_speed
+	_intro_left = INF
+	stage.scroll_speed = 0.0
+	_show_training_card()
+
+func _show_training_card() -> void:
 	_intro_card = preload("res://scripts/ui/bee_howto_card.gd").new()
-	_intro_card.dismissed.connect(func(): _intro_left = minf(_intro_left, 0.001)) # Dismissed: the player has read it, the action starts.
+	_intro_card.training = true
+	_intro_card.bee = stage.bee
+	_intro_card.juice = stage.get_node_or_null("Juice")
+	_intro_card.dismissed.connect(func(): _intro_left = 0.001)
 	stage.add_child.call_deferred(_intro_card)
 
 func intro_active() -> bool:
@@ -1792,6 +1810,6 @@ func _end_intro() -> void:
 		_intro_card.queue_free()
 	_intro_card = null
 	if _intro_running:
-		stage.scroll_speed = LEVEL_SCROLL
+		stage.scroll_speed = _intro_restore_scroll
 	_intro_running = false
 	_intro_left = 0.0

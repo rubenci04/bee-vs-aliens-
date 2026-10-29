@@ -261,8 +261,14 @@ position = Vector3(22, 3.8, 0)
 position = Vector3(166, 3, 0)
 kind = 1
 
+[node name="SpreadBeforeCloud" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(123, 3.8, 0)
+
 [node name="SpreadRecharge" parent="Powerups" instance=ExtResource("8")]
-position = Vector3(222, 3.8, 0)
+position = Vector3(200, 3.8, 0)
+
+[node name="SpreadBeforeSpiders" parent="Powerups" instance=ExtResource("8")]
+position = Vector3(248, 3.8, 0)
 
 [node name="PrebossPower" parent="Powerups" instance=ExtResource("8")]
 position = Vector3(334, 3.8, 0)

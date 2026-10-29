@@ -63,7 +63,7 @@ func run() -> void:
 	check(not juice.try_pollen_nova(), "6/7 cannot activate")
 	juice.add_pollen(1)
 	check(juice.pollen_progress() == 7 and bee.health.current_health == before_hp and juice.banked_heals == 0, "7 grains stay charged; no automatic or banked healing")
-	check(juice.pollen_label.text.contains("CURAR + ESCUDO"), "E1: charge hint reads CURAR + ESCUDO")
+	check(juice.pollen_label.text.contains("CURA + ESCUDO + DOBLE"), "Charge hint lists all pollen powers")
 	get_tree_paused_check(juice)
 	var near := target_at(stage, bee.global_position + Vector3(2, 0, 0))
 	var far := target_at(stage, bee.global_position + Vector3(S.RADIUS + 1.0, 0, 0))
@@ -81,7 +81,7 @@ func run() -> void:
 	check(bee.health.current_health == before_hp + 25 and juice.pollen_heals == 1 and bee.get_node_or_null("PollenShield") != null, "E1: the same press heals +25 and raises the golden shield")
 	check(bee.health.pollen_protected and bee.health.take_damage(5) == 0, "Pollen power grants protection immediately")
 	juice.add_pollen(7)
-	check(not juice.try_pollen_nova(), "Refilling cannot bypass the three-second cooldown")
+	check(not juice.try_pollen_nova(), "Refilling cannot bypass the brief input debounce")
 	juice._physics_process(2.4)
 	check(bee.health.take_damage(5) == 0, "Still protected before 2.5 s")
 	bee.health.invulnerable = true # Existing roll/sting protection is independently owned.

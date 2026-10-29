@@ -23,6 +23,8 @@ func run() -> void:
 	var FS := preload("res://scripts/game/bee_fly_cloud_settings.gd")
 	var ES := preload("res://scripts/game/bee_encounter_settings.gd")
 	var CARD := preload("res://scripts/ui/bee_howto_card.gd")
+	var GUIDE := preload("res://scripts/game/bee_controls_guide.gd")
+	GUIDE.seen_override = false
 	# --- 5. music ---
 	check(is_equal_approx(BeeGameSettings.MUSIC_DEFAULT_VOLUME, 0.25) and is_equal_approx(BeeGameSettings.SFX_DEFAULT_VOLUME, 1.0), "Default music 25 %, effects 100 %")
 	# --- 4. intro ---
@@ -32,29 +34,29 @@ func run() -> void:
 	check(stage.get_node_or_null("HowToCard") != null, "The how-to-play card is on screen")
 	var keys := "\n".join(CARD.lines(false))
 	var pad := "\n".join(CARD.lines(true))
-	for word in ["WASD", "X / Clic", "Shift", "Z", "Q", "Polen", "Bomba"]:
+	for word in ["WASD", "X / CLIC", "SHIFT", "Z", "Q", "cartucho", "bomba"]:
 		check(keys.contains(word), "Keyboard card mentions " + word)
-	for word in ["Stick", "RT", "LB", "RB", "LT", "Bomba"]:
+	for word in ["STICK", "RT", "LB", "RB", "LT", "bomba"]:
 		check(pad.contains(word), "Gamepad card mentions " + word)
 	await frames(60 * 4 + 20)
-	check(not wave.intro_active() and is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) and not stage.has_node("HowToCard"), "After 4 s the card goes and the level starts")
+	check(wave.intro_active(), "Training waits for player actions")
+	var skip := InputEventKey.new()
+	skip.keycode = KEY_ENTER
+	skip.pressed = true
+	stage.get_node("HowToCard")._input(skip)
+	await frames(3)
+	check(not wave.intro_active() and is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL) and not stage.has_node("HowToCard"), "Enter skips training")
 	stage.queue_free()
 	await frames(2)
 	stage = await load_stage(true)
 	wave = stage.wave as BeeLevel01Controller
-	await frames(30)
-	var press := InputEventKey.new()
-	press.physical_keycode = KEY_SPACE
-	press.pressed = true
-	stage.get_node("HowToCard")._input(press)
-	check(wave.intro_active(), "Cannot be dismissed before 1.5 s")
-	await frames(70)
-	stage.get_node("HowToCard")._input(press)
-	await frames(3)
-	check(not wave.intro_active() and not stage.has_node("HowToCard"), "Dismissed after 1.5 s")
+	check(wave.intro_active() and not stage.has_node("HowToCard"), "Later plays keep the short introductory flight without repeating training")
+	await frames(60 * 4 + 3)
+	check(not wave.intro_active(), "Later introductory flight ends after four seconds")
 	stage.queue_free()
 	await frames(2)
 	stage = await load_stage(false)
+	GUIDE.seen_override = null
 	check(not stage.wave.intro_active() and not stage.has_node("HowToCard"), "No intro when the level is not started from the beginning")
 	# --- 1. fly groups ---
 	wave = stage.wave as BeeLevel01Controller
@@ -65,7 +67,7 @@ func run() -> void:
 	stage.distance = 138
 	stage._update_camera_and_bounds()
 	bee.global_position = Vector3(134, 3, 0)
-	check(BeeGameSettings.ENEMY_HEALTH.COMMON_HP["FlyCloud"] == 6 and ES.FINAL_GROUP_SIZE == 9 and FS.FLY_HP == 14 and ES.MAX_FLY_GROUPS == 2, "6 / 9 flies, 14 HP, two groups at most")
+	check(BeeGameSettings.ENEMY_HEALTH.COMMON_HP["FlyCloud"] == 6 and ES.FINAL_GROUP_SIZE == 9 and FS.FLY_HP == 11 and ES.MAX_FLY_GROUPS == 2, "6 / 9 flies, 11 HP, two groups at most")
 	check(is_equal_approx(FS.FIRST_VOLLEY_SECONDS, 0.85) and is_equal_approx(FS.VOLLEY_SECONDS, 2.2) and is_equal_approx(FS.DIVE_INTERVAL, 3.0) and is_equal_approx(FS.WARNING_SECONDS, 0.5), "Volley 0.85 s then 2.2 s; dive pair every 3 s; 0.5 s warning")
 	wave._spawn({"family": "FlyCloud", "event": 606, "slot": 0, "hard": false})
 	var cloud = wave.active_units.back()
@@ -79,7 +81,7 @@ func run() -> void:
 			check(gap >= 0.7 and gap <= 1.1, "First volley %.2f s after it is active" % gap)
 			break
 	check(cloud.volleys >= 1, "The group fires before dying")
-	check(cloud.population == 6 and cloud.members.size() == 6 and cloud.members.all(func(m): return m.hp.max_health == 14), "Six members with 14 HP each")
+	check(cloud.population == 6 and cloud.members.size() == 6 and cloud.members.all(func(m): return m.hp.max_health == FS.FLY_HP), "Six members with configured HP")
 	stage.distance = 240
 	wave.active_units.clear()
 	wave._spawn({"family": "FlyCloud", "event": 607, "slot": 0, "hard": false})

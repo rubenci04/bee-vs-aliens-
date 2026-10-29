@@ -13,6 +13,7 @@ signal weapon_state_changed
 signal powerup_collected(kind: StringName)
 signal roll_started
 signal honey_changed
+signal pollen_double_changed
 
 @export_category("Flight")
 @export var horizontal_speed := 7.0
@@ -100,6 +101,7 @@ var is_rolling := false
 var roll_count := 0
 var roll_absorbed_shots := 0 ## Common enemy shots destroyed by touching Bee during a roll.
 var honey_left := 0.0
+var pollen_double_left := 0.0
 var _roll_left := 0.0
 var _roll_cooldown_left := 0.0
 var _roll_tween: Tween
@@ -166,6 +168,10 @@ func _physics_process(delta: float) -> void:
 	_update_melee(delta)
 	_update_roll(delta)
 	_update_honey(delta)
+	if pollen_double_left > 0.0:
+		pollen_double_left = maxf(0.0, pollen_double_left - delta)
+		if pollen_double_left == 0.0:
+			pollen_double_changed.emit()
 	if is_defeated:
 		velocity = Vector3.ZERO
 		return
@@ -273,6 +279,7 @@ func fire() -> BeeEnergyProjectile:
 	var profile := weapon_profile()
 	var damages: Array = profile["damage"]
 	var projectile := _spawn_projectile(direction, int(damages[0]))
+	var pollen_mains: Array[BeeEnergyProjectile] = [projectile]
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
 	var bee_visual := $VisualRoot/BeeVisual as Node3D
 	bee_visual.call("play_muzzle_effect", projectile.global_position, direction, spread_shot)
@@ -280,9 +287,13 @@ func fire() -> BeeEnergyProjectile:
 		projectile.set_spread_visual()
 		for i in 2:
 			var angle: float = -SHOOTING.SPREAD_ANGLE if i == 0 else SHOOTING.SPREAD_ANGLE
-			_spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), int(damages[i + 1])).set_spread_visual()
+			var side_projectile := _spawn_projectile(direction.rotated(Vector3.BACK, deg_to_rad(angle)), int(damages[i + 1]))
+			side_projectile.set_spread_visual()
+			pollen_mains.append(side_projectile)
 		weapon_state_changed.emit()
-	if honey_left > 0.0:
+	if pollen_double_left > 0.0:
+		_spawn_pollen_twins(pollen_mains, spread_shot)
+	elif honey_left > 0.0:
 		_spawn_honey_twin(projectile, direction, spread_shot) # LOTE 11: honey mode = double shot.
 	shots_fired += 1
 	fire_trigger_count += 1
@@ -291,8 +302,8 @@ func fire() -> BeeEnergyProjectile:
 
 func weapon_mode() -> StringName:
 	if spread_ammo > 0.0:
-		return &"triple_double" if honey_left > 0.0 else &"triple"
-	return &"double" if honey_left > 0.0 else &"base"
+		return &"triple_double" if honey_left > 0.0 and pollen_double_left <= 0.0 else &"triple"
+	return &"double" if honey_left > 0.0 and pollen_double_left <= 0.0 else &"base"
 
 
 func weapon_profile() -> Dictionary:
@@ -669,6 +680,21 @@ func activate_honey(seconds := -1.0) -> void:
 	honey_left = honey_seconds if seconds < 0.0 else seconds
 	honey_changed.emit()
 	weapon_state_changed.emit()
+
+func add_pollen_double(seconds: float, maximum: float) -> void:
+	pollen_double_left = minf(maximum, pollen_double_left + seconds)
+	pollen_double_changed.emit()
+	weapon_state_changed.emit()
+
+func _spawn_pollen_twins(mains: Array[BeeEnergyProjectile], spread_look: bool) -> void:
+	for main in mains:
+		var direction := main.travel_direction
+		var side := Vector3(-direction.y, direction.x, 0.0).normalized() * SHOOTING.DOUBLE_OFFSET
+		var twin := _spawn_projectile(direction, main.damage)
+		main.global_position += side
+		twin.global_position -= side
+		if spread_look:
+			twin.set_spread_visual()
 
 
 func _update_honey(delta: float) -> void:

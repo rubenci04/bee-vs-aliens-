@@ -31,6 +31,7 @@ var pause_label: Label
 var pause_panel: PanelContainer ## LOTE 14 · ETAPA 4: music and effects sliders, shown while paused.
 var music_slider: HSlider
 var sfx_slider: HSlider
+var training_button: Button
 var controls_hint: Label
 var beacon: Node3D
 var _notice_left := 0.0
@@ -85,11 +86,24 @@ func _build_pause_panel() -> void:
 	pause_panel.add_child(box)
 	music_slider = _slider_row(box, "MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume)
 	sfx_slider = _slider_row(box, "EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume)
+	training_button = Button.new()
+	training_button.text = "Controles · repetir entrenamiento"
+	training_button.add_theme_font_size_override("font_size", 19)
+	training_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	training_button.pressed.connect(_open_training)
+	box.add_child(training_button)
 	var hint := Label.new()
-	hint.text = "POLEN Q / LT (L2): curar +25 VIDA y escudo de polen 2,5 s.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
+	hint.text = "POLEN Q / LT: cura 25, escudo 2,5 s y disparo doble 4 s.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
 	hint.add_theme_font_size_override("font_size", 14)
 	box.add_child(hint)
 	stage.get_node("CanvasLayer").add_child(pause_panel)
+
+func _open_training() -> void:
+	get_tree().paused = false
+	BeeMusic.set_paused(false)
+	pause_label.visible = false
+	pause_panel.visible = false
+	stage.wave.show_training_from_pause()
 
 
 func _slider_row(box: VBoxContainer, title: String, value: float, on_change: Callable) -> HSlider:

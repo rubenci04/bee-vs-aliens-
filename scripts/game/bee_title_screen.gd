@@ -251,8 +251,9 @@ func _show_controls() -> void:
 	box.add_theme_constant_override("separation", 9)
 	controls_panel.add_child(box)
 	var help := Label.new()
-	help.text = "CONTROLES\nMover: WASD / flechas / palanca izquierda\nApuntar: mouse / palanca derecha\nDisparar: X / clic / A\nPuñetazo: Z · Bomba: C / X · Pirueta: Shift / B\nPolen Q / LT (L2): toque = Nova (1 cartucho)\nMantener 0,5 s = curar 20% (1 cartucho)\nPausa: Esc / Start"
-	help.add_theme_font_size_override("font_size", BeeGameSettings.TITLE_OPTION_FONT_SIZE)
+	var guide := preload("res://scripts/game/bee_controls_guide.gd")
+	help.text = guide.device_icon(BeeGameSettings.last_input_joypad) + "  CONTROLES\n" + "\n".join(guide.lines(BeeGameSettings.last_input_joypad)) + "\nPausa: Esc / Start"
+	help.add_theme_font_size_override("font_size", BeeGameSettings.TITLE_CONTROLS_FONT_SIZE)
 	box.add_child(help)
 	var close_button := _button("Cerrar", _close_controls)
 	box.add_child(close_button)

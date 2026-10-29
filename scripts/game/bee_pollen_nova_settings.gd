@@ -4,9 +4,9 @@ const ACTION := &"bee_pollen_nova"
 const CARTRIDGE_COST := 7
 const MAX_CARTRIDGES := 3
 const CHARGE := CARTRIDGE_COST * MAX_CARTRIDGES
-const HEAL_AMOUNT := 25 # E1: one press = heal 25 HP (25 % of 100) + shield
+const HEAL_AMOUNT := preload("res://scripts/game/bee_pollen_powers.gd").HEAL_AMOUNT
 const HEAL_FRACTION := 0.25
-const SHIELD_SECONDS := 2.5
+const SHIELD_SECONDS := preload("res://scripts/game/bee_pollen_powers.gd").SHIELD_SECONDS
 const SHIELD_WARN_SECONDS := 0.4
 const SHIELD_RADIUS := 0.95
 const HEAL_GLOW_SECONDS := 0.5
@@ -17,7 +17,7 @@ const BOSS_DAMAGE := 6
 const RADIUS := 3.5
 const WAVE_SECONDS := 0.4
 const INVULNERABILITY_SECONDS := SHIELD_SECONDS
-const COOLDOWN_SECONDS := 3.0
+const COOLDOWN_SECONDS := 0.25 # Short input debounce; three cartridges can be chained into the 12 s double-shot cap.
 const TRIGGER_THRESHOLD := 0.55
 const WAVE_THICKNESS := 0.06
 const WAVE_ALPHA := 0.65
@@ -29,8 +29,8 @@ const HINT_TEXT_OFFSET := Vector2(8, 18)
 const WAVE_RINGS := 48
 const WAVE_SEGMENTS := 6
 
-const HINT_LABEL := "CURAR + ESCUDO"
-const READY_TEXT := "Escudo y Cura de polen listos: "
+const HINT_LABEL := "CURA + ESCUDO + DOBLE"
+const READY_TEXT := "Cura, escudo y disparo doble listos: "
 
 static func button_hint() -> String:
 	return "LT/L2" if BeeGameSettings.last_input_joypad else "Q"

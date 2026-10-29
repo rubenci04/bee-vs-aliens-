@@ -1,7 +1,9 @@
 extends RefCounted
 ## T6c: population is the FlyCloud entry in ENEMY_HEALTH, not a second HP table.
 const VISIBLE_LIMIT := 9
-const FLY_HP := 14
+const FLY_HP_BEFORE_K := 14
+const FLY_HP_FACTOR := 0.75
+const FLY_HP := roundi(FLY_HP_BEFORE_K * FLY_HP_FACTOR)
 const HIT_RADIUS := 0.22
 const NEAR_RADIUS := 5.0
 const VISUAL_SCALE := 0.8

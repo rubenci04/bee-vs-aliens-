@@ -35,7 +35,7 @@ func run() -> void:
 		var material: ShaderMaterial = cloud.instances.mesh.surface_get_material(surface)
 		check(not material.shader.code.contains("ALPHA ="),"Opaque fly materials")
 	for fly in cloud.members:
-		check(fly.hp.max_health==14 and not fly.node.is_physics_processing() and not fly.node.is_processing(),"Passive 14 HP members")
+		check(fly.hp.max_health==S.FLY_HP and not fly.node.is_physics_processing() and not fly.node.is_processing(),"Passive cloud members use configured HP")
 	cloud.global_position = Vector3(137,3,0)
 	cloud._next_dive = 999.0
 	cloud._next_volley = 999.0
@@ -60,7 +60,7 @@ func run() -> void:
 	var pellet := bee._spawn_projectile(Vector3.RIGHT,1)
 	pellet.hitbox._on_area_entered(cloud.members[0].hurt)
 	pellet.queue_free()
-	check(cloud.members[0].node.alive and cloud.members[0].hp.current_health<14,"E2: one pellet no longer kills a 14 HP fly")
+	check(cloud.members[0].node.alive and cloud.members[0].hp.current_health<S.FLY_HP,"One pellet does not kill a cloud fly")
 	cloud.members[0].hp.damage_blocked = false
 	cloud.members[0].hp.take_damage(100)
 	check(cloud.health.current_health==5 and not cloud.members[0].node.alive,"One physical pellet releases one fly")

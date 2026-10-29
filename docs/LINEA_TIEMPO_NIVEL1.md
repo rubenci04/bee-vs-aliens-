@@ -355,3 +355,7 @@ Los IDs E00–E78 de arriba son los de la tabla **anterior** a la Tanda E. Cambi
 | Tramo X=227–259 (antes E57–E68) | 12 eventos, 28 unidades | **7** eventos, 16 unidades (se quitan X=229,2, 231,4, 250,2, 254,6, 256,8; el debut del gusano de compost, X=235–241,7, queda) |
 
 Refuerzos de zona: solo si quedan **menos de 2** enemigos y pasaron 30 s (`REINFORCE_BELOW`, `EXTRA_ARRIVAL_SECONDS`). Las zonas siguen bloqueando hasta limpiar. Tras el robot, la tarántula entra en menos de 12 s en cualquier caso (ver `docs/INFORME_TANDA_E.md`). Los segundos medidos con el bot limpiador están en ese informe.
+
+## Actualización Tanda K
+
+En X=138 hay ahora 2 nubes de apertura y **una** oleada interna (Hormiga, Nube, Hormiga): 3 grupos de moscas y 2 hormigas en total. Cada mosca de nube tiene 11 HP frente a 14 antes (75 % redondeado). Un bot que deja vivo a cada enemigo individual entre 3 y 6 s despeja la zona en menos de 35 s; ver `validate_bee_tanda_k_cloud.gd`.
