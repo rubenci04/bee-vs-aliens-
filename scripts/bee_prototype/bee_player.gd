@@ -84,6 +84,9 @@ const BEE_LENGTH := 1.3 ## Measured from the model (m).
 @onready var visual_root: Node3D = $VisualRoot
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: DamageHurtbox3D = $Hurtbox3D
+const BOSS_BURST_GUARD := preload("res://scripts/game/bee_boss_burst_guard.gd")
+var boss_burst_guard = BOSS_BURST_GUARD.new()
+var boss_burst_absorbed_hits := 0
 @onready var target_indicator: Node3D = $TargetIndicator
 @onready var melee_hitbox: DamageHitbox3D = $MeleeHitbox
 
@@ -457,6 +460,25 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 		if BeeGameSettings.vibration_enabled and BeeGameSettings.last_joypad_device in Input.get_connected_joypads():
 			Input.start_joy_vibration(BeeGameSettings.last_joypad_device, BeeGameSettings.JOYPAD_VIBRATION_STRENGTH, 0.0, BeeGameSettings.JOYPAD_VIBRATION_SEC)
 	health_changed.emit(current, maximum)
+
+func take_boss_burst_damage(amount: int, source: Node) -> int:
+	if not BOSS_BURST_GUARD.is_tarantula_source(source) or health.damage_blocked or health.invulnerable or health.pollen_protected or health.current_health <= 0:
+		return health.take_damage(amount)
+	var allowed: int = boss_burst_guard.allowed(amount)
+	var applied := health.take_damage(allowed)
+	if applied > 0:
+		boss_burst_guard.record(applied)
+	elif amount > 0 and allowed == 0:
+		show_boss_burst_absorb()
+	return applied
+
+func show_boss_burst_absorb() -> void:
+	boss_burst_absorbed_hits += 1
+	var flash := get_node_or_null("HitFlash3D") as HitFlash3D
+	if flash != null:
+		flash.flash_absorbed_boss_hit()
+	BeeAudio.play(get_parent(), &"bee_damage")
+	BeeCameraShake.kick(self, BeeGameSettings.BOSS_BURST_FEEDBACK_SHAKE_AMPLITUDE, BeeGameSettings.BOSS_BURST_FEEDBACK_SHAKE_SECONDS)
 
 
 func _on_died() -> void:

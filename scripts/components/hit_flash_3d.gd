@@ -64,6 +64,12 @@ func flash() -> void:
 	_flash_tween.tween_interval(duration)
 	_flash_tween.tween_callback(_finish_flash)
 
+func flash_absorbed_boss_hit() -> void:
+	# El golpe absorbido también se lee durante una ráfaga de impactos.
+	cancel()
+	_lockout_left = 0.0
+	flash()
+
 func set_flash_color(color: Color) -> void:
 	flash_color = color
 	_outlined_materials.clear()

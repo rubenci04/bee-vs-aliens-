@@ -499,7 +499,7 @@ func _explode(radius_damage: bool) -> void:
 	if radius_damage and target != null and not target.is_defeated and target.hurtbox.monitorable \
 			and target.global_position.distance_to(global_position) <= overload_radius:
 		explosion_hit_bee = true
-		target.health.take_damage(overload_damage)
+		target.take_boss_burst_damage(overload_damage, self)
 	_blast_visual(true)
 	health.take_damage(health.current_health) # Dies through the normal path (feedback, controller release).
 

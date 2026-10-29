@@ -8,6 +8,11 @@ const NORMAL := &"normal"
 const EASY := &"easy"
 const EASY_DAMAGE_TAKEN := 0.6
 const EASY_ENEMY_HP := 0.75
+const BOSS_BURST_CAP_ENABLED := true # Activa el tope de ráfaga de la tarántula.
+const BOSS_BURST_WINDOW_SECONDS := 1.0 # Ventana móvil para sumar sus golpes.
+const BOSS_BURST_CAP_DAMAGE := 24 # Daño máximo de la tarántula por ventana.
+const BOSS_BURST_FEEDBACK_SHAKE_AMPLITUDE := 0.045 # Sacudida de un golpe absorbido.
+const BOSS_BURST_FEEDBACK_SHAKE_SECONDS := 0.2 # Duración de esa sacudida.
 ## Keep the existing five companion families; HP come from the T6a table.
 const ENEMY_HEALTH := preload("res://scripts/game/bee_enemy_health_settings.gd")
 const SMALL_ENEMY_HP := {"FlyCommon": ENEMY_HEALTH.COMMON_HP["FlyCommon"], "FlyCloud": ENEMY_HEALTH.COMMON_HP["FlyCloud"],
