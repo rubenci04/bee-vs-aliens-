@@ -78,6 +78,7 @@ var combo_label: Label
 var pollen_label: Label
 var frenzy_label: Label
 var pollen_double_label: Label
+var pollen_notice_bg: Panel
 var _pickups: Array[Area3D] = []
 var _connected_pollen := {}
 var _scan_left := 0.0
@@ -121,7 +122,27 @@ func _build_hud() -> void:
 	layer.add_child(combo_label)
 	pollen_label = _hud_label(layer, "PollenLabel", 148.0, POLLEN_COLOR)
 	frenzy_label = _hud_label(layer, "FrenzyLabel", 178.0, FRENZY_COLOR)
-	pollen_double_label = _hud_label(layer, "PollenDoubleLabel", 240.0, POLLEN_COLOR)
+	pollen_notice_bg = Panel.new()
+	pollen_notice_bg.name = "PollenNoticePill"
+	pollen_notice_bg.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	pollen_notice_bg.position = BeeGameSettings.POLLEN_NOTICE_OFFSET
+	pollen_notice_bg.custom_minimum_size = BeeGameSettings.POLLEN_NOTICE_SIZE
+	var pollen_style := StyleBoxFlat.new()
+	pollen_style.bg_color = Color(BeeGameSettings.POLLEN_NOTICE_BG_COLOR, BeeGameSettings.POLLEN_NOTICE_BG_ALPHA)
+	pollen_style.set_corner_radius_all(BeeGameSettings.POLLEN_NOTICE_RADIUS)
+	pollen_notice_bg.add_theme_stylebox_override("panel", pollen_style)
+	pollen_notice_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pollen_notice_bg.hide()
+	layer.add_child(pollen_notice_bg)
+	pollen_double_label = Label.new()
+	pollen_double_label.name = "PollenDoubleLabel"
+	pollen_double_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pollen_double_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pollen_double_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	pollen_double_label.add_theme_font_size_override("font_size", BeeGameSettings.POLLEN_NOTICE_FONT_SIZE)
+	pollen_double_label.add_theme_color_override("font_color", POLLEN_COLOR)
+	pollen_double_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pollen_notice_bg.add_child(pollen_double_label)
 
 
 func _hud_label(layer: Node, label_name: String, top: float, color: Color) -> Label:
@@ -300,6 +321,7 @@ func _refresh_pollen_double() -> void:
 	if pollen_double_label == null:
 		return
 	pollen_double_label.visible = bee.pollen_double_left > 0.0
+	pollen_notice_bg.visible = pollen_double_label.visible
 	pollen_double_label.text = "POLEN · DISPARO DOBLE %.1f s" % bee.pollen_double_left
 
 

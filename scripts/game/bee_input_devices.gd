@@ -8,6 +8,10 @@ var device_notice_cooldown := 0.0
 var notice: Label
 var notice_left := 0.0
 var startup_time_msec := 0
+var _keyboard_since_msec := -1
+var _keyboard_last_msec := -1
+var _held_keyboard_key := KEY_NONE
+var _held_mouse_button := MOUSE_BUTTON_NONE
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -64,11 +68,22 @@ func configure_actions() -> void:
 func _input(event: InputEvent) -> void:
 	var was_joypad := BeeGameSettings.last_input_joypad
 	var old_device := BeeGameSettings.last_joypad_device
+	if event is InputEventKey:
+		_held_keyboard_key = event.physical_keycode if event.pressed else KEY_NONE
+	if event is InputEventMouseButton:
+		_held_mouse_button = event.button_index if event.pressed else MOUSE_BUTTON_NONE
 	if (event is InputEventJoypadButton and event.pressed) or (event is InputEventJoypadMotion and absf(event.axis_value) > BeeGameSettings.JOYPAD_DEADZONE):
 		BeeGameSettings.last_input_joypad = true
 		BeeGameSettings.last_joypad_device = event.device
+		_keyboard_since_msec = -1
 	elif (event is InputEventKey and event.pressed and not event.echo) or (event is InputEventMouseButton and event.pressed) or (event is InputEventMouseMotion and event.relative.length() >= MOUSE_SWITCH_DISTANCE):
-		BeeGameSettings.last_input_joypad = false
+		if BeeGameSettings.last_input_joypad:
+			var now := Time.get_ticks_msec()
+			if _keyboard_since_msec < 0 or now - _keyboard_last_msec > int(BeeGameSettings.HUD_DEVICE_ACTIVITY_GAP_SECONDS * 1000.0):
+				_keyboard_since_msec = now
+			_keyboard_last_msec = now
+			if now - _keyboard_since_msec >= int(BeeGameSettings.HUD_DEVICE_SWITCH_SECONDS * 1000.0):
+				BeeGameSettings.last_input_joypad = false
 
 	if BeeGameSettings.last_input_joypad != was_joypad or (BeeGameSettings.last_input_joypad and old_device != BeeGameSettings.last_joypad_device):
 		show_device_notice("Mando detectado: " + Input.get_joy_name(event.device) if BeeGameSettings.last_input_joypad else "Teclado y ratón")
@@ -98,6 +113,10 @@ func _connection_changed(device: int, connected: bool) -> void:
 			show_device_notice("Teclado y ratón")
 
 func _process(delta: float) -> void:
+	if BeeGameSettings.last_input_joypad and _keyboard_since_msec >= 0 and (Input.is_physical_key_pressed(_held_keyboard_key) or Input.is_mouse_button_pressed(_held_mouse_button)):
+		if Time.get_ticks_msec() - _keyboard_since_msec >= int(BeeGameSettings.HUD_DEVICE_SWITCH_SECONDS * 1000.0):
+			BeeGameSettings.last_input_joypad = false
+			show_device_notice("Teclado y ratón")
 	device_notice_cooldown = maxf(0.0, device_notice_cooldown - delta)
 	notice_left = maxf(0.0, notice_left - delta)
 	notice.hide()

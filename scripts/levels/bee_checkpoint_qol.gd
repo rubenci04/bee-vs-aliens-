@@ -45,7 +45,13 @@ func setup(value: BeeShmupStage) -> void:
 	stage = value
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	notice = label("CheckpointNotice", "", Vector2(430, 52), 28)
-	pause_label = label("PauseNotice", "PAUSED · ESC", Vector2(420, 275), 32)
+	pause_label = label("PauseNotice", BeeGameSettings.PAUSE_LABEL_TEXT, Vector2.ZERO, BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
+	pause_label.set_anchors_preset(Control.PRESET_CENTER)
+	pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pause_label.offset_left = -BeeGameSettings.PAUSE_PANEL_WIDTH * 0.5
+	pause_label.offset_right = BeeGameSettings.PAUSE_PANEL_WIDTH * 0.5
+	pause_label.offset_top = BeeGameSettings.PAUSE_PANEL_TITLE_TOP
+	pause_label.offset_bottom = BeeGameSettings.PAUSE_PANEL_TITLE_TOP + BeeGameSettings.PAUSE_PANEL_TITLE_HEIGHT
 	_build_pause_panel()
 	controls_hint = label("ControlsHint", "", Vector2(18, 212), 18)
 	debug_label = label("DebugNotice", "DEBUG · SALTO AL JEFE (F9) — NO ES EL JUEGO NORMAL", Vector2(300, 8), 20)
@@ -78,23 +84,27 @@ func _build_pause_panel() -> void:
 	pause_panel = PanelContainer.new()
 	pause_panel.name = "PausePanel"
 	pause_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	pause_panel.position = Vector2(400, 330)
-	pause_panel.custom_minimum_size = Vector2(480, 0)
+	pause_panel.set_anchors_preset(Control.PRESET_CENTER)
+	pause_panel.offset_left = -BeeGameSettings.PAUSE_PANEL_WIDTH * 0.5
+	pause_panel.offset_right = BeeGameSettings.PAUSE_PANEL_WIDTH * 0.5
+	pause_panel.offset_top = BeeGameSettings.PAUSE_PANEL_TOP
+	pause_panel.custom_minimum_size = Vector2(BeeGameSettings.PAUSE_PANEL_WIDTH, 0)
 	pause_panel.visible = false
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
+	box.add_theme_constant_override("separation", BeeGameSettings.PAUSE_PANEL_SPACING)
 	pause_panel.add_child(box)
 	music_slider = _slider_row(box, "MÚSICA", BeeGameSettings.music_volume, BeeMusic.set_music_volume)
 	sfx_slider = _slider_row(box, "EFECTOS", BeeGameSettings.sfx_volume, BeeMusic.set_sfx_volume)
 	training_button = Button.new()
 	training_button.text = "Controles · repetir entrenamiento"
-	training_button.add_theme_font_size_override("font_size", 19)
+	training_button.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
 	training_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	training_button.pressed.connect(_open_training)
 	box.add_child(training_button)
 	var hint := Label.new()
 	hint.text = "POLEN Q / LT: cura 25, escudo 2,5 s y disparo doble 4 s.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
-	hint.add_theme_font_size_override("font_size", 14)
+	hint.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(hint)
 	stage.get_node("CanvasLayer").add_child(pause_panel)
 
@@ -112,21 +122,21 @@ func _slider_row(box: VBoxContainer, title: String, value: float, on_change: Cal
 	var name_label := Label.new()
 	name_label.text = title
 	name_label.custom_minimum_size = Vector2(110, 0)
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
 	row.add_child(name_label)
 	var slider := HSlider.new()
 	slider.min_value = 0.0
 	slider.max_value = 1.0
 	slider.step = 0.05
 	slider.value = value
-	slider.custom_minimum_size = Vector2(250, 24)
+	slider.custom_minimum_size = Vector2(BeeGameSettings.PAUSE_PANEL_SLIDER_WIDTH, BeeGameSettings.PAUSE_PANEL_SLIDER_HEIGHT)
 	slider.focus_mode = Control.FOCUS_ALL
 	slider.process_mode = Node.PROCESS_MODE_ALWAYS
 	row.add_child(slider)
 	var percent := Label.new()
 	percent.text = "%d %%" % roundi(value * 100.0)
 	percent.custom_minimum_size = Vector2(60, 0)
-	percent.add_theme_font_size_override("font_size", 20)
+	percent.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
 	row.add_child(percent)
 	slider.value_changed.connect(func(v: float):
 		percent.text = "%d %%" % roundi(v * 100.0)
@@ -189,7 +199,7 @@ func _process(delta: float) -> void:
 		return
 	if not checkpoint_active and stage.distance >= checkpoint_x and not stage.wave._waiting_for_human:
 		activate_checkpoint()
-	elif checkpoint_active and not second_checkpoint_active and stage.distance >= second_checkpoint_x and not stage.wave.in_arena():
+	elif checkpoint_active and not second_checkpoint_active and stage.distance >= second_checkpoint_x and not stage.wave.in_arena() and not _checkpoint2_boss_alive():
 		activate_second_checkpoint()
 	_notice_left = maxf(0.0, _notice_left - delta)
 	notice.hide() # All notices share the upper banner lane.
@@ -202,6 +212,12 @@ func _process(delta: float) -> void:
 
 func checkpoint_list() -> Array:
 	return [checkpoint_x, second_checkpoint_x]
+
+func _checkpoint2_boss_alive() -> bool:
+	if not BeeGameSettings.CHECKPOINT2_BLOCK_WHILE_BOSS_ALIVE:
+		return false
+	var wave := stage.wave as BeeLevel01Controller
+	return wave.boss_active() or (is_instance_valid(wave.miniboss) and wave.miniboss.health.current_health > 0)
 
 func available_names(parent_name: String) -> Array[String]:
 	var result: Array[String] = []
@@ -242,7 +258,7 @@ func activate_checkpoint() -> void:
 
 ## LOTE 7: second checkpoint (same rules as the first: HP back to at least 60 %, run state saved).
 func activate_second_checkpoint() -> void:
-	if second_checkpoint_active or stage.bee.is_defeated:
+	if second_checkpoint_active or stage.bee.is_defeated or _checkpoint2_boss_alive():
 		return
 	second_checkpoint_active = true
 	activation_count += 1

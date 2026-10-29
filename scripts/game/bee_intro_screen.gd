@@ -216,7 +216,6 @@ func _show_final_logo() -> void:
 	tween.tween_property(fade, "modulate:a", 0.0, BeeGameSettings.INTRO_FADE_SECONDS * 0.5)
 	tween.parallel().tween_property(final_logo, "modulate:a", 1.0, BeeGameSettings.INTRO_FADE_SECONDS)
 	tween.tween_interval(BeeGameSettings.INTRO_LOGO_HOLD_SECONDS)
-	tween.tween_property(fade, "modulate:a", 1.0, BeeGameSettings.INTRO_FADE_SECONDS)
 	tween.tween_callback(_finish_intro)
 
 

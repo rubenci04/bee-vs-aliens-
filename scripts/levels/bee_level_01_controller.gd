@@ -1513,6 +1513,7 @@ func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 ## Tanda E: the escorts fall with the robot (like the UFO minions) and nothing queued for the gate survives it.
 func _on_robot_defeated() -> void:
 	_robot_dead_clock = _clock
+	BeeMusic.clear_pre_boss_duck()
 	_drop_robot_leftovers()
 
 func _drop_robot_leftovers() -> void:

@@ -1,0 +1,17 @@
+# Tanda P — arranque, audio, pausa y avisos
+- Base: `tanda-o-tarantula-fase4` (`6051a1c`); rama: `tanda-p-arranque-pausa`.
+- A, antes: el logo final quedaba 1,1 s, la intro lo fundía a negro en 0,45 s, `SceneFade.go` repetía un fundido de 0,22 s y `change_scene_to_file` cargaba el nivel sincrónicamente bajo negro. Después, el nivel mantiene su introducción de vuelo de 4 s.
+- A, ahora: el logo permanece hasta el fundido de escena y se ve «Cargando...» sobre negro antes de cargar. Una precarga selectiva de recursos del nivel podría reducir el bloqueo, pero conviene medir su costo de memoria primero.
+- B: la pista del nivel sube con `LEVEL_MUSIC_FADE_IN_SECONDS=1,0`; el test verifica ganancia completa dentro de 1,5 s.
+- C, antes: ataques del robot llaman `duck_for_explosion` (−4 dB), `prepare_boss_break` silencia la pista en 0,08 s y la entrada de tarántula usaba 1,5 s; el video suma esa bajada al tramo de calma tras el robot.
+- C, ahora: al morir el robot se limpia la atenuación con `BOSS_PRE_BREAK_DUCK_DB=0`; el corte sigue en `BOSS_BREAK_SECONDS=1,5` y la tarántula entra en `BOSS_BREAK_FADE_IN_SECONDS=0,4`. `SILENCE_TRIMS` y MP3 intactos.
+- D/G: pausa centrada, sliders grandes, letra legible, «Controles · repetir entrenamiento» conservado y `PAUSE_LABEL_TEXT="PAUSA · ESC"`.
+- E: `HUD_DEVICE_SWITCH_SECONDS=3,0` de teclado/ratón continuo; botón o stick de mando cambia de inmediato. `HUD_DEVICE_ACTIVITY_GAP_SECONDS=0,6` separa usos aislados.
+- F: `CHECKPOINT2_BLOCK_WHILE_BOSS_ALIVE=true` impide activar el segundo checkpoint con robot u otro jefe vivo. Hoy cura a mínimo 60 % y reemplaza la foto guardada; tras morir el jefe, se activa si Bee ya pasó X=281.
+- H: aviso de polen con fondo oscuro (`POLLEN_NOTICE_BG_ALPHA=0,82`), `POLLEN_NOTICE_OFFSET=(-510,110)` arriba a la derecha y tamaño 490×36, fuera de las flores.
+- Otras constantes: `LOADING_LABEL_ENABLED=true`, `LOADING_LABEL_TEXT="Cargando..."`, `LOADING_LABEL_FONT_SIZE=28`, `LOADING_LABEL_SIZE=(320,40)`.
+- Pausa: `PAUSE_PANEL_WIDTH=620`, `PAUSE_PANEL_FONT_SIZE=22`, `PAUSE_PANEL_SLIDER_WIDTH=330`, `PAUSE_PANEL_SLIDER_HEIGHT=36`, `PAUSE_PANEL_SPACING=14`, título a −160 y panel a −120.
+- Manual: F5 → Jugar; mirá el logo y «Cargando...»; escuchá que la música de nivel alcance su volumen enseguida; con F9 o jugando llegá al robot y escuchá el corte y la entrada de la tarántula.
+- Manual: con el robot vivo tras X=281 no debe salir «CHECKPOINT 2»; al vencerlo sí. Abrí Esc y mirá el panel; tocá una tecla y luego el mando; usá polen y mirá su píldora.
+- Tests Godot 4.7.2: pasaron `validate_bee_tanda_p`, `validate_bee_tanda_l_music_gap`, `validate_bee_tanda_h_music_mapping`, `validate_bee_lote14_music_v01`, `validate_bee_tanda_k_training`, `validate_bee_tanda_k_title_controls` y `validate_bee_boot_order`.
+- El entorno avisó que no pudo escribir `user://logs/godot.log` y mostró recursos retenidos al salir; no hubo errores de script ni fallos de esas pruebas.

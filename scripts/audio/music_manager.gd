@@ -133,11 +133,17 @@ func _loop_current_track() -> void:
 func prepare_boss_break() -> void:
 	if current_track == &"" or current_track == &"victory":
 		return
+	clear_pre_boss_duck()
 	for i in 2:
 		if _players[i].playing:
 			_fade_to(i, 0.0, 0.08, true, true)
 	current_track = &""
 	boss_breaks += 1
+
+func clear_pre_boss_duck() -> void:
+	_explosion_db = BeeGameSettings.BOSS_PRE_BREAK_DUCK_DB
+	if _explosion_tween != null and _explosion_tween.is_valid():
+		_explosion_tween.kill()
 
 
 ## Starts (or switches to) a theme. From silence it fades in over `fade_in` seconds; with another theme playing it crossfades over `crossfade`.

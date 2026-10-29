@@ -26,7 +26,7 @@ static func play(track: StringName, fade: float = -1.0, restart := false) -> voi
 
 ## Level 1 theme from its start: a restarted level begins it again from the top.
 static func play_level_from_start() -> void:
-	play(&"level", -1.0, true)
+	play(&"level", BeeGameSettings.LEVEL_MUSIC_FADE_IN_SECONDS, true)
 
 
 static func boss() -> void:
@@ -34,12 +34,17 @@ static func boss() -> void:
 
 
 static func tarantula() -> void:
-	play(&"boss_tarantula", BeeMusic.CROSSFADE_SECONDS)
+	play(&"boss_tarantula", BeeGameSettings.BOSS_BREAK_FADE_IN_SECONDS)
 
 static func prepare_boss_break() -> void:
 	var node := manager()
 	if node != null:
 		node.call("prepare_boss_break")
+
+static func clear_pre_boss_duck() -> void:
+	var node := manager()
+	if node != null:
+		node.call("clear_pre_boss_duck")
 
 
 static func victory() -> void:
