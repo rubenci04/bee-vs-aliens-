@@ -5,7 +5,8 @@ extends RefCounted
 
 const MANAGER := "MusicManager"
 ## Music timings (owned here so the manager and the game code share them).
-const CROSSFADE_SECONDS := 1.5 ## Level -> boss when the tarantula's health bar appears.
+const CROSSFADE_SECONDS := 1.5 ## Theme changes and boss fade-in after the entrance break.
+const BOSS_BREAK_SECONDS := 1.5 ## Brief silence during each boss entrance.
 const DEATH_FADE_SECONDS := 1.6 ## Bee defeated.
 const VICTORY_FADE_IN_SECONDS := 0.6
 
@@ -34,6 +35,11 @@ static func boss() -> void:
 
 static func tarantula() -> void:
 	play(&"boss_tarantula", BeeMusic.CROSSFADE_SECONDS)
+
+static func prepare_boss_break() -> void:
+	var node := manager()
+	if node != null:
+		node.call("prepare_boss_break")
 
 
 static func victory() -> void:

@@ -558,6 +558,7 @@ var tarantula_freed := false
 var _tarantula_breather_left := -1.0
 var _post_robot_target_x := 0.0
 var _robot_dead_clock := -1.0 # Tanda E: _clock when the robot fell; -1 = alive. Safety net for the post-robot gate.
+var _robot_music_break_started := false
 var _forced_calm := false
 var _last_roster_entry_clock := -INF
 
@@ -631,6 +632,9 @@ func _physics_process(delta: float) -> void:
 			_advance_boss(delta) # Level complete only after the UFO is destroyed.
 		return
 	var event: Dictionary = events_table()[event_index]
+	if bool(event.get("miniboss", false)) and not _robot_music_break_started and stage.distance >= float(event["at"]) - LEVEL_SCROLL * BeeMusic.BOSS_BREAK_SECONDS:
+		_robot_music_break_started = true
+		BeeMusic.prepare_boss_break()
 	if roster_only and bool(event.get("hard", false)) and stage.distance >= float(event["at"]):
 		stage.scroll_speed = 0.0
 	var authored_pending := _pending.any(func(r: Dictionary): return not bool(r.get("companion", false)))

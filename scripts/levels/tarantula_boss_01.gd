@@ -232,6 +232,7 @@ var web_net: TarantulaWebNet
 var _web_immune_left := 0.0
 var _next_state := State.PHASE_1
 var _state_time := 0.0
+var _music_break_started := false
 var _step := &"cooldown"
 var _left := 0.8
 var _pattern_index := 0
@@ -307,6 +308,7 @@ func begin(stage_camera: Camera3D, bee: BeePlayer) -> void:
 	_apply_pose()
 	state = State.APPROACH
 	_state_time = 0.0
+	_music_break_started = false
 	_play(&"walk")
 	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.55)
 	set_physics_process(true)
@@ -452,6 +454,9 @@ func _physics_process(delta: float) -> void:
 		return
 	match state:
 		State.APPROACH:
+			if not _music_break_started and _state_time >= APPROACH_SECONDS - BeeMusic.BOSS_BREAK_SECONDS:
+				_music_break_started = true
+				BeeMusic.prepare_boss_break()
 			var t := clampf(_state_time / APPROACH_SECONDS, 0.0, 1.0)
 			var start := _cam_x() + _half_width() + 4.5
 			global_position.x = lerpf(start, _cam_x() + ANCHOR_DX, 1.0 - pow(1.0 - t, 2.0))

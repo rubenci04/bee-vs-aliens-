@@ -5,7 +5,7 @@ extends Node
 ##   story    loops through the illustrated introduction
 ##   level    loops during Level 1 action
 ##   boss     starts when the robot mini-boss enters
-##   boss_tarantula crossfades in when the final boss enters
+##   boss_tarantula fades in after a short break during the final boss entrance
 ##   victory  plays ONCE with the results after the tarantula leaves
 ##   pause    the music ducks (PAUSE_DUCK_DB) while the game is paused
 ##   death    fades out (DEATH_FADE_SECONDS) when Bee is defeated; a restart starts the right theme again
@@ -21,6 +21,20 @@ const TRACKS := {
 	&"boss_tarantula": {"path": "res://audio/entra jefe tarantula.mp3", "loop": true},
 	&"victory": {"path": "res://audio/victoria! jefe vencido y nivel pasado.mp3", "loop": false},
 }
+## -45 dBFS, decoded with Godot 4.7.2 AudioStreamPlayback.mix_audio (seconds).
+## The four legacy tracks remain mapped here for audit, although the game uses the six tracks above.
+const SILENCE_TRIMS := {
+	"res://audio/Introducción al Jefe Final 1era opcion.mp3": {"start_trim": 0.063, "end_trim": 2.537},
+	"res://audio/Jefe Derrotado y Pantalla de Victoria.mp3": {"start_trim": 0.077, "end_trim": 2.276},
+	"res://audio/Menú Principal y Pantalla de Títulos.mp3": {"start_trim": 0.138, "end_trim": 2.512},
+	"res://audio/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3": {"start_trim": 0.780, "end_trim": 2.640},
+	"res://audio/entra jefe tarantula.mp3": {"start_trim": 0.082, "end_trim": 2.748},
+	"res://audio/entra minijefe.mp3": {"start_trim": 0.075, "end_trim": 2.590},
+	"res://audio/musica gameplay accion!.mp3": {"start_trim": 0.086, "end_trim": 2.731},
+	"res://audio/musica storyboard.mp3": {"start_trim": 0.041, "end_trim": 1.853},
+	"res://audio/musica titulos.mp3": {"start_trim": 0.041, "end_trim": 2.610},
+	"res://audio/victoria! jefe vencido y nivel pasado.mp3": {"start_trim": 0.133, "end_trim": 2.216},
+}
 const MUSIC_BUS := &"Music"
 const SFX_BUS := &"SFX"
 const MUSIC_DEFAULT_DB := -8.0 ## Default volume of the music bus (default_bus_layout.tres says the same).
@@ -28,6 +42,8 @@ const SFX_DEFAULT_DB := -3.0
 const SILENT_DB := -80.0
 const FADE_IN_SECONDS := BeeGameSettings.MUSIC_FADE_IN_SEC
 const CROSSFADE_SECONDS := BeeMusic.CROSSFADE_SECONDS ## Level -> boss.
+const LOOP_CROSSFADE_SECONDS := 1.5
+const BOSS_BREAK_SECONDS := BeeMusic.BOSS_BREAK_SECONDS
 const DEATH_FADE_SECONDS := BeeMusic.DEATH_FADE_SECONDS
 const VICTORY_FADE_IN_SECONDS := BeeMusic.VICTORY_FADE_IN_SECONDS
 const VICTORY_TAIL_FADE := 3.0 ## The victory theme fades out over its last seconds.
@@ -51,6 +67,8 @@ var _explosion_tween: Tween
 var _streams: Dictionary = {}
 var starts := 0 ## Themes started (tests).
 var crossfades := 0
+var loop_crossfades := 0
+var boss_breaks := 0
 
 
 func _ready() -> void:
@@ -81,6 +99,45 @@ func _process(delta: float) -> void:
 				gain = minf(gain, clampf(left / VICTORY_TAIL_FADE, 0.0, 1.0))
 		var intro_duck := BeeGameSettings.INTRO_MUSIC_DUCK_DB if BeeGameSettings.intro_duck_enabled else 0.0
 		player.volume_db = maxf(linear_to_db(maxf(gain, 0.0001)) + float(BeeGameSettings.MUSIC_TRACK_GAIN_DB.get(_tracks[i], 0.0)) + _duck_db + _explosion_db + intro_duck, SILENT_DB)
+	if not paused_duck and current_track != &"" and bool(TRACKS[current_track]["loop"]):
+		var active_player := _players[_active]
+		if active_player.playing and active_player.get_playback_position() >= loop_start_at(current_track, active_player.stream.get_length()):
+			_loop_current_track()
+
+func loop_start_at(track: StringName, duration: float) -> float:
+	var trim: Dictionary = SILENCE_TRIMS[str(TRACKS[track]["path"])]
+	return duration - float(trim["end_trim"]) - LOOP_CROSSFADE_SECONDS
+
+func _start_trim(track: StringName) -> float:
+	return float(SILENCE_TRIMS[str(TRACKS[track]["path"])]["start_trim"])
+
+func _loop_current_track() -> void:
+	var track := current_track
+	var outgoing := _active
+	var incoming := 1 - outgoing
+	_stop_player(incoming)
+	var player := _players[incoming]
+	player.stream = _stream_for(track)
+	_tracks[incoming] = track
+	_fade_gain[incoming] = 0.0
+	player.volume_db = SILENT_DB
+	player.play(_start_trim(track))
+	_fade_to(outgoing, 0.0, LOOP_CROSSFADE_SECONDS, true)
+	_fade_to(incoming, 1.0, LOOP_CROSSFADE_SECONDS, false)
+	_active = incoming
+	starts += 1
+	crossfades += 1
+	loop_crossfades += 1
+
+## A deliberate break before a boss: called 1.5 s before its theme begins.
+func prepare_boss_break() -> void:
+	if current_track == &"" or current_track == &"victory":
+		return
+	for i in 2:
+		if _players[i].playing:
+			_fade_to(i, 0.0, 0.08, true, true)
+	current_track = &""
+	boss_breaks += 1
 
 
 ## Starts (or switches to) a theme. From silence it fades in over `fade_in` seconds; with another theme playing it crossfades over `crossfade`.
@@ -94,6 +151,7 @@ func play_track(track: StringName, fade: float = -1.0, restart := false) -> void
 	var seconds := fade if fade >= 0.0 else (FADE_IN_SECONDS if track in [&"title", &"level"] else CROSSFADE_SECONDS)
 	var incoming := 1 - _active
 	var outgoing := _active
+	_stop_player(incoming)
 	var crossfading := _players[outgoing].playing and _fade_gain[outgoing] > 0.001 and current_track != &""
 	if crossfading:
 		crossfades += 1
@@ -105,7 +163,7 @@ func play_track(track: StringName, fade: float = -1.0, restart := false) -> void
 	_tracks[incoming] = track
 	_fade_gain[incoming] = 0.0
 	player.volume_db = SILENT_DB
-	player.play()
+	player.play(_start_trim(track))
 	_fade_to(incoming, 1.0, maxf(seconds, 0.01), false)
 	_active = incoming
 	current_track = track
@@ -145,6 +203,12 @@ func track_volume_db(track: StringName) -> float:
 
 func set_paused(value: bool) -> void:
 	paused_duck = value
+	for player in _players:
+		player.stream_paused = value
+	for tween in _tweens:
+		if tween != null and tween.is_valid():
+			if value: tween.pause()
+			else: tween.play()
 
 
 ## A big explosion: the music dips by EXPLOSION_DUCK_DB for a moment and comes back.
@@ -187,6 +251,8 @@ func _fade_to(index: int, target: float, seconds: float, stop_at_end: bool, line
 		_tweens[index].kill()
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_tweens[index] = tween
+	if paused_duck:
+		tween.pause()
 	var start := _fade_gain[index]
 	tween.tween_method(func(t: float):
 		# Crossfades are equal power (fade in = sin, fade out = cos: they cross at -3 dB); a plain fade-out (death) is linear.

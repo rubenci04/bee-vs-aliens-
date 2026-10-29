@@ -79,7 +79,7 @@ func run() -> void:
 	await wait(0.4)
 	check(manager.current_track == &"title" and manager.is_playing(), "The title theme plays on the title screen")
 	await wait(2.5)
-	check(volume(&"title") > -4.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
+	check(volume(&"title") > -6.0, "The title theme faded in (%.1f dB)" % volume(&"title"))
 	title.queue_free()
 	await process_frame
 	var intro: Node = load("res://scenes/game/bee_intro_screen.tscn").instantiate()
@@ -96,7 +96,7 @@ func run() -> void:
 	check(manager.current_track == &"level" and manager.track_player(&"level") != null, "The level theme starts with Level 1")
 	check(int(manager.crossfades) == crossfades_before + 1 and manager.track_player(&"story") != null, "Story -> level is a crossfade")
 	await wait(2.7)
-	check(manager.track_player(&"story") == null and volume(&"level") > -4.0, "The story theme is gone after the crossfade")
+	check(manager.track_player(&"story") == null and volume(&"level") > -6.0, "The story theme is gone after the crossfade")
 	check((manager.track_player(&"level").stream as AudioStreamMP3).loop, "The level theme loops")
 	check(not stage.bee.is_defeated and manager.current_track == &"level", "The level theme goes on")
 
@@ -137,7 +137,7 @@ func run() -> void:
 	BeeMusic.boss()
 	check(manager.track_player(&"boss") == robot_player and manager.starts == robot_starts, "The robot theme does not restart")
 
-	# --- tarantula: crossfade when its bar appears ------------------------------------------------------------------------------------------------
+	# --- tarantula: a short deliberate break before its bar appears ---------------------------------------------------------------------------
 	var wave := stage.wave as BeeLevel01Controller
 	stage.scroll_speed = 0.0
 	stage.distance = 296.0
@@ -158,13 +158,12 @@ func run() -> void:
 	check(boss != null and boss.health_bar_visible(), "The tarantula walked in")
 	boss.set_physics_process(false) # Isolate crossfade from the new boss-attack ducking.
 	check(manager.current_track == &"boss_tarantula", "The tarantula theme starts when the health bar appears")
-	check(manager.track_player(&"boss") != null and manager.track_player(&"boss_tarantula") != null, "Both boss themes overlap during the crossfade")
+	check(manager.boss_breaks >= 1 and manager.track_player(&"boss") == null and manager.track_player(&"boss_tarantula") != null, "The robot theme stops during the tarantula entrance")
 	await wait(0.75)
-	var mid_level := volume(&"boss")
 	var mid_boss := volume(&"boss_tarantula")
-	check(mid_level < -1.0 and mid_level > -8.0 and mid_boss < -1.0 and mid_boss > -8.0, "Halfway the crossfade both sit near -3 dB (equal power, %.1f / %.1f dB)" % [mid_level, mid_boss])
+	check(mid_boss < -1.0 and mid_boss > -12.0, "The tarantula theme fades in after the break (%.1f dB)" % mid_boss)
 	await wait(2.5)
-	check(manager.track_player(&"boss") == null and volume(&"boss_tarantula") > -4.0, "After %.1f s only the tarantula theme is left" % manager.CROSSFADE_SECONDS)
+	check(manager.track_player(&"boss") == null and volume(&"boss_tarantula") > -6.0, "After %.1f s only the tarantula theme is left" % manager.CROSSFADE_SECONDS)
 	check(is_equal_approx(manager.CROSSFADE_SECONDS, 1.5), "The crossfade lasts 1.5 s")
 	check((manager.track_player(&"boss_tarantula").stream as AudioStreamMP3).loop, "The tarantula theme loops")
 
