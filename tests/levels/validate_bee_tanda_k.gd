@@ -8,7 +8,7 @@ func run() -> void:
 	var juice := stage.get_node("Juice") as BeeLevel01Juice
 	check(POWERS.POWERS.map(func(p): return p.id) == [&"heal", &"shield", &"double_shot"], "Pollen powers are data driven")
 	check(POWERS.POLLEN_DOUBLE_SECONDS == 4.0 and POWERS.POLLEN_DOUBLE_MAX_SECONDS == 12.0, "Pollen double constants")
-	check(preload("res://scripts/game/bee_pollen_nova_settings.gd").COOLDOWN_SECONDS <= 0.25, "Cartridges can be chained before double shot expires")
+	check(preload("res://scripts/game/bee_pollen_nova_settings.gd").POLLEN_USE_COOLDOWN_SECONDS == 1.5, "Cartridges wait 1.5 seconds between uses")
 	check(GUIDE.STEPS.size() == 6 and GUIDE.lines(false).all(func(line): return line.contains(" ")) and GUIDE.lines(true).any(func(line): return line.contains("LT")), "Six controls have keyboard and gamepad explanations")
 	for spec in [["SpreadBeforeCloud", 123.0], ["SpreadRecharge", 200.0], ["SpreadBeforeSpiders", 248.0]]:
 		var pickup := stage.get_node("Powerups/" + spec[0])
@@ -36,11 +36,11 @@ func run() -> void:
 	damages.sort()
 	check(shots.size() == 6 and damages == [1, 1, 1, 1, 3, 3], "Spread doubles every pellet at its original damage")
 	bee.set_physics_process(false)
-	juice._physics_process(0.24)
-	check(not juice.try_pollen_nova(), "Second cartridge waits for the brief debounce")
+	juice._physics_process(1.49)
+	check(not juice.try_pollen_nova(), "Second cartridge waits for the cooldown")
 	juice._physics_process(0.02)
 	check(juice.try_pollen_nova() and bee.pollen_double_left == 8.0, "Second cartridge adds four seconds")
-	juice._physics_process(0.26)
+	juice._physics_process(1.51)
 	check(juice.try_pollen_nova() and bee.pollen_double_left == 12.0, "Third cartridge reaches 12 second cap")
 	bee.add_pollen_double(4.0, POWERS.POLLEN_DOUBLE_MAX_SECONDS)
 	check(bee.pollen_double_left == 12.0, "Further additions respect cap")

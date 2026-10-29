@@ -137,6 +137,10 @@ const ROSTER_ARENA_WAVE_MAX := 5.0
 const ROSTER_FIRST_WAVE_DELAY := 1.8
 const ROSTER_ARENA_MAX_SECONDS := 36.0
 const ROSTER_ARENA_MIN_SECONDS := 28.0
+const ZONE_MIN_SECONDS := 25.0 # Duración mínima de las tres zonas principales.
+const ZONE_EXTENSION_INTERVAL_SECONDS := 8.0 # Separa los refuerzos para no alargar la zona.
+const ZONE_EXTENSION_MAX_WAVES := 2 # Máximo de refuerzos por zona.
+const ZONE_EXTENSION_SLOT_BASE := 700 # Identifica los refuerzos sin pisar las oleadas originales.
 const BREATHER_SECONDS := 1.0 # LOTE 10: short transition; route patrols maintain pressure.
 
 ## LOTE 14 · ETAPA 2: GRADUAL INTRODUCTION. An event (or a combat zone) with a "debut" key introduces a new species: it waits for a clear field
@@ -144,7 +148,9 @@ const BREATHER_SECONDS := 1.0 # LOTE 10: short transition; route patrols maintai
 ## spawn of every species shows its name for SPECIES_NAME_SECONDS in small letters.
 const DEBUT_SOLO_SECONDS := 8.0
 const DEBUT_CLEAR_MAX := 5.0
-const DEAD_AIR_SECONDS := 6.0
+const DEAD_AIR_SECONDS := 4.0 # Rescate más rápido si la ruta queda vacía.
+const POST_ZONE_FIRST_EVENT_MAX_SECONDS := 3.0 # Plazo máximo para lanzar el siguiente evento.
+const COMBO_POST_ZONE_GRACE_SECONDS := 8.0 # Pausa del combo tras despejar la zona.
 const DEAD_AIR_ARRIVAL_SECONDS := 3.0
 const STALE_TELEPORT_SECONDS := 3.0
 const ANTHILL_FALLBACK_ROUTE_MARGIN := 1.0
@@ -419,7 +425,8 @@ const EVENTS_ROSTER = [
 	{"at": 124.2, "act": 3, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 4.4, 2.8], "anthill": true},
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
 	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.8], "y": [3.0, 4.6],
-			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "arena": [
+			"debut": "FlyCloud", "arena_label": "ZONA DE COMBATE · MACIZO DE FLORES", "zone_min_seconds": ZONE_MIN_SECONDS,
+			"extension_wave": {"units": ["FlyCloud"], "y": [3.4], "no_companions": true}, "arena": [
 			# Tanda K: one inner wave after the two opening clouds.
 			{"units": ["Ant", "FlyCloud", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 3.4, 0.0], "anthill": true},
 		]},
@@ -446,7 +453,8 @@ const EVENTS_ROSTER = [
 	{"at": 206.8, "act": 4, "label": "HUERTA · MOSCA VERDE", "units": ["FlyGreen"], "y": [4.4]},
 	{"at": 209.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y CARACOL", "units": ["FlyGreen", "FlyGreen", "Snail"], "delays": [0.0, 0.7, 1.4], "y": [3.0, 5.0, 0.0]},
 	{"at": 214.0, "act": 4, "label": "ZONA · INICIO · ESCARABAJO", "units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0],
-			"debut": "StagBeetle", "arena_label": "ZONA DE COMBATE · HUERTA", "arena": [
+			"debut": "StagBeetle", "arena_label": "ZONA DE COMBATE · HUERTA", "zone_min_seconds": ZONE_MIN_SECONDS,
+			"extension_wave": {"units": ["StagBeetle"], "y": [0.0], "no_companions": true}, "arena": [
 			# Tanda E: 3 inner waves (was 7).
 			{"units": ["StagBeetle", "StagBeetle"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
 			{"units": ["Wasp", "Wasp", "WormA"], "delays": [0.0, 0.7, 1.4], "y": [4.4, 3.4, 0.0]},
@@ -462,7 +470,8 @@ const EVENTS_ROSTER = [
 	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
 	# T6e: +50 % spiders in the waves where they appear (3 -> 5): the zone opens with two and its second wave brings two.
 	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider", "Spider"], "delays": [0.0, 1.2], "y": [5.2, 5.2], "x": [1.2, -2.2],
-			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "arena": [
+			"debut": "Spider", "arena_label": "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS", "zone_min_seconds": ZONE_MIN_SECONDS,
+			"extension_wave": {"units": ["Spider"], "y": [3.4], "x": [0.6], "no_companions": true}, "arena": [
 			{"units": ["Spider"], "delays": [0.0], "y": [4.0], "x": [0.6]},
 			{"units": SPIDER_SECOND_WAVE, "delays": SPIDER_SECOND_WAVE_DELAYS, "y": [3.4, 3.4, 3.4], "x": [0.6, -1.8, 2.4], "after_spiders_clear": true},
 			{"units": ["Wasp", "Ant", "Ant"], "delays": [0.0, 0.7, 1.4], "y": [3.4, 0.0, 0.0], "anthill": true},
@@ -533,6 +542,8 @@ var _holding := false
 var fauna_hint_shown := false
 var _arena: Dictionary = {} # LOTE 7: the combat zone in progress (empty = none).
 var _breather_until := 0.0
+var _post_zone_clear_at := -INF
+var _combo_zone_clear_at := -INF
 var arenas_completed := 0
 var arena_log: Array[Dictionary] = [] # {event, seconds, waves} per finished zone (tests / report).
 var _label_token := 0
@@ -648,7 +659,8 @@ func _physics_process(delta: float) -> void:
 		_backlog_hold = false
 		if not bool(event.get("hard", false)):
 			stage.scroll_speed = LEVEL_SCROLL
-	if (stage.distance < float(event["at"]) and not _dead_air_force) or authored_pending:
+	var post_zone_due := _post_zone_clear_at >= 0.0 and _clock - _post_zone_clear_at >= POST_ZONE_FIRST_EVENT_MAX_SECONDS
+	if (stage.distance < float(event["at"]) and not _dead_air_force and not post_zone_due) or authored_pending:
 		return
 	if _event_blocked_by_solo(event["units"]):
 		return # LOTE 14: a new species is debuting alone.
@@ -670,6 +682,7 @@ func _physics_process(delta: float) -> void:
 	var launched_index := event_index
 	event_index += 1
 	_dead_air_force = false
+	_post_zone_clear_at = -INF
 	director_log_event("evento lanzado %d %s" % [launched_index, str(event["label"])])
 	if event.has("debut"):
 		_begin_debut(str(event["debut"]))
@@ -750,7 +763,9 @@ func _begin_arena(event: Dictionary, launched_index: int) -> void:
 	_arena = {"waves":event["arena"], "next":0, "event":launched_index,
 		"wave_clock":maxf(arena_cadence()-ROSTER_FIRST_WAVE_DELAY,0.0) if roster_only else 0.0,
 		"clear_for":0.0, "started":_clock, "next_arrival":_clock+ENCOUNTER.EXTRA_ARRIVAL_SECONDS,
-		"label":str(event.get("arena_label","ZONA DE COMBATE")), "reinforcement":str(event["units"][0])}
+		"label":str(event.get("arena_label","ZONA DE COMBATE")), "reinforcement":str(event["units"][0]),
+		"zone_min_seconds":float(event.get("zone_min_seconds", 0.0)), "extension_wave":event.get("extension_wave", {}),
+		"next_extension":_clock, "extensions":0}
 	stage.scroll_speed = 0.0
 	_label_token += 1
 	_update_zone_banner()
@@ -803,11 +818,19 @@ func _update_arena(delta: float) -> void:
 			_arena["wave_clock"] = 0.0
 			_arena["clear_for"] = 0.0
 	elif field_clear:
+		if _clock - float(_arena["started"]) < float(_arena["zone_min_seconds"]):
+			if _clock >= float(_arena["next_extension"]) and int(_arena["extensions"]) < ZONE_EXTENSION_MAX_WAVES and not (_arena["extension_wave"] as Dictionary).is_empty():
+				_queue_units(_arena["extension_wave"], int(_arena["event"]), ZONE_EXTENSION_SLOT_BASE + int(_arena["extensions"]))
+				_arena["extensions"] = int(_arena["extensions"]) + 1
+				_arena["next_extension"] = _clock + ZONE_EXTENSION_INTERVAL_SECONDS
+			return
 		arena_log.append({"event":_arena["event"],"seconds":_clock-float(_arena["started"]),"waves":waves.size()})
 		_arena = {}
 		arenas_completed += 1
 		stage.scroll_speed = LEVEL_SCROLL
 		_breather_until = _clock+BREATHER_SECONDS
+		_post_zone_clear_at = _clock
+		_combo_zone_clear_at = _clock
 		_show_label("ZONA DESPEJADA",1.6)
 		preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).clear_combat_zone(1.6)
 		return
@@ -1453,6 +1476,10 @@ func _connect_combo_health(health: HealthComponent, unit: Node3D, _main_health :
 
 
 func combo_intermission() -> bool:
+	if _clock - _combo_zone_clear_at < COMBO_POST_ZONE_GRACE_SECONDS:
+		if not (active_units + swarm_units).any(func(unit): return is_instance_valid(unit) and _visible_enemy(unit)):
+			return true
+		_combo_zone_clear_at = -INF
 	if is_instance_valid(miniboss) and miniboss.health.current_health > 0 and miniboss._step == &"enter": return true
 	if not roster_only: return false
 	if _tarantula_breather_left >= 0 and tarantula == null and not tarantula_freed: return true

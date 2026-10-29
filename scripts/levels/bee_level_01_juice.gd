@@ -26,7 +26,8 @@ const LIBERATION_POLLEN_EVERY := 3 ## A freed animal drops its pollen one time i
 const POLLEN_CAP_PER_MINUTE := 70 ## Pollen that can be gained per rolling minute (extra pollen is lost).
 const POLLEN_CAP_WINDOW := 60.0
 const POLLEN_BANK_MAX := 0 ## No stored heals.
-const FRENZY_COMBO := 8 ## Combo that starts FRENESI (double shot).
+const FRENZY_COMBO := 15 ## Combo necesario para activar Frenesí.
+const FRENZY_COOLDOWN_SECONDS := 12.0 ## Espera después de terminar Frenesí.
 const HEAL_FLASH_COLOR := Color(1.0, 0.86, 0.3, 0.24)
 const HEAL_FLASH_SECONDS := 0.4
 const POLLEN_PER_LIBERATION := 3 ## LOTE 14: pollen of the liberation that drops it (one in LIBERATION_POLLEN_EVERY; was 1 per liberation)
@@ -55,6 +56,8 @@ var pollen_total := 0
 var pollen_from_pickups := 0
 var pollen_from_liberations := 0
 var frenzy_activations := 0
+var frenzy_cooldown_left := 0.0
+var _frenzy_was_active := false
 var pollen_heals := 0
 var pollen_healed := 0 # Manual healing telemetry (T3n).
 var pollen_heal_enabled := false # Compatibility flag; healing is explicitly requested by holding.
@@ -142,6 +145,10 @@ func _physics_process(delta: float) -> void:
 	_pollen_clock += delta
 	boss_combo_left = maxf(0.0, boss_combo_left - delta)
 	nova_cooldown_left = maxf(0.0, nova_cooldown_left - delta)
+	frenzy_cooldown_left = maxf(0.0, frenzy_cooldown_left - delta)
+	if _frenzy_was_active and bee.honey_left <= 0.0:
+		frenzy_cooldown_left = FRENZY_COOLDOWN_SECONDS
+	_frenzy_was_active = bee.honey_left > 0.0
 	nova_protection_left = maxf(0.0, nova_protection_left - delta)
 	bee.health.pollen_protected = nova_protection_left > 0.0
 	_update_pollen_input(delta)
@@ -211,9 +218,10 @@ func _advance_combo() -> void:
 	combo += 1
 	best_combo = maxi(best_combo, combo)
 	combo_left = COMBO_RESET_SECONDS
-	if combo % FRENZY_COMBO == 0:
+	if combo % FRENZY_COMBO == 0 and bee.honey_left <= 0.0 and frenzy_cooldown_left <= 0.0:
 		frenzy_activations += 1
 		bee.activate_honey()
+		_frenzy_was_active = true
 	_refresh_combo()
 
 
@@ -271,7 +279,7 @@ func try_pollen_nova() -> bool:
 		return false
 	# Spend one cartridge, preserving the other two and partial progress.
 	pollen_spent = pollen_total - (pollen_progress() - NOVA.CARTRIDGE_COST)
-	nova_cooldown_left = NOVA.COOLDOWN_SECONDS
+	nova_cooldown_left = NOVA.POLLEN_USE_COOLDOWN_SECONDS
 	novas_used += 1
 	var gained := POLLEN_POWERS.apply(bee, self)
 	pollen_heals += 1
