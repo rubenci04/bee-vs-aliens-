@@ -141,7 +141,14 @@ const BREATHER_SECONDS := 1.0 # LOTE 10: short transition; route patrols maintai
 ## (at most DEBUT_CLEAR_MAX s: the remaining units are then sent away) and, for DEBUT_SOLO_SECONDS, nothing else is launched. The first
 ## spawn of every species shows its name for SPECIES_NAME_SECONDS in small letters.
 const DEBUT_SOLO_SECONDS := 8.0
-const DEBUT_CLEAR_MAX := 0.8
+const DEBUT_CLEAR_MAX := 5.0
+const DEAD_AIR_SECONDS := 6.0
+const DEAD_AIR_ARRIVAL_SECONDS := 3.0
+const STALE_TELEPORT_SECONDS := 3.0
+const ANTHILL_FALLBACK_ROUTE_MARGIN := 1.0
+const ANTHILL_FALLBACK_SCREEN_MARGIN := 0.5
+const ROSTER_MAX_EVENT_OVERSHOOT := 2.0
+const DIRECTOR_LOG := preload("res://scripts/levels/bee_director_log.gd")
 const SPECIES_NAME_SECONDS := 1.5
 ## LOTE 14 · ETAPA 2.3: with real damage (scale 1.0) the dense table is lethal, so the roster attacks less often: this multiplies the rests between attacks
 ## (idle / recovery / restalk of every unit and the implant cooldown). Warnings, projectile speed and damage are untouched.
@@ -534,6 +541,12 @@ var species_label: Label
 var _solo_family := ""
 var _solo_until := -1.0
 var _debut_wait := 0.0
+var _no_visible_seconds := 0.0
+var _dead_air_force := false
+var _last_dead_air_intervention := -INF
+var anthill_fallback_spawns := 0
+var _backlog_hold := false
+var _director_log: Node
 var _species_token := 0
 var animals_total := 0 # NOCHE 01: controlled animals that appeared (incl. the turtle, see register_extra_animal).
 var liberated_count := 0
@@ -554,6 +567,10 @@ var _intro_card: Node
 var _intro_running := false
 
 func _ready() -> void:
+	_director_log = DIRECTOR_LOG.new()
+	_director_log.director = self
+	_director_log.name = "DirectorLog"
+	add_child.call_deferred(_director_log)
 	human.crossing_exited.connect(_on_human_exited)
 	if not giant_human_enabled:
 		call_deferred("_switch_off_human") # The human node is ready after this one.
@@ -581,7 +598,10 @@ func _physics_process(delta: float) -> void:
 			_end_intro()
 		return # E2: no clock, no spawns, no scroll - Bee just flies and tries its actions.
 	_clock += delta
+	_recover_stale_teleports()
 	_retire_soft_units(delta)
+	_service_anthills()
+	_watch_dead_air(delta)
 	_update_hold()
 	if _waiting_for_human:
 		return
@@ -614,7 +634,15 @@ func _physics_process(delta: float) -> void:
 	if roster_only and bool(event.get("hard", false)) and stage.distance >= float(event["at"]):
 		stage.scroll_speed = 0.0
 	var authored_pending := _pending.any(func(r: Dictionary): return not bool(r.get("companion", false)))
-	if stage.distance < float(event["at"]) or authored_pending:
+	if roster_only and authored_pending and stage.distance >= float(event["at"]) + ROSTER_MAX_EVENT_OVERSHOOT:
+		if not _backlog_hold: director_log_event("cola obligatoria frena avance next=%d pending=%d" % [event_index, _pending.size()])
+		_backlog_hold = true
+		stage.scroll_speed = 0.0
+	elif _backlog_hold:
+		_backlog_hold = false
+		if not bool(event.get("hard", false)):
+			stage.scroll_speed = LEVEL_SCROLL
+	if (stage.distance < float(event["at"]) and not _dead_air_force) or authored_pending:
 		return
 	if _event_blocked_by_solo(event["units"]):
 		return # LOTE 14: a new species is debuting alone.
@@ -635,6 +663,8 @@ func _physics_process(delta: float) -> void:
 	player_label = encounter_label if show_debug_labels or bool(event.get("human", false)) else ""
 	var launched_index := event_index
 	event_index += 1
+	_dead_air_force = false
+	director_log_event("evento lanzado %d %s" % [launched_index, str(event["label"])])
 	if event.has("debut"):
 		_begin_debut(str(event["debut"]))
 	else:
@@ -678,6 +708,7 @@ func _queue_units(event: Dictionary, launched_index: int, slot_base: int) -> voi
 			request["hold"] = true
 		if bool(event.get("anthill", false)) and str(units[i]) == "Ant":
 			request["anthill"] = true # LOTE 13: the ant comes out of an anthill on screen (BeeLevel01Anthills).
+			request["anthill_at"] = float(event.get("at", stage.distance))
 		if bool(event.get("miniboss", false)) and str(units[i]) == "Walker":
 			request["miniboss"] = true
 			request["escort_wave"] = event.get("escort_wave", {})
@@ -794,7 +825,7 @@ func _event_blocked_by_solo(units: Array) -> bool:
 ## A debut waits for real liberation/death; it never expires or sends living enemies away.
 func _debut_ready(delta: float) -> bool:
 	_debut_wait += delta
-	return active_units.is_empty() and swarm_units.is_empty()
+	return (active_units.is_empty() and swarm_units.is_empty()) or _debut_wait >= DEBUT_CLEAR_MAX
 
 func _begin_debut(family: String) -> void:
 	debut_log.append({"family": family, "time": _clock, "distance": stage.distance, "forced": _debut_wait >= DEBUT_CLEAR_MAX})
@@ -855,7 +886,9 @@ func alive_count() -> int:
 func _spawn_swarm_pending() -> void:
 	for unit in swarm_units.duplicate():
 		if not is_instance_valid(unit): swarm_units.erase(unit)
-		elif bool(unit.get("escaped")) and not bool(unit.get_meta("teleporting",false)): _return_enemy(unit)
+		elif bool(unit.get("escaped")) and not bool(unit.get_meta("teleporting",false)):
+			if not roster_only or _hard_gate or in_arena(): _return_enemy(unit)
+			else: _discard_stuck_unit(unit, "escapó de ruta")
 	while not _swarm_pending.is_empty() and _clock >= float(_swarm_pending[0]["due"]) and swarm_units.size() < MAX_SWARM_ALIVE \
 			and alive_count() < on_screen_cap():
 		_spawn(_swarm_pending.pop_front())
@@ -905,6 +938,7 @@ func _spawn(request: Dictionary) -> void:
 		_: return
 	if family == "FlyCloud" and _fly_groups_alive() >= ENCOUNTER.MAX_FLY_GROUPS: return
 	var unit := scene.instantiate() as Node3D
+	director_log_event("unidad creada %s evento=%d" % [family, int(request["event"])])
 	if roster_only and BeeGameSettings.SMALL_ENEMY_HP.has(family):
 		unit.set_meta("small_enemy_base_hit_damage", BeeGameSettings.SMALL_ENEMY_BASE_HIT_DAMAGE)
 	unit.name = "%s_%d_%d" % [family, int(request["event"]), int(request["slot"])]
@@ -1061,9 +1095,20 @@ func _spawn(request: Dictionary) -> void:
 		unit.rig.position.y = 0.0
 	if unit is WalkerMiniboss:
 		unit.call("activate",bee)
+		director_log_event("unidad activada %s robot" % unit.name)
 		return
+	if family == "Ant" and bool(request.get("anthill", false)):
+		var anthills := stage.get_node_or_null("Anthills") as BeeLevel01Anthills
+		var hill := anthills.pick_for_event(float(request.get("anthill_at", stage.distance))) if anthills != null else {}
+		if not hill.is_empty():
+			anthills.emerge(unit, hill, func():
+				if is_instance_valid(unit) and is_instance_valid(bee):
+					unit.call("activate", bee)
+					director_log_event("unidad activada %s hormiguero=%.1f" % [unit.name, float(hill["x"])]))
+			return
 	if _walks_in_naturally(request, family):
 		unit.call("activate", bee)
+		director_log_event("unidad activada %s entrada natural" % unit.name)
 		if not str(unit.name).begins_with("FlyCloud_"): BeeHostileGlow.ensure.call_deferred(unit)
 		return
 	if instant_arrival: # Tests only: skip the beam-in so a spawned enemy is active at once.
@@ -1091,6 +1136,7 @@ func _on_teleport_arrived(id: int, returning: bool) -> void:
 	var unit := instance_from_id(id) as Node3D
 	if not is_instance_valid(unit) or _frozen or (not active_units.has(unit) and not swarm_units.has(unit)): return
 	unit.set_meta("last_near",_clock)
+	director_log_event("teletransporte llegó %s retorno=%s" % [unit.name, returning])
 	if returning:
 		if unit is AssetFauna:
 			unit.state = AssetFauna.State.ENTER
@@ -1121,6 +1167,7 @@ func _on_teleport_arrived(id: int, returning: bool) -> void:
 			unit.set_physics_process(true)
 	else:
 		unit.call("activate",bee)
+		director_log_event("unidad activada %s teletransporte" % unit.name)
 		if not str(unit.name).begins_with("FlyCloud_"): BeeHostileGlow.ensure.call_deferred(unit)
 
 func _scale_bee_damage(unit: Node3D, scale: float) -> void:
@@ -1148,10 +1195,96 @@ func _on_depth_arrived(id: int) -> void:
 	unit.set_meta("level_born", _clock) # Its soft lifetime starts on the flight plane.
 	if not unit.call("activate", bee):
 		push_error("Level 01 failed to activate %s after its depth entry" % unit.name)
+	else:
+		director_log_event("unidad activada %s profundidad" % unit.name)
 
 func _return_enemy(unit: Node3D) -> void:
 	if not is_instance_valid(unit) or bool(unit.get_meta("teleporting",false)): return
+	director_log_event("unidad devuelta %s" % unit.name)
 	TELEPORT.begin(unit,_arrival_point(unit),_on_teleport_arrived.bind(unit.get_instance_id(),true),true)
+
+
+func director_log_event(message: String) -> void:
+	if is_instance_valid(_director_log):
+		_director_log.write_event(message)
+
+
+func _recover_stale_teleports() -> void:
+	for effect in stage.get_node("Enemies").get_children():
+		if effect.name != "EnemyTeleport" or float(effect.get("elapsed")) <= STALE_TELEPORT_SECONDS:
+			continue
+		director_log_event("teletransporte atascado liberado %s edad=%.1f" % [str(effect.get("passenger")), float(effect.get("elapsed"))])
+		effect.call("force_finish")
+
+
+func _visible_enemy(unit: Node3D) -> bool:
+	if not is_instance_valid(unit) or not unit.is_inside_tree() or not unit.is_visible_in_tree():
+		return false
+	if bool(unit.get_meta("teleporting", false)) or bool(unit.get_meta("anthill_entry", false)) or not unit.is_physics_processing():
+		return false
+	if unit.has_method("is_active") and not bool(unit.call("is_active")):
+		return false
+	var health := unit.get_node_or_null("HealthComponent") as HealthComponent
+	if health != null and health.current_health <= 0:
+		return false
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
+	return absf(unit.global_position.x - stage.camera.global_position.x) <= half and unit.global_position.y >= -0.6 and unit.global_position.y <= BeeLevel01Framing.max_entity_y() + 0.5
+
+
+func _service_anthills() -> void:
+	if not roster_only or _hard_gate or _waiting_for_human or _intro_left > 0.0 or _clock < _breather_until or is_instance_valid(miniboss) or is_instance_valid(tarantula):
+		return
+	var anthills := stage.get_node_or_null("Anthills") as BeeLevel01Anthills
+	if anthills == null or active_units.size() >= threat_cap(stage.distance) or alive_count() >= on_screen_cap():
+		return
+	var half := BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(get_viewport()))
+	for hill in anthills.hills:
+		var x := float(hill["x"])
+		if int(hill["sent"]) > 0 or absf(x - stage.camera.global_position.x) > half - ANTHILL_FALLBACK_SCREEN_MARGIN:
+			continue
+		if not in_arena() and stage.distance < x - ANTHILL_FALLBACK_ROUTE_MARGIN:
+			continue
+		_spawn({"family": "Ant", "slot": 800 + anthill_fallback_spawns, "event": event_index, "due": _clock, "hard": false, "anthill": true, "anthill_at": x})
+		anthill_fallback_spawns += 1
+		director_log_event("hormiguero autónomo x=%.1f" % x)
+		return
+
+
+func _watch_dead_air(delta: float) -> void:
+	if not roster_only:
+		return
+	if _hard_gate or in_arena() or _waiting_for_human or _frozen or _complete or _clock < _breather_until or _tarantula_breather_left >= 0.0 or miniboss != null and is_instance_valid(miniboss):
+		_no_visible_seconds = 0.0
+		return
+	for unit in active_units + swarm_units:
+		if _visible_enemy(unit):
+			_no_visible_seconds = 0.0
+			return
+	_no_visible_seconds += delta
+	if _no_visible_seconds < DEAD_AIR_SECONDS or _clock - _last_dead_air_intervention < DEAD_AIR_ARRIVAL_SECONDS:
+		return
+	_last_dead_air_intervention = _clock
+	director_log_event("aire muerto %.1fs: rescate" % _no_visible_seconds)
+	for unit in active_units.duplicate() + swarm_units.duplicate():
+		if is_instance_valid(unit) and not _visible_enemy(unit):
+			_discard_stuck_unit(unit, "invisible o inerte")
+	if not _pending.is_empty():
+		_pending[0]["due"] = minf(float(_pending[0]["due"]), _clock + 0.1)
+		_last_roster_entry_clock = minf(_last_roster_entry_clock, _clock - BeeGameSettings.SMALL_ENEMY_MIN_ENTRY_GAP_SEC)
+	if event_index < events_table().size():
+		var next_event: Dictionary = events_table()[event_index]
+		if not bool(next_event.get("hard", false)) and not bool(next_event.get("human", false)):
+			_dead_air_force = true
+
+
+func _discard_stuck_unit(unit: Node3D, reason: String) -> void:
+	if not is_instance_valid(unit):
+		return
+	director_log_event("unidad descartada %s causa=%s" % [unit.name, reason])
+	BeeCombatVFX.spawn(unit.get_parent(), unit.global_position, &"organic_death", Vector3.UP, 0.55)
+	active_units.erase(unit)
+	swarm_units.erase(unit)
+	unit.queue_free()
 
 func _retire_soft_units(_delta: float) -> void:
 	var units := active_units+swarm_units
@@ -1169,11 +1302,13 @@ func _retire_soft_units(_delta: float) -> void:
 			unit.set_meta("approach_distance",distance)
 		elif not unit.has_meta("approach_distance"): unit.set_meta("approach_distance",distance)
 		if unit.global_position.x < stage.camera.global_position.x-half-ENCOUNTER.RETURN_MARGIN:
-			_return_enemy(unit)
-		elif remaining <= ENCOUNTER.RESCUE_MAX_ENEMIES and _clock-float(unit.get_meta("last_near")) > ENCOUNTER.RESCUE_SECONDS:
+			if not roster_only or _hard_gate or in_arena(): _return_enemy(unit)
+			else: _discard_stuck_unit(unit, "detrás de cámara")
+		elif (not roster_only or _hard_gate or in_arena()) and remaining <= ENCOUNTER.RESCUE_MAX_ENEMIES and _clock-float(unit.get_meta("last_near")) > ENCOUNTER.RESCUE_SECONDS:
 			_return_enemy(unit)
 
 func _on_unit_defeated(unit: Node3D) -> void:
+	director_log_event("unidad liberada o vencida %s" % unit.name)
 	if not bool(unit.get_meta("juice_downed", false)): # A freed animal already counted when it was liberated.
 		unit.set_meta("juice_downed", true)
 		unit_downed.emit(unit, false)
@@ -1470,6 +1605,7 @@ func _clear_fauna_hint() -> void:
 		player_label = ""
 
 func _on_unit_liberated(unit: Node3D) -> void:
+	director_log_event("unidad liberada %s" % unit.name)
 	active_units.erase(unit)
 	if not bool(unit.get_meta("juice_downed", false)):
 		unit.set_meta("juice_downed", true)

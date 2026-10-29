@@ -31,6 +31,7 @@ var base_scale := Vector3.ONE
 var old_mode := Node.PROCESS_MODE_INHERIT
 var was_visible := false
 var arrived := false
+var finished := false
 
 static func begin(unit: Node3D, at: Vector3, callback: Callable, is_return := false) -> Node3D:
 	var effect := load("res://scripts/vfx/bee_enemy_teleport.gd").new() as Node3D
@@ -49,6 +50,7 @@ func _ready() -> void:
 		queue_free()
 		return
 	name = "EnemyTeleport"
+	_log_director("teletransporte begin %s retorno=%s" % [passenger.name, returning])
 	mark_seconds = S.RETURN_MARK_SECONDS if returning else S.MARK_SECONDS
 	base_scale = passenger.scale
 	old_mode = passenger.process_mode
@@ -112,6 +114,8 @@ func _mesh(label: String, ground: bool) -> MeshInstance3D:
 	return node
 
 func _physics_process(delta: float) -> void:
+	if finished:
+		return
 	if not is_instance_valid(passenger) or not passenger.is_inside_tree() or not is_inside_tree():
 		queue_free()
 		return
@@ -141,9 +145,31 @@ func _physics_process(delta: float) -> void:
 	beam.scale.x = maxf(0.01,1.0-(elapsed-mark_seconds-S.MATERIALIZE_SECONDS)/S.BEAM_FADE_SECONDS)
 	beam.scale.z = beam.scale.x
 	if elapsed < mark_seconds+S.MATERIALIZE_SECONDS+S.BEAM_FADE_SECONDS: return
+	force_finish()
+
+
+func force_finish() -> void:
+	if finished:
+		return
+	finished = true
+	if not is_instance_valid(passenger) or not passenger.is_inside_tree():
+		queue_free()
+		return
+	passenger.global_position = destination
+	passenger.show()
 	_restore()
-	if on_arrive.is_valid(): on_arrive.call()
+	_log_director("teletransporte llegó %s retorno=%s" % [passenger.name, returning])
+	if on_arrive.is_valid():
+		on_arrive.call()
+	on_arrive = Callable()
 	queue_free()
+
+
+func _log_director(message: String) -> void:
+	var stage: Node = get_parent().get_parent() if get_parent() != null else null
+	var director: Node = stage.get_node_or_null("WaveController") if stage != null else null
+	if director != null and director.has_method("director_log_event"):
+		director.call("director_log_event", message)
 
 func _restore() -> void:
 	if not is_instance_valid(passenger):

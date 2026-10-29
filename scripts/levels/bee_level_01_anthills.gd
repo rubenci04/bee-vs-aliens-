@@ -22,6 +22,8 @@ const HOP_HEIGHT := 0.0
 const VISIBLE_BEHIND := 3.0
 const VISIBLE_AHEAD := 6.5
 const PREFERRED_AHEAD := 4.0
+const EVENT_LINK_DISTANCE := 7.0
+const ANTS_PER_HILL := 2
 ## LOTE 14 · ETAPA 3.1: 5 mounds (were 8) at least MIN_SPACING m of scroll (20 s at cruise) apart, each in a gap between the solid objects of the
 ## flight plane (crates, rocks, mushrooms, log, bottle, litter, can) - validate_bee_lote14_anthills_v01 measures both. [kind, X]: placed near the ant groups.
 const MIN_SPACING := 25.0
@@ -43,7 +45,14 @@ func _ready() -> void:
 		node.global_position = Vector3(float(placement[1]), -0.05, HILL_Z)
 		var anchor := node.find_child("EntranceAnchor", true, false) as Node3D
 		var entrance := anchor.global_position if anchor != null else node.global_position + Vector3(0.0, 0.5 * HILL_SCALE, 0.0)
-		hills.append({"node": node, "kind": kind, "x": float(placement[1]), "entrance": Vector3(entrance.x, entrance.y, 0.0)})
+		hills.append({"node": node, "kind": kind, "x": float(placement[1]), "entrance": Vector3(entrance.x, entrance.y, 0.0), "sent": 0})
+
+func pick_for_event(event_x: float) -> Dictionary:
+	for hill in hills:
+		if absf(float(hill["x"]) - event_x) <= EVENT_LINK_DISTANCE and int(hill["sent"]) < ANTS_PER_HILL:
+			hill["sent"] = int(hill["sent"]) + 1
+			return hill
+	return {}
 
 
 ## The mound an ant can come out of now (on screen, the one nearest to PREFERRED_AHEAD of the camera); {} when there is none.
