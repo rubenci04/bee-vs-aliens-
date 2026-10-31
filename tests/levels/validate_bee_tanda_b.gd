@@ -43,6 +43,7 @@ func run() -> void:
 	paused = false
 	await frames(40)
 	check(not unit.get_meta("teleporting") and unit.is_active() and not unit.health.damage_blocked,"Arrival restores health and activates once")
+	wave._hard_gate = true # Tanda I: off-screen enemies only return inside a zone or gate; on the route they are discarded
 	unit.set_physics_process(false)
 	unit.global_position.x = stage.camera.global_position.x-20
 	wave._retire_soft_units(1.0)
@@ -68,6 +69,7 @@ func run() -> void:
 	wave._clock = 13.0
 	wave._retire_soft_units(0.0)
 	check(unit.get_meta("teleporting"),"One unreachable survivor is rescued after twelve seconds")
+	wave._hard_gate = false
 	await frames(80)
 	unit.set_physics_process(false)
 	var event := {"units":["FlyCommon"],"arena":[],"arena_label":"TEST"}

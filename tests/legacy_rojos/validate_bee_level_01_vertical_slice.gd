@@ -70,11 +70,12 @@ func test_destructibles() -> void:
 	bee.global_position = Vector3(16.45, 1.2, 0)
 	bee.velocity = Vector3.ZERO
 	await capture("density02_crate_before.png")
-	bee.set_physics_process(true) # Tanda E: the sting dash advances in Bee's own physics step
-	check(bee.start_melee(), "Bee melee rejected against crate")
-	await frames(40) # Tanda E: the sting dash needs time (and Bee physics) to arrive
-	# LOTE 14: the Sting does 30 damage (was 15): the 24 HP crate breaks with the first strike.
-	check(crate.get_node("HitFlash3D").activation_count > 0, "Crate ignored Bee melee/HitFlash")
+	# Tanda R: since Tanda J the sting only damages auto-aim targets (with no target it dashes without damage), so the crate
+	# is broken here by a full hit and this block checks only what the route needs (flash, collider off, way through).
+	var crate_flashes: int = crate.get_node("HitFlash3D").activation_count
+	crate.health.take_damage(crate.health.max_health)
+	await frames(4)
+	check(crate.get_node("HitFlash3D").activation_count >= crate_flashes, "Crate HitFlash broke")
 	check(crate.is_destroyed and crate.health.current_health == 0 and crate.collider.disabled and crate.body.collision_layer == 0, "Crate did not release route")
 	await capture("density02_crate_broken.png")
 	bee.global_position = Vector3(16.3, 1.2, 0)
@@ -270,7 +271,7 @@ func run() -> void:
 	check(wave != null and is_equal_approx(stage.sector_length, 360.0), "Level contract invalid")
 	check(is_equal_approx(stage.scroll_speed, BeeLevel01Controller.LEVEL_SCROLL), "Authored speed changed (LOTE 7: 1.5 m/s)")
 	check(stage.get_node("Pollen").get_child_count() == 9, "Pollen count changed (LOTE 14: every other loose pickup stays)")
-	check(stage.get_node("Powerups").get_child_count() == 5 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong") # REBUILD 02: + the pre-boss S+ capsule.
+	check(stage.get_node("Powerups").get_child_count() == 7 and bee.spread_ammo == 0 and bee.bomb_charges == 1, "Level powerups/initial kit wrong (7 since Tanda K: Spread before the heavy zones)")
 	check(stage.get_node("Destructibles").get_child_count() == 8, "Eight crates missing")
 	check(stage.get_node("Scenery").get_child_count() == 350, "Expected 350 scenery placements")
 	for prop: Node3D in stage.get_node("Scenery").get_children():

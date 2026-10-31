@@ -20,7 +20,7 @@ func _count_spiders() -> int:
 			total += wave.get("units", []).count("Spider")
 	return total
 func run() -> void:
-	check(_count_spiders() == 5, "Roster spiders: 3 -> 5 (+50 %% rounded up), got %d" % _count_spiders())
+	check(_count_spiders() == 3 + BeeLevel01Controller.SPIDER_SECOND_WAVE.size(), "Roster spiders: 2 + 1 + the Tanda G second wave of 3, got %d" % _count_spiders())
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
 	root.add_child(stage)
 	current_scene = stage

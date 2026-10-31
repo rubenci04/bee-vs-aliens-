@@ -69,7 +69,7 @@ func run() -> void:
 	stage.wave._spawn({"family":"Ant","slot":0,"event":0,"hard":false,"anthill":true,"y":4})
 	var ant := stage.wave.active_units.back() as AssetFauna
 	var initial_y := ant.global_position.y
-	check(ant.get_meta("teleporting",false) and not ant.is_active(), "Ant has a real arrival and stays inactive during the mark")
+	check((ant.get_meta("teleporting",false) or ant.has_meta("anthill_entry")) and not ant.is_active(), "Ant has a real arrival (teleport or, since Tanda I, its anthill) and stays inactive during the mark")
 	var last_y := initial_y
 	for i in 75:
 		await physics_frame

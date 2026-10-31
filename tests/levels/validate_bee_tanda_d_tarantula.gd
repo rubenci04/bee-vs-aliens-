@@ -80,7 +80,8 @@ func run() -> void:
 	check(boss.state == TarantulaBoss01.State.PHASE_3, "Phase 3 reached")
 	check(call_times.size() >= 2, "At least two wasp calls in 36 s (%d)" % call_times.size())
 	for i in range(1, call_times.size()):
-		check(absf((call_times[i] - call_times[i - 1]) - 15.0) < 0.3, "A wasp call every 15 s (gap %.2f)" % (call_times[i] - call_times[i - 1]))
+		var gap: float = call_times[i] - call_times[i - 1]
+		check(gap > 14.7 and gap < 18.0, "A wasp call every 15 s, a bit later while WASP_MAX_ALIVE wasps are still alive (gap %.2f)" % gap)
 	check(boss.wasps_requested >= 2 * boss.wasp_calls - 1 and boss.wasps_requested <= 3 * boss.wasp_calls, "Each call brings 2-3 wasps (%d in %d calls)" % [boss.wasps_requested, boss.wasp_calls])
 	check(wasp_variants.keys() == [&"kamikaze"], "The helper wasps are all kamikaze (%s)" % str(wasp_variants.keys()))
 	check(came_from_right, "They enter from the right edge")

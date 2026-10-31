@@ -142,7 +142,8 @@ func test_mushroom_drop() -> void:
 	check(not mushroom.is_destroyed, "A hit does not break it")
 	mushroom.health.take_damage(9999)
 	await frames(2)
-	check(mushroom.is_destroyed and stage.get_node("Pollen").get_child_count() == pollen_before + BeeGardenMushroom.POLLEN_DROPS, "A broken mushroom drops pollen")
+	var expected_drops := BeeGardenMushroom.POLLEN_DROPS if mushroom.kind in BeeGardenMushroom.POLLEN_KINDS else 0 # Tanda G: only flowers drop pollen
+	check(mushroom.is_destroyed and stage.get_node("Pollen").get_child_count() == pollen_before + expected_drops, "A broken mushroom drops pollen only if it is a flower (Tanda G)")
 	var drop := stage.get_node("Pollen").get_child(stage.get_node("Pollen").get_child_count() - 1) as BeePollenPickup
 	check(drop != null and drop.global_position.y >= 1.0, "The pollen drop must be collectable by Bee")
 	for mesh: MeshInstance3D in mushroom.find_children("*", "MeshInstance3D", true, false):

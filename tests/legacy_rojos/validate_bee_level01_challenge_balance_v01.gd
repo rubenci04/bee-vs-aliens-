@@ -347,7 +347,7 @@ func test_spread() -> void:
 	await frames(3)
 	bee.set_physics_process(false)
 	check(bee.spread_ammo == 0 and str(hud.call("spread_status_text")) == "BASE", "Ammo exhaustion failed")
-	check(bee.fire().damage == 10, "No automatic return to Base")
+	check(bee.fire().damage == int(bee.weapon_profile()["damage"][0]), "No automatic return to Base (Base: 3 since the weapon tiers)")
 	print("CHALLENGE_SPREAD ammo=32 pellets=3x8 refill_cap=OK")
 
 func reloaded(old: Node) -> void:

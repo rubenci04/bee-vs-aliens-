@@ -73,7 +73,9 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 		amount = maxi(1, roundi(float(amount) * pressure)) if amount > 0 else 0
 	if owner_entity != null and owner_entity.has_method("limit_hull_damage") and health_component == owner_entity.get("health"):
 		amount = int(owner_entity.call("limit_hull_damage", amount, hitbox))
-	var applied := (owner_entity as BeePlayer).take_boss_burst_damage(amount, hitbox.attacker) if owner_entity is BeePlayer else health_component.take_damage(amount)
+	# Tanda R: a shot whose shooter was already freed still hurts (a freed attacker in a typed argument raised SCRIPT ERROR and lost the hit).
+	var attacker: Node = hitbox.attacker if is_instance_valid(hitbox.attacker) else null
+	var applied := (owner_entity as BeePlayer).take_boss_burst_damage(amount, attacker) if owner_entity is BeePlayer else health_component.take_damage(amount)
 	if applied > 0:
 		hits_taken += 1
 		if owner_entity is BeePlayer:

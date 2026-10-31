@@ -43,7 +43,7 @@ func run() -> void:
 	bee.spread_ammo = 0.02
 	bee.set_physics_process(true)
 	await frames(4)
-	check(bee.spread_ammo == 0.0 and bee.fire().damage == 10, "Spread expires to BASE")
+	check(bee.spread_ammo == 0.0 and bee.fire().damage == int(bee.weapon_profile()["damage"][0]), "Spread expires to the plain shot (Base: 3 since the weapon tiers)")
 	bee.clear_aim()
 	bee.global_position = Vector3(stage.distance, 4, 0)
 	Input.action_press("move_right")

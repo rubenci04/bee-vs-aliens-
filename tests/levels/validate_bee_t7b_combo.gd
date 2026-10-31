@@ -11,7 +11,7 @@ func run() -> void:
 		walker.health.take_damage(1)
 		juice._physics_process(0.1)
 	check(juice.combo == 20, "100 actual Robot hits in ten seconds add at most twenty (and exactly twenty when sustained)")
-	check(juice.frenzy_activations == 2, "Frenzy still fires at eight and sixteen")
+	check(juice.frenzy_activations == 1, "Frenzy fires once at FRENZY_COMBO (Tanda N: 15) and is not renewed while active")
 	var boss := spider(stage)
 	boss.health.max_health = 10000
 	boss.health.current_health = 10000

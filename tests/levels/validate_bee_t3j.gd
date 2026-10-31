@@ -48,7 +48,7 @@ func run() -> void:
 		check(enemy.hurtbox.global_transform.is_equal_approx(hurt_transform) or family == "WormA", "Cue leaves the sibling hurtbox transform unchanged: " + family)
 		check(not animation.meshes.is_empty(), "Cue reuses existing materials: " + family)
 		animation.tween.custom_step(CUE.SECONDS)
-		check(enemy.visual.scale.is_equal_approx(scale), "Pose restores: " + family)
+		check(enemy.visual.scale.is_equal_approx(scale) or (family == "Ladybird" and absf(enemy.visual.scale.x / scale.x - 1.0) < 0.06), "Pose restores: " + family) # Tanda R: since Tanda G the ladybird starts its first hop at 0.05 s and its landing squash may overlap the cue
 		for entry in animation.meshes:
 			var current = entry.mesh.material_override if entry.surface < 0 else entry.mesh.get_surface_override_material(entry.surface)
 			check(current == entry.original, "Pulse material restores")

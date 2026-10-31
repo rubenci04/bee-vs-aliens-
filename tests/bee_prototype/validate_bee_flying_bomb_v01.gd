@@ -40,9 +40,15 @@ func run() -> void:
 	await frames(30)
 	bee.set_aim_point(Vector3(40, 4, 0))
 	bomb = bee.use_bomb()
-	await frames(74)
-	check(bomb.warning_left >= 0.0 and not bomb.discharge_done, "Range end must warn before exploding")
-	check(absf(bomb.travelled - BeeAlienBomb.MAX_RANGE) < 0.02 and absf(bomb.global_position.x - 14.0) < 0.02, "Bomb range must be 14 m in about 1.2 s")
+	var warned := false
+	for i in 120: # Tanda G: with no target the bomb only flies UNTARGETED_RANGE (5 m) before warning
+		await frames(1)
+		if not is_instance_valid(bomb): break
+		if bomb.warning_left >= 0.0 and not bomb.discharge_done:
+			warned = true
+			break
+	check(warned, "Range end must warn before exploding")
+	check(is_instance_valid(bomb) and absf(bomb.travelled - BeeAlienBomb.UNTARGETED_RANGE) < 0.05, "With no target the bomb stops at UNTARGETED_RANGE (Tanda G)")
 	await frames(20)
 	check(bee.active_bomb == null, "Range discharge must clear active bomb")
 	# Swept collision: a narrow solid must stop the bomb, rather than tunnel through it.

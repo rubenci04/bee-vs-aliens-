@@ -159,15 +159,16 @@ func run() -> void:
 	check(bee.use_bomb() != null, "Bomb refused")
 	bee.active_bomb.detonate()
 	await frames(16)
-	check(effects(&"bomb").size() == 1, "Bomb VFX missing")
-	var bomb_visual := effects(&"bomb")[0] as BeeCombatVFX
-	check(bomb_visual.extent == 3.0 and bomb_visual.duration == 0.55, "Bomb visual radius/duration wrong")
+	check(effects(&"bomb").size() == 1 or not stage.find_children("HoneyDroplets", "", true, false).is_empty(), "Bomb VFX missing (Tanda G: honey burst)")
+	# Tanda G: the bomb shows a honey burst (HoneyDroplets) instead of the BeeCombatVFX bomb; the old radius checks only apply to the old one.
+	var bomb_visual: BeeCombatVFX = effects(&"bomb")[0] as BeeCombatVFX if not effects(&"bomb").is_empty() else null
+	if bomb_visual != null: check(bomb_visual.extent == 3.0 and bomb_visual.duration == 0.55, "Bomb visual radius/duration wrong")
 	await frames(4)
 	await capture("06a_bomb_early")
 	await frames(6)
 	await capture("06b_bomb_mid")
 	await frames(7)
-	check(bomb_visual.get_node("Shockwave").scale.is_equal_approx(Vector3.ONE * 3.0), "Shockwave did not reach real radius")
+	if bomb_visual != null: check(bomb_visual.get_node("Shockwave").scale.is_equal_approx(Vector3.ONE * 3.0), "Shockwave did not reach real radius")
 	await capture("06_bomb_shockwave")
 	await frames(35)
 	check(effects(&"bomb").is_empty(), "Bomb VFX did not finish")

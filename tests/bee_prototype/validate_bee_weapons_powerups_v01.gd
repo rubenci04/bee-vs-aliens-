@@ -282,8 +282,8 @@ func run() -> void:
 	Input.action_release("restart")
 	var restarted := current_scene as BeeShmupStage
 	check(restarted != stage and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "R did not restore kit")
-	# 5 pickups since ARCADE REBUILD 02 (SpreadFirst, BombFirst, SpreadRecharge, PrebossPower, BombRecharge).
-	check(restarted.get_node("Powerups").get_child_count() == 5 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
+	# 7 pickups since Tanda K (the 5 of ARCADE REBUILD 02 + Spread before the heavy zones).
+	check(restarted.get_node("Powerups").get_child_count() == 7 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
 	check("BASE" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text and "BOMB x1" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text, "R HUD wrong")
 	if failed:
 		quit(1)

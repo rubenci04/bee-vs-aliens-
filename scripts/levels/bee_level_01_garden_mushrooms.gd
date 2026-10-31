@@ -12,9 +12,10 @@ const PLACEMENTS := [
 	[&"bellflower", 166.0], [&"bellflower", 196.0], [&"bellflower", 210.0], [&"bellflower", 220.0], [&"bellflower", 232.0], [&"bellflower", 246.0],
 	[&"bellflower", 256.0], [&"bellflower", 270.0], [&"bellflower", 284.0],
 	# Tanda G: fifteen more interactive flowers, distributed across the route (15 -> 30).
+	# Tanda R: the one at 263 touched the crater anthill at 265 (validate_bee_lote14_screen_v01): moved to 259.5.
 	[&"bellflower", 18.0], [&"bellflower", 43.0], [&"bellflower", 61.0], [&"bellflower", 82.0], [&"bellflower", 97.0],
 	[&"bellflower", 119.0], [&"bellflower", 151.0], [&"bellflower", 177.0], [&"bellflower", 189.0], [&"bellflower", 203.0],
-	[&"bellflower", 217.0], [&"bellflower", 239.0], [&"bellflower", 263.0], [&"bellflower", 278.0], [&"bellflower", 288.0],
+	[&"bellflower", 217.0], [&"bellflower", 239.0], [&"bellflower", 259.5], [&"bellflower", 278.0], [&"bellflower", 288.0],
 ]
 var mushrooms: Array[BeeGardenMushroom] = []
 

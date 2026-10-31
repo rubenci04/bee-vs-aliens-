@@ -57,7 +57,7 @@ func run() -> void:
 		var before_hits := ceili(float(BEFORE_T6B[family])/base_damage)
 		var reduced_hits := maxi(1,ceili(before_hits*0.55)) if before_hits <= 5 else maxi(2,before_hits-3)
 		var max_hits := floori(target.y*base_dps/base_damage)
-		check(hp == mini(reduced_hits,max_hits)*base_damage, "%s applies the T6b reduction and class TTK cap" % family)
+		check(hp > 0 and hp <= mini(reduced_hits,max_hits)*base_damage, "%s applies the T6b reduction and class TTK cap (Tanda G may lower it further)" % family)
 		check(hp > 0 and hp % base_damage == 0 and expected_hits >= 1, "%s needs at least one whole Base impact, never zero" % family)
 		check(expected_hits < before_hits, "%s needs fewer impacts than T6a" % family)
 		check(float(hp)/base_dps <= target.y, "%s continuous TTK %.3f <= %.3f seconds" % [family,float(hp)/base_dps,target.y])

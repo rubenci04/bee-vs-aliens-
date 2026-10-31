@@ -26,6 +26,9 @@ func run() -> void:
 	key.pressed = true
 	banners._process(3.0)
 	devices._process(14.9)
+	while Time.get_ticks_msec() < 3500: await process_frame # Tanda P: the keyboard must be in use 3 s in a row to switch
+	devices._keyboard_since_msec = Time.get_ticks_msec() - 3200
+	devices._keyboard_last_msec = Time.get_ticks_msec()
 	devices._input(key)
 	check(not BeeGameSettings.last_input_joypad and not banners.panel.visible and banners.pending.is_empty(), "Device state updates immediately but banner is suppressed before fifteen seconds")
 	devices._process(0.1)
@@ -35,6 +38,9 @@ func run() -> void:
 	banners._process(0.01)
 	check(not banners.panel.visible, "Combat entering cancels an already visible device notice")
 	devices._process(15.0)
+	while Time.get_ticks_msec() < 3500: await process_frame # Tanda P: the keyboard must be in use 3 s in a row to switch
+	devices._keyboard_since_msec = Time.get_ticks_msec() - 3200
+	devices._keyboard_last_msec = Time.get_ticks_msec()
 	devices._input(key)
 	check(banners.pending.is_empty() and not banners.panel.visible, "Combat switch is discarded, never deferred")
 	wave._arena.clear()
@@ -43,6 +49,9 @@ func run() -> void:
 	check(not banners.panel.visible, "Robot blocks device notices even outside a director arena")
 	robot_actor.health.current_health = 0
 	var tarantula := spider(stage)
+	while Time.get_ticks_msec() < 3500: await process_frame # Tanda P: the keyboard must be in use 3 s in a row to switch
+	devices._keyboard_since_msec = Time.get_ticks_msec() - 3200
+	devices._keyboard_last_msec = Time.get_ticks_msec()
 	devices._input(key)
 	check(not banners.panel.visible, "Tarantula blocks device notices")
 	var banana_count := 0
