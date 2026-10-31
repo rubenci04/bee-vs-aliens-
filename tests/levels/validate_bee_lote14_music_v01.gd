@@ -57,7 +57,7 @@ func run() -> void:
 
 	# --- files, formats, loops, buses ---------------------------------------------------------------------------------------------
 	var tracks: Dictionary = manager.TRACKS
-	check(tracks.size() == 6, "Six themes: title, story, level, robot, tarantula, victory")
+	check(tracks.size() == 7, "Seven themes: title, story, level, zone (Tanda T), robot, tarantula, victory")
 	for id in tracks:
 		var stream := load(str(tracks[id]["path"])) as AudioStreamMP3
 		check(stream != null and stream.get_length() > 55.0, "%s: an mp3 of more than 55 s" % id)

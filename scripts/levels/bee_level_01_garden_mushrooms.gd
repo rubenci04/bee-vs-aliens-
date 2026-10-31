@@ -21,5 +21,11 @@ var mushrooms: Array[BeeGardenMushroom] = []
 
 
 func _ready() -> void:
+	var fix := preload("res://scripts/game/bee_flow_fix_settings.gd")
+	var flowers := 0
 	for i in PLACEMENTS.size():
-		mushrooms.append(BeeGardenMushroom.place(self, "Mushroom%d" % i, PLACEMENTS[i][0], float(PLACEMENTS[i][1])))
+		var kind: StringName = PLACEMENTS[i][0]
+		if kind == &"bellflower" and fix.ENABLED: # Tanda T: las flores de polen se alternan entre campanilla, violeta y roja.
+			kind = fix.POLLEN_FLOWER_CYCLE[flowers % fix.POLLEN_FLOWER_CYCLE.size()]
+			flowers += 1
+		mushrooms.append(BeeGardenMushroom.place(self, "Mushroom%d" % i, kind, float(PLACEMENTS[i][1])))

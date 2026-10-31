@@ -10,7 +10,7 @@ func run() -> void:
 	check(POWERS.POLLEN_DOUBLE_SECONDS == 4.0 and POWERS.POLLEN_DOUBLE_MAX_SECONDS == 12.0, "Pollen double constants")
 	check(preload("res://scripts/game/bee_pollen_nova_settings.gd").POLLEN_USE_COOLDOWN_SECONDS == 1.5, "Cartridges wait 1.5 seconds between uses")
 	check(GUIDE.STEPS.size() == 6 and GUIDE.lines(false).all(func(line): return line.contains(" ")) and GUIDE.lines(true).any(func(line): return line.contains("LT")), "Six controls have keyboard and gamepad explanations")
-	for spec in [["SpreadBeforeCloud", 123.0], ["SpreadRecharge", 200.0], ["SpreadBeforeSpiders", 248.0]]:
+	for spec in [["SpreadBeforeCloud", 123.0], ["SpreadRecharge", float(preload("res://scripts/game/bee_flow_fix_settings.gd").PICKUP_X["SpreadRecharge"]) if preload("res://scripts/game/bee_flow_fix_settings.gd").ENABLED else 200.0], ["SpreadBeforeSpiders", 248.0]]: # Tanda T: SpreadRecharge antes de la serie de moscas.
 		var pickup := stage.get_node("Powerups/" + spec[0])
 		check(pickup != null and is_equal_approx(pickup.position.x, spec[1]), "Spread ahead of combat at X=%s" % spec[1])
 	check(is_equal_approx(stage.wave.PREBOSS_POWER_X, 282.0), "Robot Spread appears 12 m before X=294")

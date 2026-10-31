@@ -295,6 +295,7 @@ func _ready() -> void:
 	hit_flash.set_flash_color(BeeGameSettings.TARANTULA_HIT_FLASH_COLOR)
 	_build_areas()
 	_build_health_bar()
+	preload("res://scripts/levels/tarantula_ceiling_silk.gd").attach(self) # Tanda T: en el techo cuelga de hilos visibles.
 	set_physics_process(false)
 
 

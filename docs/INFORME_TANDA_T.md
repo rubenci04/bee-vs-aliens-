@@ -1,0 +1,40 @@
+# Tanda T — arranque y ritmo jugable
+
+- Base: `tanda-s-se-ve-bee` (`7f16084`). Rama: `tanda-t-arranque-y-ritmo`. Sale del playtest de Rubén sobre la Tanda S.
+- Cambia el plan: esta tanda se metió como T. «Bee siente» pasa a ser U, «golpes y Enjambre» V, «el mundo responde» W, «ritmo y final» X y el diseño del Nivel 2 Y.
+- Todo sale de `scripts/game/bee_flow_fix_settings.gd`. `ENABLED = false` apaga la tanda entera y cada arreglo tiene además su propio interruptor. **No cambió ninguna vida ni daño.**
+- 1. Bloqueo invisible del arranque: había dos sólidos sin dibujo en el plano de vuelo.
+  - `BottleObstacle` (X=41, de 0,1 a 3,9 m de alto) y el casco de `LogObstacle` (X=55, hasta 1,7 m). Su dibujo, la botella verde y el tronco hueco, está 3 a 4 m más atrás.
+  - Bee chocaba contra «nada» abajo y tenía que subir. Ahora esas colisiones se apagan, y el casco del tronco ya no frena disparos.
+  - Las cajas, latas y piedras visibles siguen siendo sólidas.
+- 2. Bombas: la barra arranca llena (5 de 5; antes 1).
+- 3. Potenciadores, cada uno antes de lo que conviene usarlo:
+  - Triple en X=8, para las moscas de los primeros 20 s (antes en X=22, cuando ya habían pasado).
+  - Triple nuevo en X=94, antes de las moscas verdes de X=100.
+  - Triple en X=192, antes de la serie de moscas de X=198 (antes en X=200, en el medio de la serie). Sigue el de X=123 antes de la nube.
+  - Primera bomba en X=88 (antes en X=166).
+  - Antes de la tarántula queda una sola recarga de bombas, `BombRecharge` en X=306; se sacó la de X=285,5.
+- 4. Polen: las flores de polen se alternan entre campanilla naranja, margarita violeta y margarita roja.
+  - Las margaritas están hechas en código, con el mismo dibujo que las margaritas altas del fondo, y su blanco es la corola.
+  - Probé las flores de Kenney (CC0): escaladas al alto de la campanilla se veían como bloques oscuros, así que las descarté.
+- 5. Tarántula en el techo: camina 1,6 m debajo del borde superior para dejar lugar al HUD, por eso parecía flotar.
+  - Ahora, mientras está boca abajo, cuelga de tres hilos de seda que suben desde sus patas hasta arriba de la pantalla (`tarantula_ceiling_silk.gd`). Solo dibujo.
+- 6. Música:
+  - Cada zona de combate pasa al tema «Nivel 1 El Jardín Acción Fuerte», que estaba en `audio/` sin usar.
+  - Al despejar la zona vuelve el tema del nivel, y también después de vencer al robot (antes seguía la música del minijefe hasta la tarántula).
+  - Las entradas del robot y de la tarántula ya tenían su tema.
+- Test nuevo: `validate_bee_tanda_t`. Cubre que Bee cruza X=38–58 sin chocar, las bombas llenas, un triple antes de cada grupo de moscas, la bomba temprana, una sola recarga antes de la tarántula, tres flores (la violeta suelta polen), los hilos del techo y los cambios de música.
+- Se actualizaron 8 suites que esperaban lo de antes. Ahora leen las constantes:
+  - Bombas iniciales: `weapons_powerups_v01`, `ufo_boss_nodo_v02`.
+  - Lugares de potenciadores: `tanda_k`, `weapons_powerups_v01`.
+  - Siete temas de música: `lote14_music_v01`, `tanda_h_music_mapping`.
+  - Casco del tronco: `lote10_pressure_v01`.
+- La corrida del núcleo destapó un error mío: las bombas se llenaban después del checkpoint y pisaban las de un reintento o del salto F9. Se arregló llenándolas antes (`combat_variety_v01` en verde).
+- Núcleo: 150/150 sin `SCRIPT ERROR`. 149 pasaron en la corrida completa y `weapons_powerups_v01` sola después de su ajuste (entre medio solo cambió ese test).
+- Capturas de control (no van al repo): `dev/tanda_t/flores.png` y `dev/tanda_t/tarantula_techo.png`.
+- Cómo probar: Godot, F5, Jugar.
+  - Arrancás con 5 bombas y un triple adelante.
+  - En X≈41–55 podés volar bajo sin chocar.
+  - Las flores de polen son de tres colores.
+  - Al entrar a la nube (X=138) cambia la música, y al despejarla vuelve.
+  - La tarántula en el techo cuelga de hilos.

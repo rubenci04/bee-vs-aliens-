@@ -768,6 +768,7 @@ func _begin_arena(event: Dictionary, launched_index: int) -> void:
 		"next_extension":_clock, "extensions":0}
 	stage.scroll_speed = 0.0
 	_label_token += 1
+	BeeMusic.zone() # Tanda T: música de acción fuerte mientras dura la zona.
 	_update_zone_banner()
 
 func in_arena() -> bool:
@@ -833,6 +834,7 @@ func _update_arena(delta: float) -> void:
 		_combo_zone_clear_at = _clock
 		_show_label("ZONA DESPEJADA",1.6)
 		preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).clear_combat_zone(1.6)
+		BeeMusic.back_to_level() # Tanda T: zona despejada, vuelve el tema del nivel.
 		return
 	if _clock >= float(_arena["next_arrival"]):
 		# Tanda E: a reinforcement only arrives when fewer than REINFORCE_BELOW enemies are left (and 30 s went by).
@@ -1514,6 +1516,7 @@ func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 func _on_robot_defeated() -> void:
 	_robot_dead_clock = _clock
 	BeeMusic.clear_pre_boss_duck()
+	BeeMusic.back_to_level() # Tanda T: robot vencido, vuelve el tema del nivel hasta la tarántula.
 	_drop_robot_leftovers()
 
 func _drop_robot_leftovers() -> void:

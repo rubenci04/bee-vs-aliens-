@@ -95,8 +95,9 @@ func run() -> void:
 	for event in InputMap.action_get_events("bee_bomb"):
 		if event is InputEventKey and event.physical_keycode == KEY_C:
 			mapped_c = true
-	check(mapped_c and bee.bomb_charges == 1 and bee.spread_ammo == 0, "Initial kit/input wrong")
-	check(hud.spread_status_text() == "BASE" and hud.displayed_bomb_icons() == 1, "Initial graphical HUD wrong")
+	var start_bombs: int = bee.max_bomb_charges if preload("res://scripts/game/bee_flow_fix_settings.gd").ENABLED and preload("res://scripts/game/bee_flow_fix_settings.gd").START_BOMBS_FULL else 1 # Tanda T: barra llena.
+	check(mapped_c and bee.bomb_charges == start_bombs and bee.spread_ammo == 0, "Initial kit/input wrong")
+	check(hud.spread_status_text() == "BASE" and hud.displayed_bomb_icons() == start_bombs, "Initial graphical HUD wrong")
 	await capture("07_hud_base")
 	var base := bee.fire()
 	check(base != null and base.damage == 3 and base.hitbox.damage == 3 and shots().size() == 1, "Configured base damage must be 3")
@@ -109,6 +110,7 @@ func run() -> void:
 	await frames(3)
 	await capture("01_spread_pickup")
 	await touch_pickup("Powerups/SpreadFirst")
+	bee.global_position = Vector3(19.5, 3.8, 0) # Tanda T: SpreadFirst está en X=8; Bee vuelve frente al objetivo de X=27.
 	check(bee.spread_ammo > 19.0 and bee.spread_ammo <= 20.0 and "SPREAD " in hud.spread_status_text(), "Spread pickup/HUD wrong")
 	check(not hud.get_node("Hint").visible and "cubrí más espacio" in hud.get_node("Hint").text, "Spread hint missing")
 	await capture("02_bee_spread")
@@ -157,6 +159,11 @@ func run() -> void:
 	bee.global_position = Vector3(163.5, 3, 0)
 	await frames(3)
 	await capture("04_bomb_pickup")
+	bee.bomb_charges = 1 # Tanda T: Bee arranca con la barra llena; este paso mide la recarga desde 1.
+	var bomb_first := stage.get_node("Powerups/BombFirst") as Node3D
+	bee.global_position = bomb_first.global_position - Vector3(2.5, 0, 0) # Tanda T: BombFirst ahora está en X=88.
+	stage.camera.set_stage_x(bomb_first.global_position.x)
+	await frames(3)
 	await touch_pickup("Powerups/BombFirst")
 	check(bee.bomb_charges == 4 and hud.displayed_bomb_icons() == 4, "Bomb pickup/HUD wrong (LOTE 9: +3 per pickup, 1 -> 4)")
 	check("despejá el grupo" in hud.get_node("Hint").text, "Bomb hint missing")
@@ -281,9 +288,9 @@ func run() -> void:
 	await frames(4)
 	Input.action_release("restart")
 	var restarted := current_scene as BeeShmupStage
-	check(restarted != stage and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == 1, "R did not restore kit")
-	# 7 pickups since Tanda K (the 5 of ARCADE REBUILD 02 + Spread before the heavy zones).
-	check(restarted.get_node("Powerups").get_child_count() == 7 and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
+	check(restarted != stage and restarted.bee.spread_ammo == 0 and restarted.bee.bomb_charges == start_bombs, "R did not restore kit")
+	# 7 pickups since Tanda K (the 5 of ARCADE REBUILD 02 + Spread before the heavy zones); Tanda T adds the Spread before the green flies.
+	check(restarted.get_node("Powerups").get_child_count() == 7 + (preload("res://scripts/game/bee_flow_fix_settings.gd").EXTRA_SPREADS.size() if preload("res://scripts/game/bee_flow_fix_settings.gd").ENABLED else 0) and restarted.bee.health.current_health == 100, "R did not restore pickups/health")
 	check("BASE" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text and "BOMB x1" in restarted.get_node("CanvasLayer/WeaponsHUD/State").text, "R HUD wrong")
 	if failed:
 		quit(1)

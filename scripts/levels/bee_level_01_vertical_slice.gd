@@ -17,6 +17,7 @@ const TOON_SPREAD := preload("res://scenes/items/toon/spread.tscn")
 const TOON_BOMB := preload("res://scenes/items/toon/bomb.tscn")
 const TOON_BEE_BOLT := preload("res://scenes/levels/bee_level_toon_bolt.tscn") # Codex toon bolt + the game hit rules.
 const TOON_HEALING := preload("res://scenes/items/toon/pollen_cluster.tscn") # LOTE 13: pollen cluster (was the honey jar).
+const FIX := preload("res://scripts/game/bee_flow_fix_settings.gd") # Tanda T: arranque y ritmo.
 ## LOTE 9 · ETAPA B — supply right before the X=340 last-defence gate: a bomb pickup (+3 bombs) and a honey jar (heals
 ## when hurt). [x, y] per item; it is part of the level (a respawn at the X=281 checkpoint finds it again; the boss
 ## checkpoint is past it, so it can never be farmed).
@@ -47,7 +48,15 @@ func _ready() -> void:
 		var anthills := BeeLevel01Anthills.new() # LOTE 13: anthills the ants come out of.
 		anthills.name = "Anthills"
 		add_child(anthills)
+	if FIX.ENABLED and FIX.START_BOMBS_FULL:
+		bee.bomb_charges = bee.max_bomb_charges # Tanda T: la barra arranca llena (antes del checkpoint: un reintento o F9 ponen las suyas).
 	checkpoint.setup(self)
+	if FIX.ENABLED and FIX.REMOVE_INVISIBLE_SOLIDS:
+		for solid_name in FIX.INVISIBLE_SOLIDS: # Tanda T: su dibujo está atrás; su choque en el plano de vuelo era invisible.
+			var solid := get_node_or_null(str(solid_name))
+			if solid != null:
+				for shape: CollisionShape3D in solid.find_children("*", "CollisionShape3D", false, false):
+					shape.disabled = true
 	BeeMusic.play_level_from_start() # LOTE 14: the Level 1 theme loops from the start (a restart plays it again; it crossfades from the title).
 	_place_preboss_supply()
 	_place_valley_supply()
@@ -168,7 +177,16 @@ func _swap_toon_pickups() -> void:
 				fresh.position.x = BeeLevel01Controller.PREBOSS_POWER_X
 			if BeeLevel01Controller.roster_only and label == "BombRecharge":
 				fresh.position.x = BeeLevel01Controller.BOMB_RECHARGE_X
+			if BeeLevel01Controller.roster_only and FIX.ENABLED and FIX.PICKUP_X.has(label):
+				fresh.position.x = float(FIX.PICKUP_X[label]) # Tanda T: cada potenciador antes de lo que conviene usarlo.
 			parent.add_child(fresh)
+	if BeeLevel01Controller.roster_only and FIX.ENABLED: # Tanda T: triple extra antes de las moscas verdes.
+		for label in FIX.EXTRA_SPREADS:
+			var extra := TOON_SPREAD.instantiate() as Node3D
+			extra.name = label
+			extra.set("kind", BeePowerupPickup.Kind.SPREAD)
+			extra.position = Vector3(float(FIX.EXTRA_SPREADS[label]), FIX.EXTRA_PICKUP_Y, 0.0)
+			$Powerups.add_child(extra)
 
 
 ## LOTE 9: every enemy shot of this level is dressed as the cold cyan / violet orb (BeeShotPalette) and every item that
@@ -190,11 +208,13 @@ func _place_preboss_supply() -> void:
 	var group := Node3D.new()
 	group.name = "PreBossSupply"
 	add_child(group)
-	var bomb := TOON_BOMB.instantiate() as Node3D
-	bomb.name = "SupplyBomb"
-	bomb.set("kind", BeePowerupPickup.Kind.BOMB)
-	group.add_child(bomb)
-	bomb.global_position = Vector3(supply["bomb"].x, supply["bomb"].y, 0.0)
+	# Tanda T: antes de la tarántula alcanza con una sola recarga de bombas (queda BombRecharge, después del robot).
+	if not (BeeLevel01Controller.roster_only and FIX.ENABLED and FIX.REMOVE_DUPLICATE_PREBOSS_BOMB):
+		var bomb := TOON_BOMB.instantiate() as Node3D
+		bomb.name = "SupplyBomb"
+		bomb.set("kind", BeePowerupPickup.Kind.BOMB)
+		group.add_child(bomb)
+		bomb.global_position = Vector3(supply["bomb"].x, supply["bomb"].y, 0.0)
 	var jar := TOON_HEALING.instantiate() as Node3D
 	jar.name = "SupplyHealing"
 	group.add_child(jar)

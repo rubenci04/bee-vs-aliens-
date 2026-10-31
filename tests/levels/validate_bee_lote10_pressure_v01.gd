@@ -65,20 +65,24 @@ func run() -> void:
 	await frames(2)
 	check(rock.is_destroyed and rock.collider.disabled and rock.collision_layer == 0 and rock.hurtbox.collision_layer == 0, "Broken rock must release bodies, shots and bombs")
 	var moments := stage.get_node("DirectorMoments") as BeeLevel01Moments
-	var shell := moments.impact_surfaces[0] as ImpactSurface
-	shell.health.take_damage(ImpactSurface.SURFACE_HP)
-	await frames(2)
-	for shape: CollisionShape3D in stage.get_node("LogObstacle").get_children():
-		check(shape.disabled, "Broken log left an invisible shell")
-	for surface: ImpactSurface in moments.impact_surfaces:
-		check(surface.is_destroyed and surface.hurtbox.collision_layer == 0, "All broken log surfaces must stop absorbing shots")
-	var checkpoint := stage.get_node("CheckpointQoL") as BeeCheckpointQoL
-	var snapshot := checkpoint._build_snapshot(190.0, Vector3(190, 4, 0), 190.0, 190.0)
-	check(str(shell.name) in snapshot["broken"], "Checkpoint must remember the broken log")
-	var before := stage.get_node("Powerups").get_child_count() + stage.get_node("Pollen").get_child_count()
-	shell.restore_broken()
-	await frames(2)
-	check(before == stage.get_node("Powerups").get_child_count() + stage.get_node("Pollen").get_child_count(), "Restoring destruction must never farm rewards")
+	if moments.impact_surfaces.is_empty(): # Tanda T: el casco del tronco (dibujo 4 m atrás) ya no es sólido ni frena disparos.
+		for shape: CollisionShape3D in stage.get_node("LogObstacle").get_children():
+			check(shape.disabled, "The invisible log shell stays off")
+	else:
+		var shell := moments.impact_surfaces[0] as ImpactSurface
+		shell.health.take_damage(ImpactSurface.SURFACE_HP)
+		await frames(2)
+		for shape: CollisionShape3D in stage.get_node("LogObstacle").get_children():
+			check(shape.disabled, "Broken log left an invisible shell")
+		for surface: ImpactSurface in moments.impact_surfaces:
+			check(surface.is_destroyed and surface.hurtbox.collision_layer == 0, "All broken log surfaces must stop absorbing shots")
+		var checkpoint := stage.get_node("CheckpointQoL") as BeeCheckpointQoL
+		var snapshot := checkpoint._build_snapshot(190.0, Vector3(190, 4, 0), 190.0, 190.0)
+		check(str(shell.name) in snapshot["broken"], "Checkpoint must remember the broken log")
+		var before := stage.get_node("Powerups").get_child_count() + stage.get_node("Pollen").get_child_count()
+		shell.restore_broken()
+		await frames(2)
+		check(before == stage.get_node("Powerups").get_child_count() + stage.get_node("Pollen").get_child_count(), "Restoring destruction must never farm rewards")
 	for obstacle: DestructibleObstacle3D in stage.get_node("Destructibles").get_children():
 		if obstacle.item_kind == 4:
 			check(obstacle.body.collision_layer == 0 and obstacle.hurtbox.collision_layer == 0, "Small peel must be nonblocking decoration")

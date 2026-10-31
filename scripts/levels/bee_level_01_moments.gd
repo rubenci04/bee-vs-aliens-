@@ -274,6 +274,9 @@ func _clear_power_hint() -> void:
 ## Real solids in Bee's plane stop shots until their finite HP is depleted.
 func _attach_impact_surfaces() -> void:
 	# The giant bottle has no collider (Bee flies through it), so it does not stop shots either: only real solids do.
+	var fix := preload("res://scripts/game/bee_flow_fix_settings.gd")
+	if fix.ENABLED and fix.REMOVE_INVISIBLE_SOLIDS:
+		return # Tanda T: el tronco dibujado está atrás; su casco invisible tampoco frena disparos.
 	var log := stage.get_node_or_null("LogObstacle") as Node3D
 	if log != null:
 		for part in ["LogTop", "LogBottom"]:

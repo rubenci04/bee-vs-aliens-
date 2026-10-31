@@ -33,6 +33,22 @@ static func boss() -> void:
 	play(&"boss", BeeMusic.CROSSFADE_SECONDS)
 
 
+## Tanda T: a combat zone switches to the "strong action" theme; clearing it (or beating the robot) goes back to the level theme.
+static func zone() -> void:
+	if _sync_enabled():
+		play(&"zone", BeeMusic.CROSSFADE_SECONDS)
+
+
+static func back_to_level() -> void:
+	if _sync_enabled():
+		play(&"level", BeeMusic.CROSSFADE_SECONDS)
+
+
+static func _sync_enabled() -> bool:
+	var fix := preload("res://scripts/game/bee_flow_fix_settings.gd")
+	return fix.ENABLED and fix.MUSIC_SYNC
+
+
 static func tarantula() -> void:
 	play(&"boss_tarantula", BeeGameSettings.BOSS_BREAK_FADE_IN_SECONDS)
 

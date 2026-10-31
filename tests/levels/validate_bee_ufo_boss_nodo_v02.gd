@@ -82,6 +82,7 @@ func run() -> void:
 	bee.set_physics_process(false)
 	bee.health.damage_blocked = true
 	bee.spread_ammo = 10
+	bee.bomb_charges = 1 # Tanda T: Bee arranca con bombas llenas; la bomba del jefe solo aparece con pocas cargas.
 
 	# 1. Warning + supplies before the boss; name and HP.
 	to_boss_entry()

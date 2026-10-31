@@ -7,6 +7,7 @@ const EXPECTED := {
 	&"boss": "res://audio/entra minijefe.mp3",
 	&"boss_tarantula": "res://audio/entra jefe tarantula.mp3",
 	&"victory": "res://audio/victoria! jefe vencido y nivel pasado.mp3",
+	&"zone": "res://audio/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3", # Tanda T: zonas de combate.
 }
 
 
@@ -25,7 +26,7 @@ func run() -> void:
 	var manager := root.get_node_or_null("MusicManager")
 	check(manager != null, "MusicManager is available")
 	var tracks: Dictionary = manager.TRACKS
-	check(tracks.size() == EXPECTED.size(), "Exactly six mapped tracks")
+	check(tracks.size() == EXPECTED.size(), "Exactly the mapped tracks (Tanda T: seven, with zone)")
 	for id in EXPECTED:
 		check(tracks.has(id), "Missing track %s" % id)
 		var path: String = tracks[id]["path"]

@@ -17,6 +17,7 @@ const TRACKS := {
 	&"title": {"path": "res://audio/musica titulos.mp3", "loop": true},
 	&"story": {"path": "res://audio/musica storyboard.mp3", "loop": true},
 	&"level": {"path": "res://audio/musica gameplay accion!.mp3", "loop": true},
+	&"zone": {"path": "res://audio/Nivel 1 El Jardín Acción Fuerte 1era opcion.mp3", "loop": true}, # Tanda T: zonas de combate.
 	&"boss": {"path": "res://audio/entra minijefe.mp3", "loop": true},
 	&"boss_tarantula": {"path": "res://audio/entra jefe tarantula.mp3", "loop": true},
 	&"victory": {"path": "res://audio/victoria! jefe vencido y nivel pasado.mp3", "loop": false},
