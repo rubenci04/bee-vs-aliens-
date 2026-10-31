@@ -1,15 +1,17 @@
 extends Node3D
 ## Sibling of the passenger: its whole subtree is inert until the beam finishes.
 const S := preload("res://scripts/game/bee_encounter_settings.gd")
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 const CODE := """
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 uniform float reveal = 0.0;
 uniform float flash = 0.0;
+uniform float density = 1.0; // Tanda S: fracción de píxeles de la nube cian que llegan a dibujarse.
 void fragment() {
  vec2 cell = mod(floor(FRAGCOORD.xy), 4.0);
  float threshold = ((mod(cell.x,2.0)*2.0+mod(cell.y,2.0))*4.0+floor(cell.x/2.0)*2.0+floor(cell.y/2.0)) / 16.0;
- if (reveal <= threshold) discard;
+ if (reveal * density <= threshold) discard;
  ALBEDO = mix(vec3(0.08,0.65,0.8),vec3(0.8,1.0,1.0),flash);
  EMISSION = vec3(0.2,0.8,1.0) * (0.3 + flash);
 }
@@ -72,6 +74,7 @@ func _ready() -> void:
 	material = ShaderMaterial.new()
 	material.shader = shader
 	material.set_shader_parameter("reveal", 1.0 if returning else 0.0)
+	material.set_shader_parameter("density", HERO.TELEPORT_PIXEL_DENSITY if HERO.HERO_LOOK_ENABLED else 1.0)
 	for node in nodes:
 		if node.is_in_group("bee_auto_aim_targets"):
 			saved_targets.append(node)
@@ -92,20 +95,25 @@ func _ready() -> void:
 	mark = _mesh("ArrivalMark", true)
 	mark.global_position = Vector3(destination.x,S.GROUND_Y,destination.z)
 	beam = _mesh("ArrivalBeam", false)
-	beam.global_position = Vector3(destination.x,(S.BEAM_TOP+S.GROUND_Y)*0.5,destination.z)
+	# Tanda S: la columna corta se centra en la altura de llegada (sin bajar del suelo).
+	beam.global_position = Vector3(destination.x,maxf(S.GROUND_Y+beam_height()*0.5,destination.y) if HERO.HERO_LOOK_ENABLED else (S.BEAM_TOP+S.GROUND_Y)*0.5,destination.z)
 	beam.hide()
+
+static func beam_height() -> float:
+	return (S.BEAM_TOP-S.GROUND_Y) * (HERO.BEAM_HEIGHT_FRACTION if HERO.HERO_LOOK_ENABLED else 1.0)
 
 func _mesh(label: String, ground: bool) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	node.name = label
 	var cylinder := CylinderMesh.new()
-	cylinder.top_radius = S.BEAM_RADIUS
-	cylinder.bottom_radius = S.BEAM_RADIUS
-	cylinder.height = 0.035 if ground else S.BEAM_TOP-S.GROUND_Y
+	var hero := HERO.HERO_LOOK_ENABLED and not ground # Tanda S: columna más baja, fina y tenue.
+	cylinder.top_radius = S.BEAM_RADIUS * (HERO.BEAM_RADIUS_SCALE if hero else 1.0)
+	cylinder.bottom_radius = cylinder.top_radius
+	cylinder.height = 0.035 if ground else beam_height()
 	cylinder.radial_segments = 16
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(0.15,0.8,1.0,0.22 if not ground else 0.75)
+	mat.albedo_color = Color(0.15,0.8,1.0,0.22 * (HERO.BEAM_ALPHA_SCALE if hero else 1.0) if not ground else 0.75)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	cylinder.material = mat
 	node.mesh = cylinder

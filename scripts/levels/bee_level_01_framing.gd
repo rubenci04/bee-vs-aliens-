@@ -33,7 +33,8 @@ static func effective_fov() -> float:
 	return rad_to_deg(2.0 * atan(tan(deg_to_rad(CAMERA_FOV * 0.5)) * lerpf(1.0, ROBOT_VIEW_SCALE, robot_arena_weight)))
 
 const FLIGHT_MARGIN := 0.4 # Vertical clearance from the visible top/bottom edges.
-const PLAYABLE_WIDTH_FRACTION := 0.95 # Equal 2.5 % screen margins on each side.
+const PLAYABLE_WIDTH_FRACTION := 0.95 # Equal 2.5 % screen margins on each side (Tanda S: 6 % with the hero look, see HERO).
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 const LAKE_RIGHT_FRACTION := 0.66 # Preserve the existing Level 02 prototype window.
 const ENTITY_TOP_MARGIN := 0.5 # Enemies, pickups and pollen stay this far below the top edge.
 const SPAWN_OUTSIDE_MARGIN := 1.0 # Moving enemies are born this far past the right edge.
@@ -108,11 +109,11 @@ static func player_anchor_offset(aspect: float) -> float:
 
 ## Camera-relative X of the right end of Bee's flight window.
 static func flight_right_offset(aspect: float) -> float:
-	return half_width_min(aspect) * PLAYABLE_WIDTH_FRACTION
+	return half_width_min(aspect) * HERO.playable_width_fraction()
 
 
 static func flight_left_offset(aspect: float) -> float:
-	return -half_width_min(aspect) * PLAYABLE_WIDTH_FRACTION
+	return -half_width_min(aspect) * HERO.playable_width_fraction() # Tanda S: margen BEE_SCREEN_MARGIN (6 %) en cada borde.
 
 
 static func lake_flight_right_offset(aspect: float) -> float:

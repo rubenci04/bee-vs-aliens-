@@ -1,6 +1,7 @@
 class_name BeeEnergyProjectile
 extends Node3D
 const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 
 @export var speed := 14.0
 @export var damage := 10
@@ -11,6 +12,8 @@ var travel_direction := Vector3.RIGHT
 var is_spread_shot := false
 var configured_weapon_damage := false # Explicit primary profile takes precedence over the legacy small-enemy floor.
 var _time_left := 0.0
+var _travelled := 0.0 # Tanda S: metros recorridos mientras la aguja sigue oculta.
+var _hidden_plasma: Node3D
 var trail: CPUParticles3D
 static var _shared_trail_mesh: SphereMesh
 
@@ -75,6 +78,10 @@ func launch(direction: Vector3, attacker: Node) -> void:
 	var plasma := get_node_or_null("PlasmaBall") as Node3D
 	if plasma != null:
 		_elongate_visual(plasma)
+		if HERO.HERO_LOOK_ENABLED: # Tanda S: la aguja aparece recién fuera de la silueta de Bee.
+			plasma.visible = false
+			trail.emitting = false
+			_hidden_plasma = plasma
 	else:
 		for name in ["Visual", "Core"]:
 			var visual := get_node_or_null(name) as Node3D
@@ -89,13 +96,20 @@ func launch(direction: Vector3, attacker: Node) -> void:
 func _elongate_visual(visual: Node3D) -> void:
 	if not visual.has_meta("shot_original_visual_scale"):
 		visual.set_meta("shot_original_visual_scale", visual.scale)
-	visual.scale = visual.get_meta("shot_original_visual_scale") * Vector3(SHOOTING.SHOT_VISUAL_LENGTH, 1.0, 1.0)
+	var length := HERO.SHOT_LENGTH if HERO.HERO_LOOK_ENABLED and visual.name == "PlasmaBall" else SHOOTING.SHOT_VISUAL_LENGTH
+	visual.scale = visual.get_meta("shot_original_visual_scale") * Vector3(length, 1.0, 1.0)
 	visual.rotation.z = atan2(travel_direction.y, travel_direction.x)
 
 
 func _physics_process(delta: float) -> void:
 	position += travel_direction * speed * delta
 	_time_left -= delta
+	if _hidden_plasma != null:
+		_travelled += speed * delta
+		if _travelled >= HERO.SHOT_REVEAL_DISTANCE:
+			_hidden_plasma.visible = true
+			trail.emitting = true
+			_hidden_plasma = null
 	if _time_left <= 0.0 or (BeeShmupFairness.screen_bound_combat and BeeShmupFairness.is_leaving_screen(self, travel_direction, 0.3)):
 		queue_free() # REBUILD 02 (Level 01): a shot that leaves the screen is gone; it never kills what is not there yet.
 

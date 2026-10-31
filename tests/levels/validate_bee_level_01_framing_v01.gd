@@ -52,13 +52,13 @@ func run() -> void:
 		var visible_half := BeeLevel01Framing.half_width_min(ratio)
 		var left := BeeLevel01Framing.flight_left_offset(ratio)
 		var right := BeeLevel01Framing.flight_right_offset(ratio)
-		check(absf((right - left) / (2.0 * visible_half) - 0.95) < 0.001, "Playable width must be 95 %% at aspect %.3f" % ratio)
+		check(absf((right - left) / (2.0 * visible_half) - preload("res://scripts/game/bee_hero_look_settings.gd").playable_width_fraction()) < 0.001, "Playable width must be the configured fraction (Tanda S: 6 %% margins) at aspect %.3f" % ratio)
 		check(absf((visible_half + left) - (visible_half - right)) < 0.001, "Horizontal margins must be symmetric at aspect %.3f" % ratio)
 	check(stage.bee.flight_max.x - stage.distance <= BeeLevel01Framing.flight_right_offset(aspect) + 0.001 and stage.bee.flight_min.x - stage.distance >= BeeLevel01Framing.flight_left_offset(aspect) - 0.001, "Horizontal flight limit leaves the 95 % play area")
 	check(stage.bee.flight_max.y <= top - m + 0.001 and stage.bee.flight_min.y >= bottom + m - 0.001, "Vertical flight limit leaves the screen")
 	# The spawn anchor stays at 32 %; the flight range reaches near both screen edges.
 	var width := 2.0 * half_min
-	check(absf((stage.bee.flight_max.x - stage.distance - BeeLevel01Framing.flight_left_offset(aspect)) / width - 0.95) < 0.01, "Flight window must span 95 %% of visible width")
+	check(absf((stage.bee.flight_max.x - stage.distance - BeeLevel01Framing.flight_left_offset(aspect)) / width - preload("res://scripts/game/bee_hero_look_settings.gd").playable_width_fraction()) < 0.01, "Flight window must span the configured fraction of the visible width")
 	var start_fraction := (stage.bee.global_position.x - camera.global_position.x + half_min) / width
 	check(absf((BeeLevel01Framing.player_anchor_offset(aspect) + half_min) / width - 0.32) < 0.005, "Anchor must sit at 32 %% of the width")
 	check(start_fraction >= 0.25 and start_fraction <= 0.33, "Bee must start near the anchor (%.2f; the scroll already advanced a little)" % start_fraction)

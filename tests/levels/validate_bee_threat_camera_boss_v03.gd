@@ -102,7 +102,8 @@ func test_camera() -> void:
 	var width := 2.0 * half
 	var right_fraction := (bee.flight_max.x - stage.distance + half) / width
 	var left_fraction := (bee.flight_min.x - stage.distance + half) / width
-	check(absf(right_fraction - 0.975) < 0.01 and absf(left_fraction - 0.025) < 0.01, "Bee window must span ~2.5 %..97.5 % of the width")
+	var edge: float = (1.0 - preload("res://scripts/game/bee_hero_look_settings.gd").playable_width_fraction()) * 0.5 # Tanda S: 6 %% margins with the hero look.
+	check(absf(right_fraction - (1.0 - edge)) < 0.01 and absf(left_fraction - edge) < 0.01, "Bee window must span the configured margins of the width")
 	# Camera-aware spawn edge and auto-aim.
 	var probe := spawn("Probe", 0, 4.0) as AlienProbeRanged
 	check(probe.global_position.x - stage.camera.global_position.x >= BeeLevel01Framing.half_width_max(aspect) + 0.99, "Spawn not past the camera E edge")

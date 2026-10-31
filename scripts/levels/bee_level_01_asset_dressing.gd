@@ -43,6 +43,7 @@ const SUN_ASSET_HEIGHT := 1.44
 const SUN_SCREEN_HEIGHT := 0.12
 const SUN_BRIGHTNESS := 0.78
 const SUN_HALO_ALPHA := 0.32
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 const SUN_MORNING_SCREEN_Y := 0.31
 const SUN_MIDDAY_SCREEN_Y := 0.13
 const SUN_MIDDAY_FROM := 80.0
@@ -180,6 +181,8 @@ func _build_litter() -> void:
 		item.position = Vector3(float(entry[1]), -0.05, float(entry[2]) - (BIG_PROP_PUSH_BACK if big else 0.0))
 		item.scale = Vector3.ONE * float(entry[3]) * (BIG_PROP_SCALE if big else 1.0)
 		item.rotation = Vector3(0.0, float(entry[4]), float(entry[5]))
+		if entry[0] == WATERING_CAN or entry[0] == CAN:
+			HERO.tone_down_yellow(item) # Tanda S: el amarillo saturado queda para Bee.
 		if entry[0] == BANANA_PEEL or entry[0] == TUNA_TIN:
 			GROUNDED_PROP.settle(item, 0.0 if entry[0] == TUNA_TIN else GROUNDED_PROP.TILT)
 		litter.append(item)
@@ -261,6 +264,8 @@ func _build_sky() -> void:
 				continue
 			var own := original.duplicate() as ShaderMaterial
 			var base: Color = own.get_meta("sky_base_albedo", own.get_shader_parameter("albedo"))
+			if HERO.HERO_LOOK_ENABLED: # Tanda S: sol pálido, que no compita con Bee ni parezca un ítem.
+				base = Color.from_hsv(base.h, base.s * HERO.SUN_SATURATION, base.v, base.a)
 			own.set_meta("sun_base_albedo", base)
 			mesh.set_surface_override_material(surface, own)
 			_sun_materials.append(own)
@@ -329,7 +334,7 @@ func _process(delta: float) -> void:
 		var base: Color = material.get_meta("sun_base_albedo")
 		var sun_brightness := lerpf(0.05, SUN_BRIGHTNESS, sun_alpha)
 		material.set_shader_parameter("albedo", Color(base.r * sun_brightness, base.g * sun_brightness, base.b * sun_brightness, base.a))
-	_sun_halo_material.albedo_color.a = sun_alpha * SUN_HALO_ALPHA
+	_sun_halo_material.albedo_color.a = sun_alpha * SUN_HALO_ALPHA * (HERO.SUN_HALO_SCALE if HERO.HERO_LOOK_ENABLED else 1.0) # Tanda S: el sol no parece un ítem.
 	var sun_y := sun_screen_y_at(distance)
 	_pin(sun, camera, Vector2(SUN_SCREEN_X, sun_y), SUN_SCREEN_HEIGHT, SUN_ASSET_HEIGHT, 0.0, SUN_DEPTH)
 	var dusk := clampf(inverse_lerp(FIREFLY_FADE_FROM, 290.0, distance), 0.0, 1.0)

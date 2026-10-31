@@ -1,0 +1,38 @@
+# Tanda S — se ve a Bee
+
+- Base: `tanda-r-terreno-limpio` (`0dd62e7`). Rama: `tanda-s-se-ve-bee`. Objetivo: que en cualquier fotograma del Nivel 1 el ojo encuentre a Bee primero.
+- Todo sale de `scripts/game/bee_hero_look_settings.gd`. El interruptor `HERO_LOOK_ENABLED = false` vuelve al look de la Tanda R. **No cambió ninguna vida, daño, velocidad ni hitbox.**
+- A. Tamaño: Bee se dibuja 1,2× (antes 1,0; mariquita 1,15). La hurtbox es la misma, y las balas salen del mismo punto que antes.
+- B. Firma de Bee: contorno marrón-negro más grueso (0,0044 del alto de pantalla, ~3 px a 720p) y brillo de borde blanco-cálido siempre encendido.
+  - Regadera, latas y sol bajan su saturación (el sol queda pálido y con medio halo, para que no parezca un ítem).
+- C. Sombra suave en el suelo debajo de Bee (`scripts/vfx/bee_hero_shadow.gd`): más fuerte cerca del suelo y nunca desaparece.
+- D. Balas de Bee: aguja dorada, la mitad de gruesa, 2,6 veces más larga que alta y con el 60 % del brillo. Se dibuja recién a 0,45 m de la boca del arma, así no tapa a Bee.
+- E. Teletransporte: la columna cian mide 1/3 de alto (centrada donde llega el enemigo), la mitad de ancha y la mitad de opaca. La nube de píxeles muestra el 55 %.
+- F. Pasillo limpio (`scripts/levels/bee_flight_corridor.gd`): hojas de primer plano, campanillas y props grandes que tapan en pantalla a Bee o a un enemigo quedan al 60 % de opacidad mientras haya algo detrás.
+  - En GL Compatibility la `transparency` de Godot no funciona (lo probé), así que uso una copia translúcida del shader toon (`assets/style/toon_body_fade.gdshader`).
+  - Las latas y cajas destructibles no se tocan: son juego.
+- G. Carteles:
+  - Un solo «LIBERADO» flotante a la vez (antes dos).
+  - El banner grande solo festeja hitos (10, 25, 50, 100…).
+  - Nuevo contador «LIBERADOS n» debajo del combo.
+  - Los anillos de aviso son un 45 % más finos.
+- H. Bordes: el centro de Bee nunca a menos del 6 % del ancho de la pantalla (antes 2,5 %).
+- Capturas reales a 1280×720 en los segundos 20, 45, 75, 120, 160 y 200 (bot que dispara, Bee invulnerable). Script: `dev/tanda_s/capture.gd`.
+  - Hoja comparativa: `docs/capturas_tanda_s/comparacion.png` (antes a la izquierda, después a la derecha).
+  - Ejemplo suelto: `docs/capturas_tanda_s/antes_s120.png` contra `despues_s120.png`.
+  - La sombra se reforzó después de esas capturas (opacidad de 0,5 a 0,62).
+- Tests: nuevo `validate_bee_tanda_s` (escala vs hurtbox, punto de salida de la bala, márgenes, aguja, un solo aviso, hito 10, teletransporte, sombra, pasillo, interruptor).
+  - Se actualizaron 9 suites que esperaban los números viejos y ahora leen las constantes nuevas:
+    - Escala: `hero_integration_v01`, `visual_polish_v02` (también acepta la sombra sin toon).
+    - Bordes: `level_01_framing_v01`, `threat_camera_boss_v03`.
+    - Carteles: `t1b_hud`, `lote14_screen_v01`.
+    - Aguja: `items_shots_v04`, `tanda4c_weapons`.
+    - Hurtbox: `shmup_fairness_v01`, que ahora compara contra el dibujo sin escalar (el plan pedía no agrandar la hurtbox).
+  - Núcleo: 149/149 en verde, sin `SCRIPT ERROR`. 144 pasaron en la corrida completa; las 5 de la segunda tanda de ajustes, en una repetición. Entre las dos solo cambiaron archivos de test.
+- Arreglo de la Tanda R: `dev/tanda_r/run_nucleo.sh` no había entrado al repo (`dev/` está ignorado). Ahora entra a la fuerza, junto con `dev/tanda_s/capture.gd`.
+- Lo que no hice: no toqué los «rombos de objetivo» (el marcador del aim assist ya es un círculo de 1 px) ni las flores amarillas chicas.
+- Cómo probar: abrí Godot 4.7.2, F5, Jugar y mirá:
+  - Bee se ve más grande que las moscas y tiene sombra.
+  - Las balas son agujas finas.
+  - Una flor que pasa delante de Bee se vuelve semitransparente.
+  - Arriba a la derecha está «LIBERADOS n»; el banner aparece recién a los 10.

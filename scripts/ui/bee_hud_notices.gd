@@ -1,12 +1,14 @@
 extends CanvasLayer
 ## One top-centre lane: notices queue instead of overlapping HUD/boss labels.
 const S := preload("res://scripts/game/bee_hud_text_settings.gd")
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 var label: Label
 var panel: Panel
 var pending: Array[Dictionary] = []
 var active_kind := ""
 var left := 0.0
 var liberated_count := 0
+var total_liberated := 0 # Tanda S: liberaciones de toda la partida, para los hitos del banner.
 var window_left := 0.0
 var bucket := 0
 var active_bucket := -1
@@ -84,6 +86,12 @@ func note_liberated() -> void:
 		window_left = S.LIBERATION_WINDOW
 		bucket += 1
 	liberated_count += 1
+	total_liberated += 1
+	if HERO.HERO_LOOK_ENABLED:
+		# Tanda S: el contador vive en el HUD; el banner solo festeja los hitos (10, 25, 50...).
+		if total_liberated in HERO.LIBERATION_MILESTONES:
+			show_notice(HERO.MILESTONE_TEXT % total_liberated, S.LIBERATION_WINDOW + S.FADE_SECONDS * 2.0, "liberated")
+		return
 	var text := "+%d LIBERADOS" % liberated_count
 	if active_kind == "liberated" and active_bucket == bucket and left > 0:
 		label.text = text

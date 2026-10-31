@@ -27,7 +27,7 @@ func run() -> void:
 	check(visual != null and str(visual.get("model_version")) == "v02", "Bee player must load v02 by default")
 	for anchor in ["muzzle", "nozzle_L", "nozzle_R", "stinger_tip", "helmet_socket"]:
 		check(model != null and model.find_child(anchor, true, false) != null, "Missing v02 anchor: "+anchor)
-	check(is_equal_approx(bee.get_node("VisualRoot").scale.x, 1.0), "v02 visual scale must be 1.0")
+	check(is_equal_approx(bee.get_node("VisualRoot").scale.x, preload("res://scripts/game/bee_hero_look_settings.gd").bee_visual_scale()), "v02 visual scale must be the hero scale (Tanda S: 1.2)")
 	var nozzles: Dictionary = visual.get("nozzles")
 	check(nozzles.size() == 2, "Both v02 thrusters should attach")
 	for entry: Dictionary in nozzles.values():

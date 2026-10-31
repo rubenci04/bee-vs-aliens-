@@ -42,9 +42,9 @@ func run() -> void:
 	check(cp.beacon.get_node_or_null("CheckpointLabel") == null and cp.beacon_2.get_node_or_null("CheckpointLabel") == null, "No world-space checkpoint titles")
 	n._process(1.6)
 	for i in 8: BeeLiberation.float_text(stage, Vector3(i, 4, 0))
-	check(n.label.text == "+8 LIBERADOS" and n.liberated_count == 8, "Counter includes every liberation")
+	check(n.liberated_count == 8 and (n.active_kind != "liberated" if preload("res://scripts/game/bee_hero_look_settings.gd").HERO_LOOK_ENABLED else n.label.text == "+8 LIBERADOS"), "Counter includes every liberation (Tanda S: no banner below the first milestone)")
 	var signs := get_nodes_in_group("bee_liberated_text")
-	check(signs.size() == 2, "Only two individual signs")
+	check(signs.size() == BeeLiberation.max_texts(), "Only max_texts() individual signs (Tanda S: one)")
 	for sign in signs:
 		check(sign.font_size == S.INDIVIDUAL_FONT and is_equal_approx(sign.modulate.a, .6), "Individual signs are small and 60 percent opaque")
 	n._process(.61)

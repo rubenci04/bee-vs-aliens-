@@ -39,7 +39,7 @@ func run() -> void:
 			total += shot.damage
 			check(shot.speed == 14.0 and shot.hitbox.damage == shot.damage, "Configured speed/damage reaches the physical projectile")
 			check(is_equal_approx(shot.hitbox.get_node("CollisionShape3D").shape.radius, 0.15), "Existing hitbox scale unchanged")
-			check(is_equal_approx(shot.get_node("PlasmaBall").scale.x, SETTINGS.SHOT_VISUAL_LENGTH), "Longer plasma only scales visual node")
+			check(is_equal_approx(shot.get_node("PlasmaBall").scale.x, preload("res://scripts/game/bee_hero_look_settings.gd").SHOT_LENGTH if preload("res://scripts/game/bee_hero_look_settings.gd").HERO_LOOK_ENABLED else SETTINGS.SHOT_VISUAL_LENGTH), "Longer plasma only scales visual node (Tanda S: needle length)")
 			check(is_equal_approx(shot.trail.lifetime, SETTINGS.SHOT_TRAIL_SECONDS), "Actual game trail uses configured duration")
 		check(is_equal_approx(total / float(profile["interval"]), state[3]), "Real volley produces audited nominal DPS")
 		check(first.damage == 3, "Center shot never becomes weaker than Base")

@@ -2,6 +2,7 @@
 // albedo texture and vertex colour (imported enemy models), emission kept for alien tech.
 // GARDEN IDENTITY 04 compile-time variants (defined by the including shader, off everywhere else):
 //   TOON_CUTOUT  alpha scissor from the albedo texture's alpha (leaves with holes keep their shape)
+//   TOON_FADE    Tanda S: translucent copy (uniform fade) for scenery that hides Bee or an enemy
 //   TOON_FABRIC  subtle value change along the garment's height (needs `varying float fabric_y`)
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable;
@@ -23,6 +24,9 @@ uniform float rim_strength = 0.3;
 uniform float rim_power = 3.0;
 #ifdef TOON_CUTOUT
 uniform float alpha_scissor = 0.5;
+#endif
+#ifdef TOON_FADE
+uniform float fade = 1.0;
 #endif
 #ifdef TOON_FABRIC
 uniform float fabric_variation = 0.1; // Darker at fabric_low, slightly faded towards fabric_high (model units).
@@ -61,6 +65,9 @@ void fragment() {
 #ifdef TOON_CUTOUT
 	ALPHA = alpha;
 	ALPHA_SCISSOR_THRESHOLD = alpha_scissor;
+#endif
+#ifdef TOON_FADE
+	ALPHA = alpha * fade;
 #endif
 }
 

@@ -64,6 +64,7 @@ func run() -> void:
 		var box: AABB = mesh.global_transform * mesh.get_aabb()
 		body_box = box if first else body_box.merge(box)
 		first = false
+	body_box.size /= visual.scale.x / BeeGameSettings.BEE_VISUAL_SCALE # Tanda S: Bee is drawn bigger on purpose with the same hurtbox; judge it against the unscaled silhouette.
 	var hurt_radius := ((lone.get_node("Hurtbox3D/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
 	check(is_equal_approx(((lone.get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius, 0.28), "Bee body collision changed")
 	check(hurt_radius < 0.28 and hurt_radius * 2.0 < body_box.size.y and hurt_radius * 2.0 >= body_box.size.y * 0.5, "Bee lethal volume out of range: diameter %.2f vs silhouette height %.2f" % [hurt_radius * 2.0, body_box.size.y]) # v02 adds a taller head/armor silhouette while the approved hurtbox stays unchanged.

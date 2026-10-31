@@ -85,6 +85,9 @@ func _ready() -> void:
 	var live_readability := preload("res://scripts/levels/bee_live_readability.gd").new()
 	live_readability.name = "LiveReadability"
 	add_child(live_readability)
+	# Tanda S: sombra de Bee en el suelo y pasillo de vuelo limpio (los dos se apagan con HERO_LOOK_ENABLED).
+	preload("res://scripts/vfx/bee_hero_shadow.gd").attach(self, bee, BeeLevel01VisualTarget.GROUND_Y)
+	preload("res://scripts/levels/bee_flight_corridor.gd").attach(self)
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)

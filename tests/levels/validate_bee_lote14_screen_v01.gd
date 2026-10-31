@@ -150,7 +150,7 @@ func run() -> void:
 	# --- 3.3 readability ---------------------------------------------------------------------------------------------------------
 	for i in 6:
 		var liberated := BeeLiberation.float_text(stage, Vector3(float(i), 3.0, 0.0))
-		check((liberated != null) == (i < BeeLiberation.MAX_TEXTS), "Only the first two liberations return a world sign")
+		check((liberated != null) == (i < BeeLiberation.max_texts()), "Only the first max_texts() liberations return a world sign")
 	var singles := 0
 	var groups := 0
 	var group_text := ""
@@ -160,7 +160,7 @@ func run() -> void:
 			group_text = (node as Label3D).text
 		else:
 			singles += 1
-	check(singles == BeeLiberation.MAX_TEXTS and groups == 0 and stage.get_node("HUDNotices").liberated_count == 6, "At most %d LIBERADO signs; the rest merge: singles %d, groups %d '%s'" % [BeeLiberation.MAX_TEXTS, singles, groups, group_text])
+	check(singles == BeeLiberation.max_texts() and groups == 0 and stage.get_node("HUDNotices").liberated_count == 6, "At most %d LIBERADO signs; the rest merge: singles %d, groups %d '%s'" % [BeeLiberation.max_texts(), singles, groups, group_text])
 	# HUD: the zone notice (top centre) never overlaps the other HUD lines.
 	var section := stage.get_node("CanvasLayer/Section") as Label
 	section.text = "ZONA DE COMBATE · SOMBRA BAJO LAS HOJAS · 6/7"

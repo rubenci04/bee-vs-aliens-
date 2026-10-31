@@ -91,7 +91,7 @@ static func float_text(host: Node, at: Vector3) -> Label3D:
 			group = node as Label3D
 		else:
 			singles += 1
-	if singles >= MAX_TEXTS or group != null:
+	if singles >= max_texts() or group != null:
 		return null # No extra world labels; every liberation is counted above.
 	var label := Label3D.new()
 	label.name = "LiberatedText"
@@ -113,6 +113,12 @@ static func float_text(host: Node, at: Vector3) -> Label3D:
 	tween.tween_property(label, "outline_modulate:a", 0.0, TEXT_SECONDS * 0.45).set_delay(TEXT_SECONDS * 0.55)
 	tween.chain().tween_callback(label.queue_free)
 	return label
+
+
+## Tanda S: con el look de heroína, un solo cartel flotante a la vez.
+static func max_texts() -> int:
+	var hero := preload("res://scripts/game/bee_hero_look_settings.gd")
+	return hero.MAX_LIBERATION_SIGNS if hero.HERO_LOOK_ENABLED else MAX_TEXTS
 
 
 ## Technology does not get freed: it explodes (cyan blast + the usual tech death sound).

@@ -9,7 +9,7 @@ extends SceneTree
 #   bee       v02 authored at 1.4 m, BEE_VISUAL_SCALE=1.0, body / hurtbox / melee shapes unchanged
 
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
-const EXEMPT := ["Halo", "SoftHalo"] # Emissive rings and the warm sun halo are intentionally unshaded.
+const EXEMPT := ["Halo", "SoftHalo", "BeeHeroShadow"] # Emissive rings, the warm sun halo and Bee's soft ground shadow (Tanda S) are intentionally unshaded.
 ## LOTE 9: item beacons, plasma shots and the hostile cyan core are glows by design (unshaded, no toon).
 const EXEMPT_PARENTS := ["ItemBeacon", "PlasmaBall", "HostileGlow", "PollenGrains"]
 const BEE_VISUAL_SCALE: float = preload("res://scripts/bee_prototype/bee_visual.gd").VISUAL_SCALE
@@ -90,7 +90,7 @@ func run() -> void:
 	check(decoration.flower_head_count > 20, "Flower heads missing")
 	# --- Bee ---------------------------------------------------------------------------------------------------
 	var bee := stage.bee
-	check(BeeGameSettings.BEE_MODEL_VERSION == "v02" and is_equal_approx(BEE_VISUAL_SCALE, 1.0) and is_equal_approx(bee.get_node("VisualRoot").scale.x, 1.0), "Bee v02 must use authored scale (no legacy 1.2 multiplier)")
+	check(BeeGameSettings.BEE_MODEL_VERSION == "v02" and is_equal_approx(BEE_VISUAL_SCALE, 1.0) and is_equal_approx(bee.get_node("VisualRoot").scale.x, preload("res://scripts/game/bee_hero_look_settings.gd").bee_visual_scale()), "Bee v02 draws at the Tanda S hero scale (hurtbox unchanged below)")
 	check(is_equal_approx(((bee.get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius, 0.28), "Bee body shape changed")
 	check(is_equal_approx(((bee.get_node("Hurtbox3D/CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius, 0.2), "Bee hurtbox changed")
 	print("BEE_VISUAL_POLISH_V02_OK toon_surfaces=%d veil=%d seeds=%d particles=%d outline_day=%s outline_sunset=%s" % [toon, veil.size(), seeds.size(), budget, str(morning), str(sunset)])

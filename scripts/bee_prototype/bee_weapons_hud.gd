@@ -224,6 +224,15 @@ func _draw_combo(viewport_size: Vector2, juice: Node, font: Font) -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(float(combo) / BeeLevel01Juice.FRENZY_COMBO, 0.0, 1.0), bar.size.y)), BeeGameSettings.HUD_COMBO_COLOR, true, -1.0, true)
 	var state_text := "FRENESÍ %.1f s" % frenzy_left if frenzy_left > 0.0 else "META x%d" % BeeLevel01Juice.FRENZY_COMBO
 	draw_string(font, rect.position + Vector2(12, 55), state_text, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	# Tanda S: los liberados se cuentan acá, sin carteles grandes en el medio de la acción.
+	var wave: Node = bee.get_parent().get_node_or_null("WaveController")
+	if preload("res://scripts/game/bee_hero_look_settings.gd").HERO_LOOK_ENABLED and wave != null and "liberated_count" in wave:
+		var strip := Rect2(rect.position + Vector2(0, rect.size.y + 6), Vector2(rect.size.x, 26))
+		_draw_panel(strip)
+		draw_string(font, strip.position + Vector2(12, 18), "LIBERADOS", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+		var count := str(int(wave.get("liberated_count")))
+		var width := font.get_string_size(count, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE).x
+		draw_string(font, Vector2(strip.end.x - 12 - width, strip.position.y + 19), count, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_COMBO_COLOR)
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):

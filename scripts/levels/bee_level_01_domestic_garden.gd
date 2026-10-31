@@ -82,6 +82,8 @@ func _ready() -> void:
 	for entry in PLACEMENTS:
 		var node := _place(entry[0], float(entry[1]), float(entry[2]), float(entry[3]), entry[4], float(entry[5]))
 		_keep_behind(node)
+		if entry[0] == "can_yellow":
+			preload("res://scripts/game/bee_hero_look_settings.gd").tone_down_yellow(node) # Tanda S: el amarillo fuerte queda para Bee.
 		props.append(node)
 		if str(entry[6]) != "":
 			if not compositions.has(entry[6]):

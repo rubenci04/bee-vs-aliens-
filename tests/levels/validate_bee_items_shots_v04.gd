@@ -101,7 +101,7 @@ func test_shots() -> void:
 	check(ball.has_node("Core") and ball.has_node("Halo") and ball.has_node("Outer") and (shot as BeeEnergyProjectile).trail.visible and (shot as BeeEnergyProjectile).trail.emitting, "Plasma ball: core + halo + outer + short trail")
 	check(not (shot.get_node("Visual") as Node3D).visible, "The old toon bolt (arrow) must be hidden")
 	var bee_halo := _halo_color(shot)
-	check(bee_halo.is_equal_approx(Color(BeeShotPalette.BEE_SHOT_COLOR, BeeShotPalette.HALO_ALPHA)), "Bee halo must be BEE_SHOT_COLOR")
+	check(bee_halo.is_equal_approx(Color(BeeShotPalette.BEE_SHOT_COLOR, BeeShotPalette.HALO_ALPHA * (preload("res://scripts/game/bee_hero_look_settings.gd").SHOT_GLOW if preload("res://scripts/game/bee_hero_look_settings.gd").HERO_LOOK_ENABLED else 1.0))), "Bee halo must be BEE_SHOT_COLOR (Tanda S: 60 %% glow)")
 	var core := ((ball.get_node("Core") as MeshInstance3D).mesh.surface_get_material(0) as StandardMaterial3D).albedo_color
 	check(core.v > 0.95 and core.s < 0.15, "Bee core must be white-hot")
 	var trail_seconds := (shot as BeeEnergyProjectile).trail.lifetime

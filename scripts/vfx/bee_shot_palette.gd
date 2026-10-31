@@ -1,6 +1,7 @@
 class_name BeeShotPalette
 extends RefCounted
 const SHOOTING := preload("res://scripts/game/bee_shooting_settings.gd")
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 ## LOTE 9 · ETAPA B — the shots of both sides must read apart at a glance, at any distance and under every light of the day:
 ##   Bee      a round PLASMA BALL: white-hot core, warm gold halo and a short warm trail (no arrow, no streak)
 ##   enemies  a cold ORB: pale cyan core, cyan halo and a violet rim, short cyan trail (bigger on the UFO)
@@ -25,7 +26,7 @@ const PLASMA_NAME := "PlasmaBall"
 static var _meshes := {}
 
 
-static func _sphere(key: String, radius: float, color: Color, priority: int, transparent: bool) -> SphereMesh:
+static func _sphere(key: String, radius: float, color: Color, priority: int, transparent: bool, glow := 1.0) -> SphereMesh:
 	if _meshes.has(key):
 		return _meshes[key]
 	var mesh := SphereMesh.new()
@@ -41,7 +42,7 @@ static func _sphere(key: String, radius: float, color: Color, priority: int, tra
 	if key.begins_with("bee_"):
 		material.emission_enabled = true
 		material.emission = Color(color, 1.0)
-		material.emission_energy_multiplier = SHOOTING.SHOT_EMISSION
+		material.emission_energy_multiplier = SHOOTING.SHOT_EMISSION * glow
 	material.render_priority = priority
 	if transparent:
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -60,10 +61,15 @@ static func plasma(enemy: bool, size := 1.0) -> Node3D:
 	var halo_color := ENEMY_SHOT_COLOR if enemy else BEE_SHOT_COLOR
 	var outer_color := ENEMY_SHOT_RIM if enemy else BEE_SHOT_COLOR
 	var tag := "enemy" if enemy else "bee"
+	var glow := 1.0
+	if not enemy and HERO.HERO_LOOK_ENABLED: # Tanda S: aguja dorada fina con 60 % del brillo (mallas propias, la hitbox no cambia).
+		radii *= HERO.SHOT_THICKNESS
+		glow = HERO.SHOT_GLOW
+		tag = "bee_needle"
 	var layers := [
-		["Core", _sphere(tag + "_core", radii.x, core_color, 3, false)],
-		["Halo", _sphere(tag + "_halo", radii.y, Color(halo_color, HALO_ALPHA), 2, true)],
-		["Outer", _sphere(tag + "_outer", radii.z, Color(outer_color, OUTER_ALPHA), 1, true)],
+		["Core", _sphere(tag + "_core", radii.x, core_color, 3, false, glow)],
+		["Halo", _sphere(tag + "_halo", radii.y, Color(halo_color, HALO_ALPHA * glow), 2, true, glow)],
+		["Outer", _sphere(tag + "_outer", radii.z, Color(outer_color, OUTER_ALPHA * glow), 1, true, glow)],
 	]
 	for layer in layers:
 		var mesh := MeshInstance3D.new()
@@ -87,8 +93,9 @@ static func trail(enemy: bool, size := 1.0) -> CPUParticles3D:
 	particles.initial_velocity_max = 0.0
 	particles.scale_amount_min = 0.7 * size
 	particles.scale_amount_max = 1.0 * size
-	particles.mesh = _sphere("enemy_trail" if enemy else "bee_trail", (ENEMY_RADII if enemy else BEE_RADII).y * 0.7,
-			Color(ENEMY_SHOT_COLOR if enemy else BEE_SHOT_COLOR, 0.55), 0, true)
+	var needle := not enemy and HERO.HERO_LOOK_ENABLED # Tanda S: estela fina y tenue, como la aguja.
+	particles.mesh = _sphere("enemy_trail" if enemy else ("bee_needle_trail" if needle else "bee_trail"), (ENEMY_RADII if enemy else BEE_RADII).y * 0.7 * (HERO.SHOT_THICKNESS if needle else 1.0),
+			Color(ENEMY_SHOT_COLOR if enemy else BEE_SHOT_COLOR, 0.55 * (HERO.SHOT_GLOW if needle else 1.0)), 0, true, HERO.SHOT_GLOW if needle else 1.0)
 	var fade := Gradient.new()
 	fade.colors = PackedColorArray([Color.WHITE, Color(1, 1, 1, 0)])
 	particles.color_ramp = fade

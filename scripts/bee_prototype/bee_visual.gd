@@ -2,6 +2,7 @@ extends Node3D
 const FEEDBACK := preload("res://scripts/game/bee_feedback_settings.gd")
 const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
 const STING := preload("res://scripts/game/bee_sting_settings.gd")
+const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 var _tilt_rest := Transform3D.IDENTITY
 var _flight_tilt := Vector3.ZERO
 ## Selectable Bee model and presentation. This wrapper owns no gameplay state.
@@ -96,7 +97,7 @@ func apply_model_version(version := "") -> bool:
 	model.name = "Model"
 	add_child(model)
 	_model_rest_scale = model.scale
-	BeeToonStyle.apply(model, true, BeeToonStyle.OUTLINE_BEE)
+	BeeToonStyle.apply(model, true, HERO.OUTLINE_WIDTH if HERO.HERO_LOOK_ENABLED else BeeToonStyle.OUTLINE_BEE) # Tanda S: contorno firma más grueso.
 	_own_rim_materials()
 	for wing_name in ["Wing_L", "Wing_R"]:
 		var wing := model.find_child(wing_name, true, false) as Node3D
@@ -131,7 +132,7 @@ func apply_model_version(version := "") -> bool:
 	motion_trail = _make_motion_trail()
 	var facing := actor.facing_x if actor != null else 1.0
 	get_parent().rotation.y = -facing * PI * 0.5
-	get_parent().scale = Vector3.ONE * (BeeGameSettings.BEE_V01_VISUAL_SCALE if chosen == "v01" else BeeGameSettings.BEE_VISUAL_SCALE)
+	get_parent().scale = Vector3.ONE * (BeeGameSettings.BEE_V01_VISUAL_SCALE if chosen == "v01" else HERO.bee_visual_scale()) # Tanda S: solo el dibujo crece.
 	_rim_applied = -1.0
 	if chosen == "v02":
 		_play_model_animation(&"wingbeat")
@@ -146,6 +147,11 @@ func firing_origin(fallback: Vector3) -> Vector3:
 	if is_instance_valid(model) and model.has_meta("dev_readability_scale"):
 		var centre := _untilted_point(model.global_position)
 		point = centre + (point - centre) / float(model.get_meta("dev_readability_scale"))
+	# Tanda S: Bee se dibuja más grande, pero las balas salen del mismo lugar que con la escala de antes.
+	var hero_ratio: float = (get_parent() as Node3D).scale.x / BeeGameSettings.BEE_VISUAL_SCALE if model_version == "v02" else 1.0
+	if not is_equal_approx(hero_ratio, 1.0):
+		var pivot := _untilted_point((get_parent() as Node3D).global_position)
+		point = pivot + (point - pivot) / hero_ratio
 	point.z = actor.global_position.z if actor != null else fallback.z
 	return point
 
@@ -452,7 +458,7 @@ func _own_rim_materials() -> void:
 
 func _update_rim() -> void:
 	var boost := BeeToonStyle.bee_rim_boost
-	var rim_boost := maxf(boost, BeeGameSettings.BEE_READABILITY_RIM_MIN)
+	var rim_boost := maxf(boost, HERO.RIM_MIN if HERO.HERO_LOOK_ENABLED else BeeGameSettings.BEE_READABILITY_RIM_MIN)
 	if absf(boost - _rim_applied) < 0.01:
 		return
 	_rim_applied = boost
@@ -469,7 +475,7 @@ func _update_rim() -> void:
 			material.set_shader_parameter("emission_energy", BODY_LIFT * boost)
 		material.set_shader_parameter("rim_strength", lerpf(0.3, 1.25, rim_boost))
 		material.set_shader_parameter("rim_power", lerpf(3.0, 1.7, rim_boost))
-		material.set_shader_parameter("rim_color", Color(1.0, 0.93, 0.8).lerp(Color(1.0, 0.98, 0.9), boost))
+		material.set_shader_parameter("rim_color", (HERO.RIM_COLOR if HERO.HERO_LOOK_ENABLED else Color(1.0, 0.93, 0.8)).lerp(Color(1.0, 0.98, 0.9), boost))
 
 
 func _setup_buzz() -> void:

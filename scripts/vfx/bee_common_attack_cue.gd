@@ -35,7 +35,9 @@ static func restore(node: Node3D) -> void:
 		if child is Node3D: restore(child)
 
 static func ring(parent: Node, at: Vector3, radius: float, color: Color) -> MeshInstance3D:
-	var result := BeeAttackVisuals.ring(parent, at, radius, RING_THICKNESS, Color(color, RING_ALPHA))
+	var hero := preload("res://scripts/game/bee_hero_look_settings.gd")
+	var thickness := RING_THICKNESS * (hero.RING_THICKNESS_SCALE if hero.HERO_LOOK_ENABLED else 1.0) # Tanda S: aviso más fino.
+	var result := BeeAttackVisuals.ring(parent, at, radius, thickness, Color(color, RING_ALPHA))
 	if enabled:
 		result.material_override = BeeAttackVisuals.material(Color(color, RING_ALPHA))
 		result.rotation.x = 0.0 # Ground impact ring lies on XZ, never a standing dome.
