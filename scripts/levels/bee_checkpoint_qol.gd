@@ -182,6 +182,9 @@ func create_beacon() -> void:
 func _process(delta: float) -> void:
 	if stage == null or stage.sector_complete:
 		return
+	var beats := stage.get_node_or_null("StoryBeats")
+	if beats != null and bool(beats.get("active")):
+		return # Tanda W: durante una escena corta, Esc / R no abren la pausa ni reinician (cualquier botón la saltea).
 	if Input.is_action_just_pressed("bee_full_restart"):
 		restart_level(true)
 		return

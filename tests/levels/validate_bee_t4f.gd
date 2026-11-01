@@ -38,7 +38,10 @@ func run():
  var start := first.position
  var simple_start := actors[13].position
  await frames(12)
- check(first.position.z < start.z and absf(first.rotation.y)>.01,"Freed insect turns and retreats in Z")
+ if preload("res://scripts/game/bee_release_settings.gd").LAP_ENABLED: # Tanda W: primero da una vuelta alrededor de Bee.
+  check(not first.position.is_equal_approx(start),"Freed insect starts its lap around Bee")
+ else:
+  check(first.position.z < start.z and absf(first.rotation.y)>.01,"Freed insect turns and retreats in Z")
  check(actors[13].position==simple_start,"Over limit only spark/fade; no extra animated flight")
  for actor in actors:
   check(not actor.is_active(),"Released enemies no longer attack")
@@ -51,8 +54,10 @@ func run():
  for mat in controller.materials:
   if mat is ShaderMaterial:
    check(mat.get_shader_parameter("liberation_alpha")!=null,"Fade also applies to outline shader")
- await frames(39)
- check(done[0]==14 and not first.visible and not actors[13].visible,"All departures finish within 0.8 s plus frame resolution")
+ var release_s := preload("res://scripts/game/bee_release_settings.gd")
+ var total: float = (release_s.LAP_SECONDS + release_s.LEAVE_SECONDS) if release_s.LAP_ENABLED else S.SECONDS # Tanda W: vuelta + salida.
+ await frames(int(ceil(total * 60.0)) - 12 + 3)
+ check(done[0]==14 and not first.visible and not actors[13].visible,"All departures finish within their time (Tanda W: lap + leave) plus frame resolution")
  check(get_nodes_in_group("bee_release_full").is_empty(),"Full animation slots returned")
  check(get_nodes_in_group("bee_release_sparks").is_empty(),"Short spark emitters retire instead of accumulating")
  var stop=preload("res://scripts/vfx/bee_local_hit_stop.gd").for_host(bee)

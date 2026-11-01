@@ -101,6 +101,10 @@ func _ready() -> void:
 	var barks := preload("res://scripts/vfx/bee_barks.gd").attach(self, bee)
 	var reaction := preload("res://scripts/bee_prototype/bee_hit_reaction.gd").attach(self, bee)
 	preload("res://scripts/bee_prototype/bee_free_swarm.gd").attach(self, bee) # Tanda V: Enjambre libre.
+	# Tanda W: escenas cortas y carteles de jefe (una vez por partida: un reintento desde checkpoint no las repite).
+	preload("res://scripts/levels/bee_story_beats.gd").attach(self, not checkpoint.checkpoint_active)
+	if not checkpoint.checkpoint_active:
+		BeeLiberation.liberations = 0 # El polen cada 4 liberados cuenta desde el arranque.
 	if reaction != null and barks != null:
 		reaction.hurt.connect(func(first: bool): if first: barks.say("first_hit", true))
 		reaction.low_health.connect(func(): barks.say("low_health"))

@@ -10,6 +10,10 @@ var elapsed := 0.0
 var start: Vector3
 var rotation_start: Vector3
 var full := false
+var bee: Node3D # Tanda W: la vuelta es alrededor de Bee.
+var start_global := Vector3.ZERO
+var lap_start_angle := 0.0
+var lap_end := Vector3.ZERO
 static func start_release(unit: Node3D, model: Node3D, done: Callable) -> Node:
  if S.legacy_review:
   unit.set_physics_process(false)
@@ -96,6 +100,9 @@ func _ready():
   actor.set_deferred("collision_layer",0)
   actor.set_deferred("collision_mask",0)
  start=actor.position
+ start_global=actor.global_position
+ bee=get_tree().get_first_node_in_group("bee_player") as Node3D
+ if bee!=null: lap_start_angle=atan2(start_global.y-bee.global_position.y,start_global.x-bee.global_position.x)
  rotation_start=actor.rotation
  for mesh in visual.find_children("*","MeshInstance3D",true,false):
   mesh.material_overlay=null
@@ -104,13 +111,44 @@ func _ready():
   else:
    for surface in mesh.mesh.get_surface_count():
     mesh.set_surface_override_material(surface,fade_material(mesh.get_active_material(surface)))
+ for mat in materials: # Tanda W: opacos desde el arranque (la vuelta los muestra enteros).
+  if mat is ShaderMaterial: mat.set_shader_parameter("liberation_alpha",1.0)
 func _process(delta: float):
+ if S.LAP_ENABLED and full and is_instance_valid(bee) and not (actor is TarantulaBoss01 or actor is WalkerMiniboss): # Tanda W: los jefes se van como antes.
+  _lap_process(delta)
+  return
  elapsed+=delta
  var t := clampf(elapsed/S.SECONDS,0,1)
  if full:
   actor.position=start+S.DEPARTURE*t*t
   actor.rotation=rotation_start+Vector3(0,sin(t*PI)*S.TURN,sin(t*PI)*S.TURN*.5)
  var alpha := 1.0-clampf((elapsed-S.FADE_START)/(S.SECONDS-S.FADE_START),0,1)
+ for mat in materials:
+  if mat is ShaderMaterial: mat.set_shader_parameter("liberation_alpha",alpha)
+  elif mat is BaseMaterial3D:
+   var c: Color=mat.albedo_color
+   c.a=alpha
+   mat.albedo_color=c
+ if t>=1:
+  actor.hide()
+  remove_from_group("bee_release_full")
+  finished.call()
+  queue_free()
+## Tanda W: vuelta alrededor de Bee (LAP_SECONDS) y después se va al fondo desvaneciéndose (LEAVE_SECONDS).
+func _lap_process(delta: float):
+ elapsed+=delta
+ var center := bee.global_position+Vector3(0,S.LAP_HEIGHT,0)
+ if elapsed<S.LAP_SECONDS:
+  var u := elapsed/S.LAP_SECONDS
+  var angle := lap_start_angle+TAU*u
+  var orbit := center+Vector3(cos(angle)*S.LAP_RADIUS,sin(angle)*S.LAP_RADIUS*0.7,0.3)
+  actor.global_position=start_global.lerp(orbit,clampf(u*4.0,0,1)) # Primero se acerca a la órbita.
+  actor.rotation=rotation_start+Vector3(0,0,sin(u*TAU)*0.3)
+  lap_end=actor.global_position
+  return
+ var t := clampf((elapsed-S.LAP_SECONDS)/S.LEAVE_SECONDS,0,1)
+ actor.global_position=lap_end+S.LEAVE_TO*t*t
+ var alpha := 1.0-t
  for mat in materials:
   if mat is ShaderMaterial: mat.set_shader_parameter("liberation_alpha",alpha)
   elif mat is BaseMaterial3D:

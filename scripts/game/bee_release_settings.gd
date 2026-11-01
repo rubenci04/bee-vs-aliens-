@@ -19,3 +19,15 @@ const SHAKE_SECONDS := 0.12
 const HIT_STOP_KEY := KEY_O
 static var enabled := true
 static var legacy_review := false # Render/benchmark only; never enabled by the game.
+## Tanda W — liberación visible: el insecto, ya con su color, da una vuelta alrededor de Bee (sin estorbar ni dañar:
+## sus colisiones ya están apagadas) y recién después se va volando al fondo. Uno de cada POLLEN_DROP_EVERY deja polen.
+static var LAP_ENABLED := true
+const LAP_SECONDS := 0.6 # La vuelta alrededor de Bee.
+const LAP_RADIUS := 1.5 # m alrededor de Bee.
+const LAP_HEIGHT := 0.4 # La órbita queda un poco por encima de Bee.
+const LEAVE_SECONDS := 0.6 # Después se va al fondo y se desvanece.
+const LEAVE_TO := Vector3(-2.0, 2.5, -6.0) # Hacia dónde se va, relativo a donde terminó la vuelta.
+const POLLEN_DROP_EVERY := 4
+const IMPLANT_POP_SCALE := 0.35 # El implante salta y explota chiquito.
+## El contador LIBERADOS del HUD es el único aviso: sin carteles "LIBERADO" flotantes.
+static var FLOATING_TEXT := false

@@ -27,6 +27,8 @@ const IMPLANT_MULTIPLIER := 2.0
 const BODY_MULTIPLIER := 1.0
 ## Wasp / spider (one hit area): a shot whose line passes this close to the implant (X/Y, m) is a direct implant hit.
 const WEAK_POINT_RADIUS := 0.32
+## Tanda W: liberaciones de la partida (el polen sale cada POLLEN_DROP_EVERY). Se reinicia al cargar el nivel.
+static var liberations := 0
 
 
 ## Runs the whole liberation look. `implant` (optional) is hidden after its blast; `at` is where the implant was.
@@ -51,6 +53,12 @@ static func free_animal(host: Node, visual: Node3D, implant: Node3D, at: Vector3
 	float_text(host, at + Vector3(0, 0.6, 0.2))
 	preload("res://scripts/bee_prototype/bee_feelings.gd").liberated(host.get_tree()) # Tanda U: Bee se alegra (y la primera vez lo dice).
 	preload("res://scripts/vfx/bee_impact.gd").freed(host, visual, at) # Tanda V: congelado corto y estallido dorado.
+	# Tanda W: el implante salta y explota chiquito; uno de cada POLLEN_DROP_EVERY liberados deja un grano de polen.
+	if not settings.legacy_review:
+		BeeCombatVFX.spawn(host, at, &"tech_hit", Vector3.UP, settings.IMPLANT_POP_SCALE)
+		liberations += 1
+		if settings.POLLEN_DROP_EVERY > 0 and liberations % settings.POLLEN_DROP_EVERY == 0:
+			BeeObstacleDrops.spawn_pollen(host, at, 1)
 
 
 ## Warm, natural colours and no alien glow. Every surface gets its own material copy first.
@@ -120,6 +128,8 @@ static func float_text(host: Node, at: Vector3) -> Label3D:
 ## Tanda S: con el look de heroína, un solo cartel flotante a la vez.
 static func max_texts() -> int:
 	var hero := preload("res://scripts/game/bee_hero_look_settings.gd")
+	if not preload("res://scripts/game/bee_release_settings.gd").FLOATING_TEXT:
+		return 0 # Tanda W: la liberación ya se ve; el contador del HUD es el único aviso.
 	return hero.MAX_LIBERATION_SIGNS if hero.HERO_LOOK_ENABLED else MAX_TEXTS
 
 

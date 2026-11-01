@@ -82,7 +82,7 @@ func run() -> void:
 	notices._process(0.01)
 	for i in 4:
 		BeeLiberation.float_text(stage, Vector3(stage.distance + float(i), 3.0, 0.0))
-	check(get_nodes_in_group("bee_liberated_text").size() == 1, "Un solo LIBERADO flotante a la vez (hay %d)" % get_nodes_in_group("bee_liberated_text").size())
+	check(get_nodes_in_group("bee_liberated_text").size() == BeeLiberation.max_texts(), "Como mucho max_texts() LIBERADO flotantes (Tanda W: ninguno; hay %d)" % get_nodes_in_group("bee_liberated_text").size())
 	check(not (notices.panel.visible and notices.active_kind == "liberated"), "Sin banner para 4 liberaciones")
 	for i in 6:
 		notices.note_liberated()
@@ -149,7 +149,7 @@ func run() -> void:
 	visual.apply_model_version("v01")
 	visual.apply_model_version("v02")
 	check(is_equal_approx(visual_root.scale.x, BeeGameSettings.BEE_VISUAL_SCALE), "Con el interruptor apagado Bee vuelve a 1.0")
-	check(BeeLiberation.max_texts() == BeeLiberation.MAX_TEXTS and is_equal_approx(BeeLevel01Framing.flight_right_offset(aspect), half * BeeLevel01Framing.PLAYABLE_WIDTH_FRACTION), "Apagado: carteles y bordes de antes")
+	check(BeeLiberation.max_texts() == (BeeLiberation.MAX_TEXTS if preload("res://scripts/game/bee_release_settings.gd").FLOATING_TEXT else 0) and is_equal_approx(BeeLevel01Framing.flight_right_offset(aspect), half * BeeLevel01Framing.PLAYABLE_WIDTH_FRACTION), "Apagado: carteles y bordes de antes")
 	HERO.HERO_LOOK_ENABLED = true
 
 	print("TANDA_S failures=", failures)

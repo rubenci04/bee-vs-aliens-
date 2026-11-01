@@ -5,5 +5,7 @@
 	"zone_clear": ["¡Vamos!", "¡Zona limpia!", "¡Eso!"],
 	"low_health": ["Uh, cuidado...", "¡A la colmena!", "Aguantá, Bee"],
 	"boss_robot": ["Uh...", "¡Qué grandote!", "¿Y eso?"],
-	"boss_spider": ["¡Arañas no!", "Uh... ¡qué patas!", "¡Ahí viene!"]
+	"boss_spider": ["¡Arañas no!", "Uh... ¡qué patas!", "¡Ahí viene!"],
+	"beat_robot": ["Uh..."],
+	"beat_spider": ["¡Arañas no!"]
 }

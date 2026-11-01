@@ -19,6 +19,7 @@ static func attach(stage: Node, player: BeePlayer) -> Node3D:
 		return null
 	var barks := (load("res://scripts/vfx/bee_barks.gd") as GDScript).new() as Node3D
 	barks.name = "BeeBarks"
+	barks.process_mode = Node.PROCESS_MODE_ALWAYS # Tanda W: también se ve durante las escenas (juego en pausa).
 	barks.set("bee", player)
 	stage.add_child(barks)
 	return barks
@@ -49,12 +50,12 @@ func _ready() -> void:
 
 
 ## Pide una frase para un momento. `once`: ese momento habla una sola vez por partida. Devuelve si habló.
-func say(moment: String, once := false) -> bool:
+func say(moment: String, once := false, force := false) -> bool:
 	if not S.BARKS_ENABLED or not is_instance_valid(bee) or bee.is_defeated:
 		return false
 	if once and said_once.has(moment):
 		return false
-	if since_last < S.BARK_MIN_GAP_SECONDS:
+	if since_last < S.BARK_MIN_GAP_SECONDS and not force: # Tanda W: una escena corta habla aunque haya hablado hace poco.
 		return false
 	var options: Array = lines.get(moment, [])
 	if options.is_empty():

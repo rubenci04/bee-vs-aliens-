@@ -19,6 +19,8 @@ static func zone_clear(tree: SceneTree) -> void:
 
 
 static func boss(tree: SceneTree, moment: String) -> void:
+	if preload("res://scripts/game/bee_story_settings.gd").STORY_BEATS_ENABLED:
+		return # Tanda W: la escena corta del jefe ya trae su frase.
 	_say(tree, moment, true)
 
 
