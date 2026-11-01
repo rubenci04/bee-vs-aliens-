@@ -67,6 +67,9 @@ func receive_hit(hitbox: DamageHitbox3D) -> int:
 		amount = maxi(amount, int(owner_entity.get_meta("small_enemy_base_hit_damage")))
 	if multiplier != 1.0 and amount > 0:
 		amount = maxi(1, roundi(float(amount) * multiplier))
+	# Tanda V: el Enjambre libre hace la mitad contra los jefes (nunca menos de 1).
+	if amount > 0 and hitbox.get_parent() != null and hitbox.get_parent().has_meta("swarm_shot") and (owner_entity is TarantulaBoss01 or owner_entity is WalkerMiniboss or owner_entity is UfoBoss01):
+		amount = maxi(1, roundi(float(amount) * preload("res://scripts/game/bee_free_swarm_settings.gd").SWARM_BOSS_FACTOR))
 	# Level-only pressure budget belongs to the firing implant, including its delayed hazards.
 	if owner_entity is BeePlayer:
 		var pressure := hitbox.bee_damage_scale

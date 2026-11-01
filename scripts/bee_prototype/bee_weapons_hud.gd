@@ -27,7 +27,10 @@ func _ready() -> void:
 	bee.defeated.connect(_show_death_message)
 	_sync_text_debug()
 
+var bomb_highlight_left := 0.0 # Tanda V: al entrar a una zona las bombas brillan un momento.
+
 func _process(delta: float) -> void:
+	bomb_highlight_left = maxf(0.0, bomb_highlight_left - delta)
 	legend_left = maxf(0.0, legend_left - delta)
 	if Input.is_action_just_pressed(BeeGameSettings.HUD_DEBUG_ACTION):
 		debug_visible = not debug_visible
@@ -187,6 +190,8 @@ func _draw_bombs(origin: Vector2) -> void:
 	for i in BeeGameSettings.HUD_BOMB_ICON_COUNT:
 		var center := origin + Vector2(6 + i * 17, 8)
 		var color := BeeGameSettings.HUD_POLLEN_COLOR if i < displayed_bomb_icons() else BeeGameSettings.HUD_EMPTY_COLOR
+		if bomb_highlight_left > 0.0 and i < displayed_bomb_icons(): # Tanda V: aro que late al entrar a una zona.
+			draw_arc(center, 8.5 + 1.5 * sin(bomb_highlight_left * TAU * 3.0), 0, TAU, 16, Color(1.0, 0.95, 0.6, clampf(bomb_highlight_left, 0.0, 1.0)), 2.0, true)
 		draw_circle(center, 6.0, color)
 		draw_arc(center, 6.0, 0, TAU, 16, BeeGameSettings.HUD_LABEL_COLOR, 1.0, true)
 		draw_line(center + Vector2(0, -5), center + Vector2(3, -9), BeeGameSettings.HUD_LABEL_COLOR, 1.6, true)
@@ -233,6 +238,25 @@ func _draw_combo(viewport_size: Vector2, juice: Node, font: Font) -> void:
 		var count := str(int(wave.get("liberated_count")))
 		var width := font.get_string_size(count, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE).x
 		draw_string(font, Vector2(strip.end.x - 12 - width, strip.position.y + 19), count, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_FONT_SIZE, BeeGameSettings.HUD_COMBO_COLOR)
+		_draw_swarm(Rect2(strip.position + Vector2(0, strip.size.y + 6), Vector2(strip.size.x, 30)), font)
+
+## Tanda V: barra de Liberación del Enjambre libre (cada liberado suma 1); llena, late y muestra la tecla.
+func _draw_swarm(strip: Rect2, font: Font) -> void:
+	var swarm := bee.get_parent().get_node_or_null("FreeSwarm")
+	if swarm == null:
+		return
+	var S := preload("res://scripts/game/bee_free_swarm_settings.gd")
+	_draw_panel(strip)
+	draw_string(font, strip.position + Vector2(12, 19), "ENJAMBRE", HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, BeeGameSettings.HUD_LABEL_COLOR)
+	var bar := Rect2(strip.position + Vector2(92, 11), Vector2(strip.size.x - 92 - 48, 9))
+	draw_rect(bar, BeeGameSettings.HUD_EMPTY_COLOR, true, -1.0, true)
+	var fill := 1.0 if swarm.is_active() else float(swarm.ratio())
+	var color: Color = S.HUD_COLOR
+	if swarm.is_ready():
+		color = color.lightened(0.25 + 0.25 * sin(Time.get_ticks_msec() / 1000.0 * TAU * S.HUD_READY_PULSE_HZ))
+	draw_rect(Rect2(bar.position, Vector2(bar.size.x * fill, bar.size.y)), color, true, -1.0, true)
+	var key := ("↑" if BeeGameSettings.last_input_joypad else "E") if swarm.is_ready() else ("%d/%d" % [swarm.charge, S.SWARM_CHARGE_NEEDED] if not swarm.is_active() else "¡YA!")
+	draw_string(font, Vector2(bar.end.x + 8, strip.position.y + 20), key, HORIZONTAL_ALIGNMENT_LEFT, -1, BeeGameSettings.HUD_SMALL_FONT_SIZE, color if swarm.is_ready() else BeeGameSettings.HUD_LABEL_COLOR)
 
 func show_hint(kind: StringName) -> void:
 	if taught.has(kind):

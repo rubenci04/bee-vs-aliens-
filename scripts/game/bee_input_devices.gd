@@ -41,6 +41,7 @@ func configure_actions() -> void:
 		trigger.axis = JOY_AXIS_TRIGGER_LEFT
 		trigger.axis_value = 1.0
 		InputMap.action_add_event(nova.ACTION, trigger)
+	preload("res://scripts/bee_prototype/bee_free_swarm.gd").ensure_action() # Tanda V: E / cruceta arriba = Enjambre libre.
 	for action in InputMap.get_actions():
 		for event in InputMap.action_get_events(action):
 			event.device = -1

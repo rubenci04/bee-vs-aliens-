@@ -50,6 +50,7 @@ static func free_animal(host: Node, visual: Node3D, implant: Node3D, at: Vector3
 	BeeAudio.play(host, &"liberate", at, CHIME_PITCH)
 	float_text(host, at + Vector3(0, 0.6, 0.2))
 	preload("res://scripts/bee_prototype/bee_feelings.gd").liberated(host.get_tree()) # Tanda U: Bee se alegra (y la primera vez lo dice).
+	preload("res://scripts/vfx/bee_impact.gd").freed(host, visual, at) # Tanda V: congelado corto y estallido dorado.
 
 
 ## Warm, natural colours and no alien glow. Every surface gets its own material copy first.

@@ -411,7 +411,9 @@ func melee_ready_ratio() -> float:
 
 func _on_melee_impact(hurt: DamageHurtbox3D, _amount: int) -> void:
 	if sting_dash != null and sting_dash.active:
-		BeeJuice.key_event(self,&"sting",hurt.owner_entity as Node3D,Vector2(sting_dash.direction.x,sting_dash.direction.y))
+		var impact := preload("res://scripts/game/bee_impact_settings.gd") # Tanda V: el golpe que conecta pesa más (congelado y zoom).
+		BeeJuice.key_event(self,&"sting",hurt.owner_entity as Node3D,Vector2(sting_dash.direction.x,sting_dash.direction.y),impact.MELEE_STOP if impact.IMPACT_ENABLED else -1.0)
+		preload("res://scripts/vfx/bee_impact.gd").melee_connect()
 	BeeAudio.play(get_parent(), &"melee", hurt.global_position)
 	($VisualRoot/BeeVisual as Node3D).call("sting_impact_effect", melee_hitbox.global_position)
 

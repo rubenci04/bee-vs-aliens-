@@ -11,6 +11,7 @@ const STEPS := [
 	{"id": &"melee", "keyboard": "Z", "gamepad": "Y / RB", "what": "El puñetazo embiste al enemigo cercano.", "when": "Usalo cuerpo a cuerpo, incluso si quedó atrás."},
 	{"id": &"bomb", "keyboard": "C", "gamepad": "X", "what": "La bomba limpia grupos.", "when": "Usala cuando haya muchos enemigos juntos."},
 	{"id": &"pollen", "keyboard": "Q", "gamepad": "LT", "what": "Un cartucho cura 25, da escudo y disparo doble por 4 s.", "when": "Usalo con poca vida o si te rodean; requiere 7 granos."},
+	{"id": &"swarm", "keyboard": "E", "gamepad": "CRUCETA ↑", "what": "El Enjambre libre: tus liberados vuelven a pelear 6 s.", "when": "Cada liberado carga la barra; llena, llamalo en un apuro."}, # Tanda V.
 ]
 
 static func description(step: Dictionary, gamepad: bool) -> String:

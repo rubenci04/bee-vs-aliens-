@@ -84,6 +84,11 @@ func _prepare_step() -> void:
 				juice.pollen_total += 7 - juice.pollen_progress()
 				_granted_pollen = true
 				juice._refresh_pollen()
+		&"swarm": # Tanda V: para probarlo se regala la barra llena.
+			var swarm := bee.get_parent().get_node_or_null("FreeSwarm")
+			if swarm != null:
+				swarm.charge = preload("res://scripts/game/bee_free_swarm_settings.gd").SWARM_CHARGE_NEEDED
+				_last_count = swarm.uses
 
 func _process(delta: float) -> void:
 	age += delta
@@ -102,6 +107,9 @@ func _process(delta: float) -> void:
 			&"melee": done = bee.melee_count > _last_count
 			&"bomb": done = bee.bomb_charges < _last_count
 			&"pollen": done = juice.novas_used > _last_count
+			&"swarm":
+				var swarm := bee.get_parent().get_node_or_null("FreeSwarm")
+				done = swarm == null or swarm.uses > _last_count
 		if done:
 			step_index += 1
 			if step_index >= GUIDE.STEPS.size():

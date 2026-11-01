@@ -56,6 +56,7 @@ func _physics_process(delta: float) -> void:
 			BeeAudio.play(get_parent(), &"bomb")
 			HONEY_BURST.spawn(get_parent(), global_position, radius)
 			BeeCameraShake.kick(self, 0.07, 0.24)
+			preload("res://scripts/vfx/bee_impact.gd").bomb(self, radius) # Tanda V: destello, sacudida, onda del radio real y cara contenta.
 			hide()
 			if is_instance_valid(source_player):
 				source_player.active_bomb = null

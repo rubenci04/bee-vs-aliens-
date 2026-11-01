@@ -100,6 +100,7 @@ func _ready() -> void:
 	# Tanda U: reacción al golpe (invulnerabilidad corta, retroceso, chispa) y frases de Bee.
 	var barks := preload("res://scripts/vfx/bee_barks.gd").attach(self, bee)
 	var reaction := preload("res://scripts/bee_prototype/bee_hit_reaction.gd").attach(self, bee)
+	preload("res://scripts/bee_prototype/bee_free_swarm.gd").attach(self, bee) # Tanda V: Enjambre libre.
 	if reaction != null and barks != null:
 		reaction.hurt.connect(func(first: bool): if first: barks.say("first_hit", true))
 		reaction.low_health.connect(func(): barks.say("low_health"))
@@ -124,7 +125,7 @@ func _update_camera_and_bounds() -> void:
 	super._update_camera_and_bounds()
 	camera.global_position = Vector3(distance, BeeLevel01Framing.effective_height(), BeeLevel01Framing.CAMERA_DISTANCE)
 	camera.rotation = Vector3(deg_to_rad(BeeLevel01Framing.CAMERA_PITCH_DEGREES), 0.0, 0.0)
-	camera.fov = BeeLevel01Framing.effective_fov()
+	camera.fov = BeeLevel01Framing.effective_fov() * preload("res://scripts/vfx/bee_impact.gd").fov_factor(get_physics_process_delta_time()) # Tanda V: zoom corto del golpe que conecta (los límites no cambian).
 
 func _on_bee_defeated() -> void:
 	super._on_bee_defeated()

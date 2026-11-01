@@ -30,6 +30,11 @@ func run() -> void:
 	check(card.step_index == 5 and juice.pollen_progress() >= 7, "Bomb advances to pollen with a training cartridge")
 	check(juice.try_pollen_nova(), "Training pollen cartridge can activate its powers")
 	card._process(0.016)
+	# Tanda V: séptimo paso, el Enjambre libre (el entrenamiento regala la barra llena).
+	var swarm := stage.get_node_or_null("FreeSwarm")
+	check(card.step_index == 6 and swarm != null and swarm.is_ready(), "Pollen advances to the free swarm with a full training bar")
+	if swarm != null: swarm.activate()
+	card._process(0.016)
 	await frames(3)
 	check(not wave.intro_active() and GUIDE.seen() and stage.get_node_or_null("HowToCard") == null, "Training completes and is remembered")
 	stage.queue_free()

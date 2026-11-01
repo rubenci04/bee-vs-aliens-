@@ -49,9 +49,9 @@ static func attach_hit_flash(unit: Node) -> HitFlash3D:
 static func hit_stop(_tree: SceneTree, _seconds := HIT_STOP_SECONDS) -> void:
 	pass
 
-static func key_event(from: Node3D, event: StringName, target: Node3D = null, direction := Vector2.RIGHT) -> bool:
+static func key_event(from: Node3D, event: StringName, target: Node3D = null, direction := Vector2.RIGHT, seconds := -1.0) -> bool:
 	if from == null or not from.is_inside_tree(): return false
-	return preload("res://scripts/vfx/bee_local_hit_stop.gd").for_host(from).trigger(from,event,target,direction)
+	return preload("res://scripts/vfx/bee_local_hit_stop.gd").for_host(from).trigger(from,event,target,direction,seconds)
 
 
 ## Warm pollen cloud where an animal was freed (one-shot CPU particles, frees itself).

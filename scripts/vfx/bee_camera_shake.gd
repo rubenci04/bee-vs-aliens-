@@ -20,6 +20,11 @@ static func kick(from: Node, amplitude := 0.05, duration := 0.2, direction := Ve
 	amplitude = minf(amplitude, MAX_AMPLITUDE)
 	var now := Time.get_ticks_msec() / 1000.0
 	var until := float(camera.get_meta("shake_until", 0.0))
+	var impact := preload("res://scripts/game/bee_impact_settings.gd") # Tanda V: nunca dos sacudidas grandes casi juntas.
+	if impact.IMPACT_ENABLED and amplitude >= impact.BIG_SHAKE:
+		if now - float(camera.get_meta("last_big_shake", -INF)) < impact.SHAKE_GAP_SECONDS:
+			return
+		camera.set_meta("last_big_shake", now)
 	if now < until and amplitude < float(camera.get_meta("shake_amplitude", 0.0)):
 		return
 	camera.set_meta("shake_until", now + duration)

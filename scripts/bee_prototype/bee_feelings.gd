@@ -7,6 +7,8 @@ static func liberated(tree: SceneTree) -> void:
 	for visual in tree.get_nodes_in_group("bee_visual_instances"):
 		if visual.has_method("feel_happy"): visual.call("feel_happy")
 	_say(tree, "first_liberation", true)
+	for swarm in tree.get_nodes_in_group("bee_free_swarm"): # Tanda V: cada liberado carga el Enjambre libre.
+		swarm.call("add_charge", 1)
 
 
 static func zone_clear(tree: SceneTree) -> void:

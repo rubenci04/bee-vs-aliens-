@@ -769,6 +769,12 @@ func _begin_arena(event: Dictionary, launched_index: int) -> void:
 	stage.scroll_speed = 0.0
 	_label_token += 1
 	BeeMusic.zone() # Tanda T: música de acción fuerte mientras dura la zona.
+	var impact := preload("res://scripts/game/bee_impact_settings.gd") # Tanda V: cada zona arranca con bombas y el HUD las marca.
+	if impact.IMPACT_ENABLED and is_instance_valid(bee):
+		bee.bomb_charges = mini(bee.max_bomb_charges, maxi(bee.bomb_charges, impact.BOMBS_AT_ZONE_START))
+		bee.weapon_state_changed.emit()
+		var hud := stage.get_node_or_null("CanvasLayer/WeaponsHUD")
+		if hud != null: hud.set("bomb_highlight_left", impact.BOMB_HUD_HIGHLIGHT_SECONDS)
 	_update_zone_banner()
 
 func in_arena() -> bool:

@@ -19,11 +19,11 @@ func freeze(node: Node):
  saved.append({"node":node,"physics":node.is_physics_processing(),"process":node.is_processing()})
  node.set_physics_process(false)
  node.set_process(false) # Keep collision objects, warnings, audio and child timers alive.
-func trigger(from: Node3D, event: StringName, target: Node3D, direction: Vector2) -> bool:
+func trigger(from: Node3D, event: StringName, target: Node3D, direction: Vector2, seconds := -1.0) -> bool:
  if not S.enabled or not BeeJuice.hit_stop_enabled or cooldown>0 or get_tree().paused: return false
- if event not in [&"sting",&"roll_shot",&"boss_armour"]: return false
+ if event not in [&"sting",&"roll_shot",&"boss_armour",&"free_small",&"free_big"]: return false # Tanda V: liberar también congela.
  cooldown=S.STOP_COOLDOWN
- remaining=S.STOP_SECONDS
+ remaining=seconds if seconds>0 else S.STOP_SECONDS # Tanda V: cada evento puede pedir su duración.
  var bee := from if from is BeePlayer else get_tree().get_first_node_in_group("bee_player")
  freeze(bee)
  if bee is BeePlayer:
