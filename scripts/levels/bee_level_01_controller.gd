@@ -10,6 +10,7 @@ signal enemy_hit
 signal boss_damaged
 const ENCOUNTER := preload("res://scripts/game/bee_encounter_settings.gd")
 const TELEPORT := preload("res://scripts/vfx/bee_enemy_teleport.gd")
+const MOMENTS := preload("res://scripts/game/bee_moment_settings.gd") # Tanda X: momentos de los actos 2 y 3.
 const BOMB_RECHARGE_X := 306.0 # Tanda E: inside the screen the post-robot advance ends on (was 302, on its left edge).
 const PREBOSS_POWER_X := 282.0 # 12 m before the Robot at X294, just after checkpoint 2.
 
@@ -436,6 +437,8 @@ const EVENTS_ROSTER = [
 	{"at": 156.0, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.5, 2.1], "y": [0.0, 0.0, 0.0, 0.0], "debut": "WormA"},
 	{"at": 159.3, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.9, 1.5], "y": [0.0, 0.0, 0.0]},
 	{"at": 162.7, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA", "WormA", "WormA"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 0.0, 0.0]},
+	# Tanda X: momento del acto 2 (macizo). Espera el campo limpio y frena eventos mientras dura.
+	{"at": MOMENTS.MOMENT_DEW_X, "act": 3, "label": "MACIZO · GOTAS DE ROCÍO", "units": [], "moment": "dew_drops", "clear": true, "moment_seconds": MOMENTS.MOMENT_DEW_SECONDS},
 	{"at": 169.0, "act": 3, "label": "MACIZO · GUSANO ROSA Y MOSCA", "units": ["WormA", "FlyCommon"], "delays": [0.0, 0.7], "y": [0.0, 4.6]},
 	{"at": 171.2, "act": 3, "label": "MACIZO · MARIQUITA Y GUSANO ROSA", "units": ["Ladybird", "WormA"], "delays": [0.0, 0.7], "y": [5.2, 0.0]},
 	{"at": 173.4, "act": 3, "label": "MACIZO · MOSCA Y GUSANO ROSA Y MARIQUITA", "units": ["FlyCommon", "WormA", "Ladybird"], "delays": [0.0, 0.6, 1.4], "y": [4.0, 0.0, 3.4]},
@@ -465,6 +468,8 @@ const EVENTS_ROSTER = [
 	{"at": 235.0, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB", "WormB"], "delays": [0.0, 0.6, 1.5], "y": [0.0, 0.0, 0.0], "debut": "WormB"},
 	{"at": 238.3, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.7], "y": [0.0, 0.0]},
 	{"at": 241.7, "act": 4, "label": "HUERTA · GUSANO DE COMPOST", "units": ["WormB", "WormB"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
+	# Tanda X: momento del acto 3 (huerta). Espera el campo limpio y frena eventos mientras dura.
+	{"at": MOMENTS.MOMENT_MOWER_X, "act": 4, "label": "HUERTA · CORTADORA", "units": [], "moment": "lawnmower", "clear": true, "moment_seconds": MOMENTS.MOMENT_MOWER_SECONDS},
 	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST Y MOSCA VERDE", "units": ["FlyCommon", "WormB", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 4.0]},
 	{"at": 252.4, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
 	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
@@ -689,6 +694,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		_debut_wait = 0.0
 	current_act = int(event.get("act", current_act))
+	if event.has("moment_seconds") and _moment_enabled(StringName(event["moment"])):
+		_breather_until = maxf(_breather_until, _clock + float(event["moment_seconds"])) # Tanda X: sin enemigos durante el momento.
 	if event.has("moment"):
 		director_moment.emit(StringName(event["moment"]))
 	if bool(event.get("human", false)):
@@ -1860,3 +1867,11 @@ func _end_intro() -> void:
 		stage.scroll_speed = _intro_restore_scroll
 	_intro_running = false
 	_intro_left = 0.0
+
+
+## Tanda X: cada momento nuevo tiene su interruptor; apagado, su fila no frena nada.
+static func _moment_enabled(moment: StringName) -> bool:
+	match moment:
+		&"dew_drops": return MOMENTS.MOMENT_DEW_ENABLED
+		&"lawnmower": return MOMENTS.MOMENT_MOWER_ENABLED
+	return false

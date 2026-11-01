@@ -101,6 +101,7 @@ func _ready() -> void:
 	var barks := preload("res://scripts/vfx/bee_barks.gd").attach(self, bee)
 	var reaction := preload("res://scripts/bee_prototype/bee_hit_reaction.gd").attach(self, bee)
 	preload("res://scripts/bee_prototype/bee_free_swarm.gd").attach(self, bee) # Tanda V: Enjambre libre.
+	preload("res://scripts/levels/bee_level_01_set_pieces.gd").attach(self) # Tanda X: momentos de los actos 2 y 3.
 	# Tanda W: escenas cortas y carteles de jefe (una vez por partida: un reintento desde checkpoint no las repite).
 	preload("res://scripts/levels/bee_story_beats.gd").attach(self, not checkpoint.checkpoint_active)
 	if not checkpoint.checkpoint_active:
@@ -261,6 +262,11 @@ func _show_clear_banner() -> void:
 	results.total=level_wave.animals_total
 	results.score=($Juice as BeeLevel01Juice).score
 	results.combo=($Juice as BeeLevel01Juice).best_combo
+	# Tanda X: más estadísticas para la pantalla final.
+	results.seconds = elapsed_seconds
+	results.bombs = bee.bombs_used
+	results.swarms = int(get_node("FreeSwarm").uses) if has_node("FreeSwarm") else 0
+	results.hits = int(get_node("BeeHitReaction").hits) if has_node("BeeHitReaction") else 0
 	add_child(results)
 	clear_banner=Label.new() # Compatibility handle for old review tools; no world text.
 	clear_banner.name="ClearBanner"

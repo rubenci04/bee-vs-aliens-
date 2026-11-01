@@ -38,6 +38,8 @@ func _build_screen() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	move_child(shade, 1)
+	add_child(_flying_bee()) # Tanda X: Bee animada volando sobre el fondo (detrás del logo y del menú).
+	move_child(get_node("TitleBee"), 2)
 
 	_logo = TextureRect.new()
 	_logo.name = "Logo"
@@ -306,3 +308,62 @@ func _show_intro() -> void:
 func _play_lake() -> void:
 	BeeGameSettings.from_title = true
 	preload("res://scripts/game/bee_scene_fade.gd").go(self,LAKE_SCENE)
+
+
+# --- Tanda X: Bee volando en el título ---------------------------------------------------------------------------
+
+var _title_bee: Node3D
+var _title_bee_clock := 0.0
+
+
+## Una ventanita 3D transparente del tamaño de la pantalla, con Bee aleteando en un ocho lento. No recibe clics.
+func _flying_bee() -> Control:
+	var flow := preload("res://scripts/game/bee_flow_settings.gd")
+	var holder := SubViewportContainer.new()
+	holder.name = "TitleBee"
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.stretch = true
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var view := SubViewport.new()
+	view.own_world_3d = true
+	view.transparent_bg = true
+	holder.add_child(view)
+	var camera := Camera3D.new()
+	camera.position = Vector3(0.0, 0.0, 6.0)
+	camera.fov = 40.0
+	view.add_child(camera)
+	var light := DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-40.0, 25.0, 0.0)
+	view.add_child(light)
+	var scene := load("res://assets/models/shared/bee_hero/shared_hero_bee_v02.glb") as PackedScene
+	if scene == null:
+		return holder
+	_title_bee = scene.instantiate() as Node3D
+	_title_bee.scale = Vector3.ONE * flow.TITLE_BEE_SCALE
+	view.add_child(_title_bee)
+	BeeToonStyle.apply(_title_bee, true, BeeToonStyle.OUTLINE_BEE)
+	var faces := preload("res://scripts/bee_prototype/bee_expressions.gd").new()
+	faces.bind(_title_bee)
+	if faces.is_bound():
+		faces.set_face_now(&"happy")
+	for player: AnimationPlayer in _title_bee.find_children("*", "AnimationPlayer", true, false):
+		if player.has_animation(&"wingbeat"):
+			player.get_animation(&"wingbeat").loop_mode = Animation.LOOP_LINEAR
+			player.play(&"wingbeat")
+	return holder
+
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(_title_bee):
+		return
+	var flow := preload("res://scripts/game/bee_flow_settings.gd")
+	_title_bee_clock += delta
+	var t := _title_bee_clock * flow.TITLE_BEE_SPEED
+	var previous := _title_bee.position
+	# Un ocho lento del lado derecho de la pantalla (el menú queda a la izquierda y abajo).
+	_title_bee.position = flow.TITLE_BEE_CENTER + Vector3(sin(t) * flow.TITLE_BEE_RANGE.x, sin(t * 2.0) * flow.TITLE_BEE_RANGE.y, cos(t) * 0.6)
+	var velocity := _title_bee.position - previous
+	if absf(velocity.x) > 0.0001:
+		var facing := -PI * 0.5 if velocity.x > 0.0 else PI * 0.5 # El modelo mira hacia -Z.
+		_title_bee.rotation.y = lerp_angle(_title_bee.rotation.y, facing, clampf(delta * 4.0, 0.0, 1.0))
+	_title_bee.rotation.z = clampf(-velocity.y * 6.0, -0.35, 0.35)

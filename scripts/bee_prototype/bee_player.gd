@@ -94,6 +94,7 @@ var facing_x := 1.0
 var current_auto_target: Node3D
 var shots_fired := 0
 var melee_count := 0
+var bombs_used := 0 # Tanda X: bombas lanzadas en la partida (resultados).
 var is_defeated := false
 ## Legacy property name retained for checkpoint/bot compatibility; value is now SECONDS.
 var spread_ammo := 0.0
@@ -369,6 +370,7 @@ func use_bomb() -> BeeAlienBomb:
 	active_bomb = bomb
 	bomb.activate(self, bomb_radius, bomb_damage)
 	bomb_charges -= 1
+	bombs_used += 1 # Tanda X: para la pantalla de resultados.
 	weapon_state_changed.emit()
 	return bomb
 

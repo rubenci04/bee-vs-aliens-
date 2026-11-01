@@ -6,7 +6,7 @@ static var FREE_SWARM_ENABLED := true
 const ACTION := &"bee_swarm" # Teclado E, mando cruceta arriba (bee_input_devices.gd).
 
 ## Cada insecto liberado suma 1; con la barra llena se puede llamar.
-const SWARM_CHARGE_NEEDED := 25
+const SWARM_CHARGE_NEEDED := 60 # Tanda X: con 25 salía ~10 veces por partida (bot: ~340 liberados; video de Rubén: 368); con 60, ~5-6 (una por acto).
 const SWARM_SECONDS := 6.0
 const SWARM_ALLIES := 6
 const SWARM_SHOT_DAMAGE := 2
