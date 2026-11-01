@@ -7,6 +7,7 @@ func check(ok: bool, message: String) -> void:
 		failures += 1
 		push_error(message)
 func run() -> void:
+	preload("res://scripts/game/bee_expression_settings.gd").HIT_REACTION_ENABLED = false # Tanda U: esta suite mide golpe por golpe; la invulnerabilidad de 0,35 s se prueba en validate_bee_tanda_u.
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
 	root.add_child(stage)
 	current_scene = stage

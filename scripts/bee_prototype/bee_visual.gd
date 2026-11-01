@@ -3,6 +3,8 @@ const FEEDBACK := preload("res://scripts/game/bee_feedback_settings.gd")
 const MOTION := preload("res://scripts/game/bee_motion_settings.gd")
 const STING := preload("res://scripts/game/bee_sting_settings.gd")
 const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
+const FEEL := preload("res://scripts/game/bee_expression_settings.gd")
+const EXPRESSIONS := preload("res://scripts/bee_prototype/bee_expressions.gd")
 var _tilt_rest := Transform3D.IDENTITY
 var _flight_tilt := Vector3.ZERO
 ## Selectable Bee model and presentation. This wrapper owns no gameplay state.
@@ -52,6 +54,13 @@ var _drill_rest := Vector3.ZERO
 var _antennae: Array[Dictionary] = []
 var _soft_texture: Texture2D
 var motion_trail: CPUParticles3D
+## Tanda U: caras y festejo.
+var expressions := EXPRESSIONS.new()
+var surprise_left := 0.0
+var happy_left := 0.0
+var focus_left := 0.0
+var celebrate_left := 0.0
+var _health_hooked := false
 
 
 func _ready() -> void:
@@ -63,6 +72,7 @@ func _ready() -> void:
 		actor.roll_started.connect(play_roll_effects)
 		actor.weapon_state_changed.connect(_weapon_gesture)
 		_last_facing = actor.facing_x
+		_hook_health.call_deferred() # Tanda U: cuando Bee ya tiene su HealthComponent listo.
 
 
 func apply_model_version(version := "") -> bool:
@@ -134,6 +144,7 @@ func apply_model_version(version := "") -> bool:
 	get_parent().rotation.y = -facing * PI * 0.5
 	get_parent().scale = Vector3.ONE * (BeeGameSettings.BEE_V01_VISUAL_SCALE if chosen == "v01" else HERO.bee_visual_scale()) # Tanda S: solo el dibujo crece.
 	_rim_applied = -1.0
+	expressions.bind(model if chosen == "v02" else null) # Tanda U: las caras usan las piezas sueltas del v02.
 	if chosen == "v02":
 		_play_model_animation(&"wingbeat")
 	return true
@@ -161,6 +172,7 @@ func play_muzzle_effect(fallback: Vector3, direction: Vector3, spread := false) 
 	BeeCombatVFX.spawn(actor.get_parent(), point, &"bee_muzzle_spread" if spread else &"bee_muzzle", direction)
 	if MOTION.enabled:
 		_shot_left = MOTION.SHOT_RECOIL_SECONDS
+	focus_left = FEEL.FOCUS_HOLD_SECONDS # Tanda U: cara concentrada mientras dispara.
 	if blaster == null:
 		return
 	if _blaster_recoil_tween != null:
@@ -199,6 +211,7 @@ func _process(delta: float) -> void:
 	_update_thrusters(delta)
 	punch_pose.update(actor.sting_dash)
 	_update_invulnerability_blink()
+	_update_feelings(delta)
 
 
 func _wing_hz() -> float:
@@ -392,7 +405,7 @@ func play_roll_effects() -> void:
 
 
 func _update_invulnerability_blink() -> void:
-	if not actor.is_rolling:
+	if not actor.is_rolling and not (actor.health != null and actor.health.hit_protected): # Tanda U: también parpadea tras un golpe.
 		if _last_blink_state:
 			model.visible = true
 		_last_blink_state = false
@@ -514,6 +527,7 @@ func _update_flight_tilt(delta: float) -> void:
 	if actor.facing_x != _last_facing:
 		_turn_arc = deg_to_rad(MOTION.TURN_ARC_DEGREES) * actor.facing_x
 		_last_facing = actor.facing_x
+		_hook_health.call_deferred() # Tanda U: cuando Bee ya tiene su HealthComponent listo.
 	_turn_arc *= exp(-delta / MOTION.TURN_ARC_SECONDS)
 	if FEEDBACK.tilt_enabled and not actor.is_rolling and not actor.sting_dash.active:
 		if MOTION.enabled:
@@ -532,4 +546,44 @@ func _update_flight_tilt(delta: float) -> void:
 		bob = MOTION.HOVER_HEIGHT * clampf(1.0 - speed / MOTION.HOVER_SPEED_THRESHOLD, 0.0, 1.0) * sin(elapsed * TAU * MOTION.HOVER_HZ)
 		recoil = MOTION.SHOT_RECOIL_DISTANCE * sin(PI * clampf(_shot_left / MOTION.SHOT_RECOIL_SECONDS, 0.0, 1.0))
 		bob += deg_to_rad(MOTION.WEAPON_GESTURE_DEGREES) * MOTION.HOVER_HEIGHT * sin(PI * clampf(_weapon_left / MOTION.WEAPON_GESTURE_SECONDS, 0.0, 1.0))
-	transform = _tilt_rest * Transform3D(Basis.from_euler(_flight_tilt), Vector3(0.0, bob, recoil))
+	var spin := Basis.IDENTITY # Tanda U: vuelta de festejo (solo dibujo).
+	if celebrate_left > 0.0:
+		spin = Basis(Vector3.RIGHT, TAU * (1.0 - celebrate_left / FEEL.CELEBRATE_SECONDS))
+	transform = _tilt_rest * Transform3D(Basis.from_euler(_flight_tilt) * spin, Vector3(0.0, bob, recoil))
+
+
+# --- Tanda U: lo que Bee siente ------------------------------------------------------------------------------
+
+## Algo bueno pasó (liberó un insecto): cara contenta un rato.
+func feel_happy() -> void:
+	happy_left = FEEL.HAPPY_SECONDS
+
+
+## ZONA DESPEJADA: cara contenta y una vuelta corta del dibujo (sin invulnerabilidad extra).
+func celebrate() -> void:
+	happy_left = FEEL.HAPPY_SECONDS
+	celebrate_left = FEEL.CELEBRATE_SECONDS
+
+
+## La cara que corresponde ahora mismo (también la leen los tests).
+func current_face() -> StringName:
+	var tired := actor != null and actor.health != null and float(actor.health.current_health) < float(actor.health.max_health) * FEEL.LOW_HP_RATIO
+	return EXPRESSIONS.choose(surprise_left > 0.0, happy_left > 0.0, tired, focus_left > 0.0)
+
+
+func _hook_health() -> void:
+	if _health_hooked or actor == null or actor.health == null:
+		return
+	_health_hooked = true
+	actor.health.health_changed.connect(func(_current: int, _maximum: int, change: int):
+		if change < 0: surprise_left = FEEL.SURPRISE_SECONDS)
+
+
+func _update_feelings(delta: float) -> void:
+	_hook_health()
+	surprise_left = maxf(0.0, surprise_left - delta)
+	happy_left = maxf(0.0, happy_left - delta)
+	focus_left = maxf(0.0, focus_left - delta)
+	celebrate_left = maxf(0.0, celebrate_left - delta)
+	if FEEL.EXPRESSIONS_ENABLED and expressions.is_bound():
+		expressions.update(current_face(), delta)

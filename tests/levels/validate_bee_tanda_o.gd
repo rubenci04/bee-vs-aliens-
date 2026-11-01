@@ -16,6 +16,7 @@ func hit(stage: BeeShmupStage, source: Node, amount: int) -> int:
 	return applied
 
 func run() -> void:
+	preload("res://scripts/game/bee_expression_settings.gd").HIT_REACTION_ENABLED = false # Tanda U: esta suite mide golpe por golpe; la invulnerabilidad de 0,35 s se prueba en validate_bee_tanda_u.
 	var stage := await fixture()
 	var bee := stage.bee
 	bee.health.damage_blocked = false

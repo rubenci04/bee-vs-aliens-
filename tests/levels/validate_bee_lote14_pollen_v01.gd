@@ -22,6 +22,7 @@ func frames(count: int) -> void:
 
 
 func run() -> void:
+	preload("res://scripts/game/bee_expression_settings.gd").HIT_REACTION_ENABLED = false # Tanda U: esta suite mide golpe por golpe; la invulnerabilidad de 0,35 s se prueba en validate_bee_tanda_u.
 	create_timer(60.0, true, false, true).timeout.connect(func(): quit(1))
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	var stage := LEVEL.instantiate() as BeeShmupStage

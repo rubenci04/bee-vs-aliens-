@@ -1,0 +1,36 @@
+# Tanda U — Bee siente y reacciona
+
+- Base: `tanda-t-arranque-y-ritmo` (`dff97f0`). Rama: `tanda-u-bee-siente`. Es la «T» del doc del Plan 2: la T nueva corrió las letras una.
+- Constantes en `scripts/game/bee_expression_settings.gd`, con tres interruptores: `EXPRESSIONS_ENABLED`, `HIT_REACTION_ENABLED` y `BARKS_ENABLED`. **La vida y el daño por golpe no cambian.**
+- A. Caras (`scripts/bee_prototype/bee_expressions.gd`), con las piezas sueltas del modelo v02 (cejas, ojos, brillos, mandíbulas, puntas de antena), sin Blender. Cada pieza gira alrededor de su centro y el pasaje dura 0,08 s.
+  - **Concentrada** mientras dispara: ceño y ojos entornados.
+  - **Sorpresa** al recibir un golpe (0,5 s): ojos grandes, cejas arriba y boca abierta.
+  - **Contenta** al liberar o despejar una zona (0,8 s): ojos entrecerrados y sonrisa.
+  - **Cansada** con menos del 30 % de vida: párpados bajos y antenas caídas.
+  - Prioridad: sorpresa, después contenta, cansada, concentrada y neutra.
+- B. Golpe recibido (`bee_hit_reaction.gd`, solo Nivel 1):
+  - 0,35 s de invulnerabilidad para TODO daño, con parpadeo.
+  - Retroceso de 0,25 m en 0,1 s, alejándose del golpe.
+  - Chispa cian del implante. La sacudida y el flash ya existían.
+- Medición con bots (Normal):
+  - Nivel hasta el robot (`dev/tanda_u/measure_damage.gd`): 314 de daño sin la invulnerabilidad contra 248 con ella, un **21 % menos**. Está por debajo del tope de 25 % que fijaba el plan, así que 0,35 s se queda.
+  - Ráfaga de la tarántula (bot de la Tanda O): el peor segundo baja de 24 a 11 de daño.
+- C. Con vida baja, el implante chisporrotea cada 1,2 s. No hay alarma sonora.
+- D. Con ZONA DESPEJADA, Bee da una vuelta corta de festejo (solo dibujo, sin invulnerabilidad extra) y pone cara contenta.
+- E. Globitos de frases, de 1 a 3 palabras, en `assets/ui/bee_barks.json` (se editan sin tocar código):
+  - Salen en la primera liberación, el primer golpe, la zona despejada, la vida baja y la entrada del robot y de la tarántula.
+  - Nunca dos en menos de 20 s.
+  - Se apagan en la pausa: «Frases de Bee: SÍ/NO».
+- `scripts/bee_prototype/bee_feelings.gd` es el único lugar donde el juego avisa a la cara y a las frases.
+- Capturas de cada cara (no van al repo): `dev/tanda_u/caras/`. La hoja de las cinco caras está en `docs/capturas_tanda_u/caras.png`.
+- Test nuevo: `validate_bee_tanda_u`. Cubre la prioridad de caras, que las piezas se mueven, la invulnerabilidad de 0,35 s para todo daño, el retroceso, la vida baja, el festejo y el tope y apagado de las frases.
+- 6 suites que le pegan a Bee varias veces seguidas para medir otra cosa ahora apagan la reacción al golpe al empezar, porque la invulnerabilidad bloqueaba el segundo golpe:
+  - `audio_basic_v01`, `t3m_pollen_nova`, `tanda_o`, `tanda_r`, `terminal_states_v01` y `lote14_pollen_v01`.
+  - La invulnerabilidad en sí se prueba en `tanda_u`.
+- Núcleo: 151/151 sin `SCRIPT ERROR`. 145 pasaron en la corrida completa y esas 6 en una repetición; entre medio solo cambiaron archivos de test.
+- Pendiente: la sonrisa de «contenta» se nota poco, porque la boca del modelo es chica. Si hace falta más, va a hacer falta una pieza de boca nueva en el modelo.
+- Cómo probar: Godot, F5, Jugar.
+  - Mirá la cara de Bee al disparar, al recibir un golpe y al liberar.
+  - Después de un golpe parpadea y no recibe otro enseguida.
+  - Al despejar una zona da una vuelta.
+  - Las frases salen sobre Bee; en la pausa (Esc) está la opción para apagarlas.

@@ -32,6 +32,7 @@ var pause_panel: PanelContainer ## LOTE 14 · ETAPA 4: music and effects sliders
 var music_slider: HSlider
 var sfx_slider: HSlider
 var training_button: Button
+var barks_button: Button # Tanda U.
 var controls_hint: Label
 var beacon: Node3D
 var _notice_left := 0.0
@@ -101,6 +102,12 @@ func _build_pause_panel() -> void:
 	training_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	training_button.pressed.connect(_open_training)
 	box.add_child(training_button)
+	barks_button = Button.new() # Tanda U: apagar o prender los globitos de frases de Bee.
+	barks_button.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
+	barks_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	barks_button.pressed.connect(_toggle_barks)
+	box.add_child(barks_button)
+	_refresh_barks_button()
 	var hint := Label.new()
 	hint.text = "POLEN Q / LT: cura 25, escudo 2,5 s y disparo doble 4 s.\nCada uso gasta 1 de 3 cartuchos (7 granos).\nFLECHAS: AJUSTAR · ARRIBA/ABAJO: CAMBIAR · ESC: SEGUIR"
 	hint.add_theme_font_size_override("font_size", BeeGameSettings.PAUSE_PANEL_FONT_SIZE)
@@ -394,3 +401,15 @@ func restart_level(full: bool) -> void:
 func _exit_tree() -> void:
 	if stage != null and is_instance_valid(stage.bee):
 		stage.bee.health.damage_blocked = false
+
+
+## Tanda U: frases de Bee, desde la pausa.
+func _toggle_barks() -> void:
+	var feel := preload("res://scripts/game/bee_expression_settings.gd")
+	feel.BARKS_ENABLED = not feel.BARKS_ENABLED
+	_refresh_barks_button()
+
+
+func _refresh_barks_button() -> void:
+	if barks_button != null:
+		barks_button.text = "Frases de Bee: %s" % ("SÍ" if preload("res://scripts/game/bee_expression_settings.gd").BARKS_ENABLED else "NO")

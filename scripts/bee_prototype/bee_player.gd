@@ -462,7 +462,7 @@ func _on_health_changed(current: int, maximum: int, change: int) -> void:
 	health_changed.emit(current, maximum)
 
 func take_boss_burst_damage(amount: int, source: Node) -> int:
-	if not BOSS_BURST_GUARD.is_tarantula_source(source) or health.damage_blocked or health.invulnerable or health.pollen_protected or health.current_health <= 0:
+	if not BOSS_BURST_GUARD.is_tarantula_source(source) or health.damage_blocked or health.invulnerable or health.pollen_protected or health.hit_protected or health.current_health <= 0:
 		return health.take_damage(amount)
 	var allowed: int = boss_burst_guard.allowed(amount)
 	var applied := health.take_damage(allowed)

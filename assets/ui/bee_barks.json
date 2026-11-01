@@ -1,0 +1,9 @@
+{
+	"_ayuda": "Frases de Bee (1 a 3 palabras). Podés editarlas: cada momento elige una al azar. Nunca salen dos más seguido que BARK_MIN_GAP_SECONDS.",
+	"first_liberation": ["¡Libres!", "¡Volá, amigo!", "¡Uno menos!"],
+	"first_hit": ["¡Uy!", "Che, eso dolió", "¡Ay, ay!"],
+	"zone_clear": ["¡Vamos!", "¡Zona limpia!", "¡Eso!"],
+	"low_health": ["Uh, cuidado...", "¡A la colmena!", "Aguantá, Bee"],
+	"boss_robot": ["Uh...", "¡Qué grandote!", "¿Y eso?"],
+	"boss_spider": ["¡Arañas no!", "Uh... ¡qué patas!", "¡Ahí viene!"]
+}

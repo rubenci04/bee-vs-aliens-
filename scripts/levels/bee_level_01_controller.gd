@@ -835,6 +835,7 @@ func _update_arena(delta: float) -> void:
 		_show_label("ZONA DESPEJADA",1.6)
 		preload("res://scripts/ui/bee_hud_notices.gd").for_host(stage).clear_combat_zone(1.6)
 		BeeMusic.back_to_level() # Tanda T: zona despejada, vuelve el tema del nivel.
+		preload("res://scripts/bee_prototype/bee_feelings.gd").zone_clear(get_tree()) # Tanda U: festejo y frase.
 		return
 	if _clock >= float(_arena["next_arrival"]):
 		# Tanda E: a reinforcement only arrives when fewer than REINFORCE_BELOW enemies are left (and 30 s went by).
@@ -1496,6 +1497,7 @@ func boss_active() -> bool:
 func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 	miniboss = robot
 	BeeMusic.boss()
+	preload("res://scripts/bee_prototype/bee_feelings.gd").boss(get_tree(), "boss_robot") # Tanda U: Bee lo ve.
 	_connect_combo_health(robot.cannon_health, robot, false)
 	var health := robot.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(MINIBOSS_HP)
@@ -1595,6 +1597,7 @@ func _start_tarantula() -> void:
 		checkpoint.activate_boss_checkpoint() # Before counting it: a retry counts it again from the snapshot.
 	tarantula = TARANTULA.instantiate() as TarantulaBoss01
 	tarantula.name = "TarantulaBoss01"
+	preload("res://scripts/bee_prototype/bee_feelings.gd").boss(get_tree(), "boss_spider") # Tanda U: Bee la ve.
 	tarantula.max_hp = BeeGameSettings.scaled_hp(tarantula.max_hp)
 	get_node("../Enemies").add_child(tarantula)
 	tarantula.defeated.connect(_on_tarantula_gone)

@@ -97,6 +97,12 @@ func _ready() -> void:
 	# Tanda S: sombra de Bee en el suelo y pasillo de vuelo limpio (los dos se apagan con HERO_LOOK_ENABLED).
 	preload("res://scripts/vfx/bee_hero_shadow.gd").attach(self, bee, BeeLevel01VisualTarget.GROUND_Y)
 	preload("res://scripts/levels/bee_flight_corridor.gd").attach(self)
+	# Tanda U: reacción al golpe (invulnerabilidad corta, retroceso, chispa) y frases de Bee.
+	var barks := preload("res://scripts/vfx/bee_barks.gd").attach(self, bee)
+	var reaction := preload("res://scripts/bee_prototype/bee_hit_reaction.gd").attach(self, bee)
+	if reaction != null and barks != null:
+		reaction.hurt.connect(func(first: bool): if first: barks.say("first_hit", true))
+		reaction.low_health.connect(func(): barks.say("low_health"))
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)

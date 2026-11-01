@@ -41,6 +41,7 @@ func bullet_at(stage: Node3D, point: Vector3, boss: bool = false) -> Node3D:
 	return shot
 
 func run() -> void:
+	preload("res://scripts/game/bee_expression_settings.gd").HIT_REACTION_ENABLED = false # Tanda U: esta suite mide golpe por golpe; la invulnerabilidad de 0,35 s se prueba en validate_bee_tanda_u.
 	BeeJuice.hit_stop_enabled = false
 	BeeGameSettings.difficulty = BeeGameSettings.NORMAL
 	var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate() as BeeShmupStage
