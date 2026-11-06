@@ -41,3 +41,6 @@ dev/lote15/__pycache__/
 dev/lote15_*_result.json
 dev/lote15_old_expectations.txt
 dev/tanda_r/ultima_corrida/
+
+# Capturas de trabajo de la mejora visual (las comparaciones que importan van a docs/capturas_mejora_visual/).
+qa_screenshots/
