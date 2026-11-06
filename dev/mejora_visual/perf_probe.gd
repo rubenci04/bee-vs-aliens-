@@ -31,7 +31,11 @@ func run() -> void:
 		if x > 330.0:
 			stage.wave._start_tarantula()
 		var times: Array[float] = []
+		var cpu_process := 0.0
+		var cpu_physics := 0.0
+		var cpu_samples := 0
 		var t := 0.0
+		var shot_clock := 0.0
 		var last := Time.get_ticks_usec()
 		while t < SECONDS:
 			await process_frame
@@ -40,18 +44,23 @@ func run() -> void:
 			last = now
 			t += dt / 1000.0
 			times.append(dt)
+			cpu_process += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+			cpu_physics += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+			cpu_samples += 1
 			var half: float = BeeLevel01Framing.half_width_min(BeeLevel01Framing.view_aspect(stage.get_viewport()))
 			stage.bee.global_position.x = stage.distance - half * 0.55
 			stage.bee.global_position.y = 3.2 + sin(t * 0.8) * 1.6
-			if int(t * 12) % 2 == 0:
+			shot_clock += dt / 1000.0
+			if shot_clock >= 1.0 / 12.0: # La cadencia real del arma.
+				shot_clock = 0.0
 				stage.bee.fire()
 		times.sort()
 		var total := 0.0
 		for v in times:
 			total += v
 		var mean := total / times.size()
-		var line := "x=%-6.1f fps_medio=%-5d ms_medio=%-6.2f p95=%-6.2f p99=%-6.2f draw=%-5d objs=%-5d prims=%d" % [x, 1000.0 / mean, mean, times[int(times.size() * 0.95)], times[int(times.size() * 0.99)],
-			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)]
+		var line := "x=%-6.1f fps_medio=%-5d ms_medio=%-6.2f p95=%-6.2f p99=%-6.2f draw=%-5d objs=%-5d prims=%-7d proc=%.1f fis=%.1f" % [x, 1000.0 / mean, mean, times[int(times.size() * 0.95)], times[int(times.size() * 0.99)],
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME), cpu_process / cpu_samples, cpu_physics / cpu_samples]
 		lines.append(line)
 		print(line)
 		root.remove_child(stage)

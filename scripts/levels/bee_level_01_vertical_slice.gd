@@ -30,6 +30,11 @@ const ROSTER_GATE_SUPPLY := {"bomb": Vector2(285.5, 3.8), "healing": Vector2(287
 ## LOTE 14 · ETAPA 2.2: 12 clusters of 10 pollen (half a bar of 20), all from the second half of the level (X>=148) where the damage starts; the loose scene pollen is halved too (every LOOSE_POLLEN_KEEP_EVERY-th pickup stays).
 const POLLEN_CLUSTERS := [[148.0, 4.0], [162.0, 3.4], [176.0, 4.4], [190.0, 3.0], [204.0, 4.0], [218.0, 3.4], [232.0, 4.4], [246.0, 3.0], [258.0, 4.0], [268.0, 3.4], [276.0, 4.4], [281.0, 3.0]]
 const LOOSE_POLLEN_KEEP_EVERY := 2
+## Mejora visual · ritmo: después de cada momento de calma, un arco de polen que invita a volar por él: [X inicial, altura base].
+const POLLEN_ROUTES := [[132.0, 2.6], [209.5, 4.6], [254.0, 2.8]]
+const POLLEN_ROUTE_COUNT := 9 # Granos por arco.
+const POLLEN_ROUTE_STEP := 0.9 # m entre granos.
+const POLLEN_ROUTE_HEIGHT := 2.0 # m que sube el arco.
 const VALLEY_SUPPLY := [["healing", 192.5, 2.8], ["bomb", 196.0, 3.8], ["healing", 200.0, 2.6]]
 
 func _ready() -> void:
@@ -113,6 +118,7 @@ func _ready() -> void:
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
 	BeeLevel01World.attach(self) # Mejora visual: el jardín por zonas (bee_world_settings.gd; sin ventana no corre).
+	BeeLevel01Feel.attach(self) # Mejora visual: efectos y sensación de golpe (sin ventana no corre).
 	BeeCameraRig.attach(self) # Mejora visual: cámara 2.5D (bee_camera_settings.gd; sin ventana no corre).
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
@@ -305,6 +311,17 @@ func _place_pollen_clusters() -> void:
 		index += 1
 		group.add_child(item)
 		item.global_position = Vector3(float(entry[0]), float(entry[1]), 0.0)
+	for route in POLLEN_ROUTES:
+		for k in POLLEN_ROUTE_COUNT:
+			var x := float(route[0]) + float(k) * POLLEN_ROUTE_STEP
+			if distance > x:
+				continue
+			var grain := TOON_POLLEN.instantiate() as Node3D
+			grain.name = "PollenRoute%d" % index
+			index += 1
+			grain.set("heal_amount", BeeLevel01Juice.POLLEN_INSTANT_HEAL)
+			group.add_child(grain)
+			grain.global_position = Vector3(x, float(route[1]) + sin(PI * float(k) / float(POLLEN_ROUTE_COUNT - 1)) * POLLEN_ROUTE_HEIGHT, 0.0)
 
 
 ## LOTE 14 · ETAPA 2.2: pollen is scarce - only every LOOSE_POLLEN_KEEP_EVERY-th scene pollen pickup stays (roster Level 1 only).

@@ -4,7 +4,7 @@ extends RefCounted
 ## Legacy calls without a direction do nothing. Uses Camera3D h_offset / v_offset, so the
 ## framing (Camera D) and every gameplay bound stay exactly the same. A new kick never shortens a stronger one.
 
-const MAX_AMPLITUDE := 0.09 ## metres at the flight plane: barely visible, felt more than seen
+const MAX_AMPLITUDE := 0.34 ## Mejora visual: metros en el plano de vuelo (antes 0.09, sobre 14 m de ancho casi no se notaba).
 
 
 static func kick(from: Node, amplitude := 0.05, duration := 0.2, direction := Vector2.ZERO) -> void:

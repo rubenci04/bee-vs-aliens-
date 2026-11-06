@@ -27,6 +27,12 @@ const AIM_ASSIST_ENABLED := true
 const AIM_ASSIST_ANGLE := 12.0 # Half-angle from the intended direction.
 const AIM_ASSIST_STRENGTH := 0.5
 const AIM_ASSIST_RANGE := 12.0
+## Mejora visual · puntería: con enemigos arriba y abajo a la vez, el automático ya no salta de uno a otro ni ignora al de abajo.
+const SMART_AIM_ENABLED := true
+const SMART_AIM_CONE := 165.0 ## Grados al frente donde busca (antes 80: uno casi encima o debajo de Bee no contaba).
+const SMART_AIM_ANGLE_WEIGHT := 2.0 ## Metros de penalización por radián: entre dos a igual distancia, prefiere al de adelante.
+const SMART_AIM_INTENT_BONUS := 3.0 ## Metros de ventaja para el enemigo hacia donde el jugador se está moviendo (arriba o abajo).
+const SMART_AIM_STICKY_BONUS := 1.5 ## Metros de ventaja para el blanco actual: no cambia hasta que otro sea claramente mejor.
 const PLAYER_SHOT_HITBOX_SCALE := 1.25
 const RETICLE_IDLE_OPACITY := 0.35
 const RETICLE_ACTIVE_OPACITY := 0.85

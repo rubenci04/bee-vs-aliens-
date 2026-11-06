@@ -65,7 +65,7 @@ func run():
  flash.flash()
  check(mesh.material_overlay.next_pass != null and mesh.material_overlay.next_pass.shader == outline.shader,"Outline remains after warm overlay")
  check(mesh.material_overlay.next_pass.get_shader_parameter("width") == outline.get_shader_parameter("width") and mesh.material_overlay.next_pass.get_shader_parameter("outline_color") == outline.get_shader_parameter("outline_color"),"Exact outline width and color preserved")
- check(source.next_pass == outline and is_equal_approx(mesh.material_overlay.albedo_color.a,.55),"Source outline untouched; 55 percent warm white")
+ check(source.next_pass == outline and is_equal_approx(mesh.material_overlay.albedo_color.a,S.FLASH_COLOR.a),"Source outline untouched; warm white flash")
  var activations=flash.activation_count
  for i in 3:
   flash.flash()
@@ -93,7 +93,7 @@ func run():
  var boss=preload("res://scenes/levels/tarantula_boss_01.tscn").instantiate()
  stage.add_child(boss)
  boss.set_physics_process(false)
- check(is_equal_approx(boss.hit_flash.duration,.06) and boss.hit_flash.flash_color == S.FLASH_COLOR,"Tarantula shares the brief warm 55-percent flash")
+ check(is_equal_approx(boss.hit_flash.duration,S.FLASH_SECONDS) and boss.hit_flash.flash_color == S.FLASH_COLOR,"Tarantula shares the brief warm flash")
  stage.get_node("CanvasLayer/WeaponsHUD").debug_visible = true # Tanda A: comparators require F3.
  var controls=stage.get_node("LiveReadability")
  var event=InputEventKey.new()

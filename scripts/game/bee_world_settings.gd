@@ -15,6 +15,11 @@ const EDGE_BED := 185.0 # Macizo -> huerta.
 const EDGE_PATCH := 262.0 # Huerta -> sombra bajo las hojas.
 const EDGE_SHADE := 294.0 # Sombra -> patio.
 const ZONE_NAMES := [&"cesped", &"macizo", &"huerta", &"sombra", &"patio"]
+## Cartel corto al entrar a cada zona: se ve que el viaje avanza.
+const ZONE_TITLES := ["", "EL MACIZO DE FLORES", "LA HUERTA", "BAJO LAS HOJAS", "EL PATIO"]
+const ZONE_TITLE_SECONDS := 2.4
+const ZONE_TITLE_TOP := 0.2 # Fracción del alto de pantalla.
+const ZONE_TITLE_FONT := 40
 const ZONE_TINT := [Color(1.04, 1.12, 0.96), Color(0.98, 1.1, 1.0), Color(1.2, 1.1, 0.78), Color(0.66, 0.96, 0.92), Color(0.92, 0.84, 0.96)]
 ## El decorado cerca del plano de vuelo: saturación y aclarado, para que los colores fuertes sean de Bee, los enemigos y los ítems.
 const DECOR_SATURATION := 0.74
@@ -85,6 +90,8 @@ const NIGHT := {
 const LIGHT_TABLE := [[0.0, MORNING], [50.0, MORNING], [92.0, BED], [170.0, BED], [205.0, PATCH], [250.0, PATCH], [268.0, SHADE], [288.0, SHADE],
 		[304.0, DUSK], [326.0, DUSK], [340.0, NIGHT], [400.0, NIGHT]]
 
+const SHADOW_DISTANCE := 34.0 ## m: hasta dónde hay sombras nítidas (la cámara está a 11 m del plano de vuelo).
+const SHADOW_CAST_MIN_Z := -9.0 ## Lo que esté más atrás no proyecta sombra.
 const FOG_BEGIN := 20.0 ## m: hasta acá no hay niebla.
 const FOG_END := 118.0 ## m: acá el fondo es del color de la niebla.
 const FOG_CURVE := 1.25

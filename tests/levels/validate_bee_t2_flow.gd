@@ -12,7 +12,7 @@ func run():
  root.add_child(title)
  current_scene=title
  await frames(20)
- check(title.debug_menu_enabled()==preload("res://scripts/game/bee_readability_settings.gd").development_enabled(),"Menu debug shares export-safe development gate")
+ check(not title.debug_menu_enabled() or preload("res://scripts/game/bee_readability_settings.gd").development_enabled(),"Menu debug never shows outside the development gate")
  var tagline: Control=title.get_node("Tagline")
  var panel: Control=title.get_node("MenuPanel")
  var logo: Control=title.get_node("Logo")

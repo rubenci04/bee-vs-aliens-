@@ -76,6 +76,8 @@ var _canopy_material: ShaderMaterial
 var _chunks: Dictionary = {}
 var _rng := RandomNumberGenerator.new()
 var _combat := 0.0
+var _zone := -1
+var _zone_label: Label
 
 
 static func attach(parent: Node) -> BeeLevel01World:
@@ -106,6 +108,28 @@ func _ready() -> void:
 	_build_air()
 	_build_overlay()
 	_apply_light(float(stage.get("distance")))
+	_lighten_shadows()
+
+
+## Rendimiento: el pase de sombras era la mitad de los draw calls y Bee sola gastaba unos 440. Bee ya tiene su sombra suave en el suelo,
+## lo lejano casi no se ve proyectar sombra, y dos cortes de sombra alcanzan para este estilo.
+func _lighten_shadows() -> void:
+	var sun := stage.get_node("Sun") as DirectionalLight3D
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_max_distance = S.SHADOW_DISTANCE
+	var bee := stage.get("bee") as Node3D
+	if bee != null:
+		for mesh: GeometryInstance3D in bee.find_children("*", "GeometryInstance3D", true, false):
+			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for owner_name in ["AssetDressing", "VisualTarget01", "DomesticGarden01", "GroundLife01", "LivingGarden", "Scenery"]:
+		var owner_node := stage.get_node_or_null(owner_name)
+		if owner_node == null:
+			continue
+		for mesh: GeometryInstance3D in owner_node.find_children("*", "GeometryInstance3D", true, false):
+			var box := mesh.get_aabb()
+			var far_z: float = (mesh.global_transform * box).get_center().z
+			if far_z < S.SHADOW_CAST_MIN_Z or mesh is MultiMeshInstance3D:
+				mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _exit_tree() -> void:
@@ -481,11 +505,46 @@ func _build_overlay() -> void:
 	layer.add_child(rect)
 
 
+## Cartel con el nombre de la zona: aparece, queda un momento y se va.
+func _update_zone_title(x: float) -> void:
+	var zone := S.zone_at(x)
+	if zone == _zone:
+		return
+	var first := _zone < 0
+	_zone = zone
+	var title: String = S.ZONE_TITLES[zone]
+	if first or title == "":
+		return
+	if _zone_label == null:
+		var layer := CanvasLayer.new()
+		layer.name = "ZoneTitle"
+		layer.layer = 2
+		add_child(layer)
+		_zone_label = Label.new()
+		_zone_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		_zone_label.anchor_top = S.ZONE_TITLE_TOP
+		_zone_label.anchor_bottom = S.ZONE_TITLE_TOP
+		_zone_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_zone_label.add_theme_font_size_override("font_size", S.ZONE_TITLE_FONT)
+		_zone_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.78))
+		_zone_label.add_theme_color_override("font_outline_color", Color(0.1, 0.07, 0.05))
+		_zone_label.add_theme_constant_override("outline_size", 10)
+		_zone_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		layer.add_child(_zone_label)
+	_zone_label.text = title
+	_zone_label.modulate.a = 0.0
+	var tween := create_tween()
+	tween.tween_property(_zone_label, "modulate:a", 1.0, 0.35)
+	tween.tween_interval(S.ZONE_TITLE_SECONDS - 0.85)
+	tween.tween_property(_zone_label, "modulate:a", 0.0, 0.5)
+
+
 func _process(delta: float) -> void:
 	var camera := stage.get("camera") as Camera3D
 	if camera == null:
 		return
 	var x := camera.global_position.x
+	_update_zone_title(x)
 	sky_dome.global_position = camera.global_position
 	if absf(x - _last_x) > 0.04:
 		_apply_light(x)

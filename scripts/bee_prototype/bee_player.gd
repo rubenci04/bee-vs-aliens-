@@ -247,7 +247,9 @@ func refresh_auto_aim() -> Node3D:
 	var best: Node3D
 	var best_score := INF
 	var forward := Vector2(facing_x, 0.0)
-	var half_cone := deg_to_rad(auto_aim_cone_degrees * 0.5)
+	var smart: bool = SHOOTING.SMART_AIM_ENABLED
+	var half_cone := deg_to_rad(maxf(auto_aim_cone_degrees, SHOOTING.SMART_AIM_CONE if smart else 0.0) * 0.5)
+	var intent := Input.get_axis("move_back", "move_forward") if smart else 0.0 # Hacia dónde se mueve el jugador.
 	for candidate_node in get_tree().get_nodes_in_group("bee_auto_aim_targets"):
 		var candidate := candidate_node as Node3D
 		if not _is_valid_target(candidate):
@@ -262,6 +264,12 @@ func refresh_auto_aim() -> Node3D:
 		if angle > half_cone:
 			continue
 		var score := distance
+		if smart:
+			score += angle * SHOOTING.SMART_AIM_ANGLE_WEIGHT
+			if absf(intent) > 0.2 and signf(delta.y) == signf(intent):
+				score -= SHOOTING.SMART_AIM_INTENT_BONUS
+			if candidate == current_auto_target:
+				score -= SHOOTING.SMART_AIM_STICKY_BONUS
 		if SHOOTING.AIM_ASSIST_ENABLED and AIM_HELP.weak_point(candidate) == null:
 			score += auto_aim_range # Vulnerable implant first, then nearest within the existing cone.
 		if score < best_score:
@@ -287,6 +295,7 @@ func fire() -> BeeEnergyProjectile:
 	BeeAudio.play(get_parent(), &"spread" if spread_ammo > 0 else &"base")
 	var bee_visual := $VisualRoot/BeeVisual as Node3D
 	bee_visual.call("play_muzzle_effect", projectile.global_position, direction, spread_shot)
+	BeeFx.muzzle(self, projectile.global_position) # Mejora visual: fogonazo en estrella.
 	if spread_ammo > 0:
 		projectile.set_spread_visual()
 		for i in 2:

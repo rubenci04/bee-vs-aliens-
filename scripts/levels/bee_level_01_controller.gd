@@ -91,6 +91,12 @@ const MAX_ON_SCREEN := 7 # LOTE 11: 6 -> 7 (the extra slot is popcorn: threat ca
 const MAX_ON_SCREEN_ARENA := 10 # LOTE 11: 8 -> 10 in combat zones.
 ## Live hostile shots before Level 01 units hold their fire (see BeeShmupFairness.live_shot_ceiling).
 const LIVE_SHOT_CEILING := 16
+## Mejora visual · ritmo: las moscas de una bandada tienen poca vida (entran muchas juntas: se barren, no se pelean una por una).
+const FLOCK_HP := 9
+const FLOCK_V_Y := [5.2, 4.3, 3.4, 4.3, 5.2]
+const FLOCK_V_DELAYS := [0.0, 0.25, 0.5, 0.75, 1.0]
+const FLOCK_WAVE_Y := [2.2, 3.1, 4.0, 4.9, 4.0, 3.1, 2.2]
+const FLOCK_WAVE_DELAYS := [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
 ## Denser route volleys trade burst damage for more dodge decisions; UFO damage is unchanged.
 const ROUTE_DAMAGE_SCALE := 1.0 # LOTE 14: the LOTE 13 chip-damage hack (0.15) is gone; common bullets are calibrated to 3-5 instead (shot_damage / SHOT_DAMAGE).
 ## Smallest gap between two authored entries of the same encounter (never the same frame).
@@ -407,6 +413,7 @@ const EVENTS_ROSTER = [
 	{"at": 52.0, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [3.4], "debut": "Ladybird"},
 	{"at": 55.3, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [5.0]},
 	{"at": 58.7, "act": 1, "label": "CÉSPED · MARIQUITA", "units": ["Ladybird"], "y": [2.8]},
+	{"at": 62.0, "act": 1, "label": "CÉSPED · BANDADA", "units": ["FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon"], "y": FLOCK_V_Y, "delays": FLOCK_V_DELAYS, "flock": true, "no_companions": true},
 	{"at": 65.0, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird", "Ladybird"], "delays": [0.0, 0.8, 1.4], "y": [0.0, 3.0, 4.6], "anthill": true},
 	{"at": 68.6, "act": 2, "label": "MACIZO · HORMIGA", "units": ["Ant"], "anthill": true},
 	{"at": 72.2, "act": 2, "label": "MACIZO · HORMIGA Y MARIQUITA", "units": ["Ant", "Ladybird", "Ladybird"], "delays": [0.0, 0.7, 1.4], "y": [0.0, 4.6, 5.2], "anthill": true},
@@ -423,6 +430,7 @@ const EVENTS_ROSTER = [
 	{"at": 115.8, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [2.8, 0.0, 5.0], "anthill": true},
 	{"at": 118.6, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.7], "y": [5.2, 0.0], "anthill": true},
 	{"at": 121.4, "act": 2, "label": "MACIZO · MOSCA VERDE Y HORMIGA", "units": ["FlyGreen", "Ant"], "delays": [0.0, 0.8], "y": [2.8, 0.0], "anthill": true},
+	{"at": 123.0, "act": 2, "label": "MACIZO · BANDADA", "units": ["FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen"], "y": FLOCK_WAVE_Y, "delays": FLOCK_WAVE_DELAYS, "flock": true, "no_companions": true},
 	{"at": 124.2, "act": 3, "label": "MACIZO · HORMIGA Y MOSCA VERDE", "units": ["Ant", "FlyGreen", "FlyGreen"], "delays": [0.0, 0.7, 1.5], "y": [0.0, 4.4, 2.8], "anthill": true},
 	{"at": 128.0, "act": 2, "label": "REGADERA · COLUMNAS DE AGUA", "units": [], "moment": "watering_can"},
 	{"at": 138.0, "act": 3, "label": "ZONA · INICIO · NUBE", "units": ["FlyCloud", "FlyCloud"], "delays": [0.0, 0.8], "y": [3.0, 4.6],
@@ -446,6 +454,7 @@ const EVENTS_ROSTER = [
 	{"at": 177.8, "act": 3, "label": "MACIZO · GUSANO ROSA", "units": ["WormA"]},
 	{"at": 180.0, "act": 3, "label": "MACIZO · MARIQUITA Y GUSANO ROSA", "units": ["Ladybird", "WormA", "WormA"], "delays": [0.0, 0.6, 1.3], "y": [5.2, 0.0, 0.0]},
 	{"at": 182.2, "act": 4, "label": "MACIZO · GUSANO ROSA Y MARIQUITA", "units": ["WormA", "Ladybird"], "delays": [0.0, 0.8], "y": [0.0, 5.2]},
+	{"at": 183.6, "act": 4, "label": "MACIZO · BANDADA", "units": ["FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon", "FlyCommon"], "y": FLOCK_WAVE_Y, "delays": FLOCK_WAVE_DELAYS, "flock": true, "no_companions": true},
 	{"at": 185.0, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail", "Snail"], "delays": [0.0, 0.6, 1.4], "y": [0.0, 0.0, 0.0], "debut": "Snail"},
 	{"at": 188.3, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
 	{"at": 191.7, "act": 4, "label": "ENTRADA DE GUSANOS · CARACOL", "units": ["Snail", "Snail"], "delays": [0.0, 0.9], "y": [0.0, 0.0]},
@@ -472,6 +481,7 @@ const EVENTS_ROSTER = [
 	{"at": MOMENTS.MOMENT_MOWER_X, "act": 4, "label": "HUERTA · CORTADORA", "units": [], "moment": "lawnmower", "clear": true, "moment_seconds": MOMENTS.MOMENT_MOWER_SECONDS},
 	{"at": 248.0, "act": 4, "label": "HUERTA · MOSCA Y GUSANO DE COMPOST Y MOSCA VERDE", "units": ["FlyCommon", "WormB", "FlyGreen"], "delays": [0.0, 0.7, 1.4], "y": [5.0, 0.0, 4.0]},
 	{"at": 252.4, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.8], "y": [5.0, 0.0]},
+	{"at": 256.0, "act": 4, "label": "HUERTA · BANDADA", "units": ["FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen", "FlyGreen"], "y": FLOCK_V_Y, "delays": FLOCK_V_DELAYS, "flock": true, "no_companions": true},
 	{"at": 259.0, "act": 4, "label": "HUERTA · MOSCA VERDE Y GUSANO DE COMPOST", "units": ["FlyGreen", "WormB"], "delays": [0.0, 0.7], "y": [3.0, 0.0]},
 	# T6e: +50 % spiders in the waves where they appear (3 -> 5): the zone opens with two and its second wave brings two.
 	{"at": 262.0, "act": 4, "label": "ZONA · INICIO · ARAÑA", "units": ["Spider", "Spider"], "delays": [0.0, 1.2], "y": [5.2, 5.2], "x": [1.2, -2.2],
@@ -1039,6 +1049,9 @@ func _spawn(request: Dictionary) -> void:
 	var health := unit.get_node("HealthComponent") as HealthComponent
 	health.max_health = BeeGameSettings.scaled_hp(level_hp(family, not bool(request["hard"]))) # NOCHE 01: EASY lowers enemy HP.
 	health.current_health = health.max_health
+	if bool(request.get("flock", false)):
+		health.max_health = BeeGameSettings.scaled_hp(FLOCK_HP) # Mejora visual: las de la bandada se barren.
+		health.current_health = health.max_health
 	if family == "FlyCloud": unit.call("configure_population",_group_size())
 	else: BeeJuice.attach_hit_flash(unit) # T6c members release individually; don't scan the whole cloud on each hit.
 	_connect_combo_health(health, unit)
@@ -1790,8 +1803,8 @@ static func level_hp(family: String, _roster_extra := true) -> int:
 
 # --- T7f-T7g (Tanda D): the tarantula's helpers ---------------------------------------------------------------------------------
 
-const TARANTULA_MAX_HELPER_SPIDERS := 5
-const TARANTULA_MAX_HELPER_WASPS := 3
+const TARANTULA_MAX_HELPER_SPIDERS := 6 # Mejora visual: antes 5.
+const TARANTULA_MAX_HELPER_WASPS := 4 # Mejora visual: antes 3.
 
 func _helpers_alive(family: String) -> int:
 	var total := 0

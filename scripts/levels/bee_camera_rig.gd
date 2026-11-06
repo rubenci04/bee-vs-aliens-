@@ -155,6 +155,9 @@ func apply_dynamic(camera: Camera3D, bee: Node3D, delta: float) -> void:
 	var edges := visible_edges([yaw_now, framing[1], framing[2], framing[3], framing[4]], aspect)
 	logic_left = edges.x
 	logic_right = edges.y
+	var live := stage.get_node_or_null("LiveReadability")
+	if live != null:
+		live.call("sync_mask_camera")
 
 
 ## El centro de la vista sobre el plano de vuelo con la cámara lateral (el que hay que conservar).

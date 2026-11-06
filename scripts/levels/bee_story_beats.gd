@@ -68,6 +68,9 @@ func _ready() -> void:
 
 
 func _set_bars(amount: float) -> void:
+	var hud := stage.get_node_or_null("CanvasLayer") as CanvasLayer
+	if hud != null:
+		hud.visible = amount <= 0.01 # Mejora visual: las barras negras no cortan el HUD a la mitad.
 	var height := get_viewport().get_visible_rect().size.y * S.BAR_HEIGHT * amount
 	_top.offset_top = 0.0
 	_top.offset_bottom = height

@@ -7,7 +7,7 @@ static var IMPACT_ENABLED := true
 ## A. Liberar: congelado local (Bee, el liberado y las balas cercanas) y un estallido dorado chico.
 const FREE_SMALL_STOP := 0.04 # s, enemigos comunes.
 const FREE_BIG_STOP := 0.07 # s, grandes (escarabajo, araña).
-const FREE_BIG_SHAKE := 0.04
+const FREE_BIG_SHAKE := 0.08
 const FREE_BIG_KINDS := ["beetle", "spider"] # Se reconocen por el nombre del nodo o del script.
 const FREE_BURST_SCALE := 0.6 # Tamaño del estallido dorado.
 
@@ -19,7 +19,8 @@ const MELEE_ZOOM_SECONDS := 0.15
 ## C. Bomba: destello blanco-dorado de pantalla, sacudida y onda que muestra el radio real.
 const BOMB_FLASH_SECONDS := 0.12
 const BOMB_FLASH_COLOR := Color(1.0, 0.93, 0.7, 0.55)
-const BOMB_SHAKE := 0.08
+const BOMB_SHAKE := 0.26 # Mejora visual: antes 0.08, casi no se sentía.
+const BOMB_FX_SIZE := 1.5 # Tamaño de la explosión de la bomba.
 const BOMB_WAVE_SECONDS := 0.35
 const BOMB_WAVE_COLOR := Color(1.0, 0.86, 0.4, 0.8)
 const BOMB_WAVE_THICKNESS := 0.12

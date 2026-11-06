@@ -16,6 +16,7 @@ void fragment() {
  EMISSION = vec3(0.2,0.8,1.0) * (0.3 + flash);
 }
 """
+static var _shared_shader: Shader
 var passenger: Node3D
 var destination: Vector3
 var on_arrive: Callable
@@ -69,10 +70,12 @@ func _ready() -> void:
 	passenger.process_mode = Node.PROCESS_MODE_DISABLED
 	var nodes: Array[Node] = [passenger]
 	nodes.append_array(passenger.find_children("*", "", true, false))
-	var shader := Shader.new()
-	shader.code = CODE
+	# Mejora visual: un solo shader para todos los teletransportes. Antes cada enemigo compilaba el suyo, y eso daba tirones.
+	if _shared_shader == null:
+		_shared_shader = Shader.new()
+		_shared_shader.code = CODE
 	material = ShaderMaterial.new()
-	material.shader = shader
+	material.shader = _shared_shader
 	material.set_shader_parameter("reveal", 1.0 if returning else 0.0)
 	material.set_shader_parameter("density", HERO.TELEPORT_PIXEL_DENSITY if HERO.HERO_LOOK_ENABLED else 1.0)
 	for node in nodes:

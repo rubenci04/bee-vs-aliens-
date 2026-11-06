@@ -11,6 +11,7 @@
 - Godot 4.7.2, renderer GL Compatibility, Windows. Proyecto: `D:\proyectos\bee_alien_3d`.
 - Nivel 1 (jardín, 360 m): zonas bloqueantes (nube X=138, escarabajos X=214, arañas X=262), robot caminante (gate X=294), tarántula final, pantalla de resultados.
 - Plan vigente: doc «Bee vs Alien — Plan 2: Bee protagonista» (tandas R a X). Informes: `docs/INFORME_TANDA_*.md` (E a R).
+- Mejora visual (informe: `docs/informe_sesion.md`): cámara 2.5D (`bee_camera_rig.gd`, `bee_camera_settings.gd`), mundo por zonas (`bee_level_01_world.gd`, `bee_world_settings.gd`, modelos por código en `bee_mesh_kit.gd`) y efectos (`bee_fx.gd`, `bee_level_01_feel.gd`). Sin ventana (tests y bots) no corren: los bots miden la cámara lateral y el jardín viejo.
 
 ## Git
 - Remoto: `origin` = github.com/rubenci04/bee-vs-aliens-. `master` es viejo: no usar.
@@ -39,6 +40,7 @@
 - Constantes: `scripts/game/*_settings.gd` y `bee_game_settings.gd`. Bee: `scripts/bee_prototype/bee_player.gd` y `bee_visual.gd`.
 - Jefes: `scripts/levels/walker_miniboss.gd`, `tarantula_boss_01.gd`. Música: autoload `MusicManager` (`scripts/audio/`).
 - Caja negra: `user://director_log.txt` (F4 la vuelca). En Godot: Proyecto > Abrir carpeta de datos de usuario.
+- Capturas con ventana: `dev/mejora_visual/qa_capture.gd` (salen en `qa_screenshots/`, no van al repo).
 - `dev/` = herramientas y capturas de trabajo (no es contenido de juego). `tests/legacy_rojos/` = suites apartadas (ver su README).
 
 ## Tests

@@ -15,5 +15,6 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 		var organic := feedback!=null and bool(feedback.get("organic"))
 		BeeAudio.play(get_parent(),&"organic_hit" if organic else &"tech_hit",global_position)
 	STYLE.impact(get_parent(),global_position,IMPACT)
+	BeeFx.hit(get_parent(),global_position,travel_direction) # Mejora visual: estrellita y chispas (sin ventana no hace nada).
 	hitbox.set_enabled(false)
 	queue_free()

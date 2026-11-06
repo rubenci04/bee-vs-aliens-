@@ -52,10 +52,12 @@ void fragment() {
 	// Estrellas: se ven donde no hay nubes.
 	float star_mask = 0.0;
 	if (stars > 0.001 && up > 0.02) {
-		vec2 cell = floor(vec2(atan(d.x, -d.z) * 90.0, up * 170.0));
+		vec2 star_uv = vec2(atan(d.x, -d.z) * 150.0, up * 210.0);
+		vec2 cell = floor(star_uv);
 		float pick = hash21(cell);
-		float twinkle = 0.65 + 0.35 * sin(TIME * (1.0 + pick * 3.0) + pick * 40.0);
-		star_mask = step(0.988, pick) * twinkle * stars * smoothstep(0.03, 0.2, up);
+		float twinkle = 0.6 + 0.4 * sin(TIME * (1.0 + pick * 3.0) + pick * 40.0);
+		float round_star = smoothstep(0.42, 0.1, length(fract(star_uv) - 0.5)); // Puntos redondos, no cuadraditos.
+		star_mask = step(0.982, pick) * round_star * twinkle * stars * smoothstep(0.03, 0.2, up);
 	}
 
 	// Nubes de dibujo animado: base plana y copete de bultos. Dos capas, la lejana más chica y más pálida.

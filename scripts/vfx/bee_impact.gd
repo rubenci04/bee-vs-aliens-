@@ -62,7 +62,10 @@ static func bomb(bomb_node: Node3D, radius: float) -> void:
 	if not S.IMPACT_ENABLED or bomb_node == null or not bomb_node.is_inside_tree():
 		return
 	var parent := bomb_node.get_parent()
-	BeeCameraShake.kick(bomb_node, S.BOMB_SHAKE, 0.24, Vector2.UP)
+	BeeCameraShake.kick(bomb_node, S.BOMB_SHAKE, 0.34, Vector2(0.5, 1.0))
+	BeeFx.explosion(parent, bomb_node.global_position, S.BOMB_FX_SIZE) # Mejora visual: bola de fuego y humo.
+	if BeeGameSettings.last_input_joypad:
+		Input.start_joy_vibration(BeeGameSettings.last_joypad_device, 0.6, 1.0, 0.3)
 	_wave(parent, bomb_node.global_position, radius)
 	_flash(bomb_node)
 	for visual in bomb_node.get_tree().get_nodes_in_group("bee_visual_instances"):

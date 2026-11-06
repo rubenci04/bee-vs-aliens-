@@ -6,15 +6,17 @@ const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 const LEVEL := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn")
 const RELEASE := preload("res://scripts/vfx/bee_release_animation.gd")
 
+var failures := 0
+
 func _initialize() -> void:
 	call_deferred("run")
 
 func check(ok: bool, message: String) -> void:
 	if ok:
 		return
+	failures += 1
 	push_error(message)
 	print("FAIL: ", message)
-	quit(1)
 
 func run() -> void:
 	check(not W.world_active(), "sin ventana el mundo no se construye: los tests miden el jardín de siempre")
@@ -74,5 +76,6 @@ func run() -> void:
 				eye_ok = color.r > 0.9 and color.g > 0.7 and color.b < 0.3 and float(active.get_shader_parameter("emission_energy")) > 1.0
 	check(eye_ok, "el ojo del robot es amarillo y brilla")
 	W.force_in_headless = false
-	print("PASS validate_bee_mejora_mundo")
-	quit(0)
+	if failures == 0:
+		print("PASS validate_bee_mejora_mundo")
+	quit(1 if failures > 0 else 0)

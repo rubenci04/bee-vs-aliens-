@@ -80,10 +80,10 @@ const PHASE_TUNING := {
 }
 ## The pattern of each phase. Moves that need the other surface insert a corner-to-corner JUMP first (see _start_attack).
 const PATTERNS := {
-	State.PHASE_1: [&"stalk", &"fan", &"net", &"stomp", &"stalk", &"fan", &"crawl", &"spiders", &"fan", &"net"],
-	State.PHASE_2: [&"crawl", &"spiders", &"hang", &"net", &"crawl", &"fan", &"net", &"hang", &"stalk", &"charge", &"fan"],
-	State.PHASE_3: [&"charge", &"net", &"crawl", &"hang", &"net", &"fan", &"stalk", &"charge", &"spiders", &"net", &"fan"],
-	State.PHASE_4: [&"jump_fan", &"charge_spiders", &"net", &"rain", &"hang_fan", &"net", &"jump_fan", &"rain", &"curtain", &"charge_spiders", &"net", &"fan"],
+	State.PHASE_1: [&"stalk", &"net", &"fan", &"net", &"stomp", &"stalk", &"fan", &"crawl", &"spiders", &"net", &"fan", &"net"],
+	State.PHASE_2: [&"crawl", &"spiders", &"net", &"hang", &"net", &"crawl", &"fan", &"net", &"hang", &"stalk", &"net", &"charge", &"fan"],
+	State.PHASE_3: [&"charge", &"net", &"crawl", &"net", &"hang", &"net", &"fan", &"stalk", &"charge", &"net", &"spiders", &"net", &"fan"],
+	State.PHASE_4: [&"jump_fan", &"net", &"charge_spiders", &"net", &"rain", &"hang_fan", &"net", &"jump_fan", &"net", &"rain", &"curtain", &"charge_spiders", &"net", &"fan"],
 }
 const GROUND_MOVES := [&"stalk", &"stomp", &"charge", &"double_charge", &"charge_spiders"]
 const CEILING_MOVES := [&"crawl", &"hang", &"hang_fan"]
@@ -138,12 +138,20 @@ const EXPOSE_SECONDS := 1.8
 const EXPOSE_MULTIPLIER := 2.0
 ## T7f-T7g (Tanda D): phase 2 and 4 send BIG black spiders down on threads (3 / 5 per wave, cap on attackers = BeeCommonSlots); phase 3 sends 2-3
 ## kamikaze wasps from the right every 15 s. The director spawns them (summon_requested).
-const SPIDER_WAVE_SIZE := {State.PHASE_2: 3, State.PHASE_4: 5}
-const SPIDER_WAVE_EVERY := 18.0
+const SPIDER_WAVE_SIZE := {State.PHASE_2: 4, State.PHASE_3: 3, State.PHASE_4: 5} # Mejora visual: más arañas colgando (antes 3 en fase 2 y ninguna en fase 3).
+const SPIDER_WAVE_EVERY := 14.0 # Antes 18.
 const SPIDER_WAVE_FIRST := 2.5
-const WASP_EVERY := 15.0
+const WASP_EVERY := 11.0 # Antes 15.
 const WASP_FIRST := 2.0
-const WASP_MAX_ALIVE := 3
+const WASP_MAX_ALIVE := 4 # Antes 3.
+const WASP_PHASES := [State.PHASE_2, State.PHASE_3, State.PHASE_4] # Antes solo la fase 3.
+## Mejora visual: telarañas fijas que aparecen en la arena y atrapan a Bee si las toca (se avisan y se ven: se esquivan o se rompen rodando).
+const STICKY_WEB_EVERY := {State.PHASE_1: 11.0, State.PHASE_2: 8.0, State.PHASE_3: 7.0, State.PHASE_4: 6.0}
+const STICKY_WEB_FIRST := 4.0
+static var sticky_webs_enabled := true # Los tests que miden otra cosa las apagan.
+const STICKY_WEB_MAX := {State.PHASE_1: 2, State.PHASE_2: 3, State.PHASE_3: 4, State.PHASE_4: 4}
+const STICKY_WEB_MIN_FROM_BEE := 2.6 # m: nunca nace encima de Bee.
+const STICKY_WEB_EASY_SCALE := 1.6 # En Fácil salen más espaciadas.
 ## T7h: web rain (fury): three impact spots, at most RAIN_MAX_AT_ONCE live at once, each marked by a small ring.
 const RAIN_SPOTS := 3
 const RAIN_SPACING := 2.6
@@ -206,6 +214,8 @@ var rain_max_active := 0
 var _spider_timer := 0.0
 var _spider_wave_state := -1
 var _wasp_timer := 0.0
+var _sticky_timer := STICKY_WEB_FIRST
+var sticky_webs_placed := 0
 var _rain: Array[Dictionary] = []
 var _rain_clock := 0.0
 var exposures := 0
@@ -508,9 +518,10 @@ func _change_state(value: int) -> void:
 		if value == State.PHASE_2:
 			_armour_legs()
 			_spider_timer = SPIDER_WAVE_FIRST
+			_wasp_timer = WASP_FIRST
 		elif value == State.PHASE_3:
 			_drop_honey() # Half of the fight: a honey jar between phases.
-			_wasp_timer = WASP_FIRST
+			_spider_timer = SPIDER_WAVE_FIRST
 		elif value == State.PHASE_4:
 			_enter_fury()
 			_spider_timer = SPIDER_WAVE_FIRST
@@ -1566,7 +1577,8 @@ func _update_helpers(delta: float) -> void:
 			spiders_requested += count
 			summon_requested.emit(&"Spider", count)
 			BeeAudio.play(get_parent(), &"spider_telegraph", global_position, 0.7)
-	if state == State.PHASE_3:
+	_update_sticky_webs(delta)
+	if state in WASP_PHASES:
 		_wasp_timer -= delta
 		if _wasp_timer <= 0.0 and helper_wasps_alive < WASP_MAX_ALIVE:
 			_wasp_timer = WASP_EVERY
@@ -1576,6 +1588,27 @@ func _update_helpers(delta: float) -> void:
 			wasps_requested += wasps
 			summon_requested.emit(&"Wasp", wasps)
 			BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.2)
+
+
+## Mejora visual: telarañas fijas en la arena, lejos de Bee, a lo largo de la zona de vuelo.
+func _update_sticky_webs(delta: float) -> void:
+	if not sticky_webs_enabled or not state in STICKY_WEB_EVERY or not is_instance_valid(target):
+		return
+	_sticky_timer -= delta
+	if _sticky_timer > 0.0:
+		return
+	var easy := BeeGameSettings.difficulty == BeeGameSettings.EASY
+	_sticky_timer = float(STICKY_WEB_EVERY[state]) * (STICKY_WEB_EASY_SCALE if easy else 1.0)
+	if get_tree().get_nodes_in_group("tarantula_sticky_webs").size() >= int(STICKY_WEB_MAX[state]):
+		return
+	var half := _half_width()
+	for attempt in 8:
+		var spot := Vector3(_cam_x() + _rng.randf_range(-half + 1.4, half - 1.4), _rng.randf_range(1.6, minf(5.8, BeeLevel01Framing.max_entity_y() - 0.4)), 0.0)
+		if spot.distance_to(target.global_position) >= STICKY_WEB_MIN_FROM_BEE:
+			TarantulaWebNet.place_sticky(get_parent(), self, target, spot)
+			sticky_webs_placed += 1
+			hazards.append({"kind": &"sticky_web", "telegraph": TarantulaWebNet.STICKY_WARNING})
+			return
 
 
 ## WEB RAIN: three impact spots (Bee's column and one on each side). Two are marked and fall together; the third waits until they have

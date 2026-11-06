@@ -353,16 +353,23 @@ func _process(delta: float) -> void:
 			if is_instance_valid(source):
 				mask["node"].global_transform = source.global_transform
 				mask["node"].visible = neon_level > 0 and source.is_visible_in_tree() and mask["emissive"].emission_enabled and mask["emissive"].emission_energy_multiplier > 1.0
-	if mask_view != null:
-		mask_view.size = Vector2i(stage.get_viewport().get_visible_rect().size) / SETTINGS.BLOOM_RESOLUTION_DIVISOR
-		mask_camera.global_transform = stage.camera.global_transform
-		mask_camera.projection = stage.camera.projection
-		mask_camera.fov = stage.camera.fov
-		mask_camera.h_offset = stage.camera.h_offset
-		mask_camera.v_offset = stage.camera.v_offset
-		mask_camera.size = stage.camera.size
-		mask_camera.keep_aspect = stage.camera.keep_aspect
-		bloom_material.set_shader_parameter("pixel_size", Vector2.ONE / Vector2(mask_view.size))
+	if not BeeCameraRig.logic_active: # Con la cámara 2.5D la sincroniza el rig, que es el último en moverla.
+		sync_mask_camera()
+
+
+## La cámara de la máscara de brillo copia exactamente a la principal (si no, el brillo se dibuja corrido).
+func sync_mask_camera() -> void:
+	if mask_view == null:
+		return
+	mask_view.size = Vector2i(stage.get_viewport().get_visible_rect().size) / SETTINGS.BLOOM_RESOLUTION_DIVISOR
+	mask_camera.global_transform = stage.camera.global_transform
+	mask_camera.projection = stage.camera.projection
+	mask_camera.fov = stage.camera.fov
+	mask_camera.h_offset = stage.camera.h_offset
+	mask_camera.v_offset = stage.camera.v_offset
+	mask_camera.size = stage.camera.size
+	mask_camera.keep_aspect = stage.camera.keep_aspect
+	bloom_material.set_shader_parameter("pixel_size", Vector2.ONE / Vector2(mask_view.size))
 
 
 func debug_controls_visible() -> bool:

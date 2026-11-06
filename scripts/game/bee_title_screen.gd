@@ -19,6 +19,7 @@ func _ready() -> void:
 
 ## Mejora visual: el prototipo de la laguna no se muestra en el menú. true lo vuelve a poner mientras se desarrolla el Nivel 2.
 const SHOW_LAKE_PROTOTYPE := false
+const LOGO_REGION := Rect2(234, 533, 2316, 478) ## Dónde está el dibujo dentro de title_logo_cutout.png.
 
 static func debug_menu_enabled() -> bool:
 	return SHOW_LAKE_PROTOTYPE and preload("res://scripts/game/bee_readability_settings.gd").development_enabled()
@@ -46,7 +47,7 @@ func _build_screen() -> void:
 
 	_logo = TextureRect.new()
 	_logo.name = "Logo"
-	_logo.texture = load(BeeGameSettings.TITLE_LOGO_PATH) as Texture2D if ResourceLoader.exists(BeeGameSettings.TITLE_LOGO_PATH) else null
+	_logo.texture = _logo_without_margins(load(BeeGameSettings.TITLE_LOGO_PATH) as Texture2D if ResourceLoader.exists(BeeGameSettings.TITLE_LOGO_PATH) else null)
 	_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_logo.anchor_left = 0.5
@@ -319,6 +320,16 @@ var _title_bee: Node3D
 var _title_bee_clock := 0.0
 
 
+## Mejora visual: recorta los márgenes transparentes del logo (sin tocar el archivo) para que ocupe el lugar que tiene reservado.
+func _logo_without_margins(texture: Texture2D) -> Texture2D:
+	if texture == null:
+		return null
+	var atlas := AtlasTexture.new()
+	atlas.atlas = texture
+	atlas.region = LOGO_REGION
+	return atlas
+
+
 ## Una ventanita 3D transparente del tamaño de la pantalla, con Bee aleteando en un ocho lento. No recibe clics.
 func _flying_bee() -> Control:
 	var flow := preload("res://scripts/game/bee_flow_settings.gd")
@@ -338,6 +349,14 @@ func _flying_bee() -> Control:
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-40.0, 25.0, 0.0)
 	view.add_child(light)
+	# Mejora visual: luz ambiente para que Bee no se vea apagada sobre el dibujo.
+	var ambience := WorldEnvironment.new()
+	ambience.environment = Environment.new()
+	ambience.environment.background_mode = Environment.BG_CLEAR_COLOR
+	ambience.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	ambience.environment.ambient_light_color = Color(1.0, 0.95, 0.86)
+	ambience.environment.ambient_light_energy = flow.TITLE_BEE_AMBIENT
+	view.add_child(ambience)
 	var scene := load("res://assets/models/shared/bee_hero/shared_hero_bee_v02.glb") as PackedScene
 	if scene == null:
 		return holder
