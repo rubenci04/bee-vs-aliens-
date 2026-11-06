@@ -22,6 +22,7 @@ const FLOWER_MAX_Z := -6.5
 ## NOCHE 01 · ETAPA 3 — readability: no tall grass blade between this depth and the flight plane (the central corridor stays
 ## clean for Bee and the enemies). Blades drawn closer are mirrored behind it.
 const CORRIDOR_CLEAR_Z := -5.0
+const FAR_HEAD_TILT := 1.35 ## Mejora visual: la flor lejana mira hacia la cámara (antes 0.9: con la cámara abierta se le veía la parte de abajo).
 const CHUNK_WIDTH := 32.0
 ## Foreground geometry must project onto the Z=0 plane at or below this height, i.e. under
 ## crates, pollen and Bee's lowest flight height (0.7 m).
@@ -250,7 +251,7 @@ func _flower_head(center: Vector3, radius: float, petal_key: String, label: Stri
 	petals.top_radius = radius
 	petals.bottom_radius = radius * 0.25
 	petals.height = radius * 0.45
-	_add(_faceted(petals), petal_key, center, Vector3(0.9, 0, 0), Vector3.ONE, label, shadows)
+	_add(_faceted(petals), petal_key, center, Vector3(FAR_HEAD_TILT, 0, 0), Vector3.ONE, label, shadows)
 	var core := SphereMesh.new()
 	core.radial_segments = 6
 	core.rings = 3

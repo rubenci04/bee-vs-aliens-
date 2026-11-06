@@ -5,8 +5,8 @@ extends RefCounted
 
 static var HERO_LOOK_ENABLED := true
 
-## A. Tamaño: Bee se dibuja 20 % más grande que antes (mariquita 1.15, hormiga 1.1). La hurtbox NO cambia.
-const BEE_VISUAL_SCALE := 1.2
+## A. Tamaño: Bee se dibuja a 1,40 (decisión de Rubén; mariquita 1.15, hormiga 1.1). La hurtbox NO cambia.
+const BEE_VISUAL_SCALE := 1.4
 
 ## B. Firma de Bee: contorno marrón-negro más grueso (fracción del alto de pantalla: 0.0044 ≈ 3 px a 720p) y brillo de borde
 ## blanco-cálido siempre encendido. Las rayas siguen amarillas.
@@ -30,7 +30,7 @@ const SHADOW_LIFT := 0.03 # Apenas sobre el suelo, para no parpadear con él.
 const SHOT_THICKNESS := 0.5 # Grosor del plasma respecto del de antes.
 const SHOT_LENGTH := 2.6 # Estiramiento a lo largo del vuelo (antes 1.65).
 const SHOT_GLOW := 0.6 # Brillo del halo y de la emisión respecto de antes.
-const SHOT_REVEAL_DISTANCE := 0.45 # m: la bala se dibuja recién cuando ya salió de la silueta de Bee.
+const SHOT_REVEAL_DISTANCE := 0.55 # m: la bala se dibuja recién cuando ya salió de la silueta de Bee.
 
 ## E. Teletransporte: columna de 1/3 de alto, más fina y menos opaca; la nube de píxeles cian, menos densa.
 const BEAM_HEIGHT_FRACTION := 1.0 / 3.0

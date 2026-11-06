@@ -41,6 +41,8 @@ const MORNING_TO_MIDDAY := Vector2(100.0, 180.0)
 const MIDDAY_TO_SUNSET := Vector2(210.0, 290.0)
 
 var _last_x := -9999.0
+## Mejora visual: con el mundo por zonas, la luz la maneja BeeLevel01World (en headless sigue acá, como miden los tests).
+var external_light := false
 @onready var _stage: Node = get_parent()
 @onready var _sun: DirectionalLight3D = _stage.get_node("Sun")
 @onready var _environment: Environment = (_stage.get_node("WorldEnvironment") as WorldEnvironment).environment
@@ -75,6 +77,8 @@ func apply_distance(progress: float) -> void:
 
 func _apply(x: float) -> void:
 	_last_x = x
+	if external_light:
+		return
 	var s := settings_at(x)
 	_sun.light_color = s["sun_color"]
 	_sun.light_energy = s["sun_energy"]

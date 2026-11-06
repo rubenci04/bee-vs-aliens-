@@ -9,6 +9,7 @@ var boss_arena_wide := false
 var _victory_seconds := 0.0
 var _robot_arena_weight := 0.0
 var clear_banner: Label # LOTE 9: "SECTOR DESPEJADO · LIBERADOS n/N" in the middle of the screen.
+var melee_fov_factor := 1.0 # Zoom corto del golpe que conecta (Tanda V); el rig de cámara lo respeta.
 @onready var checkpoint: BeeCheckpointQoL = $CheckpointQoL
 
 ## NOCHE 01 · ETAPA 2 — Codex toon items, shots and explosions (Level 01 only; the POCs keep the old ones).
@@ -111,6 +112,8 @@ func _ready() -> void:
 		reaction.low_health.connect(func(): barks.say("low_health"))
 	if distance < 1.0: # Fresh start: Bee rests at the player anchor (~32 % of the width from the left).
 		bee.global_position.x = distance + BeeLevel01Framing.player_anchor_offset(BeeLevel01Framing.view_aspect(get_viewport()))
+	BeeLevel01World.attach(self) # Mejora visual: el jardín por zonas (bee_world_settings.gd; sin ventana no corre).
+	BeeCameraRig.attach(self) # Mejora visual: cámara 2.5D (bee_camera_settings.gd; sin ventana no corre).
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 func _process(_delta: float) -> void:
@@ -130,7 +133,8 @@ func _update_camera_and_bounds() -> void:
 	super._update_camera_and_bounds()
 	camera.global_position = Vector3(distance, BeeLevel01Framing.effective_height(), BeeLevel01Framing.CAMERA_DISTANCE)
 	camera.rotation = Vector3(deg_to_rad(BeeLevel01Framing.CAMERA_PITCH_DEGREES), 0.0, 0.0)
-	camera.fov = BeeLevel01Framing.effective_fov() * preload("res://scripts/vfx/bee_impact.gd").fov_factor(get_physics_process_delta_time()) # Tanda V: zoom corto del golpe que conecta (los límites no cambian).
+	melee_fov_factor = preload("res://scripts/vfx/bee_impact.gd").fov_factor(get_physics_process_delta_time()) # Tanda V: zoom corto del golpe que conecta (los límites no cambian).
+	camera.fov = BeeLevel01Framing.effective_fov() * melee_fov_factor
 
 func _on_bee_defeated() -> void:
 	super._on_bee_defeated()

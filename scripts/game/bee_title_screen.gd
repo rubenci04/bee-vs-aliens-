@@ -17,8 +17,11 @@ func _ready() -> void:
 	preload("res://scripts/game/bee_scene_fade.gd").enter(self)
 
 
+## Mejora visual: el prototipo de la laguna no se muestra en el menú. true lo vuelve a poner mientras se desarrolla el Nivel 2.
+const SHOW_LAKE_PROTOTYPE := false
+
 static func debug_menu_enabled() -> bool:
-	return preload("res://scripts/game/bee_readability_settings.gd").development_enabled()
+	return SHOW_LAKE_PROTOTYPE and preload("res://scripts/game/bee_readability_settings.gd").development_enabled()
 
 
 func _build_screen() -> void:

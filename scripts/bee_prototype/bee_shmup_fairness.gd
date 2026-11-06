@@ -16,13 +16,22 @@ static func visible_half_width(camera: Camera3D, point: Vector3, aspect: float) 
 	return tan(deg_to_rad(camera.fov) * 0.5) * aspect * maxf(depth, 0.01)
 
 
+## Mejora visual: distancia al borde visible en metros (positiva = todavía adentro), medida sobre X. Con la cámara 2.5D el borde
+## derecho está más lejos que el izquierdo, así que cada lado tiene el suyo. Sin rig es exactamente la cuenta de siempre.
+static func _inside_edge(node_pos: Vector3, camera: Camera3D, aspect: float) -> float:
+	if BeeCameraRig.logic_active:
+		var dx := node_pos.x - camera.global_position.x
+		return (BeeCameraRig.logic_right - dx) if dx >= 0.0 else (dx - BeeCameraRig.logic_left)
+	var lateral := (node_pos - camera.global_position).dot(camera.global_transform.basis.x)
+	return visible_half_width(camera, node_pos, aspect) - absf(lateral)
+
+
 static func is_readable(enemy: Node3D) -> bool:
 	var viewport := enemy.get_viewport()
 	var camera := viewport.get_camera_3d() if viewport != null else null
 	if camera == null:
 		return true # No camera (isolated tests / tools): nothing to judge against.
-	var lateral := (enemy.global_position - camera.global_position).dot(camera.global_transform.basis.x)
-	return absf(lateral) <= visible_half_width(camera, enemy.global_position, BeeLevel01Framing.view_aspect(viewport)) - ENTRY_MARGIN
+	return _inside_edge(enemy.global_position, camera, BeeLevel01Framing.view_aspect(viewport)) >= ENTRY_MARGIN
 
 
 ## ARCADE REBUILD 02: ceiling of live hostile shots (0 = off). Set by the Level 01 director only, and only units it
@@ -41,8 +50,10 @@ static func is_leaving_screen(node: Node3D, direction: Vector3, margin := 0.0) -
 	var camera := viewport.get_camera_3d() if viewport != null else null
 	if camera == null:
 		return false
+	var outside := _inside_edge(node.global_position, camera, BeeLevel01Framing.view_aspect(viewport)) < -margin
+	if BeeCameraRig.logic_active:
+		return outside and signf(node.global_position.x - camera.global_position.x) == signf(direction.x)
 	var lateral := (node.global_position - camera.global_position).dot(camera.global_transform.basis.x)
-	var outside := absf(lateral) > visible_half_width(camera, node.global_position, BeeLevel01Framing.view_aspect(viewport)) + margin
 	return outside and signf(lateral) == signf(direction.dot(camera.global_transform.basis.x))
 
 
@@ -57,8 +68,7 @@ static func is_on_screen(node: Node3D, margin := 0.0) -> bool:
 	var camera := viewport.get_camera_3d() if viewport != null else null
 	if camera == null:
 		return true
-	var lateral := (node.global_position - camera.global_position).dot(camera.global_transform.basis.x)
-	return absf(lateral) <= visible_half_width(camera, node.global_position, BeeLevel01Framing.view_aspect(viewport)) + margin
+	return _inside_edge(node.global_position, camera, BeeLevel01Framing.view_aspect(viewport)) >= -margin
 
 
 ## False while the enemy has not entered the readable area yet (right) or has been left behind (left).

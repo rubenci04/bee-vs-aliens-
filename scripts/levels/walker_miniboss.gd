@@ -84,6 +84,10 @@ const CANNON_HP := 110
 const CANNON_BOX := Vector3(2.4, 0.6, 1.0)
 const CANNON_CENTRE := Vector2(0.9, 2.72) # (forward, height) of the cannon box, mirrored with the facing.
 const EYE_HEIGHT := 1.35
+## Mejora visual: colores del robot por material del modelo: chapa oscura, detalles claros y el ojo amarillo encendido.
+const ROBOT_COLORS := {"Main": Color(0.2, 0.27, 0.34), "Main2": Color(0.56, 0.6, 0.64), "Edge": Color(0.92, 0.66, 0.16), "Dark": Color(0.09, 0.1, 0.13), "Grey": Color(0.3, 0.33, 0.37), "LightGrey": Color(0.46, 0.5, 0.55)}
+const ROBOT_EYE_COLOR := Color(1.0, 0.84, 0.08)
+const ROBOT_EYE_ENERGY := 3.2
 const EYE_RADIUS := 0.42
 const EYE_MULTIPLIER := 2.0
 const ESCORT_RATIO := 0.5 ## T7d: the second escort call (two wasps) comes at the middle of the fight.
@@ -146,6 +150,29 @@ var _jump_from := 0.0
 var _land_box: DamageHitbox3D
 
 
+## Mejora visual: cada material del robot se copia y se recolorea (el resto de las máquinas comparte los originales).
+func _restyle_robot() -> void:
+	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		if mesh.mesh == null:
+			continue
+		for surface in mesh.mesh.get_surface_count():
+			var source := mesh.mesh.surface_get_material(surface)
+			var active := mesh.get_active_material(surface) as ShaderMaterial
+			if source == null or active == null:
+				continue
+			var label := source.resource_name
+			if label == "Eye":
+				var eye_material := active.duplicate() as ShaderMaterial
+				eye_material.set_shader_parameter("albedo", ROBOT_EYE_COLOR)
+				eye_material.set_shader_parameter("emission", ROBOT_EYE_COLOR)
+				eye_material.set_shader_parameter("emission_energy", ROBOT_EYE_ENERGY)
+				mesh.set_surface_override_material(surface, eye_material)
+			elif ROBOT_COLORS.has(label):
+				var copy := active.duplicate() as ShaderMaterial
+				copy.set_shader_parameter("albedo", ROBOT_COLORS[label])
+				mesh.set_surface_override_material(surface, copy)
+
+
 func _ready() -> void:
 	super._ready()
 	# The body area stops under the cannon (the cannon is its own target on top).
@@ -154,6 +181,7 @@ func _ready() -> void:
 	shape.height = 2.6
 	capsule.shape = shape
 	capsule.position = Vector3(0.0, -1.5, 0.0) # Centre at y ~1.1 (root at the ground), top ~2.4.
+	_restyle_robot()
 	_eye = Node3D.new()
 	_eye.name = "EyeWeakPoint"
 	add_child(_eye)

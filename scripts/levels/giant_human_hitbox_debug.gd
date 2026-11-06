@@ -159,7 +159,8 @@ func _camera_x() -> float:
 
 
 func _write(line: String) -> void:
-	print("[HUMAN_DEBUG] ", line)
+	if BeeLevel01Controller.giant_human_enabled:
+		print("[HUMAN_DEBUG] ", line)
 	if _log != null:
 		_log.store_line("%s  %s" % [Time.get_time_string_from_system(), line])
 		_log.flush()

@@ -25,6 +25,8 @@ const ROBOT_VIEW_SCALE := 1.10
 const ROBOT_CAMERA_LOWER := 1.0
 const ROBOT_TRANSITION_SECONDS := 0.65
 static var robot_arena_weight := 0.0
+## Mejora visual: metros extra que se ven a la derecha con la cámara 2.5D; las apariciones nacen más allá (0 con la lateral).
+static var render_right_extra := 0.0
 
 static func effective_height() -> float:
 	return CAMERA_HEIGHT - ROBOT_CAMERA_LOWER * robot_arena_weight
@@ -99,7 +101,7 @@ static func max_entity_y() -> float:
 
 
 static func spawn_offset_x(aspect: float) -> float:
-	return half_width_max(aspect) + SPAWN_OUTSIDE_MARGIN
+	return half_width_max(aspect) + SPAWN_OUTSIDE_MARGIN + render_right_extra
 
 
 ## Camera-relative X of Bee's anchor (spawn, respawn, harness position).

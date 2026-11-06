@@ -115,6 +115,8 @@ const FOREST_PIECES := [
 	[TALL_PINE, 304.0, -21.0, 8.0, 2.4, 0.0], [TALL_PINE, 330.0, -22.0, 9.0, 0.9, 0.0], [UMBRELLA_PINE, 352.0, -25.0, 7.5, 1.7, 0.0],
 ]
 
+## Mejora visual: el sol lo dibuja el cielo nuevo (BeeLevel01World).
+static var sun_by_world := false
 var stage: BeeShmupStage
 var relays: Array[Node3D] = []
 var litter: Array[Node3D] = []
@@ -329,7 +331,7 @@ func _process(delta: float) -> void:
 	var camera_x := camera.global_position.x
 	var distance := stage.distance
 	var sun_alpha := sun_visibility_at(distance)
-	sun.visible = sun_alpha > 0.01
+	sun.visible = sun_alpha > 0.01 and not sun_by_world
 	for material in _sun_materials:
 		var base: Color = material.get_meta("sun_base_albedo")
 		var sun_brightness := lerpf(0.05, SUN_BRIGHTNESS, sun_alpha)

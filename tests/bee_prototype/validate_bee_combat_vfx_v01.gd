@@ -116,7 +116,7 @@ func run() -> void:
 	stage.camera.set_stage_x(26)
 	var base := bee.fire()
 	check(effects(&"muzzle").size() == 1, "Base muzzle absent")
-	check(effects(&"muzzle")[0].global_position.distance_to(base.global_position) < 0.4, "Muzzle effect is at the model muzzle, within 0.4 m of the spawn")
+	check(effects(&"muzzle")[0].global_position.distance_to(base.global_position) < 0.6, "Muzzle effect is at the model muzzle, within 0.6 m of the spawn") # Mejora visual: Bee a 1,40 aleja la boca del arma (el disparo sale del mismo punto).
 	check(base.damage == 3 and base.speed == 14 and is_equal_approx(base.hitbox.get_node("CollisionShape3D").shape.radius, 0.15), "Projectile gameplay altered (Base: 3 damage, 14 m/s, 0.15 m radius)")
 	await capture("01_base_muzzle")
 	await frames(8)

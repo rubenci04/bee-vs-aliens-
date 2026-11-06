@@ -10,7 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Bee Alien 3D"
+config/name="Bee vs Alien"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Godot/app_userdata/Bee Alien 3D"
 run/main_scene="res://scenes/game/bee_title_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 

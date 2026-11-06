@@ -68,10 +68,9 @@ func fade_material(source: Material) -> Material:
   if not shaders.has(key):
    var shader := Shader.new()
    var code: String=own.shader.code.replace('#include "res://assets/style/toon_common.gdshaderinc"',TOON_INCLUDE.code)
-   var alpha := RegEx.new()
-   alpha.compile("ALPHA\\s*=\\s*([^;]+);")
-   code=alpha.sub(code,"ALPHA = liberation_alpha * ($1);",true)
-   code=code.replace("void fragment() {","uniform float liberation_alpha = 1.0;\nvoid fragment() {\n ALPHA = liberation_alpha;")
+   # Mejora visual: desvanecer con puntos (trama de 4x4) y no con ALPHA. ALPHA manda el material al paso transparente, que no escribe
+   # profundidad: el contorno quedaba por encima del cuerpo y el insecto liberado se veía como una silueta negra.
+   code=code.replace("void fragment() {","uniform float liberation_alpha = 1.0;\nvoid fragment() {\n vec2 lib_cell = mod(floor(FRAGCOORD.xy), 4.0);\n float lib_step = ((mod(lib_cell.x, 2.0) * 2.0 + mod(lib_cell.y, 2.0)) * 4.0 + floor(lib_cell.x / 2.0) * 2.0 + floor(lib_cell.y / 2.0) + 0.5) / 16.0;\n if (liberation_alpha < lib_step) discard;")
    shader.code=code
    shaders[key]=shader
   own.shader=shaders[key]

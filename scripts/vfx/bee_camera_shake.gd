@@ -35,11 +35,23 @@ static func kick(from: Node, amplitude := 0.05, duration := 0.2, direction := Ve
 			(previous as Tween).kill()
 	var tween := camera.create_tween()
 	var steps := 5
+	var previous_offset: Vector2 = camera.get_meta("shake_offset", Vector2.ZERO)
+	var apply := _apply_offset.bind(camera)
 	for i in steps:
 		var falloff := 1.0 - float(i) / float(steps)
 		var sign_x := 1.0 if i % 2 == 0 else -1.0
-		tween.tween_property(camera, "h_offset", sign_x * amplitude * falloff * direction.normalized().x, duration / float(steps + 1))
-		tween.parallel().tween_property(camera, "v_offset", sign_x * amplitude * falloff * direction.normalized().y, duration / float(steps + 1))
-	tween.tween_property(camera, "h_offset", 0.0, duration / float(steps + 1))
-	tween.parallel().tween_property(camera, "v_offset", 0.0, duration / float(steps + 1))
+		var to: Vector2 = direction.normalized() * sign_x * amplitude * falloff
+		tween.tween_method(apply, previous_offset, to, duration / float(steps + 1))
+		previous_offset = to
+	tween.tween_method(apply, previous_offset, Vector2.ZERO, duration / float(steps + 1))
 	camera.set_meta("shake_tween", tween)
+
+
+## Mejora visual: la sacudida se suma al encuadre del rig de cámara (rig_offset); sin rig, ese encuadre es cero.
+static func _apply_offset(value: Vector2, camera: Camera3D) -> void:
+	if not is_instance_valid(camera):
+		return
+	camera.set_meta("shake_offset", value)
+	var base: Vector2 = camera.get_meta("rig_offset", Vector2.ZERO)
+	camera.h_offset = base.x + value.x
+	camera.v_offset = base.y + value.y

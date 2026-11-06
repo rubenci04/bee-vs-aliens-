@@ -52,7 +52,8 @@ func run() -> void:
 	check(visual._wing_hz() > MOTION.WING_IDLE_HZ, "Wings speed up under effort")
 	visual._shot_left = MOTION.WING_SHOT_SECONDS
 	check(visual._wing_hz() > MOTION.WING_EFFORT_HZ, "Wings vibrate after a shot")
-	check(is_equal_approx(bee.roll_cooldown, 1.2), "Existing roll cooldown stays at 1.2 s")
+	check(is_equal_approx(bee.roll_cooldown, BeeGameSettings.PIRUETA_COOLDOWN_SEC), "Roll cooldown comes from the setting")
+	check(bee.roll_cooldown > bee.roll_duration, "There is a gap after the roll: never endless invulnerability")
 	check(bee.start_roll(), "First roll starts")
 	check(not bee.start_roll(), "Roll cannot restart during cooldown")
 	check(visual.motion_trail != null and visual.motion_trail.mesh is QuadMesh, "Roll has a soft trail")

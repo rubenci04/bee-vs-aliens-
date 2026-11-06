@@ -358,6 +358,8 @@ func _process(delta: float) -> void:
 		mask_camera.global_transform = stage.camera.global_transform
 		mask_camera.projection = stage.camera.projection
 		mask_camera.fov = stage.camera.fov
+		mask_camera.h_offset = stage.camera.h_offset
+		mask_camera.v_offset = stage.camera.v_offset
 		mask_camera.size = stage.camera.size
 		mask_camera.keep_aspect = stage.camera.keep_aspect
 		bloom_material.set_shader_parameter("pixel_size", Vector2.ONE / Vector2(mask_view.size))
