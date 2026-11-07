@@ -33,7 +33,7 @@ const LIFE := [
 	[&"flower_pot", 296.0, 372.0, 9.0, 15.0, -8.0, -4.6, 0.9, 1.3], [&"lantern", 300.0, 372.0, 15.0, 21.0, -7.0, -5.2, 1.1, 1.35], [&"chair", 312.0, 372.0, 26.0, 34.0, -14.0, -11.0, 1.0, 1.15],
 	[&"table", 324.0, 325.0, 60.0, 61.0, -16.0, -15.0, 1.15, 1.15], [&"bbq", 352.0, 353.0, 60.0, 61.0, -11.0, -10.0, 1.0, 1.0], [&"clothesline", 310.0, 311.0, 60.0, 61.0, -20.0, -19.5, 1.0, 1.0],
 	# --- Basura de picnic: latas, caramelos, chupetines y envoltorios en todo el jardín. ---
-	[&"soda_can", 8.0, 372.0, 24.0, 42.0, -7.0, -4.2, 0.8, 1.1], [&"lollipop", 20.0, 372.0, 28.0, 50.0, -8.5, -4.8, 0.7, 1.0], [&"candy", 4.0, 372.0, 15.0, 28.0, -5.5, -3.6, 0.8, 1.1],
+	[&"soda_can", 8.0, 372.0, 30.0, 48.0, -9.0, -5.5, 0.8, 1.0], [&"lollipop", 20.0, 372.0, 36.0, 60.0, -10.0, -7.0, 0.65, 0.85], [&"candy", 4.0, 372.0, 20.0, 34.0, -7.0, -4.5, 0.8, 1.0],
 	[&"wrapper", 0.0, 372.0, 11.0, 22.0, -6.0, 3.0, 0.7, 1.0], [&"popsicle", 12.0, 372.0, 24.0, 40.0, -5.0, 2.8, 0.7, 1.0], [&"bottle_cap", 0.0, 372.0, 12.0, 24.0, -5.0, 3.2, 0.7, 1.1],
 ]
 ## Piezas sueltas: [plantilla, X, Z, escala, giro]. Los muros reemplazan a la cerca fuera del césped.
@@ -78,6 +78,7 @@ var _rng := RandomNumberGenerator.new()
 var _combat := 0.0
 var _zone := -1
 var _zone_label: Label
+var _fog_base := 0.5
 
 
 static func attach(parent: Node) -> BeeLevel01World:
@@ -558,6 +559,9 @@ func _process(delta: float) -> void:
 	_combat = move_toward(_combat, target, delta * 1.5)
 	var zone_air: Array = S.AIR_ZONE[S.zone_at(x)]
 	air.amount_ratio = float(zone_air[0]) * lerpf(S.AIR_CALM_RATIO, S.AIR_COMBAT_RATIO, _combat)
+	(stage.get_node("WorldEnvironment") as WorldEnvironment).environment.fog_density = _fog_base + _combat * S.COMBAT_FOG_EXTRA
+	for i in shafts.size():
+		shafts[i].transparency = _combat * (1.0 - S.SHAFT_COMBAT_SCALE)
 	air_material.albedo_color = air_material.albedo_color.lerp(zone_air[1], clampf(delta * 0.8, 0.0, 1.0))
 
 
@@ -572,7 +576,8 @@ func _apply_light(x: float) -> void:
 	environment.ambient_light_color = s["ambient_color"]
 	environment.ambient_light_energy = s["ambient_energy"]
 	environment.fog_light_color = s["fog_color"]
-	environment.fog_density = s["fog_density"]
+	_fog_base = s["fog_density"]
+	environment.fog_density = _fog_base + _combat * S.COMBAT_FOG_EXTRA
 	environment.fog_sky_affect = 0.0
 	environment.background_color = s["sky_horizon"]
 	environment.adjustment_enabled = true

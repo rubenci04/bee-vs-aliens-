@@ -8,7 +8,8 @@ const HERO := preload("res://scripts/game/bee_hero_look_settings.gd")
 ## Change the look here (BEE_SHOT_COLOR / ENEMY_SHOT_COLOR and their cores / rim). The Compatibility renderer has no bloom,
 ## so the glow is layered unshaded spheres (core opaque, halo and rim translucent). Meshes / materials are shared.
 
-const BEE_SHOT_COLOR := Color(1.0, 0.72, 0.16) # Warm gold halo.
+const BEE_SHOT_COLOR := Color(1.0, 0.5, 0.06) # Mejora de claridad: naranja encendido (el dorado se confundía con flores y polen).
+const BEE_SHOT_EDGE := Color(0.22, 0.06, 0.0, 0.7) # Borde oscuro: la bala se separa de cualquier fondo, también de uno claro.
 const BEE_SHOT_CORE := Color(1.0, 0.99, 0.9) # White-hot core.
 const ENEMY_SHOT_COLOR := Color(0.18, 0.92, 1.0) # Cyan halo: the hostile colour.
 const ENEMY_SHOT_CORE := Color(0.86, 1.0, 1.0)
@@ -19,7 +20,8 @@ const ENEMY_RADII := Vector3(0.08, 0.17, 0.26)
 const HALO_ALPHA := 0.6
 const OUTER_ALPHA := 0.24
 ## Short trails: particles alive this long (s).
-const BEE_TRAIL_SECONDS := 0.12
+const BEE_TRAIL_SECONDS := 0.2
+const BEE_TRAIL_AMOUNT := 6 # Rendimiento: antes 10 por bala.
 const ENEMY_TRAIL_SECONDS := 0.14
 const PLASMA_NAME := "PlasmaBall"
 
@@ -71,11 +73,15 @@ static func plasma(enemy: bool, size := 1.0) -> Node3D:
 		["Halo", _sphere(tag + "_halo", radii.y, Color(halo_color, HALO_ALPHA * glow), 2, true, glow)],
 		["Outer", _sphere(tag + "_outer", radii.z, Color(outer_color, OUTER_ALPHA * glow), 1, true, glow)],
 	]
+	if not enemy and HERO.HERO_LOOK_ENABLED:
+		layers.push_front(["Edge", _sphere("bee_edge", radii.y * 1.28, BEE_SHOT_EDGE, -1, true, 1.0)])
 	for layer in layers:
 		var mesh := MeshInstance3D.new()
 		mesh.name = str(layer[0])
 		mesh.mesh = layer[1]
 		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if not enemy and HERO.HERO_LOOK_ENABLED and str(layer[0]) == "Outer":
+			mesh.visible = false # Rendimiento: con el borde oscuro alcanza, y salen 12 balas por segundo.
 		root.add_child(mesh)
 	root.scale = Vector3.ONE * size
 	return root
@@ -85,7 +91,7 @@ static func plasma(enemy: bool, size := 1.0) -> Node3D:
 static func trail(enemy: bool, size := 1.0) -> CPUParticles3D:
 	var particles := CPUParticles3D.new()
 	particles.name = "PlasmaTrail"
-	particles.amount = 10
+	particles.amount = 10 if enemy else BEE_TRAIL_AMOUNT
 	particles.lifetime = ENEMY_TRAIL_SECONDS if enemy else BEE_TRAIL_SECONDS
 	particles.local_coords = false
 	particles.gravity = Vector3.ZERO

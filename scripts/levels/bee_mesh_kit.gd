@@ -426,11 +426,11 @@ static func _t_flower_pot(kit: BeeMeshKit) -> void:
 		kit.sphere(xf(at + Vector3(0, 1.3 + fmod(i * 0.4, 0.5), 0), Vector3.ZERO, Vector3.ONE * 0.28), [Color(0.96, 0.24, 0.3), Color(1.0, 0.82, 0.2), Color(0.8, 0.3, 0.86)][i % 3], 3, 6)
 
 static func _t_chair(kit: BeeMeshKit) -> void:
-	var white := Color(0.9, 0.9, 0.88)
+	var white := Color(0.62, 0.6, 0.56) # Mejora de claridad: un mueble blanco grande distraía del combate.
 	for at in [Vector3(-1.2, 1.6, -1.2), Vector3(1.2, 1.6, -1.2), Vector3(-1.2, 1.6, 1.2), Vector3(1.2, 1.6, 1.2)]:
 		kit.box(xf(at, Vector3.ZERO, Vector3(0.22, 3.2, 0.22)), white)
 	kit.box(xf(Vector3(0, 3.28, 0), Vector3.ZERO, Vector3(2.9, 0.2, 2.9)), white)
-	kit.box(xf(Vector3(0, 5.0, -1.34), Vector3(-6, 0, 0), Vector3(2.9, 3.2, 0.18)), Color(0.82, 0.82, 0.8))
+	kit.box(xf(Vector3(0, 5.0, -1.34), Vector3(-6, 0, 0), Vector3(2.9, 3.2, 0.18)), Color(0.56, 0.54, 0.5))
 
 static func _t_table(kit: BeeMeshKit) -> void:
 	kit.cylinder(xf(Vector3.ZERO), 1.3, 0.5, 0.4, 10, Color(0.26, 0.3, 0.32))

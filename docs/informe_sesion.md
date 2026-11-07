@@ -1,5 +1,7 @@
 # Informe de sesión: mejora visual y de jugabilidad
 
+> Abajo, en «Segunda vuelta», está lo que cambié después de tu partida de prueba. Donde esa parte contradiga a la primera, vale la segunda.
+
 - **Punto de retorno:** commit `579c3fa` («checkpoint antes de la mejora visual»), rama `tanda-y-diseno-nivel2`.
 - **Rama de trabajo:** la misma, no hizo falta otra.
 - **Comparaciones:** [antes y después](capturas_mejora_visual/antes_despues.png), [las cuatro cámaras](capturas_mejora_visual/camaras_comparadas.png), [telaraña fija](capturas_mejora_visual/telaranas.png).
@@ -149,3 +151,42 @@ Todo está hecho por código, sin assets externos nuevos, así que no hay dudas 
 ## Si algo quedó mal
 
 Para volver al estado anterior a toda la mejora, el commit es `579c3fa`. Decime y lo hago yo, sin perder nada de lo nuevo: queda guardado en esta rama.
+
+## Segunda vuelta: lo que cambié después de tu partida de prueba
+
+| Lo que me dijiste | Qué era | Qué hice |
+|---|---|---|
+| Volando alto o bajo se pierden enemigos | Error mío: ajusté la cámara solo para la zona de vuelo de Bee, sin contar a los enemigos del suelo ni a los de arriba, y además la vista seguía la altura de Bee | La vista ya no sube ni baja con Bee, y se abrió para que entre todo. Un test lo verifica en todo el nivel. Bajé el giro de la cámara de 8°–22° a 6°–13° |
+| Enemigos detrás de los paneles | El HUD tapa las esquinas de arriba | El HUD se vuelve casi transparente cuando Bee o un enemigo pasa por detrás |
+| El disparo pasa desapercibido | La bala medía 6 píxeles de alto y era dorada como las flores y el polen | Naranja encendida, con centro blanco y borde oscuro, más gruesa y más larga |
+| Todo muy confuso | El decorado competía con la acción | La niebla arranca apenas detrás del plano de vuelo y sube en combate. Decorado más apagado y más lejos, menos partículas en el aire, pétalos sin rosa (se confundían con balas) y ítems con menos halo |
+| El «alma» que sube | La vuelta y la salida del insecto liberado, desvaneciéndose | El liberado se encoge en 0,12 s y desaparece. También bajó el confeti: menos, más corto y con tope cuando se liberan muchos juntos. Se vuelve atrás con `QUICK_RELEASE` |
+| Jefes muy fáciles | Medido abajo | Más ataques y menos descanso |
+
+### Jefes: qué medí y qué cambié
+
+Medí con bots que disparan sin parar: uno se mueve sin mirar y otro esquiva.
+
+| Jefe | Daño por segundo a Bee, antes | Ahora | Duración, antes | Ahora |
+|---|---|---|---|---|
+| Robot, sin mirar | 0,7 | 1,7 | 50 s | 62 s |
+| Robot, esquivando | 0,6 | 1,0 a 1,3 | 50 s | 62 s |
+| Tarántula, sin mirar | 2,0 | 2,7 a 2,8 | 168 s | 168 s |
+| Tarántula, esquivando | 1,0 | 1,8 a 2,1 | 190 s | 186 s |
+
+- **La vida y el daño por golpe no cambiaron en ninguno de los dos.** El robot dura más porque bajé cuánto daño acepta por segundo (`BODY_DPS_RATIO`).
+- **Robot:** tres etapas según su vida. Cada una descansa menos; suma anillos de disparos, más balas de cañón y más morteros; apunta adelante de Bee; y romper el cañón ya no lo saca para siempre, porque se repara a los 13 s. Llama a su escolta tres veces en vez de una.
+- **Tarántula:** descansa un tercio menos, escupe más seguido y sus abanicos tienen más balas.
+- **Los bots no usan pirueta ni polen,** así que estos números sirven para comparar antes y ahora, no para saber si quedó justo. Eso lo decidís vos. Si se pasó, se ajusta con `STAGE_REST_SCALE` en `walker_miniboss.gd` y con `PHASE_TUNING` en `tarantula_boss_01.gd`.
+
+### Un error que apareció
+
+Con la liberación rápida salió a la luz un error que estaba escondido: la granada de un escarabajo que ya fue liberado intentaba explotar sin dueño. Ahora se apaga sola. Lo encontró la partida completa con ventana.
+
+### Pendientes del informe anterior
+
+- **Errores `material is null`:** en las últimas corridas ya no aparecen. No encontré la causa, así que no puedo asegurar que no vuelvan.
+- **Arco rojizo de noche:** no lo identifiqué. Aparece solo durante la pelea con la tarántula.
+- **Rendimiento:** con la medición larga, ya en combate, da de 49 a 75 FPS a 1080p, menos de lo que informé antes, porque aquella medición era más corta y tomaba momentos más tranquilos. Una prueba sin enemigos da unos 100 FPS y casi no cambia al sacar sombras, Bee o el mundo, así que los draw calls no son el freno principal. **Sigo sin saber qué es.** Los picos de 40 a 68 ms siguen en algunos tramos aun descartando los 2 s iniciales, así que no eran solo la carga, como creía.
+- **Telarañas transparentes:** siguen opacas.
+- **Bot experto de la tarántula:** sigue sin arreglar. Hace falta antes de los jefes del Nivel 2.

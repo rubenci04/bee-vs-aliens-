@@ -14,6 +14,7 @@ var bee: Node3D # Tanda W: la vuelta es alrededor de Bee.
 var start_global := Vector3.ZERO
 var lap_start_angle := 0.0
 var lap_end := Vector3.ZERO
+var quick_scale := Vector3.ONE
 static func start_release(unit: Node3D, model: Node3D, done: Callable) -> Node:
  if S.legacy_review:
   unit.set_physics_process(false)
@@ -103,6 +104,9 @@ func _ready():
  bee=get_tree().get_first_node_in_group("bee_player") as Node3D
  if bee!=null: lap_start_angle=atan2(start_global.y-bee.global_position.y,start_global.x-bee.global_position.x)
  rotation_start=actor.rotation
+ if _is_quick():
+  quick_scale=visual.scale
+  return
  for mesh in visual.find_children("*","MeshInstance3D",true,false):
   mesh.material_overlay=null
   if mesh.material_override!=null:
@@ -112,7 +116,20 @@ func _ready():
     mesh.set_surface_override_material(surface,fade_material(mesh.get_active_material(surface)))
  for mat in materials: # Tanda W: opacos desde el arranque (la vuelta los muestra enteros).
   if mat is ShaderMaterial: mat.set_shader_parameter("liberation_alpha",1.0)
+func _is_quick() -> bool:
+ return S.QUICK_RELEASE and not (actor is TarantulaBoss01 or actor is WalkerMiniboss)
 func _process(delta: float):
+ if _is_quick():
+  elapsed+=delta
+  var q := clampf(elapsed/S.QUICK_SECONDS,0,1)
+  if is_instance_valid(visual):
+   visual.scale=quick_scale*maxf(1.0-q,0.001)
+  if q>=1:
+   actor.hide()
+   remove_from_group("bee_release_full")
+   finished.call()
+   queue_free()
+  return
  if S.LAP_ENABLED and full and is_instance_valid(bee) and not (actor is TarantulaBoss01 or actor is WalkerMiniboss): # Tanda W: los jefes se van como antes.
   _lap_process(delta)
   return

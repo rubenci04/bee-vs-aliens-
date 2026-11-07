@@ -112,6 +112,10 @@ func capture_level() -> void:
 		if stage.distance >= DISTANCES[k]:
 			await snap("nivel_x%03d" % int(DISTANCES[k]))
 			measure("nivel_x%03d" % int(DISTANCES[k]))
+			if int(DISTANCES[k]) in [120, 215]: # Los dos extremos de vuelo: nada puede salirse de cuadro.
+				for extreme in [["alto", 7.15], ["bajo", 0.75]]:
+					stage.bee.global_position.y = extreme[1]
+					await snap("nivel_x%03d_%s" % [int(DISTANCES[k]), extreme[0]])
 			k += 1
 	root.remove_child(stage)
 	stage.queue_free()

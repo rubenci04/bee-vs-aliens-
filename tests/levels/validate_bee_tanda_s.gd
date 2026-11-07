@@ -65,9 +65,9 @@ func run() -> void:
 		var length := halo.radius * plasma.scale.x
 		var width := halo.radius * plasma.scale.y
 		check(length >= width * 2.0, "La aguja es alargada (%.3f x %.3f)" % [length, width])
-		check(halo.radius * plasma.scale.y <= BeeShotPalette.BEE_RADII.y * 0.6, "La bala no tapa la silueta: alto %.3f m" % (halo.radius * plasma.scale.y))
+		check(halo.radius * plasma.scale.y <= BeeShotPalette.BEE_RADII.y * HERO.SHOT_THICKNESS + 0.001, "La bala no tapa la silueta: alto %.3f m" % (halo.radius * plasma.scale.y))
 		var halo_material := halo.material as StandardMaterial3D
-		check(halo_material.albedo_color.a <= BeeShotPalette.HALO_ALPHA * 0.6 + 0.001, "Halo con 60 % del brillo de antes")
+		check(halo_material.albedo_color.a >= BeeShotPalette.HALO_ALPHA, "Mejora de claridad: el halo tiene que verse")
 		check(not plasma.visible, "Recién disparada, la aguja todavía no se dibuja sobre Bee")
 		check(shot.damage == 3 and is_equal_approx(shot.speed, 14.0), "Daño y velocidad de la bala Base sin cambios")
 		check(is_equal_approx((shot.hitbox.get_node("CollisionShape3D").shape as SphereShape3D).radius, 0.15), "Hitbox de la bala sin cambios")

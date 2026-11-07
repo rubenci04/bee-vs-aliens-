@@ -8,6 +8,7 @@ func check(ok: bool, text: String):
 func frames(n: int):
  for i in n: await physics_frame
 func run():
+ preload("res://scripts/game/bee_release_settings.gd").QUICK_RELEASE = false # Esta suite mide la vuelta y la salida, que siguen disponibles.
  var stage := preload("res://scenes/levels/bee_level_01_vertical_slice.tscn").instantiate()
  root.add_child(stage)
  current_scene=stage

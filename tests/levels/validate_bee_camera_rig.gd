@@ -47,7 +47,9 @@ func run() -> void:
 		var boss_yaw: float = S.BOSS_ENTRY_YAW if x >= S.BOSS_ENTRY_FROM_X else 0.0 # El giro extra solo existe donde entra un jefe.
 		for extra_yaw in [-(S.BEE_YAW_FROM_X + S.BREATH_YAW), S.BEE_YAW_FROM_X + S.BREATH_YAW + boss_yaw]:
 			for roll in [-S.ROLL_MAX, S.ROLL_MAX]:
-				for point in [Vector3(left, top, 0), Vector3(left, bottom, 0), Vector3(right, top, 0), Vector3(right, bottom, 0)]:
+				# Mejora de claridad: no alcanza con la zona de vuelo de Bee. También tienen que entrar los enemigos del suelo y los de arriba de todo.
+				var enemy_top := BeeLevel01Framing.max_entity_y() + S.ENEMY_TOP_EXTRA
+				for point in [Vector3(left, maxf(top, enemy_top), 0), Vector3(left, S.ENEMY_FEET_Y, 0), Vector3(right, maxf(top, enemy_top), 0), Vector3(right, S.ENEMY_FEET_Y, 0)]:
 					var s := BeeCameraRig.screen_point(point, framing, BeeLevel01Framing.DESIGN_ASPECT, extra_yaw, roll)
 					var edge := maxf(absf(s.x), absf(s.y))
 					if edge > worst:
@@ -57,6 +59,9 @@ func run() -> void:
 	BeeLevel01Framing.robot_arena_weight = 0.0
 	for row: Array in S.KEYFRAMES:
 		print("X=%s" % row[0], " esquina=%.3f" % corner_at(float(row[0]), left, right, top, bottom))
+	if S.BEE_FOLLOW_Y != 0.0:
+		fail("la vista no debe seguir la altura de Bee: se pierden enemigos del otro lado")
+		return
 	print("peor esquina de la zona de vuelo: %.3f de la pantalla en X=%.0f" % [worst, worst_at])
 	if worst > S.VIEW_MARGIN:
 		fail("la zona de vuelo se sale de la pantalla: %.3f en X=%.0f" % [worst, worst_at])

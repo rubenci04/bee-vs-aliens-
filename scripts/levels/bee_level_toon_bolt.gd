@@ -14,6 +14,7 @@ func _on_hit_confirmed(hurtbox: DamageHurtbox3D, _applied_damage: int) -> void:
 	BeeCombatVFX.spawn(get_parent(), global_position, &"impact_organic" if organic else &"impact", travel_direction)
 	STYLE.impact(get_parent(), global_position, IMPACT)
 	BeeCombatVFX.spawn(get_parent(), global_position, &"bee_spark", travel_direction, SHOOTING.IMPACT_SPARK_SCALE)
+	BeeFx.hit(get_parent(), global_position, travel_direction) # Mejora de claridad: se ve que el disparo pegó.
 	hitbox.set_enabled(false)
 	queue_free()
 

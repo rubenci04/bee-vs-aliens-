@@ -1535,6 +1535,9 @@ func _setup_miniboss(robot: WalkerMiniboss, request: Dictionary) -> void:
 		if not escort.is_empty() and not _frozen:
 			escort_waves += 1
 			_queue_units(escort, event_id, 200))
+	robot.extra_escorts_requested.connect(func():
+		if not escort.is_empty() and not _frozen:
+			_queue_units(escort, event_id, 300 + robot._extra_escorts_done * 10))
 	robot.defeated.connect(func(_robot):
 		miniboss_seconds = robot.fight_seconds
 		_on_robot_defeated())

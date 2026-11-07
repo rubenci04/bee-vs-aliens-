@@ -62,6 +62,10 @@ func _physics_process(delta: float) -> void:
 		_explode()
 
 func _explode() -> void:
+	if not is_instance_valid(attacker): # El escarabajo ya fue liberado: su granada se apaga, no deja onda ni esquirlas.
+		_flash(get_parent(), 0.7)
+		queue_free()
+		return
 	landed = true
 	_shell.hide()
 	var parent := get_parent()

@@ -26,6 +26,29 @@ func run() -> void:
 	bee.set_physics_process(false)
 	var wave: BeeLevel01Controller = stage.wave
 
+	# --- Sin «alma»: el liberado desaparece enseguida, sin dar vueltas ni subir. ---
+	var release_settings := preload("res://scripts/game/bee_release_settings.gd")
+	check(release_settings.QUICK_RELEASE, "la liberación rápida está prendida")
+	var freed_actor := Node3D.new()
+	stage.add_child(freed_actor)
+	freed_actor.global_position = Vector3(50.0, 3.0, 0.0)
+	var freed_visual := Node3D.new()
+	freed_actor.add_child(freed_visual)
+	var freed_done := [false]
+	preload("res://scripts/vfx/bee_release_animation.gd").start_release(freed_actor, freed_visual, func(): freed_done[0] = true)
+	for i in int(release_settings.QUICK_SECONDS * 60.0) + 4:
+		await physics_frame
+		await process_frame
+	check(freed_done[0] and not freed_actor.visible, "desapareció en %.2f s" % release_settings.QUICK_SECONDS)
+	check(freed_actor.global_position.is_equal_approx(Vector3(50.0, 3.0, 0.0)), "no voló a ningún lado")
+	freed_actor.queue_free()
+	# --- Bala de Bee visible. ---
+	var hero := preload("res://scripts/game/bee_hero_look_settings.gd")
+	check(hero.SHOT_THICKNESS >= 0.75 and hero.SHOT_GLOW >= 1.0, "la bala de Bee se ve")
+	# --- Robot con etapas: menos descanso y anillos desde la mitad; el cañón se repara. ---
+	check(WalkerMiniboss.STAGE_REST_SCALE[2] < WalkerMiniboss.STAGE_REST_SCALE[0], "el robot descansa menos al final")
+	check(WalkerMiniboss.STAGE_RING_SHOTS[1] > 0 and WalkerMiniboss.CANNON_REPAIR_SECONDS > 0.0, "anillos y cañón que se repara")
+
 	# --- Reglas de la tarántula: más presión, misma vida y mismo daño por golpe. ---
 	check(TarantulaBoss01.SPIDER_WAVE_SIZE.has(TarantulaBoss01.State.PHASE_3), "también hay arañas colgando en la fase 3")
 	check(TarantulaBoss01.WASP_PHASES.size() >= 3, "avispas en tres fases")

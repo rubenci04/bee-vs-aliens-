@@ -22,6 +22,10 @@ static var legacy_review := false # Render/benchmark only; never enabled by the 
 ## Tanda W — liberación visible: el insecto, ya con su color, da una vuelta alrededor de Bee (sin estorbar ni dañar:
 ## sus colisiones ya están apagadas) y recién después se va volando al fondo. Uno de cada POLLEN_DROP_EVERY deja polen.
 static var LAP_ENABLED := true
+## Mejora de claridad: pedido de Rubén. El liberado ya no da la vuelta ni sube desvaneciéndose (se veía como un alma y llenaba la pantalla):
+## se encoge enseguida y listo. false vuelve a la vuelta y la salida al fondo.
+static var QUICK_RELEASE := true
+const QUICK_SECONDS := 0.12
 const LAP_SECONDS := 0.6 # La vuelta alrededor de Bee.
 const LAP_RADIUS := 1.5 # m alrededor de Bee.
 const LAP_HEIGHT := 0.4 # La órbita queda un poco por encima de Bee.

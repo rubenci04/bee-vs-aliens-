@@ -25,6 +25,10 @@ const TRAIL_LIFETIME := 0.55
 const TRAIL_OFFSET := Vector3(-0.55, 0.05, 0.0) ## Detrás de Bee (se espeja al girar).
 const TRAIL_CORE := Color(1.0, 0.92, 0.58, 0.8)
 const TRAIL_END := Color(1.0, 0.46, 0.14, 0.0)
+const HUD_FADED_ALPHA := 0.32 ## Mejora de claridad: el HUD se vuelve casi transparente si Bee o un enemigo pasa por detrás.
+const HUD_FADE_SPEED := 6.0
+const HUD_LEFT_RECT := Rect2(0.0, 0.0, 0.3, 0.2) ## Panel de vida (fracciones de pantalla).
+const HUD_RIGHT_RECT := Rect2(0.82, 0.0, 0.18, 0.22) ## Panel de combo.
 const COMBO_POP_SCALE := 1.28 ## Golpecito de escala del combo.
 const COMBO_POP_SECONDS := 0.16
 
@@ -131,9 +135,29 @@ func _full_rect(layer: CanvasLayer, color: Color) -> ColorRect:
 	return rect
 
 
-func _process(_delta: float) -> void:
+## ¿Hay algo importante detrás de los paneles del HUD?
+func _hud_covers_action() -> bool:
+	var camera := stage.get("camera") as Camera3D
+	if camera == null:
+		return false
+	var size := camera.get_viewport().get_visible_rect().size
+	var nodes: Array = [bee]
+	nodes.append_array(wave.active_units)
+	for node in nodes:
+		if not is_instance_valid(node) or camera.is_position_behind(node.global_position):
+			continue
+		var screen := camera.unproject_position(node.global_position) / size
+		if HUD_LEFT_RECT.has_point(screen) or HUD_RIGHT_RECT.has_point(screen):
+			return true
+	return false
+
+
+func _process(delta: float) -> void:
 	if not is_instance_valid(bee):
 		return
+	var hud := stage.get_node_or_null("CanvasLayer/WeaponsHUD") as CanvasItem
+	if hud != null:
+		hud.modulate.a = move_toward(hud.modulate.a, HUD_FADED_ALPHA if _hud_covers_action() else 1.0, delta * HUD_FADE_SPEED)
 	var facing := float(bee.get("facing_x"))
 	trail.global_position = bee.global_position + Vector3(TRAIL_OFFSET.x * facing, TRAIL_OFFSET.y, TRAIL_OFFSET.z)
 	trail.direction = Vector3(-facing, 0, 0)

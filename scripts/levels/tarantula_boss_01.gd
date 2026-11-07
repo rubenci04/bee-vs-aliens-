@@ -73,10 +73,10 @@ const ATTACH := Vector2(1.9, 1.9)
 
 ## Per phase: [cooldown between attacks, web fan shots, fan step (deg)].
 const PHASE_TUNING := {
-	State.PHASE_1: [1.2, 5, 15.0],
-	State.PHASE_2: [1.1, 5, 15.0],
-	State.PHASE_3: [1.0, 6, 13.0],
-	State.PHASE_4: [0.9, 6, 13.0],
+	State.PHASE_1: [0.8, 7, 13.0], # Mejora de desafío: descansa menos y abanicos más cerrados (antes 1.2 / 5 / 15).
+	State.PHASE_2: [0.7, 7, 13.0], # Antes 1.1 / 5 / 15.
+	State.PHASE_3: [0.55, 9, 11.0], # Antes 1.0 / 6 / 13.
+	State.PHASE_4: [0.45, 9, 11.0], # Antes 0.9 / 6 / 13.
 }
 ## The pattern of each phase. Moves that need the other surface insert a corner-to-corner JUMP first (see _start_attack).
 const PATTERNS := {
@@ -132,7 +132,7 @@ const HANG_FAN_AT := [1.0] # Swing seconds at which a fan leaves the mouth (hang
 const HANG_COMBO_FAN_AT := [0.8, 2.2]
 const NET_IN_PHASE_1 := true
 const TRAP_FOLLOW_UP := 0.15 ## Seconds after a trap before the follow-up fan starts its warning.
-const SPIT_EVERY := 0.9 ## While it stalks or crawls it spits a single aimed web shot this often...
+const SPIT_EVERY := 0.6 ## Mejora de desafío: antes 0.9. ## While it stalks or crawls it spits a single aimed web shot this often...
 const SPIT_WARNING := 0.45 ## ...after the mouth glows this long.
 const EXPOSE_SECONDS := 1.8
 const EXPOSE_MULTIPLIER := 2.0

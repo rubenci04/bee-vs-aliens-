@@ -17,11 +17,11 @@ const OUTLINE := Color(1.0, 1.0, 1.0)
 const SIZES := {&"pollen": 0.72, &"spread": 1.0, &"bomb": 1.0, &"cluster": 1.2}
 const RING_RADIUS := 0.5
 const HALO_RADIUS := 0.66
-const HALO_ALPHA := 0.32
+const HALO_ALPHA := 0.2 # Mejora de claridad: los ítems se ven, pero no gritan (antes 0.32).
 const PULSE_HZ := 1.8
 const PULSE_SCALE := 0.14
 const COLUMN_HEIGHT := 3.2
-const COLUMN_ALPHA := 0.16
+const COLUMN_ALPHA := 0.06 # Antes 0.16.
 const RING_PULSE := 0.06 # The ring breathes with the halo.
 
 static var _materials := {}

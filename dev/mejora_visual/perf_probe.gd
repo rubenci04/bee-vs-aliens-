@@ -3,7 +3,8 @@ extends SceneTree
 ## Uso: godot --path . --script res://dev/mejora_visual/perf_probe.gd -- <salida.txt> [ancho] [alto]
 const LEVEL := "res://scenes/levels/bee_level_01_vertical_slice.tscn"
 const SPOTS := [12.0, 60.0, 120.0, 150.0, 215.0, 262.0, 294.0, 340.5]
-const SECONDS := 6.0
+const SECONDS := 8.0
+const WARMUP_SECONDS := 2.0
 
 func _initialize() -> void:
 	call_deferred("run")
@@ -43,7 +44,8 @@ func run() -> void:
 			var dt := (now - last) / 1000.0
 			last = now
 			t += dt / 1000.0
-			times.append(dt)
+			if t > WARMUP_SECONDS: # Lo que tarda en estabilizarse la carga no cuenta como tirón de juego.
+				times.append(dt)
 			cpu_process += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
 			cpu_physics += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 			cpu_samples += 1

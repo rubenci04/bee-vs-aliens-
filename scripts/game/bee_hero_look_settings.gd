@@ -27,9 +27,9 @@ const SHADOW_HIGH_Y := 7.0
 const SHADOW_LIFT := 0.03 # Apenas sobre el suelo, para no parpadear con él.
 
 ## D. Balas de Bee: aguja dorada fina y alargada, con 60 % del brillo de antes. Daño, velocidad y hitbox iguales.
-const SHOT_THICKNESS := 0.5 # Grosor del plasma respecto del de antes.
-const SHOT_LENGTH := 2.6 # Estiramiento a lo largo del vuelo (antes 1.65).
-const SHOT_GLOW := 0.6 # Brillo del halo y de la emisión respecto de antes.
+const SHOT_THICKNESS := 0.8 # Mejora de claridad: grosor del plasma (antes 0.5: a 720p tenía 6 píxeles y se perdía).
+const SHOT_LENGTH := 3.6 # Estiramiento a lo largo del vuelo.
+const SHOT_GLOW := 1.25 # Mejora de claridad: brillo del halo y de la emisión (antes 0.6).
 const SHOT_REVEAL_DISTANCE := 0.55 # m: la bala se dibuja recién cuando ya salió de la silueta de Bee.
 
 ## E. Teletransporte: columna de 1/3 de alto, más fina y menos opaca; la nube de píxeles cian, menos densa.

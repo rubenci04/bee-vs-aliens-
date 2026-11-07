@@ -6,17 +6,19 @@ extends RefCounted
 static var enabled := false
 
 const STAR_TEXTURE_SIZE := 64
-const HIT_MIN_GAP := 0.05 ## s entre chispas de impacto: una ráfaga de 12 tiros por segundo no llena la pantalla.
-const HIT_FLASH_SIZE := 0.75
+const HIT_MIN_GAP := 0.09 ## s entre chispas de impacto: una ráfaga de 12 tiros por segundo no llena la pantalla.
+const HIT_FLASH_SIZE := 0.65
 const HIT_SPARKS := 4
 const HIT_SPARK_SPEED := 4.5
 const HIT_COLOR := Color(1.0, 0.86, 0.42)
-const FREE_FLASH_SIZE := 2.6
-const FREE_FLASH_SIZE_BIG := 4.2
-const FREE_RING := 1.5
-const FREE_RING_BIG := 2.6
-const FREE_CONFETTI := 14
-const FREE_CONFETTI_BIG := 26
+const FREE_FLASH_SIZE := 1.7
+const FREE_FLASH_SIZE_BIG := 2.8
+const FREE_RING := 0.9
+const FREE_RING_BIG := 1.6
+const FREE_CONFETTI := 5
+const FREE_CONFETTI_BIG := 10
+const FREE_CONFETTI_SECONDS := 0.5
+const FREE_MIN_GAP := 0.14 ## s: si se liberan muchos juntos, los demás solo dan un destello chico.
 const FREE_COLORS: Array[Color] = [Color(1.0, 0.84, 0.2), Color(1.0, 0.52, 0.66), Color(0.66, 0.92, 0.36), Color(0.56, 0.84, 1.0), Color(1.0, 0.96, 0.8)]
 const BLAST_PUFFS := 8
 const BLAST_DEBRIS := 16
@@ -37,6 +39,7 @@ static var _puff_mesh: SphereMesh
 static var _chunk_mesh: BoxMesh
 static var _confetti_mesh: QuadMesh
 static var _last_hit_msec := -1000
+static var _last_free_msec := -1000
 
 
 static func _star_texture() -> ImageTexture:
@@ -265,10 +268,13 @@ static func hit(from: Node, at: Vector3, direction: Vector3, color := HIT_COLOR)
 static func liberation(from: Node, at: Vector3, big: bool) -> void:
 	if not enabled:
 		return
-	flash(from, at, FREE_FLASH_SIZE_BIG if big else FREE_FLASH_SIZE, Color(1.0, 0.92, 0.5), 0.22)
-	ring(from, at, FREE_RING_BIG if big else FREE_RING, Color(1.0, 0.86, 0.36), 0.36)
-	_burst(from, at, FREE_CONFETTI_BIG if big else FREE_CONFETTI, 1.05, _confetti(), FREE_COLORS, Vector2(2.2, 5.4), Vector3(0, -5.0, 0), Vector2(0.8, 1.6), 180.0, Vector3.UP, 1.4, 360.0)
-	_burst(from, at, 7, 0.32, _spark(), [Color(0.5, 0.95, 1.0), Color(0.2, 0.6, 1.0)], Vector2(3.0, 6.0), Vector3.ZERO, Vector2(0.9, 1.5)) # El implante salta en chispas cian.
+	flash(from, at, FREE_FLASH_SIZE_BIG if big else FREE_FLASH_SIZE, Color(1.0, 0.92, 0.5), 0.16)
+	var now := Time.get_ticks_msec()
+	if float(now - _last_free_msec) / 1000.0 < FREE_MIN_GAP and not big:
+		return
+	_last_free_msec = now
+	ring(from, at, FREE_RING_BIG if big else FREE_RING, Color(1.0, 0.86, 0.36), 0.24)
+	_burst(from, at, FREE_CONFETTI_BIG if big else FREE_CONFETTI, FREE_CONFETTI_SECONDS, _confetti(), FREE_COLORS, Vector2(1.8, 3.6), Vector3(0, -6.0, 0), Vector2(0.8, 1.3), 180.0, Vector3.UP, 1.4, 360.0)
 
 
 ## Máquina que revienta (implante, robot): bola de fuego, humo, esquirlas y onda.

@@ -21,13 +21,14 @@ var laser_effect: Node3D
 ## It explodes when it falls (technology, never freed). Target: 30-45 s with Base and Spread (validate_bee_walker_miniboss_v01).
 
 signal escorts_requested
+signal extra_escorts_requested # Mejora de desafío: llamadas de escolta además de la de la mitad de la pelea.
 signal cannon_broken
 
 const DISPLAY_NAME := "ROBOT CAMINANTE"
 const CANNON_TELEGRAPH := 0.5
 const CANNON_SHOTS := 3
 const CANNON_GAP := 0.16
-const CANNON_SPEED := 8.0
+const CANNON_SPEED := 10.5 # Mejora de desafío: antes 8.
 const CANNON_DAMAGE := 6
 const STOMP_TELEGRAPH := 0.6
 const STOMP_DAMAGE := 8
@@ -48,7 +49,7 @@ const JUMP_SECONDS := 0.8
 const JUMP_APEX := 4.4 # E2: threatens the upper band (was 3.4)
 const JUMP_DAMAGE := 8
 const JUMP_MIN_DISTANCE := 3.0
-const STRIDE_SPEED := 3.0
+const STRIDE_SPEED := 4.0 # Mejora de desafío: antes 3.
 const STRIDE_MAX_SECONDS := 4.0
 const MIN_TELEGRAPH := 0.42
 ## T7d (Tanda D): two more attacks, each with its own 0.5 s pulse. BURST = three slower shots, each aimed at where Bee is as it leaves,
@@ -65,7 +66,7 @@ const AIR_VOLLEY_TELEGRAPH := 0.5
 const AIR_VOLLEY_SHOTS := 5
 const AIR_VOLLEY_GAP := 0.14
 const AIR_VOLLEY_SPREAD_DEGREES := 14.0
-const AIR_VOLLEY_SPEED := 8.0
+const AIR_VOLLEY_SPEED := 10.0 # Mejora de desafío: antes 8.
 const HOP_TELEGRAPH := 0.5
 const HOP_SECONDS := 0.5
 const HOP_APEX := 3.5 # E2: threatens the upper band (was 1.5)
@@ -80,6 +81,21 @@ const PATTERN := [&"cannon", &"air_volley", &"mortars", &"stride", &"burst", &"l
 const PATTERN_NO_CANNON := [&"air_volley", &"stride", &"burst", &"laser", &"hop", &"jump", &"air_volley", &"burst", &"laser", &"stomp", &"stride", &"hop", &"jump"]
 const REST := 0.55
 const REST_NO_CANNON := 0.5
+## Mejora de desafío: el robot apenas lastimaba (medido: 0,6 de daño por segundo a un bot que no esquiva). Tres etapas según su vida: cada una
+## descansa menos y suma ataques. El daño de cada golpe no cambió.
+const RAGE_RATIO := 0.66 ## Vida a la que entra en la etapa 2.
+const FURY_RATIO := 0.33 ## Vida a la que entra en la etapa 3.
+const STAGE_REST_SCALE := [0.8, 0.5, 0.3] ## Multiplica los descansos en cada etapa.
+const STAGE_CANNON_SHOTS := [4, 5, 7]
+const STAGE_MORTARS := [3, 5, 7]
+const STAGE_RING_SHOTS := [0, 10, 14] ## Anillo de disparos desde el ojo.
+const RING_TELEGRAPH := 0.5
+const RING_SPEED := 6.5
+const STAGE_RINGS := [0, 1, 2] ## Anillos seguidos.
+const RING_GAP := 0.45
+const AIM_LEAD_SECONDS := 0.28 ## Apunta adelante de Bee: moverse en línea recta ya no alcanza.
+const CANNON_REPAIR_SECONDS := 13.0 ## Romper el cañón da un respiro, no gana la pelea: se repara.
+const EXTRA_ESCORT_RATIOS := [0.8, 0.28] ## Llamadas extra de escolta (además de la de la mitad).
 const CANNON_HP := 110
 const CANNON_BOX := Vector3(2.4, 0.6, 1.0)
 const CANNON_CENTRE := Vector2(0.9, 2.72) # (forward, height) of the cannon box, mirrored with the facing.
@@ -91,9 +107,9 @@ const ROBOT_EYE_ENERGY := 3.2
 const EYE_RADIUS := 0.42
 const EYE_MULTIPLIER := 2.0
 const ESCORT_RATIO := 0.5 ## T7d: the second escort call (two wasps) comes at the middle of the fight.
-const ESCORT_FALLBACK := 24.0
+const ESCORT_FALLBACK := 34.0
 ## Sustained damage budget on the body (fraction of max HP per second, reserve): Spread cannot melt it.
-const BODY_DPS_RATIO := 0.0195 ## T7d: was 0.032 (min. ~31 s at Base); now the fastest possible fight at Base is >= 45 s (see validate_bee_tanda_d_robot)
+const BODY_DPS_RATIO := 0.0155 ## Mejora de desafío: unos 65 s con Base (antes 0.0195, 50 s). ## T7d: was 0.032 (min. ~31 s at Base); now the fastest possible fight at Base is >= 45 s (see validate_bee_tanda_d_robot)
 const BODY_BURST := 30.0
 const FIRST_REST := 0.15 ## Rest after walking in, before the first attack.
 const EDGE_INSET := 1.6 ## The stride goes from one side to this far from the other edge.
@@ -128,6 +144,11 @@ var _hop_from := 0.0
 var _step := &"enter"
 var _left := 0.0
 var _attack_index := 0
+var cannon_repairs := 0
+var rings := 0
+var _repair_left := 0.0
+var _rings_left := 0
+var _extra_escorts_done := 0
 var high_seconds := 0.0 ## E2: continuous time Bee spent above HIGH_Y.
 var air_priority_picks := 0
 var _last_was_air := false
@@ -251,6 +272,8 @@ func _physics_process(delta: float) -> void:
 	_place_weak_points()
 	if not escorts_called and fight_seconds >= ESCORT_FALLBACK and health.current_health > 0:
 		_call_escorts()
+	_update_extra_escorts()
+	_update_cannon_repair(delta)
 	_left -= delta
 	attack_left = maxf(_left, 0.0)
 	match _step:
@@ -267,6 +290,15 @@ func _physics_process(delta: float) -> void:
 			_play(&"Idle")
 			if _left <= 0.0:
 				_next_attack()
+		&"ring_tele":
+			if _left <= 0.0:
+				_play(&"Shoot")
+				_fire_ring(int(STAGE_RING_SHOTS[fight_stage()]))
+				_rings_left -= 1
+				if _rings_left > 0:
+					_left = RING_GAP
+				else:
+					_rest(REST)
 		&"stride":
 			var step := minf(STRIDE_SPEED * delta, absf(_walk_goal - global_position.x))
 			var dir := signf(_walk_goal - global_position.x)
@@ -289,7 +321,7 @@ func _physics_process(delta: float) -> void:
 				_free_line(&"aim")
 				hazards.append({"kind": &"cannon", "telegraph": CANNON_TELEGRAPH})
 				_step = &"cannon_fire"
-				_shots_left = CANNON_SHOTS
+				_shots_left = int(STAGE_CANNON_SHOTS[fight_stage()])
 				_left = 0.0
 				_play(&"Shoot")
 		&"cannon_fire":
@@ -404,16 +436,62 @@ func _physics_process(delta: float) -> void:
 func _rest(seconds: float) -> void:
 	BeeCommonSlots.release(self)
 	_step = &"rest"
-	_left = seconds
+	_left = seconds * float(STAGE_REST_SCALE[fight_stage()])
+
+
+## Etapa de la pelea según la vida: 0, 1 o 2.
+func fight_stage() -> int:
+	var ratio := float(health.current_health) / float(maxi(health.max_health, 1))
+	return 2 if ratio <= FURY_RATIO else (1 if ratio <= RAGE_RATIO else 0)
+
+
+func _update_extra_escorts() -> void:
+	if _extra_escorts_done >= EXTRA_ESCORT_RATIOS.size() or health.current_health <= 0:
+		return
+	var ratio := float(health.current_health) / float(maxi(health.max_health, 1))
+	if ratio <= float(EXTRA_ESCORT_RATIOS[_extra_escorts_done]):
+		_extra_escorts_done += 1
+		extra_escorts_requested.emit()
+
+
+func _update_cannon_repair(delta: float) -> void:
+	if cannon_alive or _repair_left <= 0.0:
+		return
+	_repair_left -= delta
+	if _repair_left > 0.0:
+		return
+	cannon_alive = true
+	cannon_repairs += 1
+	cannon_health.current_health = cannon_health.max_health
+	cannon_hurtbox.set_deferred("monitorable", true)
+	for gun: MeshInstance3D in visual_root.find_children("Cylinder", "MeshInstance3D", true, false):
+		gun.show()
+	BeeCombatVFX.spawn(get_parent(), global_position + Vector3(_facing_x * CANNON_CENTRE.x, CANNON_CENTRE.y, 0.3), &"pickup", Vector3.UP, 1.4)
+
+
+## Anillo de disparos desde el ojo: se esquiva buscando el hueco entre dos balas.
+func _fire_ring(shots: int) -> void:
+	var from := global_position + Vector3(0.0, EYE_HEIGHT + 0.4, 0.0)
+	var offset := randf() * TAU
+	for i in shots:
+		var angle := offset + TAU * float(i) / float(shots)
+		var direction := Vector3(cos(angle), sin(angle), 0.0)
+		BeeEnemyPatterns.spawn_shot(get_parent(), projectile_scene, from, direction, BURST_DAMAGE, RING_SPEED, self)
+	rings += 1
+	hazards.append({"kind": &"ring", "telegraph": RING_TELEGRAPH})
+	BeeAudio.play(get_parent(), &"walker_charge", global_position, 0.8)
 
 
 func _next_attack() -> void:
-	if not BeeCommonSlots.try_take(self):
+	# Mejora de desafío: desde la etapa 2 no espera turno con su escolta.
+	if fight_stage() == 0 and not BeeCommonSlots.try_take(self):
 		_left = 0.35 # T7d: at most two attackers at once (the robot counts as one, its escorts as the rest).
 		return
 	BeeMusic.duck_for_explosion()
 	var pattern: Array = PATTERN if cannon_alive else PATTERN_NO_CANNON
 	var kind: StringName = pattern[_attack_index % pattern.size()]
+	if fight_stage() > 0 and _attack_index % 3 == 2:
+		kind = &"ring" # Cada tres ataques, un anillo.
 	if high_seconds >= HIGH_SECONDS and not _last_was_air:
 		kind = AIR_PICKS[air_priority_picks % AIR_PICKS.size()] # E2: anti-air priority; the normal pattern resumes afterwards.
 		air_priority_picks += 1
@@ -425,6 +503,12 @@ func _next_attack() -> void:
 	attacks_started += 1
 	attack_kind = kind
 	match kind:
+		&"ring":
+			_step = &"ring_tele"
+			_left = RING_TELEGRAPH
+			_rings_left = int(STAGE_RINGS[fight_stage()])
+			BeeShotWarning.volley(self, &"robot", visual_root, RING_TELEGRAPH)
+			BeeAudio.play(get_parent(), &"walker_charge", global_position, 1.3)
 		&"air_volley":
 			_step = &"air_volley_tele"
 			_left = AIR_VOLLEY_TELEGRAPH
@@ -482,7 +566,7 @@ func _next_attack() -> void:
 func _mark_mortars() -> void:
 	mortar_xs.clear()
 	var half := _half_width() - 0.6
-	for i in MORTAR_COUNT:
+	for i in int(STAGE_MORTARS[fight_stage()]):
 		var offset := 0.0 if i == 0 else MORTAR_SPACING * float((i + 1) / 2) * (1.0 if i % 2 == 1 else -1.0)
 		var x := clampf(target.global_position.x + offset, _cam_x() - half, _cam_x() + half)
 		mortar_xs.append(x)
@@ -615,7 +699,7 @@ func _muzzle() -> Vector3:
 
 
 func _aim_direction() -> Vector3:
-	var d := target.global_position - _muzzle()
+	var d := target.global_position + target.velocity * AIM_LEAD_SECONDS - _muzzle() # Mejora de desafío: apunta adelante de Bee.
 	d.z = 0.0
 	return d.normalized() if d.length() > 0.01 else Vector3(_facing_x, 0.0, 0.0)
 
@@ -652,6 +736,7 @@ func _break_cannon() -> void:
 	if not cannon_alive:
 		return
 	cannon_alive = false
+	_repair_left = CANNON_REPAIR_SECONDS
 	cannon_hurtbox.set_deferred("monitorable", false)
 	aim_charge.hide()
 	_free_line(&"aim")

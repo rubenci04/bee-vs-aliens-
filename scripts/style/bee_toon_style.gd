@@ -23,7 +23,7 @@ const PALE_TINT := Color(1.0, 0.86, 0.66)
 ##   AFTER:  Bee 0.0030 (+20 %), actors (enemies, dragonfly, UFO) 0.0029 (+16 %), props 0.0023 (-8 %).
 ##   The Giant Human keeps no outline (its scale would turn it into a sticker).
 const OUTLINE_BEE := BeeGameSettings.BEE_READABILITY_OUTLINE
-const OUTLINE_ACTOR := 0.0029
+const OUTLINE_ACTOR := 0.0035 # Mejora de claridad: enemigos con contorno más marcado (antes 0.0029).
 const OUTLINE_PROP := 0.0023
 
 ## 0..1, written by the level light progression: strengthens the rim light on Bee at sunset.

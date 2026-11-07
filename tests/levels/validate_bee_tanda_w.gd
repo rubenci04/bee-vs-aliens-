@@ -9,6 +9,7 @@ func pollen_count(stage: Node) -> int:
 	return stage.find_children("*", "BeePollenPickup", true, false).filter(func(p): return not p.is_queued_for_deletion()).size()
 
 func run() -> void:
+	preload("res://scripts/game/bee_release_settings.gd").QUICK_RELEASE = false # Esta suite mide la vuelta y la salida, que siguen disponibles.
 	root.size = Vector2i(1280, 720)
 	var stage := await fixture()
 	var bee := stage.bee
